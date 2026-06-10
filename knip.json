@@ -8,7 +8,7 @@
     "packages/core": {
       "entry": ["src/index.ts"],
       "project": ["src/**/*.ts"],
-      "ignoreDependencies": ["vscode-json-languageservice"]
+      "ignoreDependencies": ["vscode-languageserver-types"]
     },
     "packages/server": {
       "entry": ["src/cli.ts", "bin/hoverfly-lsp.js"],
