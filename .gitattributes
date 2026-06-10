@@ -1,0 +1,7 @@
+# Keep golden/fixture files byte-stable across platforms
+* text=auto eol=lf
+
+*.hoverfly.json text eol=lf
+*.golden text eol=lf
+*.json text eol=lf
+*.ts text eol=lf

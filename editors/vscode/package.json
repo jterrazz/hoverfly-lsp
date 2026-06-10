@@ -1,0 +1,9 @@
+{
+  "name": "@hoverfly-lsp/vscode",
+  "version": "0.0.0",
+  "private": true,
+  "description": "VS Code extension for Hoverfly simulation files (placeholder)",
+  "license": "MIT",
+  "author": "Jean-Baptiste Terrazzoni <contact@jterrazz.com>",
+  "type": "module"
+}

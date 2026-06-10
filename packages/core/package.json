@@ -1,0 +1,27 @@
+{
+  "name": "@hoverfly-lsp/core",
+  "version": "0.0.0",
+  "description": "Pure analysis library for Hoverfly simulation files (zero LSP transport deps)",
+  "license": "MIT",
+  "author": "Jean-Baptiste Terrazzoni <contact@jterrazz.com>",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc --build"
+  },
+  "dependencies": {
+    "vscode-json-languageservice": "^5.7.2",
+    "vscode-languageserver-textdocument": "^1.0.12",
+    "vscode-languageserver-types": "^3.18.0"
+  }
+}

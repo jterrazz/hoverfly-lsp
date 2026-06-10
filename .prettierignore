@@ -1,0 +1,5 @@
+# Intentionally malformed / non-canonical fixtures must not be reformatted.
+testdata/
+
+# Generated build output
+dist/

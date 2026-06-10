@@ -1,0 +1,35 @@
+{
+  "name": "hoverfly-lsp-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Language Server for Hoverfly JSON simulation files",
+  "license": "MIT",
+  "author": "Jean-Baptiste Terrazzoni <contact@jterrazz.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jterrazz/hoverfly-lsp"
+  },
+  "workspaces": [
+    "packages/*",
+    "editors/vscode"
+  ],
+  "type": "module",
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "test": "vitest --run",
+    "typecheck": "tsc --build",
+    "lint": "codestyle check",
+    "lint:fix": "codestyle fix"
+  },
+  "devDependencies": {
+    "@jterrazz/codestyle": "^3.4.0",
+    "@types/node": "^25.5.0",
+    "glob": "^13.0.6",
+    "typescript": "~5.9.3",
+    "vitest": "^4.1.8",
+    "vscode-languageserver-protocol": "^3.18.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

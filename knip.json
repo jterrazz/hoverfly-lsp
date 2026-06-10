@@ -1,0 +1,18 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "workspaces": {
+    ".": {
+      "entry": ["oxlint.config.ts", "vitest.config.ts"],
+      "ignoreDependencies": ["oxlint"]
+    },
+    "packages/core": {
+      "entry": ["src/index.ts"],
+      "project": ["src/**/*.ts"],
+      "ignoreDependencies": ["vscode-json-languageservice"]
+    },
+    "packages/server": {
+      "entry": ["src/cli.ts", "bin/hoverfly-lsp.js"],
+      "project": ["src/**/*.ts"]
+    }
+  }
+}
