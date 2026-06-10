@@ -1,0 +1,66 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/api/v2/checkout/begin" }],
+                    "method": [{ "matcher": "exact", "value": "POST" }]
+                },
+                "response": {
+                    "status": 200,
+                    "body": "{\"checkout\":\"started\"}",
+                    "headers": {
+                        "Content-Type": ["application/json"]
+                    },
+                    "transitionsState": {
+                        "checkout": "started"
+                    }
+                }
+            },
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/api/v2/checkout/poll" }],
+                    "method": [{ "matcher": "exact", "value": "GET" }],
+                    "requiresState": {
+                        "checkout": "started",
+                        "sequence:payment": "1"
+                    }
+                },
+                "response": {
+                    "status": 200,
+                    "body": "{\"payment\":\"pending\"}",
+                    "headers": {
+                        "Content-Type": ["application/json"]
+                    },
+                    "transitionsState": {
+                        "sequence:payment": "2"
+                    }
+                }
+            },
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/api/v2/checkout/poll" }],
+                    "method": [{ "matcher": "exact", "value": "GET" }],
+                    "requiresState": {
+                        "checkout": "started",
+                        "sequence:payment": "2"
+                    }
+                },
+                "response": {
+                    "status": 200,
+                    "body": "{\"payment\":\"settled\"}",
+                    "headers": {
+                        "Content-Type": ["application/json"]
+                    },
+                    "transitionsState": {
+                        "checkout": "complete"
+                    },
+                    "removesState": ["checkout"]
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.2"
+    }
+}

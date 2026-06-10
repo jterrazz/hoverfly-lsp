@@ -1,0 +1,20 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/v1/flags" }]
+                },
+                "response": {
+                    "status": 200,
+                    "templated": true,
+                    "body": "{\"flag\":\"{{Vars.gate}}\"}"
+                }
+            }
+        ],
+        "variables": [{ "name": "gate", "function": "if" }]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

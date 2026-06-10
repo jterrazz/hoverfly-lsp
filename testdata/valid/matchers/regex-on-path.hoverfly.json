@@ -1,0 +1,19 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "method": [{ "matcher": "exact", "value": "GET" }],
+                    "path": [{ "matcher": "regex", "value": "^/api/v2/orders/[0-9a-f-]{36}$" }]
+                },
+                "response": {
+                    "status": 200,
+                    "body": "{\"order\":\"found\"}"
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

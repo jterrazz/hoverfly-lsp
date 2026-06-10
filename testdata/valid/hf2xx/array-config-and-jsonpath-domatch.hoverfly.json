@@ -6,7 +6,10 @@
                     "body": [
                         {
                             "matcher": "array",
-                            "value": ["alpha", "beta"],
+                            "value": [
+                                "alpha",
+                                "beta"
+                            ],
                             "config": {
                                 "ignoreUnknown": true,
                                 "ignoreOrder": true,
@@ -16,12 +19,20 @@
                         {
                             "matcher": "jsonpath",
                             "value": "$.user.name",
-                            "doMatch": [{ "matcher": "exact", "value": "alice" }]
+                            "doMatch": {
+                                "matcher": "exact",
+                                "value": "alice"
+                            }
                         },
                         {
                             "matcher": "form",
                             "value": {
-                                "username": [{ "matcher": "exact", "value": "alice" }]
+                                "username": [
+                                    {
+                                        "matcher": "exact",
+                                        "value": "alice"
+                                    }
+                                ]
                             }
                         }
                     ]

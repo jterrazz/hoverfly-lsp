@@ -1,0 +1,25 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "query": {
+                        "tags": [
+                            {
+                                "matcher": "array",
+                                "value": ["a", "b"],
+                                "config": { "ignoreOrder": "true" }
+                            }
+                        ]
+                    }
+                },
+                "response": {
+                    "status": 200
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

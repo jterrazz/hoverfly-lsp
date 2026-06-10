@@ -1,0 +1,24 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/v1/notifications/preview" }]
+                },
+                "response": {
+                    "status": 200,
+                    "templated": true,
+                    "headers": {
+                        "Content-Type": ["text/plain; charset=utf-8"],
+                        "X-Trace": ["trace\t-{{randomUuid}}"]
+                    },
+                    "body": "Dear customer,\n\n\tYour order ✅ is confirmed.\n\nThank you 😊 for shopping with us éèê.\n\nReference: {{Vars.reference}}\nIssued: {{now '' '2006-01-02'}}\nRaw token: {{{randomString}}}\nTotal: {{add '10.00' '2.50' '0.00'}}\nQuoted \"value\" with backslash \\ and tab\t end.\n"
+                }
+            }
+        ],
+        "variables": [{ "name": "reference", "function": "randomUuid" }]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

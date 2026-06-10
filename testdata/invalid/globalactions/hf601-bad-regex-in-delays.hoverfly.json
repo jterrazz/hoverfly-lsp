@@ -1,0 +1,17 @@
+{
+    "data": {
+        "pairs": [],
+        "globalActions": {
+            "delays": [
+                {
+                    "urlPattern": "/api/v2/[unterminated",
+                    "httpMethod": "GET",
+                    "delay": 100
+                }
+            ]
+        }
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

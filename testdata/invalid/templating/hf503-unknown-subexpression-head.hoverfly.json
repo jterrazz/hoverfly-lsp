@@ -1,0 +1,19 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/v1/totals" }]
+                },
+                "response": {
+                    "status": 200,
+                    "templated": true,
+                    "body": "{\"total\":\"{{add (roundUp '4.999') '1.00' '0.00'}}\"}"
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

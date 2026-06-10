@@ -1,0 +1,19 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/v1/fake" }]
+                },
+                "response": {
+                    "status": 200,
+                    "templated": true,
+                    "body": "{\"value\":\"{{faker 'Generate'}}\"}"
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF402",
+    "severity": "information",
+    "range": {
+      "start": [
+        16,
+        24
+      ],
+      "end": [
+        16,
+        42
+      ]
+    },
+    "message": "State \"welcomeEmailSent\" is set but never required in this simulation"
+  }
+]

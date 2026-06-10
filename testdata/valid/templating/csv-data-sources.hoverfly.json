@@ -1,0 +1,19 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/v1/inventory/report" }]
+                },
+                "response": {
+                    "status": 200,
+                    "templated": true,
+                    "body": "{{csvAddRow 'products' (split 'SKU-99,Widget,12.50' ',')}}{\"total\":\"{{csvCountRows 'products'}}\",\"firstName\":\"{{csv 'products' 'sku' 'SKU-01' 'name'}}\",\"dogs\":[{{#each (csvMatchingRows 'products' 'category' 'pets')}}{\"sku\":\"{{this.sku}}\"}{{#unless @last}},{{/unless}}{{/each}}],\"raw\":[{{#each (csvAsArray 'products')}}{{#unless @first}},{{/unless}}{{@index}}{{/each}}],\"mapped\":[{{#each (csvAsMap 'products')}}{\"name\":\"{{this.name}}\"}{{#unless @last}},{{/unless}}{{/each}}],\"query\":[{{#each (csvSqlCommand \"SELECT name FROM products WHERE category='pets'\")}}{\"n\":\"{{this.name}}\"}{{#unless @last}},{{/unless}}{{/each}}],\"purged\":\"{{csvDeleteRows 'products' 'category' 'discontinued' true}}\"}"
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

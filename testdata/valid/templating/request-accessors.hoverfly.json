@@ -1,0 +1,24 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "method": [{ "matcher": "exact", "value": "POST" }],
+                    "path": [{ "matcher": "glob", "value": "/v1/echo/*" }]
+                },
+                "response": {
+                    "status": 200,
+                    "templated": true,
+                    "headers": {
+                        "X-Echo-Method": ["{{Request.Method}}"],
+                        "X-Echo-Scheme": ["{{Request.Scheme}}"]
+                    },
+                    "body": "{\"path1\":\"{{Request.Path.[1]}}\",\"query\":\"{{Request.QueryParam.id}}\",\"auth\":\"{{Request.Header.Authorization.[0]}}\",\"jsonField\":\"{{requestBody 'jsonpath' '$.customer.name'}}\",\"jsonMethod\":\"{{Request.Body 'jsonpath' '$.customer.id'}}\",\"xmlField\":\"{{Request.Body 'xpath' '/order/total'}}\",\"xmlFromMethod\":\"{{requestBody 'xpath' '/order/ref'}}\",\"jsonFromXml\":\"{{Request.Body 'jsonpathfromxml' '$.order.status'}}\"}"
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

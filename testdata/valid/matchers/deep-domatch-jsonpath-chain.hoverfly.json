@@ -1,0 +1,42 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "method": [
+                        {
+                            "matcher": "exact",
+                            "value": "POST"
+                        }
+                    ],
+                    "path": [
+                        {
+                            "matcher": "exact",
+                            "value": "/api/v2/webhooks"
+                        }
+                    ],
+                    "body": [
+                        {
+                            "matcher": "jsonpath",
+                            "value": "$.envelope",
+                            "doMatch": {
+                                "matcher": "jsonpath",
+                                "value": "$.event.id",
+                                "doMatch": {
+                                    "matcher": "exact",
+                                    "value": "evt-9001"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "response": {
+                    "status": 200
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

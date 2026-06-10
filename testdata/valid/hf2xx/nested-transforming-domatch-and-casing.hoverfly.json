@@ -3,23 +3,38 @@
         "pairs": [
             {
                 "request": {
-                    "path": [{ "matcher": "glob", "value": "/api/*" }],
-                    "method": [{ "value": "GET" }],
+                    "path": [
+                        {
+                            "matcher": "glob",
+                            "value": "/api/*"
+                        }
+                    ],
+                    "method": [
+                        {
+                            "value": "GET"
+                        }
+                    ],
                     "query": {
-                        "expand": [{ "matcher": "exact", "value": "true" }]
+                        "expand": [
+                            {
+                                "matcher": "exact",
+                                "value": "true"
+                            }
+                        ]
                     },
                     "headers": {
                         "X-Token": [
                             {
                                 "matcher": "jwt",
                                 "value": "{\"payload\":{\"sub\":\"a\"}}",
-                                "doMatch": [
-                                    {
-                                        "matcher": "jsonpath",
-                                        "value": "$.sub",
-                                        "doMatch": [{ "matcher": "exact", "value": "a" }]
+                                "doMatch": {
+                                    "matcher": "jsonpath",
+                                    "value": "$.sub",
+                                    "doMatch": {
+                                        "matcher": "exact",
+                                        "value": "a"
                                     }
-                                ]
+                                }
                             }
                         ]
                     },
@@ -27,7 +42,10 @@
                         {
                             "matcher": "xpath",
                             "value": "/root/id",
-                            "doMatch": [{ "matcher": "regex", "value": "[0-9]+" }]
+                            "doMatch": {
+                                "matcher": "regex",
+                                "value": "[0-9]+"
+                            }
                         }
                     ]
                 },

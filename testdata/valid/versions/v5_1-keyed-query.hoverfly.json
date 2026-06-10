@@ -1,0 +1,27 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/api/search" }],
+                    "method": [{ "matcher": "exact", "value": "GET" }],
+                    "query": {
+                        "q": [{ "matcher": "glob", "value": "*" }],
+                        "page": [{ "matcher": "regex", "value": "^[0-9]+$" }]
+                    }
+                },
+                "response": {
+                    "status": 200,
+                    "body": "{\"results\":[]}",
+                    "headers": { "Content-Type": ["application/json"] }
+                }
+            }
+        ],
+        "globalActions": { "delays": [], "delaysLogNormal": [] }
+    },
+    "meta": {
+        "schemaVersion": "v5.1",
+        "hoverflyVersion": "v1.3.0",
+        "timeExported": "2021-02-10T09:00:00Z"
+    }
+}

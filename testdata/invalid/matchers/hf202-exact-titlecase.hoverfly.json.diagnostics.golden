@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF202",
+    "severity": "hint",
+    "range": {
+      "start": [
+        5,
+        44
+      ],
+      "end": [
+        5,
+        51
+      ]
+    },
+    "message": "Prefer canonical lowercase \"exact\""
+  }
+]

@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF202",
+    "severity": "hint",
+    "range": {
+      "start": [
+        5,
+        42
+      ],
+      "end": [
+        5,
+        52
+      ]
+    },
+    "message": "Prefer canonical lowercase \"jsonpath\""
+  }
+]

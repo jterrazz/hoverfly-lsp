@@ -1,0 +1,25 @@
+{
+    "data": {
+        "pairs": [],
+        "globalActions": {
+            "delays": [
+                {
+                    "urlPattern": "*invalid-leading-quantifier",
+                    "delay": 50
+                }
+            ],
+            "delaysLogNormal": [
+                {
+                    "urlPattern": "/orders/(?P<id",
+                    "min": 10,
+                    "max": 100,
+                    "mean": 40,
+                    "median": 30
+                }
+            ]
+        }
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

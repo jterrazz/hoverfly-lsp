@@ -1,0 +1,19 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/v1/invoices/render" }]
+                },
+                "response": {
+                    "status": 200,
+                    "templated": true,
+                    "body": "{{log 'rendering invoice'}}{\"lines\":[{{#each (csvAsMap 'lineItems')}}{{#unless @first}},{{/unless}}{\"n\":{{@index}},\"name\":\"{{this.name}}\",\"amount\":\"{{multiply (this.qty) (divide (this.price) '1' '0.00') '0.00'}}\"{{#if @last}},\"isLast\":true{{/if}}}{{/each}}],{{#with (csvAsMap 'header')}}\"customer\":\"{{lookup this 'customer'}}\",{{/with}}\"tier\":{{#equal (Request.Body 'jsonpath' '$.tier') 'gold'}}\"premium\"{{else}}\"standard\"{{/equal}},\"firstLine\":{{#first (csvAsMap 'lineItems')}}\"{{this.name}}\"{{/first}}}"
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

@@ -1,0 +1,55 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/api/v2/reports/heavy" }],
+                    "method": [{ "matcher": "exact", "value": "GET" }]
+                },
+                "response": {
+                    "status": 200,
+                    "body": "{\"rows\":0}",
+                    "fixedDelay": 250,
+                    "headers": {
+                        "Content-Type": ["application/json"]
+                    }
+                }
+            },
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/api/v2/reports/jittery" }],
+                    "method": [{ "matcher": "exact", "value": "GET" }]
+                },
+                "response": {
+                    "status": 200,
+                    "body": "{\"rows\":0}",
+                    "logNormalDelay": {
+                        "min": 50,
+                        "max": 500,
+                        "mean": 120,
+                        "median": 100
+                    }
+                }
+            },
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/api/v2/reports/minimal-delay" }],
+                    "method": [{ "matcher": "exact", "value": "GET" }]
+                },
+                "response": {
+                    "status": 200,
+                    "body": "{\"rows\":0}",
+                    "logNormalDelay": {
+                        "min": 10,
+                        "max": 200,
+                        "mean": 30,
+                        "median": 25
+                    }
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

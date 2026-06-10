@@ -1,0 +1,22 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/v1/config" }]
+                },
+                "response": {
+                    "status": 200,
+                    "templated": true,
+                    "headers": {
+                        "X-Api-Version": ["{{Literals.apiVersion}}"]
+                    },
+                    "body": "{\"ok\":true}"
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

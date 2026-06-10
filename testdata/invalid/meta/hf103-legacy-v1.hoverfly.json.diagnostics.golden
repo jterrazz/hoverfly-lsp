@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF103",
+    "severity": "information",
+    "range": {
+      "start": [
+        5,
+        25
+      ],
+      "end": [
+        5,
+        29
+      ]
+    },
+    "message": "Schema version v1 is legacy; Hoverfly auto-upgrades it on import (current: v5.3)"
+  }
+]

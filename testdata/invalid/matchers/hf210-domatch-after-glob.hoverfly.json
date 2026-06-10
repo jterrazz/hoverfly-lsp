@@ -3,13 +3,13 @@
         "pairs": [
             {
                 "request": {
-                    "path": [
+                    "destination": [
                         {
-                            "matcher": "exact",
-                            "value": "/x",
+                            "matcher": "glob",
+                            "value": "*.example.com",
                             "doMatch": {
-                                "matcher": "glob",
-                                "value": "/*"
+                                "matcher": "regex",
+                                "value": "^api\\."
                             }
                         }
                     ]

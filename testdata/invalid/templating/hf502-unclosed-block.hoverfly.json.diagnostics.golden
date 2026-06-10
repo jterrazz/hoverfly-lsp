@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF502",
+    "severity": "error",
+    "range": {
+      "start": [
+        10,
+        40
+      ],
+      "end": [
+        10,
+        67
+      ]
+    },
+    "message": "Unclosed block {{#each}} — missing {{/each}}"
+  }
+]

@@ -1,0 +1,97 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [
+                        {
+                            "matcher": "exact",
+                            "value": "/v1/payment_intents"
+                        }
+                    ],
+                    "method": [
+                        {
+                            "matcher": "exact",
+                            "value": "POST"
+                        }
+                    ],
+                    "body": [
+                        {
+                            "matcher": "jsonpath",
+                            "value": "$.amount",
+                            "doMatch": {
+                                "matcher": "regex",
+                                "value": "^[0-9]+$"
+                            }
+                        }
+                    ]
+                },
+                "response": {
+                    "status": 201,
+                    "body": "{\"id\":\"pi_{{ randomString }}\",\"object\":\"payment_intent\",\"amount\":{{ Request.Body 'jsonpath' '$.amount' }},\"currency\":\"usd\",\"status\":\"requires_confirmation\",\"created\":{{ now '' 'unix' }}}",
+                    "templated": true,
+                    "headers": {
+                        "Content-Type": [
+                            "application/json"
+                        ],
+                        "Idempotency-Key": [
+                            "{{ Request.Header.Idempotency-Key }}"
+                        ]
+                    },
+                    "transitionsState": {
+                        "paymentIntent": "created"
+                    }
+                }
+            },
+            {
+                "request": {
+                    "path": [
+                        {
+                            "matcher": "glob",
+                            "value": "/v1/payment_intents/*/confirm"
+                        }
+                    ],
+                    "method": [
+                        {
+                            "matcher": "exact",
+                            "value": "POST"
+                        }
+                    ],
+                    "requiresState": {
+                        "paymentIntent": "created"
+                    }
+                },
+                "response": {
+                    "status": 200,
+                    "body": "{\"id\":\"{{ Request.Path.[2] }}\",\"status\":\"succeeded\",\"confirmed_at\":\"{{ now '' '' }}\"}",
+                    "templated": true,
+                    "headers": {
+                        "Content-Type": [
+                            "application/json"
+                        ]
+                    },
+                    "transitionsState": {
+                        "paymentIntent": "succeeded"
+                    }
+                }
+            }
+        ],
+        "literals": [
+            {
+                "name": "merchantId",
+                "value": "acct_demo_123"
+            }
+        ],
+        "variables": [
+            {
+                "name": "traceId",
+                "function": "randomUuid"
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3",
+        "hoverflyVersion": "v1.10.0",
+        "timeExported": "2026-03-05T10:00:00Z"
+    }
+}

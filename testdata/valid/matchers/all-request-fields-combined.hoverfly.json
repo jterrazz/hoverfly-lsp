@@ -1,0 +1,41 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "method": [{ "matcher": "exact", "value": "POST" }],
+                    "scheme": [{ "matcher": "exact", "value": "https" }],
+                    "destination": [{ "matcher": "glob", "value": "api.*.example.com" }],
+                    "path": [{ "matcher": "regex", "value": "^/api/v2/orders/[0-9]+$" }],
+                    "query": {
+                        "fields": [{ "matcher": "array", "value": ["id", "status"] }],
+                        "expand": [{ "matcher": "exact", "value": "items" }]
+                    },
+                    "headers": {
+                        "Authorization": [{ "matcher": "jwtjsonpath", "value": "$.payload.sub" }],
+                        "X-Request-Id": [{ "matcher": "regex", "value": "[0-9a-f-]{36}" }]
+                    },
+                    "body": [{ "matcher": "jsonpartial", "value": "{\"confirm\":true}" }],
+                    "requiresState": { "checkout": "ready" }
+                },
+                "response": {
+                    "status": 201,
+                    "transitionsState": { "checkout": "submitted" }
+                }
+            },
+            {
+                "request": {
+                    "method": [{ "matcher": "exact", "value": "GET" }],
+                    "path": [{ "matcher": "exact", "value": "/api/v2/checkout" }]
+                },
+                "response": {
+                    "status": 200,
+                    "transitionsState": { "checkout": "ready" }
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

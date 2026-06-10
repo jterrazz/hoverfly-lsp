@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF104",
+    "severity": "error",
+    "range": {
+      "start": [
+        5,
+        25
+      ],
+      "end": [
+        5,
+        36
+      ]
+    },
+    "message": "Unrecognized schema version \"v5.3-beta\""
+  }
+]

@@ -1,0 +1,23 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/api/v2/jobs/dispatch" }],
+                    "method": [{ "matcher": "exact", "value": "POST" }]
+                },
+                "response": {
+                    "status": 202,
+                    "body": "{\"queued\":true}",
+                    "postServeAction": "unregisteredCleanupHook",
+                    "headers": {
+                        "Content-Type": ["application/json"]
+                    }
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

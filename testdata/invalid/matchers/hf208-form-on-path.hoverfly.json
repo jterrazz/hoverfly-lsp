@@ -5,12 +5,8 @@
                 "request": {
                     "path": [
                         {
-                            "matcher": "exact",
-                            "value": "/x",
-                            "doMatch": {
-                                "matcher": "glob",
-                                "value": "/*"
-                            }
+                            "matcher": "form",
+                            "value": { "id": [{ "matcher": "exact", "value": "4711" }] }
                         }
                     ]
                 },

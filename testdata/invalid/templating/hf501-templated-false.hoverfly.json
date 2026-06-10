@@ -1,0 +1,19 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/v1/session" }]
+                },
+                "response": {
+                    "status": 200,
+                    "templated": false,
+                    "body": "{\"sessionId\":\"{{randomUuid}}\",\"issuedAt\":\"{{now '' 'unix'}}\"}"
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

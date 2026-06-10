@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF505",
+    "severity": "error",
+    "range": {
+      "start": [
+        10,
+        41
+      ],
+      "end": [
+        10,
+        52
+      ]
+    },
+    "message": "Variable \"userID\" is not defined in data.variables"
+  }
+]

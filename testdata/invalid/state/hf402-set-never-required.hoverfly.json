@@ -1,0 +1,42 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/api/v2/onboarding/start" }],
+                    "method": [{ "matcher": "exact", "value": "POST" }]
+                },
+                "response": {
+                    "status": 200,
+                    "body": "{\"step\":1}",
+                    "headers": {
+                        "Content-Type": ["application/json"]
+                    },
+                    "transitionsState": {
+                        "onboardingStarted": "true",
+                        "welcomeEmailSent": "true"
+                    }
+                }
+            },
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/api/v2/onboarding/step2" }],
+                    "method": [{ "matcher": "exact", "value": "POST" }],
+                    "requiresState": {
+                        "onboardingStarted": "true"
+                    }
+                },
+                "response": {
+                    "status": 200,
+                    "body": "{\"step\":2}",
+                    "headers": {
+                        "Content-Type": ["application/json"]
+                    }
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

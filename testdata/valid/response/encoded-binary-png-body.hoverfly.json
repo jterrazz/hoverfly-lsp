@@ -1,0 +1,23 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/assets/pixel.png" }],
+                    "method": [{ "matcher": "exact", "value": "GET" }]
+                },
+                "response": {
+                    "status": 200,
+                    "body": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==",
+                    "encodedBody": true,
+                    "headers": {
+                        "Content-Type": ["image/png"]
+                    }
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

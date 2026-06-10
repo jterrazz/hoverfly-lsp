@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF206",
+    "severity": "error",
+    "range": {
+      "start": [
+        10,
+        59
+      ],
+      "end": [
+        10,
+        65
+      ]
+    },
+    "message": "Config values must be booleans — Hoverfly panics on a string"
+  }
+]

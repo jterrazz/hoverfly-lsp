@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF203",
+    "severity": "error",
+    "range": {
+      "start": [
+        5,
+        59
+      ],
+      "end": [
+        5,
+        61
+      ]
+    },
+    "message": "Matcher \"json\" expects a string; this pair will never match"
+  }
+]

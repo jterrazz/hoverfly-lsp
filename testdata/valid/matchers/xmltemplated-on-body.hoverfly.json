@@ -1,0 +1,24 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "method": [{ "matcher": "exact", "value": "POST" }],
+                    "path": [{ "matcher": "exact", "value": "/soap/orders" }],
+                    "body": [
+                        {
+                            "matcher": "xmltemplated",
+                            "value": "<Order><Id>{{ ignore }}</Id><Sku>{{ regex: [A-Z]{3}-[0-9]+ }}</Sku></Order>"
+                        }
+                    ]
+                },
+                "response": {
+                    "status": 201
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

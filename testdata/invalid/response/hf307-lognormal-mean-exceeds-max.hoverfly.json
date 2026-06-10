@@ -1,0 +1,25 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/api/v2/flaky" }],
+                    "method": [{ "matcher": "exact", "value": "GET" }]
+                },
+                "response": {
+                    "status": 200,
+                    "body": "{\"ok\":true}",
+                    "logNormalDelay": {
+                        "min": 10,
+                        "max": 100,
+                        "mean": 500,
+                        "median": 50
+                    }
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

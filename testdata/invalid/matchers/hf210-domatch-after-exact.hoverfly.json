@@ -6,10 +6,10 @@
                     "path": [
                         {
                             "matcher": "exact",
-                            "value": "/x",
+                            "value": "/api/v2/orders/4711",
                             "doMatch": {
                                 "matcher": "glob",
-                                "value": "/*"
+                                "value": "/api/v2/orders/*"
                             }
                         }
                     ]

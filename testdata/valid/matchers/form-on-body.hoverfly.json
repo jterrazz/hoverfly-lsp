@@ -1,0 +1,35 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "method": [{ "matcher": "exact", "value": "POST" }],
+                    "path": [{ "matcher": "exact", "value": "/oauth/token" }],
+                    "headers": {
+                        "Content-Type": [
+                            { "matcher": "exact", "value": "application/x-www-form-urlencoded" }
+                        ]
+                    },
+                    "body": [
+                        {
+                            "matcher": "form",
+                            "value": {
+                                "grant_type": [
+                                    { "matcher": "exact", "value": "authorization_code" }
+                                ],
+                                "client_id": [{ "matcher": "glob", "value": "svc-*" }]
+                            }
+                        }
+                    ]
+                },
+                "response": {
+                    "status": 200,
+                    "body": "{\"access_token\":\"t-abc\"}"
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

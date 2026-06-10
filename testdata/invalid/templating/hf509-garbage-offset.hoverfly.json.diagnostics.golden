@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF509",
+    "severity": "warning",
+    "range": {
+      "start": [
+        11,
+        45
+      ],
+      "end": [
+        11,
+        55
+      ]
+    },
+    "message": "Offset \"tomorrow\" is silently ignored by Hoverfly (valid units: ns, us, ms, s, m, h, d, y)"
+  }
+]

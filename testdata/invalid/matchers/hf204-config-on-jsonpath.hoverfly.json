@@ -3,14 +3,11 @@
         "pairs": [
             {
                 "request": {
-                    "path": [
+                    "body": [
                         {
-                            "matcher": "exact",
-                            "value": "/x",
-                            "doMatch": {
-                                "matcher": "glob",
-                                "value": "/*"
-                            }
+                            "matcher": "jsonpath",
+                            "value": "$.id",
+                            "config": {}
                         }
                     ]
                 },

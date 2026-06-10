@@ -1,0 +1,30 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/" }],
+                    "method": [{ "matcher": "exact", "value": "GET" }],
+                    "destination": [{ "matcher": "exact", "value": "myhost.io" }],
+                    "scheme": [{ "matcher": "exact", "value": "https" }],
+                    "body": [{ "matcher": "exact", "value": "" }],
+                    "headers": {},
+                    "query": {}
+                },
+                "response": {
+                    "status": 200,
+                    "body": "<h1>Matched on recording</h1>",
+                    "encodedBody": false,
+                    "headers": { "Content-Type": ["text/html; charset=utf-8"] },
+                    "templated": false
+                }
+            }
+        ],
+        "globalActions": { "delays": [], "delaysLogNormal": [] }
+    },
+    "meta": {
+        "schemaVersion": "v5",
+        "hoverflyVersion": "v1.0.0",
+        "timeExported": "2019-05-30T22:14:24+01:00"
+    }
+}

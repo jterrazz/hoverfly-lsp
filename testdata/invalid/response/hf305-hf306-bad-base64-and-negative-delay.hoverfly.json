@@ -1,0 +1,37 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/api/v2/avatar" }],
+                    "method": [{ "matcher": "exact", "value": "GET" }]
+                },
+                "response": {
+                    "status": 200,
+                    "body": "@@@ not base64 @@@",
+                    "encodedBody": true,
+                    "headers": {
+                        "Content-Type": ["image/png"]
+                    }
+                }
+            },
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/api/v2/slow" }],
+                    "method": [{ "matcher": "exact", "value": "GET" }]
+                },
+                "response": {
+                    "status": 200,
+                    "body": "{\"ok\":true}",
+                    "fixedDelay": -500,
+                    "headers": {
+                        "Content-Type": ["application/json"]
+                    }
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

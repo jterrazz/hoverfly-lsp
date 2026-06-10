@@ -1,0 +1,21 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "destination": [{ "matcher": "glob", "value": "*.cdn.example.com" }],
+                    "path": [{ "matcher": "glob", "value": "/assets/*.png" }]
+                },
+                "response": {
+                    "status": 200,
+                    "headers": {
+                        "Content-Type": ["image/png"]
+                    }
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

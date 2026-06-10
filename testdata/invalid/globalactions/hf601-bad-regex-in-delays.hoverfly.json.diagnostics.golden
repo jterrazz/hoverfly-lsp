@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF601",
+    "severity": "warning",
+    "range": {
+      "start": [
+        6,
+        34
+      ],
+      "end": [
+        6,
+        57
+      ]
+    },
+    "message": "Invalid pattern"
+  }
+]

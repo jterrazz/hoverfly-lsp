@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF503",
+    "severity": "error",
+    "range": {
+      "start": [
+        10,
+        49
+      ],
+      "end": [
+        10,
+        56
+      ]
+    },
+    "message": "Unknown template helper \"roundUp\""
+  }
+]

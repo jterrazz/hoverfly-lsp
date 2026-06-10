@@ -1,0 +1,144 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [
+                        {
+                            "matcher": "exact",
+                            "value": "/api/v1/products"
+                        }
+                    ],
+                    "method": [
+                        {
+                            "matcher": "exact",
+                            "value": "GET"
+                        }
+                    ],
+                    "query": {
+                        "category": [
+                            {
+                                "matcher": "exact",
+                                "value": "electronics"
+                            }
+                        ]
+                    }
+                },
+                "response": {
+                    "status": 200,
+                    "body": "{\"products\":[{\"sku\":\"SKU-1001\",\"name\":\"Noise Cancelling Headphones\",\"price\":199.99,\"currency\":\"USD\",\"inStock\":true},{\"sku\":\"SKU-1002\",\"name\":\"USB-C Charger 65W\",\"price\":39.99,\"currency\":\"USD\",\"inStock\":true}],\"total\":2}",
+                    "headers": {
+                        "Content-Type": [
+                            "application/json"
+                        ],
+                        "Cache-Control": [
+                            "public, max-age=60"
+                        ]
+                    }
+                }
+            },
+            {
+                "request": {
+                    "path": [
+                        {
+                            "matcher": "glob",
+                            "value": "/api/v1/products/*"
+                        }
+                    ],
+                    "method": [
+                        {
+                            "matcher": "exact",
+                            "value": "GET"
+                        }
+                    ]
+                },
+                "response": {
+                    "status": 200,
+                    "body": "{\"sku\":\"SKU-1001\",\"name\":\"Noise Cancelling Headphones\",\"price\":199.99,\"currency\":\"USD\",\"inStock\":true,\"description\":\"Over-ear wireless headphones with 30h battery.\"}",
+                    "headers": {
+                        "Content-Type": [
+                            "application/json"
+                        ]
+                    }
+                }
+            },
+            {
+                "request": {
+                    "path": [
+                        {
+                            "matcher": "exact",
+                            "value": "/api/v1/cart"
+                        }
+                    ],
+                    "method": [
+                        {
+                            "matcher": "exact",
+                            "value": "POST"
+                        }
+                    ],
+                    "body": [
+                        {
+                            "matcher": "jsonpath",
+                            "value": "$.sku",
+                            "doMatch": {
+                                "matcher": "exact",
+                                "value": "SKU-1001"
+                            }
+                        }
+                    ]
+                },
+                "response": {
+                    "status": 201,
+                    "body": "{\"cartId\":\"cart_77\",\"items\":[{\"sku\":\"SKU-1001\",\"qty\":1}],\"subtotal\":199.99}",
+                    "headers": {
+                        "Content-Type": [
+                            "application/json"
+                        ],
+                        "Location": [
+                            "/api/v1/cart/cart_77"
+                        ]
+                    }
+                }
+            },
+            {
+                "request": {
+                    "path": [
+                        {
+                            "matcher": "exact",
+                            "value": "/api/v1/products/SKU-9999"
+                        }
+                    ],
+                    "method": [
+                        {
+                            "matcher": "exact",
+                            "value": "GET"
+                        }
+                    ]
+                },
+                "response": {
+                    "status": 404,
+                    "body": "{\"error\":\"product_not_found\",\"sku\":\"SKU-9999\"}",
+                    "headers": {
+                        "Content-Type": [
+                            "application/json"
+                        ]
+                    }
+                }
+            }
+        ],
+        "globalActions": {
+            "delays": [
+                {
+                    "urlPattern": "/api/v1/products.*",
+                    "httpMethod": "GET",
+                    "delay": 30
+                }
+            ]
+        }
+    },
+    "meta": {
+        "schemaVersion": "v5.3",
+        "hoverflyVersion": "v1.10.0",
+        "timeExported": "2026-01-15T08:30:00Z"
+    }
+}

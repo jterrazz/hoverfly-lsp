@@ -1,0 +1,63 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/api/v2/jobs/status" }],
+                    "method": [{ "matcher": "exact", "value": "GET" }],
+                    "requiresState": {
+                        "sequence:jobStatus": "1"
+                    }
+                },
+                "response": {
+                    "status": 200,
+                    "body": "{\"state\":\"queued\"}",
+                    "headers": {
+                        "Content-Type": ["application/json"]
+                    },
+                    "transitionsState": {
+                        "sequence:jobStatus": "2"
+                    }
+                }
+            },
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/api/v2/jobs/status" }],
+                    "method": [{ "matcher": "exact", "value": "GET" }],
+                    "requiresState": {
+                        "sequence:jobStatus": "2"
+                    }
+                },
+                "response": {
+                    "status": 200,
+                    "body": "{\"state\":\"running\"}",
+                    "headers": {
+                        "Content-Type": ["application/json"]
+                    },
+                    "transitionsState": {
+                        "sequence:jobStatus": "3"
+                    }
+                }
+            },
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/api/v2/jobs/status" }],
+                    "method": [{ "matcher": "exact", "value": "GET" }],
+                    "requiresState": {
+                        "sequence:jobStatus": "3"
+                    }
+                },
+                "response": {
+                    "status": 200,
+                    "body": "{\"state\":\"complete\"}",
+                    "headers": {
+                        "Content-Type": ["application/json"]
+                    }
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.2"
+    }
+}

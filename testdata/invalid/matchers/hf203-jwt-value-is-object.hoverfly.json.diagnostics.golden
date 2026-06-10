@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF203",
+    "severity": "error",
+    "range": {
+      "start": [
+        7,
+        57
+      ],
+      "end": [
+        7,
+        89
+      ]
+    },
+    "message": "Matcher \"jwt\" expects a string; this pair will never match"
+  }
+]

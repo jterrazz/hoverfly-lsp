@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF505",
+    "severity": "error",
+    "range": {
+      "start": [
+        10,
+        67
+      ],
+      "end": [
+        10,
+        78
+      ]
+    },
+    "message": "Variable \"region\" is not defined in data.variables"
+  }
+]

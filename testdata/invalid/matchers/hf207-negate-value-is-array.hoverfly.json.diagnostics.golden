@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF207",
+    "severity": "warning",
+    "range": {
+      "start": [
+        6,
+        67
+      ],
+      "end": [
+        6,
+        90
+      ]
+    },
+    "message": "\"negate\" with a non-string value always matches (vacuous true) — likely not what you want"
+  }
+]

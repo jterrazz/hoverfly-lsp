@@ -1,0 +1,32 @@
+[
+  {
+    "code": "HF301",
+    "severity": "warning",
+    "range": {
+      "start": [
+        11,
+        20
+      ],
+      "end": [
+        11,
+        30
+      ]
+    },
+    "message": "Response contains both body and bodyFile; please remove one of them, otherwise body is used if non-empty"
+  },
+  {
+    "code": "HF304",
+    "severity": "warning",
+    "range": {
+      "start": [
+        23,
+        30
+      ],
+      "end": [
+        23,
+        33
+      ]
+    },
+    "message": "Status 999 is outside the valid HTTP range"
+  }
+]

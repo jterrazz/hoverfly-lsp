@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF509",
+    "severity": "warning",
+    "range": {
+      "start": [
+        10,
+        52
+      ],
+      "end": [
+        10,
+        56
+      ]
+    },
+    "message": "Offset \"2w\" is silently ignored by Hoverfly (valid units: ns, us, ms, s, m, h, d, y)"
+  }
+]

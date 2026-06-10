@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF307",
+    "severity": "warning",
+    "range": {
+      "start": [
+        14,
+        32
+      ],
+      "end": [
+        14,
+        35
+      ]
+    },
+    "message": "logNormalDelay mean cannot be greater than max"
+  }
+]

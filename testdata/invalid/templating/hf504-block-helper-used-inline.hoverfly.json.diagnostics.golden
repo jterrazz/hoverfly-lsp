@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF504",
+    "severity": "error",
+    "range": {
+      "start": [
+        10,
+        43
+      ],
+      "end": [
+        10,
+        47
+      ]
+    },
+    "message": "\"each\" expects a block helper, got 1 arguments"
+  }
+]

@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF506",
+    "severity": "error",
+    "range": {
+      "start": [
+        11,
+        45
+      ],
+      "end": [
+        11,
+        64
+      ]
+    },
+    "message": "Literal \"apiVersion\" is not defined in data.literals"
+  }
+]

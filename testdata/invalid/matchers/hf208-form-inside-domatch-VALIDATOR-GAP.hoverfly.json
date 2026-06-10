@@ -1,0 +1,33 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "body": [
+                        {
+                            "matcher": "jsonpath",
+                            "value": "$.payload",
+                            "doMatch": {
+                                "matcher": "form",
+                                "value": {
+                                    "grant_type": [
+                                        {
+                                            "matcher": "exact",
+                                            "value": "code"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                "response": {
+                    "status": 200
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

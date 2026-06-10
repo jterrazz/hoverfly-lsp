@@ -1,0 +1,24 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "method": [{ "matcher": "exact", "value": "POST" }],
+                    "path": [{ "matcher": "exact", "value": "/v1/signups" }]
+                },
+                "response": {
+                    "status": 201,
+                    "templated": true,
+                    "headers": {
+                        "Content-Type": ["application/json"],
+                        "X-Request-Received": ["{{now '' 'unix'}}"]
+                    },
+                    "body": "{\"id\":\"{{randomUuid}}\",\"token\":\"{{randomString}}\",\"otp\":\"{{randomStringLength 6}}\",\"verified\":{{randomBoolean}},\"score\":{{randomInteger}},\"rank\":{{randomIntegerRange 1 100}},\"ratio\":{{randomFloat}},\"tax\":{{randomFloatRange 0.0 0.25}},\"email\":\"{{randomEmail}}\",\"ipv4\":\"{{randomIPv4}}\",\"ipv6\":\"{{randomIPv6}}\",\"expiresAt\":\"{{now '24h' '2006-01-02T15:04:05Z07:00'}}\",\"yesterday\":\"{{now '-1d' ''}}\",\"epochMs\":\"{{now '' 'epoch'}}\"}"
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

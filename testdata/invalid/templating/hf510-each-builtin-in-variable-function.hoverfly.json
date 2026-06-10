@@ -1,0 +1,20 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/v1/account" }]
+                },
+                "response": {
+                    "status": 200,
+                    "templated": true,
+                    "body": "{\"id\":\"{{Vars.rows}}\"}"
+                }
+            }
+        ],
+        "variables": [{ "name": "rows", "function": "each" }]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

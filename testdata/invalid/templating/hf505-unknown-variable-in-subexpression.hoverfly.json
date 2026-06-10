@@ -1,0 +1,20 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/v1/account" }]
+                },
+                "response": {
+                    "status": 200,
+                    "templated": true,
+                    "body": "{\"len\":\"{{length (concat 'region-' Vars.region)}}\"}"
+                }
+            }
+        ],
+        "variables": [{ "name": "correlationId", "function": "randomUuid" }]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

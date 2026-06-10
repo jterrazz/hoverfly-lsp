@@ -1,0 +1,28 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/api/v2/poll" }],
+                    "method": [{ "matcher": "exact", "value": "GET" }],
+                    "requiresState": {
+                        "polling": "active"
+                    }
+                },
+                "response": {
+                    "status": 200,
+                    "body": "{\"tick\":1}",
+                    "headers": {
+                        "Content-Type": ["application/json"]
+                    },
+                    "transitionsState": {
+                        "polling": "active"
+                    }
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

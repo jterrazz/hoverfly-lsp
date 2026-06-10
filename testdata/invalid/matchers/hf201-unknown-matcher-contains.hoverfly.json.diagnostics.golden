@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF201",
+    "severity": "error",
+    "range": {
+      "start": [
+        5,
+        42
+      ],
+      "end": [
+        5,
+        52
+      ]
+    },
+    "message": "Unknown matcher \"contains\" — Hoverfly panics at match time on unknown matchers"
+  }
+]

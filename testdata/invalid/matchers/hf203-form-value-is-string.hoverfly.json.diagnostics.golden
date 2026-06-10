@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF203",
+    "severity": "error",
+    "range": {
+      "start": [
+        5,
+        59
+      ],
+      "end": [
+        5,
+        90
+      ]
+    },
+    "message": "Matcher \"form\" expects an object; this pair will never match"
+  }
+]

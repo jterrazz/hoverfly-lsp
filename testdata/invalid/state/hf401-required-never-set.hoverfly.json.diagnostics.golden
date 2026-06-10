@@ -1,0 +1,32 @@
+[
+  {
+    "code": "HF401",
+    "severity": "warning",
+    "range": {
+      "start": [
+        8,
+        24
+      ],
+      "end": [
+        8,
+        35
+      ]
+    },
+    "message": "State \"adminRole\" is required but never set by any transitionsState — this pair can only match if the state is set externally"
+  },
+  {
+    "code": "HF401",
+    "severity": "warning",
+    "range": {
+      "start": [
+        24,
+        24
+      ],
+      "end": [
+        24,
+        39
+      ]
+    },
+    "message": "State \"auditUnlocked\" is required but never set by any transitionsState — this pair can only match if the state is set externally"
+  }
+]

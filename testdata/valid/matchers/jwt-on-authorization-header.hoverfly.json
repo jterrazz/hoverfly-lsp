@@ -1,0 +1,27 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "method": [{ "matcher": "exact", "value": "GET" }],
+                    "path": [{ "matcher": "exact", "value": "/api/v2/me" }],
+                    "headers": {
+                        "Authorization": [
+                            {
+                                "matcher": "jwt",
+                                "value": "{\"payload\":{\"sub\":\"1234567890\",\"role\":\"admin\"}}"
+                            }
+                        ]
+                    }
+                },
+                "response": {
+                    "status": 200,
+                    "body": "{\"sub\":\"1234567890\"}"
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

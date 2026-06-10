@@ -1,0 +1,40 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "method": [
+                        {
+                            "matcher": "exact",
+                            "value": "GET"
+                        }
+                    ],
+                    "path": [
+                        {
+                            "matcher": "exact",
+                            "value": "/api/v2/billing"
+                        }
+                    ],
+                    "headers": {
+                        "Authorization": [
+                            {
+                                "matcher": "jwtjsonpath",
+                                "value": "$.payload.scope",
+                                "doMatch": {
+                                    "matcher": "regex",
+                                    "value": "billing:read"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "response": {
+                    "status": 200
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

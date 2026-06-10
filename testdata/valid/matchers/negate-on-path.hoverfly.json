@@ -1,0 +1,18 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "method": [{ "matcher": "exact", "value": "DELETE" }],
+                    "path": [{ "matcher": "negate", "value": "/api/v2/accounts/root" }]
+                },
+                "response": {
+                    "status": 204
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

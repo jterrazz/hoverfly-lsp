@@ -1,0 +1,33 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/v1/account/profile" }]
+                },
+                "response": {
+                    "status": 200,
+                    "templated": true,
+                    "headers": {
+                        "X-Tenant": ["{{Literals.tenant}}"],
+                        "X-Correlation-Id": ["{{Vars.correlationId}}"]
+                    },
+                    "body": "{\"correlationId\":\"{{Vars.correlationId}}\",\"customerName\":\"{{Vars.customerName}}\",\"region\":\"{{Vars.region}}\",\"tenant\":\"{{Literals.tenant}}\",\"apiVersion\":\"{{Literals.apiVersion}}\",\"supportEmail\":\"{{Literals.supportEmail}}\"}"
+                }
+            }
+        ],
+        "variables": [
+            { "name": "correlationId", "function": "randomUuid" },
+            { "name": "customerName", "function": "requestBody", "arguments": ["jsonpath", "$.customer.name"] },
+            { "name": "region", "function": "faker", "arguments": ["CountryAbr"] }
+        ],
+        "literals": [
+            { "name": "tenant", "value": "acme-corp" },
+            { "name": "apiVersion", "value": "2024-05" },
+            { "name": "supportEmail", "value": "support@acme.example" }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

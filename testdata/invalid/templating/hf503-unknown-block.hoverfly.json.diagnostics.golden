@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF503",
+    "severity": "error",
+    "range": {
+      "start": [
+        10,
+        45
+      ],
+      "end": [
+        10,
+        51
+      ]
+    },
+    "message": "Unknown template helper \"repeat\""
+  }
+]

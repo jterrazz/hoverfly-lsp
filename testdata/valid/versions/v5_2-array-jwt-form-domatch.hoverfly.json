@@ -1,0 +1,85 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [
+                        {
+                            "matcher": "exact",
+                            "value": "/api/oauth/token"
+                        }
+                    ],
+                    "method": [
+                        {
+                            "matcher": "exact",
+                            "value": "POST"
+                        }
+                    ],
+                    "body": [
+                        {
+                            "matcher": "form",
+                            "value": {
+                                "grant_type": [
+                                    {
+                                        "matcher": "exact",
+                                        "value": "authorization_code"
+                                    }
+                                ]
+                            }
+                        }
+                    ],
+                    "query": {
+                        "scopes": [
+                            {
+                                "matcher": "array",
+                                "config": {
+                                    "ignoreOrder": true
+                                },
+                                "value": [
+                                    "read",
+                                    "write"
+                                ]
+                            }
+                        ]
+                    },
+                    "headers": {
+                        "Authorization": [
+                            {
+                                "matcher": "jwtjsonpath",
+                                "value": "$.user_name",
+                                "doMatch": {
+                                    "matcher": "regex",
+                                    "value": "stuart.kelly"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "response": {
+                    "status": 200,
+                    "body": "{\"access_token\":\"new-token\"}",
+                    "headers": {
+                        "Content-Type": [
+                            "application/json"
+                        ]
+                    },
+                    "logNormalDelay": {
+                        "min": 20,
+                        "max": 80,
+                        "mean": 40,
+                        "median": 35
+                    }
+                }
+            }
+        ],
+        "globalActions": {
+            "delays": [],
+            "delaysLogNormal": []
+        }
+    },
+    "meta": {
+        "schemaVersion": "v5.2",
+        "hoverflyVersion": "v1.6.0",
+        "timeExported": "2023-03-01T12:00:00Z"
+    }
+}

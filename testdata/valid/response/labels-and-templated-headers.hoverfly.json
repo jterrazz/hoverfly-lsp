@@ -1,0 +1,26 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/api/v2/session" }],
+                    "method": [{ "matcher": "exact", "value": "POST" }]
+                },
+                "response": {
+                    "status": 200,
+                    "body": "{\"requestId\":\"{{ randomUuid }}\"}",
+                    "templated": true,
+                    "headers": {
+                        "Content-Type": ["application/json"],
+                        "X-Request-Id": ["{{ randomUuid }}"],
+                        "X-Served-At": ["{{ now '' '' }}"]
+                    }
+                },
+                "labels": ["session", "smoke-test"]
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

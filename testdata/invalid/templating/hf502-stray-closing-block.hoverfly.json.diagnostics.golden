@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF502",
+    "severity": "error",
+    "range": {
+      "start": [
+        10,
+        67
+      ],
+      "end": [
+        10,
+        76
+      ]
+    },
+    "message": "Unexpected closing block {{/each}} — no matching open block"
+  }
+]

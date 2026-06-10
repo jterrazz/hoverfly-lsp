@@ -1,0 +1,19 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/v1/test-users" }]
+                },
+                "response": {
+                    "status": 200,
+                    "templated": true,
+                    "body": "{\"name\":\"{{faker 'Name'}}\",\"firstName\":\"{{faker 'FirstName'}}\",\"lastName\":\"{{faker 'LastName'}}\",\"email\":\"{{faker 'Email'}}\",\"phone\":\"{{faker 'Phone'}}\",\"id\":\"{{faker 'UUID'}}\",\"company\":\"{{faker 'Company'}}\",\"jobTitle\":\"{{faker 'JobTitle'}}\",\"city\":\"{{faker 'City'}}\",\"country\":\"{{faker 'Country'}}\",\"zip\":\"{{faker 'Zip'}}\",\"creditCard\":\"{{faker 'CreditCardType'}}\",\"userAgent\":\"{{faker 'UserAgent'}}\",\"url\":\"{{faker 'URL'}}\"}"
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

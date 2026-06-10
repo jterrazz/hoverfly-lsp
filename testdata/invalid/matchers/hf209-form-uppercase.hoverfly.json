@@ -3,13 +3,11 @@
         "pairs": [
             {
                 "request": {
-                    "path": [
+                    "body": [
                         {
-                            "matcher": "exact",
-                            "value": "/x",
-                            "doMatch": {
-                                "matcher": "glob",
-                                "value": "/*"
+                            "matcher": "FORM",
+                            "value": {
+                                "grant_type": [{ "matcher": "exact", "value": "password" }]
                             }
                         }
                     ]

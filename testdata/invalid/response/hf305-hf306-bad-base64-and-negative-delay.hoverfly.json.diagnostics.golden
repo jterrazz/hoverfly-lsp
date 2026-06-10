@@ -1,0 +1,32 @@
+[
+  {
+    "code": "HF305",
+    "severity": "warning",
+    "range": {
+      "start": [
+        10,
+        28
+      ],
+      "end": [
+        10,
+        48
+      ]
+    },
+    "message": "encodedBody is set but body is not valid base64"
+  },
+  {
+    "code": "HF306",
+    "severity": "warning",
+    "range": {
+      "start": [
+        25,
+        34
+      ],
+      "end": [
+        25,
+        38
+      ]
+    },
+    "message": "Negative delay is ignored"
+  }
+]

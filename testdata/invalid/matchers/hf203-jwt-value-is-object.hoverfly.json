@@ -1,0 +1,21 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "headers": {
+                        "Authorization": [
+                            { "matcher": "jwt", "value": { "payload": { "sub": "1234" } } }
+                        ]
+                    }
+                },
+                "response": {
+                    "status": 200
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

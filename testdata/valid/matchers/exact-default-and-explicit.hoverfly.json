@@ -1,0 +1,20 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "method": [{ "value": "GET" }],
+                    "path": [{ "matcher": "exact", "value": "/api/v2/accounts/4711" }],
+                    "scheme": [{ "value": "https" }]
+                },
+                "response": {
+                    "status": 200,
+                    "body": "{\"id\":4711,\"status\":\"active\"}"
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

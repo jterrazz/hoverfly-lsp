@@ -3,14 +3,12 @@
         "pairs": [
             {
                 "request": {
-                    "path": [
+                    "method": [{ "matcher": "exact", "value": "PATCH" }],
+                    "path": [{ "matcher": "exact", "value": "/api/v2/users/4711" }],
+                    "body": [
                         {
-                            "matcher": "exact",
-                            "value": "/x",
-                            "doMatch": {
-                                "matcher": "glob",
-                                "value": "/*"
-                            }
+                            "matcher": "jsonpartial",
+                            "value": "{\"role\":\"admin\"}"
                         }
                     ]
                 },

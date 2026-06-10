@@ -6,11 +6,8 @@
                     "path": [
                         {
                             "matcher": "exact",
-                            "value": "/x",
-                            "doMatch": {
-                                "matcher": "glob",
-                                "value": "/*"
-                            }
+                            "value": "/api/v2/users",
+                            "config": { "ignoreOrder": true }
                         }
                     ]
                 },

@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF503",
+    "severity": "error",
+    "range": {
+      "start": [
+        10,
+        44
+      ],
+      "end": [
+        10,
+        57
+      ]
+    },
+    "message": "Unknown template helper \"randomMailbox\""
+  }
+]

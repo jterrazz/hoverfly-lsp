@@ -1,0 +1,19 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "method": [{ "matcher": "exact", "value": "POST" }],
+                    "path": [{ "matcher": "exact", "value": "/api/v2/events" }],
+                    "body": [{ "matcher": "jsonpath", "value": "$.event.type" }]
+                },
+                "response": {
+                    "status": 202
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

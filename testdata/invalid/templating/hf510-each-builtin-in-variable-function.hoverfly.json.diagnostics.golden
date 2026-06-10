@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF510",
+    "severity": "error",
+    "range": {
+      "start": [
+        14,
+        52
+      ],
+      "end": [
+        14,
+        58
+      ]
+    },
+    "message": "data.variables only accepts Hoverfly helper functions, not block built-ins"
+  }
+]

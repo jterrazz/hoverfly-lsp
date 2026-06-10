@@ -1,0 +1,19 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/v1/cart/totals" }]
+                },
+                "response": {
+                    "status": 200,
+                    "templated": true,
+                    "body": "{\"subtotal\":\"{{sum (getArray 'lineTotals') '0.00'}}\",\"withFee\":\"{{add '49.90' '4.99' '0.00'}}\",\"discounted\":\"{{subtract '49.90' '5.00' '0.00'}}\",\"taxed\":\"{{multiply '49.90' '1.20' '0.00'}}\",\"perItem\":\"{{divide '49.90' '2' '0.00'}}\",\"sku\":\"{{replace (Request.Body 'jsonpath' '$.sku') '_' '-'}}\",\"tags\":\"{{split 'a,b,c' ','}}\",\"label\":\"{{concat 'SKU-' (Request.Body 'jsonpath' '$.sku') '-EU'}}\",\"len\":\"{{length 'checkout'}}\",\"prefix\":\"{{substring 'checkout' '0' '5'}}\",\"suffix\":\"{{rightmostCharacters '0001234' '4'}}\"}"
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

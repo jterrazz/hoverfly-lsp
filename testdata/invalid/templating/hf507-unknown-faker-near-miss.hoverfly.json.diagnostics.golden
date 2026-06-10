@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF507",
+    "severity": "information",
+    "range": {
+      "start": [
+        10,
+        49
+      ],
+      "end": [
+        10,
+        59
+      ]
+    },
+    "message": "Unknown faker type \"FullName\" for gofakeit 6.28.0"
+  }
+]

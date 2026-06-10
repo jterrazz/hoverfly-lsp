@@ -1,0 +1,25 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "method": [{ "matcher": "exact", "value": "POST" }],
+                    "path": [{ "matcher": "exact", "value": "/api/v2/orders" }],
+                    "body": [
+                        {
+                            "matcher": "json",
+                            "value": "{\"sku\":\"ABC-123\",\"quantity\":2}"
+                        }
+                    ]
+                },
+                "response": {
+                    "status": 201,
+                    "body": "{\"orderId\":\"o-9001\"}"
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

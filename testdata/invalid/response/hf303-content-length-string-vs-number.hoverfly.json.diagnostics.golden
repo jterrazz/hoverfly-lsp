@@ -1,0 +1,32 @@
+[
+  {
+    "code": "HF102",
+    "severity": "warning",
+    "range": {
+      "start": [
+        12,
+        43
+      ],
+      "end": [
+        12,
+        44
+      ]
+    },
+    "message": "Incorrect type. Expected \"string\"."
+  },
+  {
+    "code": "HF303",
+    "severity": "warning",
+    "range": {
+      "start": [
+        25,
+        43
+      ],
+      "end": [
+        25,
+        46
+      ]
+    },
+    "message": "Content-Length 7 does not match body length 11"
+  }
+]

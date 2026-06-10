@@ -1,0 +1,133 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [
+                        {
+                            "matcher": "exact",
+                            "value": "/api/v2/auth/login"
+                        }
+                    ],
+                    "method": [
+                        {
+                            "matcher": "exact",
+                            "value": "POST"
+                        }
+                    ],
+                    "body": [
+                        {
+                            "matcher": "jsonpath",
+                            "value": "$.username",
+                            "doMatch": {
+                                "matcher": "exact",
+                                "value": "alice"
+                            }
+                        }
+                    ]
+                },
+                "response": {
+                    "status": 200,
+                    "body": "{\"token\":\"jwt-alice\"}",
+                    "headers": {
+                        "Content-Type": [
+                            "application/json"
+                        ]
+                    },
+                    "transitionsState": {
+                        "session": "authenticated"
+                    }
+                }
+            },
+            {
+                "request": {
+                    "path": [
+                        {
+                            "matcher": "exact",
+                            "value": "/api/v2/profile"
+                        }
+                    ],
+                    "method": [
+                        {
+                            "matcher": "exact",
+                            "value": "GET"
+                        }
+                    ],
+                    "requiresState": {
+                        "session": "authenticated"
+                    }
+                },
+                "response": {
+                    "status": 200,
+                    "body": "{\"username\":\"alice\",\"plan\":\"free\"}",
+                    "headers": {
+                        "Content-Type": [
+                            "application/json"
+                        ]
+                    },
+                    "transitionsState": {
+                        "profileLoaded": "true"
+                    }
+                }
+            },
+            {
+                "request": {
+                    "path": [
+                        {
+                            "matcher": "exact",
+                            "value": "/api/v2/profile"
+                        }
+                    ],
+                    "method": [
+                        {
+                            "matcher": "exact",
+                            "value": "PATCH"
+                        }
+                    ],
+                    "requiresState": {
+                        "session": "authenticated",
+                        "profileLoaded": "true"
+                    }
+                },
+                "response": {
+                    "status": 200,
+                    "body": "{\"username\":\"alice\",\"plan\":\"pro\"}",
+                    "headers": {
+                        "Content-Type": [
+                            "application/json"
+                        ]
+                    }
+                }
+            },
+            {
+                "request": {
+                    "path": [
+                        {
+                            "matcher": "exact",
+                            "value": "/api/v2/auth/logout"
+                        }
+                    ],
+                    "method": [
+                        {
+                            "matcher": "exact",
+                            "value": "POST"
+                        }
+                    ],
+                    "requiresState": {
+                        "session": "authenticated"
+                    }
+                },
+                "response": {
+                    "status": 204,
+                    "removesState": [
+                        "session",
+                        "profileLoaded"
+                    ]
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

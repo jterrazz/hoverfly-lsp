@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF502",
+    "severity": "error",
+    "range": {
+      "start": [
+        10,
+        67
+      ],
+      "end": [
+        10,
+        81
+      ]
+    },
+    "message": "Unclosed mustache — missing closing braces"
+  }
+]

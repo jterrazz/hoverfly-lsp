@@ -1,0 +1,42 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/api/v2/feature/enable" }],
+                    "method": [{ "matcher": "exact", "value": "POST" }]
+                },
+                "response": {
+                    "status": 200,
+                    "body": "{\"enabled\":true}",
+                    "headers": {
+                        "Content-Type": ["application/json"]
+                    },
+                    "transitionsState": {
+                        "betaFeature": "enabled"
+                    }
+                }
+            },
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/api/v2/feature/use" }],
+                    "method": [{ "matcher": "exact", "value": "GET" }],
+                    "requiresState": {
+                        "betaFeature": "enabled"
+                    }
+                },
+                "response": {
+                    "status": 200,
+                    "body": "{\"result\":\"beta-path\"}",
+                    "headers": {
+                        "Content-Type": ["application/json"]
+                    },
+                    "removesState": ["betaFeature"]
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

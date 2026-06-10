@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF506",
+    "severity": "error",
+    "range": {
+      "start": [
+        10,
+        45
+      ],
+      "end": [
+        10,
+        61
+      ]
+    },
+    "message": "Literal \"tennant\" is not defined in data.literals"
+  }
+]

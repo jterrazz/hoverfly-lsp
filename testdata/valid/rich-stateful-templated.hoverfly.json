@@ -3,10 +3,25 @@
         "pairs": [
             {
                 "request": {
-                    "path": [{ "matcher": "glob", "value": "/users/*" }],
-                    "method": [{ "matcher": "exact", "value": "GET" }],
+                    "path": [
+                        {
+                            "matcher": "glob",
+                            "value": "/users/*"
+                        }
+                    ],
+                    "method": [
+                        {
+                            "matcher": "exact",
+                            "value": "GET"
+                        }
+                    ],
                     "query": {
-                        "expand": [{ "matcher": "regex", "value": "^(true|false)$" }]
+                        "expand": [
+                            {
+                                "matcher": "regex",
+                                "value": "^(true|false)$"
+                            }
+                        ]
                     },
                     "requiresState": {
                         "authenticated": "true"
@@ -17,7 +32,9 @@
                     "body": "{\"id\":\"{{ Request.Path.[1] }}\",\"now\":\"{{ now '' }}\",\"name\":\"{{ faker 'Name' }}\"}",
                     "templated": true,
                     "headers": {
-                        "Content-Type": ["application/json"]
+                        "Content-Type": [
+                            "application/json"
+                        ]
                     },
                     "transitionsState": {
                         "userFetched": "true"
@@ -26,13 +43,26 @@
             },
             {
                 "request": {
-                    "path": [{ "matcher": "exact", "value": "/login" }],
-                    "method": [{ "matcher": "exact", "value": "POST" }],
+                    "path": [
+                        {
+                            "matcher": "exact",
+                            "value": "/login"
+                        }
+                    ],
+                    "method": [
+                        {
+                            "matcher": "exact",
+                            "value": "POST"
+                        }
+                    ],
                     "body": [
                         {
                             "matcher": "jsonpath",
                             "value": "$.username",
-                            "doMatch": [{ "matcher": "exact", "value": "alice" }]
+                            "doMatch": {
+                                "matcher": "exact",
+                                "value": "alice"
+                            }
                         }
                     ],
                     "requiresState": {
@@ -44,7 +74,9 @@
                     "transitionsState": {
                         "authenticated": "true"
                     },
-                    "removesState": ["userFetched"]
+                    "removesState": [
+                        "userFetched"
+                    ]
                 }
             }
         ],
@@ -66,7 +98,9 @@
             {
                 "name": "randomName",
                 "function": "faker",
-                "arguments": ["Name"]
+                "arguments": [
+                    "Name"
+                ]
             }
         ]
     },

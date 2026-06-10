@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF211",
+    "severity": "warning",
+    "range": {
+      "start": [
+        6,
+        79
+      ],
+      "end": [
+        6,
+        81
+      ]
+    },
+    "message": "Empty jwtjsonpath value never matches"
+  }
+]

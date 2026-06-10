@@ -1,0 +1,32 @@
+[
+  {
+    "code": "HF302",
+    "severity": "warning",
+    "range": {
+      "start": [
+        13,
+        24
+      ],
+      "end": [
+        13,
+        43
+      ]
+    },
+    "message": "Response contains both Content-Length and Transfer-Encoding headers; please remove one of these headers"
+  },
+  {
+    "code": "HF302",
+    "severity": "warning",
+    "range": {
+      "start": [
+        27,
+        24
+      ],
+      "end": [
+        27,
+        40
+      ]
+    },
+    "message": "Response contains both Content-Length and Transfer-Encoding headers; please remove one of these headers"
+  }
+]

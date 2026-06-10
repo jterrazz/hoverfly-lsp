@@ -1,0 +1,19 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/v1/orders/status" }]
+                },
+                "response": {
+                    "status": 200,
+                    "templated": true,
+                    "body": "{{putValue 'orderId' (Request.Body 'jsonpath' '$.orderId') false}}{{initArray 'lineTotals'}}{{addToArray 'lineTotals' '19.99' false}}{\"orderId\":\"{{getValue 'orderId'}}\",\"lineTotals\":\"{{getArray 'lineTotals'}}\",\"lastStatus\":\"{{journal 'orderId' (getValue 'orderId') 'response' 'jsonpath' '$.status'}}\",\"seenBefore\":{{#if (hasJournalKey 'orderId' (getValue 'orderId'))}}true{{else}}false{{/if}}}"
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

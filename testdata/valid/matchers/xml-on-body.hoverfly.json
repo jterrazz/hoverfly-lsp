@@ -1,0 +1,27 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "method": [{ "matcher": "exact", "value": "POST" }],
+                    "path": [{ "matcher": "exact", "value": "/soap/payments" }],
+                    "body": [
+                        {
+                            "matcher": "xml",
+                            "value": "<Payment><Amount>100</Amount><Currency>EUR</Currency></Payment>"
+                        }
+                    ]
+                },
+                "response": {
+                    "status": 200,
+                    "headers": {
+                        "Content-Type": ["application/xml"]
+                    }
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

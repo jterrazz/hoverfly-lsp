@@ -1,0 +1,41 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/api/v2/admin/users" }],
+                    "method": [{ "matcher": "exact", "value": "GET" }],
+                    "requiresState": {
+                        "adminRole": "granted"
+                    }
+                },
+                "response": {
+                    "status": 200,
+                    "body": "{\"users\":[]}",
+                    "headers": {
+                        "Content-Type": ["application/json"]
+                    }
+                }
+            },
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/api/v2/admin/audit" }],
+                    "method": [{ "matcher": "exact", "value": "GET" }],
+                    "requiresState": {
+                        "auditUnlocked": "yes"
+                    }
+                },
+                "response": {
+                    "status": 200,
+                    "body": "{\"entries\":[]}",
+                    "headers": {
+                        "Content-Type": ["application/json"]
+                    }
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

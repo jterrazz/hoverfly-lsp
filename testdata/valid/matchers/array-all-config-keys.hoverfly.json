@@ -1,0 +1,31 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "method": [{ "matcher": "exact", "value": "GET" }],
+                    "path": [{ "matcher": "exact", "value": "/api/v2/playback" }],
+                    "headers": {
+                        "X-Capabilities": [
+                            {
+                                "matcher": "array",
+                                "value": ["drm:widevine", "codec:av1", "hdr:dolby"],
+                                "config": {
+                                    "ignoreUnknown": true,
+                                    "ignoreOrder": true,
+                                    "ignoreOccurrences": true
+                                }
+                            }
+                        ]
+                    }
+                },
+                "response": {
+                    "status": 200
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

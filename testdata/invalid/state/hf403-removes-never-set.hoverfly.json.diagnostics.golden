@@ -1,0 +1,32 @@
+[
+  {
+    "code": "HF403",
+    "severity": "information",
+    "range": {
+      "start": [
+        10,
+        37
+      ],
+      "end": [
+        10,
+        48
+      ]
+    },
+    "message": "State \"warmCache\" is removed but never set"
+  },
+  {
+    "code": "HF403",
+    "severity": "information",
+    "range": {
+      "start": [
+        10,
+        50
+      ],
+      "end": [
+        10,
+        65
+      ]
+    },
+    "message": "State \"prefetchToken\" is removed but never set"
+  }
+]

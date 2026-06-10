@@ -1,0 +1,22 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/v1/validate" }]
+                },
+                "response": {
+                    "status": 200,
+                    "templated": true,
+                    "headers": {
+                        "X-Subject": ["{{jsonFromJWT '$.sub' (Request.Header.Authorization.[0])}}"]
+                    },
+                    "body": "{{#if (isNumeric (Request.Body 'jsonpath' '$.age'))}}{{setHeader 'X-Age-Valid' 'true'}}{{#if (isBetween (Request.Body 'jsonpath' '$.age') '18' '120')}}{{setStatusCode '200'}}{\"status\":\"ok\",\"alnum\":{{isAlphanumeric (Request.Body 'jsonpath' '$.code')}},\"flag\":{{isBool (Request.Body 'jsonpath' '$.consent')}},\"gt\":{{isGreaterThan (Request.Body 'jsonpath' '$.age') '17'}},\"gte\":{{isGreaterThanOrEqual (Request.Body 'jsonpath' '$.age') '18'}},\"lt\":{{isLessThan (Request.Body 'jsonpath' '$.age') '121'}},\"lte\":{{isLessThanOrEqual (Request.Body 'jsonpath' '$.age') '120'}},\"matches\":{{matchesRegex (Request.Body 'jsonpath' '$.code') '^[A-Z0-9]+$'}}}{{else}}{{setStatusCode '422'}}{\"status\":\"out-of-range\"}{{/if}}{{else}}{{setStatusCode '400'}}{\"status\":\"not-a-number\"}{{/if}}"
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}
