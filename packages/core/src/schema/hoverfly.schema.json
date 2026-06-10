@@ -131,23 +131,7 @@
         "matcher": {
           "title": "matcher",
           "description": "Matching strategy name. Hoverfly's registry is case-insensitive; canonical names are lowercase. An empty/absent matcher defaults to exact.",
-          "type": "string",
-          "examples": [
-            "exact",
-            "negate",
-            "glob",
-            "regex",
-            "xml",
-            "xmltemplated",
-            "xpath",
-            "json",
-            "jsonpartial",
-            "jsonpath",
-            "jwt",
-            "jwtjsonpath",
-            "array",
-            "form"
-          ]
+          "type": "string"
         },
         "value": {
           "title": "value",

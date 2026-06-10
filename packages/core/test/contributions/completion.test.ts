@@ -10,11 +10,13 @@ describe("matcher-name completions", () => {
   it("offers the named registry matchers on request.path (quoted value)", async () => {
     // Given - a cursor inside the quoted matcher value on request.path
     const doc = `{"data":{"pairs":[{"request":{"path":[{"matcher":"⟦⟧"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
-    // Then - every named registry matcher is offered, and `form` is NOT (path is not body)
-    await expectCompletions(doc, "", {
-      contains: NAMED_MATCHERS,
-      notContains: ["form", ""],
-    });
+    /*
+     * Then - the dropdown is EXACTLY the body-excluded registry names: no `form` (path is not
+     * body), no empty default, and crucially no quoted-label `"form"`/`"exact"` duplicates from
+     * schema `examples`. Asserting the full label set (not just `notContains: ["form"]`) is what
+     * catches the quoted-label leak the schema previously produced.
+     */
+    await expectCompletions(doc, "", { exact: NAMED_MATCHERS });
   });
 
   it("offers matchers on an UNQUOTED matcher value position", async () => {
@@ -27,8 +29,11 @@ describe("matcher-name completions", () => {
   it("adds `form` ONLY on request.body", async () => {
     // Given - a matcher value on request.body
     const doc = `{"data":{"pairs":[{"request":{"body":[{"matcher":"⟦⟧"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
-    // Then - the body-only `form` pseudo-matcher appears alongside the registry names
-    await expectCompletions(doc, "", { contains: [...NAMED_MATCHERS, "form"] });
+    /*
+     * Then - the dropdown is EXACTLY the registry names INCLUDING the body-only `form`, with no
+     * duplicate quoted-label items (schema `examples` no longer contribute matcher names).
+     */
+    await expectCompletions(doc, "", { exact: [...NAMED_MATCHERS, "form"] });
   });
 
   it("offers matchers inside a header matcher array", async () => {

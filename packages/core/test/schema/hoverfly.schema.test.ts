@@ -42,18 +42,20 @@ describe("bundled hoverfly schema", () => {
     expect(hoverflySchema.required).toEqual(["data", "meta"]);
   });
 
-  it("keeps matcher as a free string with the 14 registry names as examples (D5)", () => {
+  it("keeps matcher as a free string and carries NO matcher-name examples (D5)", () => {
     // Given - the field-matcher definition
     const matcher = hoverflySchema.definitions?.["field-matchers"]?.properties?.["matcher"];
-    // Then - it stays a permissive string, with the registry names surfaced as examples only
+    // Then - it stays a permissive string with no enum (never stricter)
     expect(matcher?.type).toBe("string");
     expect(matcher?.enum).toBeUndefined();
-    const examples = matcher?.examples as string[] | undefined;
-    expect(examples).toContain("jsonpartial");
-    expect(examples).toContain("jwtjsonpath");
-    expect(examples).toContain("xmltemplated");
-    expect(examples).toContain("negate");
-    expect(examples).toHaveLength(14);
+    /*
+     * And - it carries NO matcher-name `examples`. vscode-json-languageservice surfaces schema
+     * `examples` as completions on every matcher position; that both (a) leaks the body-only
+     * `form` onto non-body matchers (path/query/header/…) and (b) duplicates every contribution
+     * matcher item under an inconsistent quoted label. The Hoverfly contribution owns matcher-name
+     * completions (it alone gates `form` to request.body), so the schema must not also emit them.
+     */
+    expect(matcher?.examples).toBeUndefined();
   });
 
   it("adds the request.method property (valid per D5, absent from the official schema)", () => {
