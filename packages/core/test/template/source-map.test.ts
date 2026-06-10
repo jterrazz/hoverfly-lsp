@@ -140,3 +140,56 @@ describe("createStringSourceMap", () => {
     expect(map.toDocOffset(0)).toBe(1);
   });
 });
+
+/**
+ * The inverse mapping (`toDecodedOffset`) drives completion/hover: it takes a DOCUMENT offset
+ * (where the cursor sits) and returns the DECODED-string offset to run the template analysis at.
+ * It must round-trip with `toDocOffset` on identity runs and stay total across escapes.
+ */
+describe("StringSourceMap.toDecodedOffset", () => {
+  it("round-trips with toDocOffset on a plain string", () => {
+    // Given - `"hello"` at doc 10
+    const map = createStringSourceMap('"hello"', 10);
+    // Then - every decoded offset maps to a doc offset that maps back
+    for (let d = 0; d <= map.decoded.length; d += 1) {
+      expect(map.toDecodedOffset(map.toDocOffset(d))).toBe(d);
+    }
+  });
+
+  it("clamps a cursor on the opening quote to decoded offset 0", () => {
+    // Given - token at doc 10 (opening quote at doc 10, first content char at doc 11)
+    const map = createStringSourceMap('"hello"', 10);
+    // Then - the opening quote and anything before clamps to 0
+    expect(map.toDecodedOffset(10)).toBe(0);
+    expect(map.toDecodedOffset(0)).toBe(0);
+  });
+
+  it("clamps a cursor at/after the closing quote to decoded.length", () => {
+    // Given - `"hi"` at doc 5 (closing quote at doc 8)
+    const map = createStringSourceMap('"hi"', 5);
+    // Then - the closing quote and beyond clamp to the decoded length
+    expect(map.toDecodedOffset(8)).toBe(2);
+    expect(map.toDecodedOffset(99)).toBe(2);
+  });
+
+  it(String.raw`maps a cursor just after a \n escape to the decoded offset past it`, () => {
+    // Given - `"a\nb"` at doc 0: source a(1) \(2) n(3) b(4)
+    const map = createStringSourceMap(String.raw`"a\nb"`, 0);
+    // Then - a cursor at the 'b' source position (doc 4) is decoded offset 2 (after a, \n)
+    expect(map.toDecodedOffset(4)).toBe(2);
+    // A cursor on the backslash (doc 2) lands on the escape's decoded unit (the \n at index 1).
+    expect(map.toDecodedOffset(2)).toBe(1);
+  });
+
+  it(String.raw`maps a cursor after a \n-prefixed mustache to the right decoded offset`, () => {
+    // Given - `"line1\n{{Request.x}}"` token at doc 100
+    const raw = String.raw`"line1\n{{Request.x}}"`;
+    const map = createStringSourceMap(raw, 100);
+    // The `{{` is decoded index 6, at doc 108 (quote + 5 chars + 2-char \n).
+    expect(map.toDocOffset(6)).toBe(108);
+    // A cursor just after `Request.` in the document maps back to the matching decoded offset.
+    const decodedDot = map.decoded.indexOf("Request.") + "Request.".length;
+    const docDot = map.toDocOffset(decodedDot);
+    expect(map.toDecodedOffset(docDot)).toBe(decodedDot);
+  });
+});

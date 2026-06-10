@@ -10,6 +10,9 @@ import {
 } from "vscode-json-languageservice";
 import { type TextDocument } from "vscode-languageserver-textdocument";
 
+import { createHoverflyContribution } from "./contributions/index.js";
+import { getTemplateCompletions } from "./contributions/template-completion.js";
+import { getTemplateHover } from "./contributions/template-hover.js";
 import {
   hasHoverflyFilename,
   isHoverflySimulation,
@@ -79,8 +82,21 @@ export function createHoverflyLanguageService(
   contributions: JSONWorkerContribution[] = [],
   settings: HoverflyServiceSettings = {},
 ): HoverflyLanguageService {
+  /*
+   * The Hoverfly JSON-level IntelliSense contribution needs to resolve a document URI back to
+   * its text — for cross-reference state-key completion and matcher-name hover, which need a
+   * SimulationModel of the whole file, not just the cursor's node. The vscode-json-languageservice
+   * contribution API hands us only a URI + JSON location path, so we track the documents seen by
+   * the most recent completion/hover/parse call here and resolve against that view.
+   */
+  const seenDocuments = new Map<string, TextDocument>();
+  const hoverflyContribution = createHoverflyContribution(settings, (uri) =>
+    seenDocuments.get(uri),
+  );
+
   const service: LanguageService = getLanguageService({
-    contributions,
+    // The Hoverfly contribution runs first; caller-supplied contributions follow.
+    contributions: [hoverflyContribution, ...contributions],
     schemaRequestService: (uri: string): Promise<string> => {
       if (uri === SCHEMA_URI) {
         return Promise.resolve(SCHEMA_TEXT);
@@ -96,6 +112,7 @@ export function createHoverflyLanguageService(
   });
 
   function parse(document: TextDocument): JSONDocument {
+    seenDocuments.set(document.uri, document);
     return service.parseJSONDocument(document);
   }
 
@@ -142,21 +159,40 @@ export function createHoverflyLanguageService(
     doValidation(document: TextDocument, jsonDocument?: JSONDocument): Promise<Diagnostic[]> {
       return validate(document, jsonDocument);
     },
-    doComplete(
+    async doComplete(
       document: TextDocument,
       position: Position,
       jsonDocument?: JSONDocument,
     ): Promise<CompletionList | null> {
-      return Promise.resolve(
-        service.doComplete(document, position, jsonDocument ?? parse(document)),
-      );
+      // Register the document so the contribution can resolve it for cross-reference completions.
+      seenDocuments.set(document.uri, document);
+      const parsed = jsonDocument ?? parse(document);
+
+      /*
+       * Templated-string IntelliSense: when the cursor sits inside a templatable body/header
+       * string, the schema/JSON completions are irrelevant (we are inside a JSON string value),
+       * so the template completions REPLACE them. The contribution API has no cursor offset, so
+       * this is driven here, where the Position is available. Outside a template, fall through.
+       */
+      const templateItems = getTemplateCompletions(document, parsed, position);
+      if (templateItems) {
+        return { isIncomplete: false, items: templateItems };
+      }
+      return service.doComplete(document, position, parsed);
     },
-    doHover(
+    async doHover(
       document: TextDocument,
       position: Position,
       jsonDocument?: JSONDocument,
     ): Promise<Hover | null> {
-      return Promise.resolve(service.doHover(document, position, jsonDocument ?? parse(document)));
+      seenDocuments.set(document.uri, document);
+      const parsed = jsonDocument ?? parse(document);
+      // Template-token hover takes precedence inside templatable strings; else schema hover.
+      const templateHover = getTemplateHover(document, parsed, position);
+      if (templateHover) {
+        return templateHover;
+      }
+      return service.doHover(document, position, parsed);
     },
   };
 }

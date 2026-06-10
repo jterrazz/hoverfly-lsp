@@ -28,6 +28,21 @@ interface StringSourceMap {
    * `[start, end)` decoded span yields a sensible `[start, end)` document span.
    */
   readonly toDocOffset: (decodedOffset: number) => number;
+  /**
+   * The inverse of {@link toDocOffset}: map an absolute DOCUMENT offset that falls inside this
+   * string token's content window back to the decoded-string offset of the character it lands
+   * on (or just before, when the document offset sits mid-escape). Used by completion/hover,
+   * which receive a document {@link Position} and must drive the template analysis at the
+   * equivalent DECODED offset.
+   *
+   * - A document offset before the first content character clamps to `0`.
+   * - A document offset at/after the closing quote (or end of raw token) clamps to
+   *   `decoded.length`.
+   * - A document offset that lands in the MIDDLE of a multi-char escape (`\n`, `\uXXXX`, a
+   *   surrogate pair) maps to the decoded code unit that escape produced — so the cursor never
+   *   resolves to a fractional position.
+   */
+  readonly toDecodedOffset: (docOffset: number) => number;
 }
 
 /** Hex-digit guard for `\uXXXX` parsing. */
@@ -115,6 +130,8 @@ function createStringSourceMap(rawToken: string, docOffsetOfToken: number): Stri
   const endDocOffset = docOffsetOfToken + contentEnd;
   offsets.push(endDocOffset);
 
+  const contentDocStart = docOffsetOfToken + contentStart;
+
   return {
     decoded,
     toDocOffset: (decodedOffset: number): number => {
@@ -125,6 +142,37 @@ function createStringSourceMap(rawToken: string, docOffsetOfToken: number): Stri
         return endDocOffset;
       }
       return offsets[decodedOffset] ?? endDocOffset;
+    },
+    toDecodedOffset: (docOffset: number): number => {
+      // Clamp before the content window (e.g. on the opening quote) to the string start.
+      if (docOffset <= contentDocStart) {
+        return 0;
+      }
+      // At/after the closing quote (or end of an unquoted token) → end of decoded string.
+      if (docOffset >= endDocOffset) {
+        return decoded.length;
+      }
+      /*
+       * `offsets[k]` is the document offset where the source run producing decoded unit `k`
+       * starts; the array is non-decreasing. The decoded offset for `docOffset` is the count of
+       * decoded units whose source run starts strictly BEFORE `docOffset` (a half-open mapping
+       * symmetric with {@link toDocOffset}). A cursor exactly on a run start therefore maps to
+       * the position BEFORE that unit; a cursor mid-escape maps to the position after the unit
+       * that escape produced — never a fractional position. Binary search for the first unit
+       * whose source offset is >= docOffset.
+       */
+      let lo = 0;
+      let hi = decoded.length; // Sentinel lives at offsets[decoded.length]
+      while (lo < hi) {
+        const mid = (lo + hi) >> 1;
+        const at = offsets[mid] ?? endDocOffset;
+        if (at < docOffset) {
+          lo = mid + 1;
+        } else {
+          hi = mid;
+        }
+      }
+      return lo;
     },
   };
 }
