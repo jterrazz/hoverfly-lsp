@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "dist",
+    "tsBuildInfoFile": "dist/.tsbuildinfo-vscode",
+    "noEmit": true,
+    "types": ["node", "vscode"],
+    "lib": ["ES2022"]
+  },
+  "include": ["src/**/*.ts", "test/**/*.ts"]
+}

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "hoverfly-lsp",
+  "description": "Diagnostics and code intelligence for Hoverfly JSON simulation files (*.hoverfly.json, hoverfly-simulation.json) via the Language Server Protocol.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Jean-Baptiste Terrazzoni",
+    "email": "contact@jterrazz.com",
+    "url": "https://github.com/jterrazz"
+  },
+  "homepage": "https://github.com/jterrazz/hoverfly-lsp",
+  "repository": "https://github.com/jterrazz/hoverfly-lsp",
+  "license": "MIT",
+  "keywords": ["hoverfly", "lsp", "simulation", "json", "diagnostics"],
+  "lspServers": "./.lsp.json"
+}

@@ -1,0 +1,14 @@
+# Sources and build inputs (the published .vsix ships only the bundled output).
+src/**
+test/**
+tsconfig.json
+esbuild.config.mjs
+dist/.tsbuildinfo-vscode
+
+# Source maps (large; not needed at runtime).
+**/*.map
+
+# Tooling / VCS noise.
+.gitignore
+.vscode-test/**
+node_modules/**

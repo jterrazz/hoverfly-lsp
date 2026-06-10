@@ -1,9 +1,97 @@
 {
-  "name": "@hoverfly-lsp/vscode",
+  "name": "hoverfly-lsp-vscode",
+  "displayName": "Hoverfly Simulation Language Support",
   "version": "0.0.0",
-  "private": true,
-  "description": "VS Code extension for Hoverfly simulation files (placeholder)",
+  "description": "Diagnostics, completion, and hover docs for Hoverfly JSON simulation files (*.hoverfly.json).",
+  "categories": [
+    "Linters",
+    "Programming Languages"
+  ],
+  "keywords": [
+    "api mocking",
+    "hoverfly",
+    "lsp",
+    "simulation"
+  ],
   "license": "MIT",
   "author": "Jean-Baptiste Terrazzoni <contact@jterrazz.com>",
-  "type": "module"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jterrazz/hoverfly-lsp",
+    "directory": "editors/vscode"
+  },
+  "publisher": "jterrazz",
+  "type": "module",
+  "main": "./dist/extension.cjs",
+  "scripts": {
+    "build": "node esbuild.config.mjs",
+    "watch": "node esbuild.config.mjs --watch",
+    "package": "vsce package --no-dependencies"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^10.0.0"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.91.0",
+    "@vscode/vsce": "^3.9.2",
+    "esbuild": "^0.25.12"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "hoverfly-simulation",
+        "aliases": [
+          "Hoverfly Simulation",
+          "hoverfly"
+        ],
+        "filenamePatterns": [
+          "*.hoverfly.json",
+          "hoverfly-simulation.json"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "hoverfly-simulation",
+        "scopeName": "source.json.hoverfly",
+        "path": "./syntaxes/hoverfly-simulation.tmLanguage.json"
+      }
+    ],
+    "configuration": {
+      "title": "Hoverfly LSP",
+      "properties": {
+        "hoverfly.registeredActions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "scope": "resource",
+          "markdownDescription": "Names of post-serve actions registered with your Hoverfly instance. Used to complete and validate `postServeAction` references; unknown actions are otherwise unverifiable from the file alone."
+        },
+        "hoverfly.server.path": {
+          "type": "string",
+          "default": "",
+          "scope": "machine-overridable",
+          "markdownDescription": "Absolute path to a `hoverfly-lsp` server entry to launch with Node (overrides the workspace install and the bundled server). Leave empty to use automatic resolution."
+        },
+        "hoverfly.trace.server": {
+          "type": "string",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "default": "off",
+          "scope": "window",
+          "description": "Traces the communication between VS Code and the Hoverfly language server."
+        }
+      }
+    }
+  },
+  "activationEvents": [],
+  "engines": {
+    "vscode": "^1.91.0"
+  }
 }

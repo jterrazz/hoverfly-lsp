@@ -6,3 +6,6 @@ coverage/
 *.log
 .vscode-test/
 *.vsix
+
+# VS Code extension: server bundle copied in at build time (see editors/vscode/esbuild.config.mjs).
+editors/vscode/server/

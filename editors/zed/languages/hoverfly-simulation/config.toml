@@ -1,0 +1,10 @@
+name = "Hoverfly Simulation"
+grammar = "json"
+
+# Zed matches `path_suffixes` against the suffix of the full filename, so
+# "hoverfly.json" claims api.hoverfly.json, users.hoverfly.json, etc.
+# These do NOT support glob wildcards — they are plain filename suffixes.
+path_suffixes = ["hoverfly.json", "hoverfly-simulation.json"]
+
+tab_size = 2
+hard_tabs = false

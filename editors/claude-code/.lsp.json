@@ -1,0 +1,13 @@
+{
+  "hoverfly": {
+    "command": "node",
+    "args": ["${CLAUDE_PLUGIN_ROOT}/bin/launch.cjs", "--stdio"],
+    "extensionToLanguage": {
+      ".json": "json"
+    },
+    "transport": "stdio",
+    "diagnostics": true,
+    "maxRestarts": 3,
+    "startupTimeout": 10000
+  }
+}

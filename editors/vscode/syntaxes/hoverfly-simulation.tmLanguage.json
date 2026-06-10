@@ -1,0 +1,7 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Hoverfly Simulation",
+  "scopeName": "source.json.hoverfly",
+  "comment": "Hoverfly simulation files are plain JSON. We delegate all syntax highlighting to VS Code's built-in JSON grammar by including its scope, so coloring matches the JSON editor exactly without re-implementing a tokenizer.",
+  "patterns": [{ "include": "source.json" }]
+}

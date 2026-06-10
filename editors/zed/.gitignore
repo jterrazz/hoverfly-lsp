@@ -1,0 +1,7 @@
+# Rust / Cargo build output (Zed compiles the extension to wasm on install).
+/target/
+
+# Zed-managed npm install dir created at runtime by the extension.
+/node_modules/
+
+# Cargo.lock IS committed — extensions should build reproducibly.
