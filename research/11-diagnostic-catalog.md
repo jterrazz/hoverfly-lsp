@@ -53,7 +53,7 @@ Severity legend: E=Error, W=Warning, I=Information, H=Hint.
 
 | Code  | Sev | Trigger                                                                                        | Range     | Message template                                                                                                            |
 | ----- | --- | ---------------------------------------------------------------------------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------- |
-| HF401 | W   | `requiresState` key (non-`sequence:`-prefixed) never set by any `transitionsState` in the file | the key   | `State "{key}" is required but never set by any transitionsState — this pair can only match if the state is set externally` |
+| HF401 | W   | `requiresState` key (non-`sequence:`-prefixed) never set by any `transitionsState` in the file — a key set ONLY by the same pair's own `transitionsState` still fires (the transition runs after the match, so first encounter is unset) | the key   | `State "{key}" is required but never set by any transitionsState — this pair can only match if the state is set externally` |
 | HF402 | I   | `transitionsState` key never required (and not `sequence:`)                                    | the key   | `State "{key}" is set but never required in this simulation`                                                                |
 | HF403 | I   | `removesState` entry never set anywhere                                                        | the entry | `State "{key}" is removed but never set`                                                                                    |
 

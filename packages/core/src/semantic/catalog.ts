@@ -188,14 +188,15 @@ export const DIAGNOSTIC_CATALOG: Readonly<Record<DiagnosticCode, CatalogEntry>> 
     href: href("HF301"),
     // Mirrors Hoverfly's BodyAndBodyFileMessage wording (report 05 §2.3).
     messageTemplate:
-      "Both body and bodyFile are set; body takes precedence and bodyFile is ignored",
+      "Response contains both body and bodyFile; please remove one of them, otherwise body is used if non-empty",
   },
   HF302: {
     code: "HF302",
     severity: W,
     href: href("HF302"),
+    // Mirrors Hoverfly's ContentLengthAndTransferEncodingMessage wording (report 05 §2.3).
     messageTemplate:
-      "Both Content-Length and Transfer-Encoding are set; this is an invalid combination",
+      "Response contains both Content-Length and Transfer-Encoding headers; please remove one of these headers",
   },
   HF303: {
     code: "HF303",

@@ -12,6 +12,6 @@
         43
       ]
     },
-    "message": "Both Content-Length and Transfer-Encoding are set; this is an invalid combination"
+    "message": "Response contains both Content-Length and Transfer-Encoding headers; please remove one of these headers"
   }
 ]
