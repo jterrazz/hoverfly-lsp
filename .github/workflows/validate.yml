@@ -30,6 +30,15 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Docs are up to date
+        run: |
+          npm run docs:diagnostics
+          git diff --quiet -- docs/ || {
+            echo "::error::docs/ is stale. Run 'npm run docs:diagnostics' and commit the result."
+            git --no-pager diff -- docs/
+            exit 1
+          }
+
       - name: Typecheck
         run: npm run typecheck
 

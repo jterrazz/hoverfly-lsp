@@ -62,15 +62,49 @@ its documented extension points. Dependency direction: `editors → server → c
 Each phase = one supervised multi-agent workflow (Opus/Sonnet implementers, adversarial
 reviewers); Fable directs, reviews between phases, and gates progression on green tests.
 
-1. **Scaffold** — monorepo, tsconfig/ESM, Vitest, CI (validate on PR), jterrazz conventions, git init. _(task #3)_
-2. **Core foundation** — bundled schema, generated registries (matchers/helpers/faker), fingerprint, language-service wiring; first smoke tests. _(task #4)_
-3. **Semantic validators** — freeze the HFxxx catalog, implement rule-by-rule. _(task #5)_ ✅ HF1xx–HF4xx + HF6xx shipped with golden + unit coverage; HF5xx (templating) lands in phase 4.
-4. **Template engine** — parser + analyzer + completions inside body strings. _(task #6)_
-5. **Completion & hover contributions.** _(task #7)_
-6. **Reference corpus** — the big one: hundreds of valid/invalid fixtures covering every matcher × value type, every response field, templating, state machines, v1–v5.3; golden diagnostic snapshots; cursor-marker (`$0`) completion/hover tests. Grown continuously from phase 2, completed here with a coverage-audit agent. _(task #8)_
-7. **LSP server** — stdio bin, push+pull diagnostics, JSON-RPC integration tests. _(task #9)_
-8. **Editor integrations** — VS Code / Zed / IntelliJ / Claude Code, each verified end-to-end. _(task #10)_
-9. **Ship** — SchemaStore PR artifact, README + docs, schema-drift CI vs Hoverfly master, npm + Marketplace release pipeline. _(task #11)_
+1. **Scaffold** — monorepo, tsconfig/ESM, Vitest, CI (validate on PR), jterrazz conventions, git init. _(task #3)_ ✅ **Done.**
+2. **Core foundation** — bundled schema, generated registries (matchers/helpers/faker), fingerprint, language-service wiring; first smoke tests. _(task #4)_ ✅ **Done.**
+3. **Semantic validators** — freeze the HFxxx catalog, implement rule-by-rule. _(task #5)_ ✅ **Done** — HF1xx–HF6xx (37 codes) shipped with golden + unit coverage.
+4. **Template engine** — parser + analyzer + completions inside body strings. _(task #6)_ ✅ **Done** — block-aware Handlebars-subset parser + HF5xx analyzer.
+5. **Completion & hover contributions.** _(task #7)_ ✅ **Done** — fields, matchers, helpers, faker, state keys, Vars/Literals; hover with docs links.
+6. **Reference corpus** — the big one: hundreds of valid/invalid fixtures covering every matcher × value type, every response field, templating, state machines, v1–v5.3; golden diagnostic snapshots; cursor-marker (`$0`) completion/hover tests. Grown continuously from phase 2, completed here with a coverage-audit agent. _(task #8)_ ✅ **Done** — 54 valid + 107 invalid goldens; ground-truth-verified against real Hoverfly v1.12.8 (see D9).
+7. **LSP server** — stdio bin, push+pull diagnostics, JSON-RPC integration tests. _(task #9)_ ✅ **Done.**
+8. **Editor integrations** — VS Code / Zed / IntelliJ / Claude Code, each verified end-to-end. _(task #10)_ ✅ **Done** — all four integrated; in-editor checks documented in MANUAL-QA.md.
+9. **Ship** — SchemaStore PR artifact, README + docs, schema-drift CI vs Hoverfly master, npm + Marketplace release pipeline. _(task #11)_ 🚧 **In progress** — README + generated docs (diagnostics, template reference) + docs-drift CI landed; npm publish, Marketplace/Open VSX release, and the SchemaStore submission remain.
+
+## v0.1.0 — shipped scope
+
+What v0.1.0 delivers (608 tests green):
+
+- **Format:** Hoverfly v5.x JSON simulations, fully featured; v1–v4 accepted with an upgrade hint
+  (no completion investment), per architect decision D6.
+- **Diagnostics:** the frozen `HF1xx`–`HF6xx` catalog (37 codes), golden-tested, each carrying
+  `code` + `source: "hoverfly"` + `codeDescription.href`. See [docs/diagnostics.md](./docs/diagnostics.md).
+- **Templating:** block-aware Handlebars-subset parser; 52 Hoverfly helpers + 8 raymond built-ins
+  with arity checks; `Vars`/`Literals` resolution; 210 faker types (gofakeit v6.28.0); `now`
+  offset validation. See [docs/template-reference.md](./docs/template-reference.md).
+- **Completion & hover:** fields, matcher names, helper names, faker types, state keys,
+  `Vars`/`Literals`; hover docs with docs.hoverfly.io links.
+- **Server:** stdio bin `hoverfly-lsp --stdio`, push **and** pull diagnostics (pull matters for
+  headless agents).
+- **Editors:** VS Code (bundled `.vsix`), Zed (Rust/WASM), IntelliJ (LSP4IJ template), Claude Code
+  (plugin with `.lsp.json`).
+- **Safety:** content fingerprint (D3) makes pointing the server at any `.json` safe.
+- **Provenance:** schema + helper/faker catalogs pinned to a `HOVERFLY_COMMIT`; weekly schema-drift
+  CI vs Hoverfly master.
+
+Out of scope for v1 (D6): YAML simulations, the hoverfly-java DSL, middleware, and Hoverfly
+Cloud-only extensions.
+
+## Post-v1 ideas
+
+- **Strict version-gated mode** — opt-in enforcement that a v5.x feature is only used under a
+  high-enough version tag (e.g. `array` matcher requires its introducing version). Off by default
+  today; versions are intent markers, not enforced (D4).
+- **Hoverfly Cloud features** — validation/completion for `docs.cloud.hoverfly.io`-only extensions.
+- **Code actions / quick fixes** — autofix matcher casing (HF202), `jsonPartial → jsonpartial`,
+  remove `body`-or-`bodyFile` (HF301), enable `templated` (HF501), etc.
+- **Formatting** — a simulation-aware formatter / canonicaliser.
 
 ## Testing pyramid (decided)
 

@@ -1,6 +1,6 @@
 {
   "name": "hoverfly-lsp-monorepo",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "description": "Language Server for Hoverfly JSON simulation files",
   "license": "MIT",
@@ -16,6 +16,7 @@
   "type": "module",
   "scripts": {
     "build": "npm run build --workspaces --if-present",
+    "docs:diagnostics": "node scripts/generate-diagnostic-docs.mjs",
     "test": "vitest --run",
     "typecheck": "tsc --build",
     "lint": "codestyle check",

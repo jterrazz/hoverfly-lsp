@@ -1,0 +1,18 @@
+{
+  "_comment": "Baseline SHA-256 hashes of the upstream Hoverfly Go source files our matcher registry (research/07) and templating spec (research/08) were transcribed from. The schema-drift CI job re-fetches each file at HOVERFLY_COMMIT and compares; any mismatch means the source we modelled has moved and the registry/templating catalogs may need re-verification. Regenerate by running .github/workflows/schema-drift.yml logic locally. DO NOT hand-edit hashes to silence drift — investigate first.",
+  "commit": "aeff9058b3251bc1896c453c4e99f88cac06a284",
+  "algorithm": "sha256",
+  "files": {
+    "core/handlers/v2/schema.json": "86a3b0305847b094dd1f1b616810d10b421972c30df5181c186b2a52473935cb",
+    "core/matching/matchers/matchers.go": "429150039b51a2ecc2588887ecc5180fffec10e667b22bdcaf1f06824f7e8f7d",
+    "core/matching/field_matcher.go": "f188768dd5acd14073174ba7c76be9936ac800b6f41bdc33e94ae072a65ec168",
+    "core/matching/body_formdata_matching.go": "650fe60bcd872c91671364e00cbdeda781bfd9570c743b0cb9e222a31c1bcf15",
+    "core/models/request_matcher.go": "ace52dfc2b02ad485a90509a084c77cb552f5ee87aec4f507b9f1e489d55b7d2",
+    "core/matching/matchers/matcher_value_generator.go": "e4a10f979b3e7b075a311d926c19eca5d3737a4f34993f8aecc5991d993fc6d4",
+    "core/util/util.go": "76cbce0e954509ecfe64c06d8c229f3ff8e32f5094baf503ab51a529b41e35e3",
+    "core/util/jwt.go": "447577e4c774857e27a20939b642ce0c81d8a86395ee5b38736c5e6ff0e78364",
+    "core/templating/templating.go": "397c6a8fa8c052806b8e8bc7fa1814812760e81e8b38322684afa050e9314a33",
+    "core/templating/template_helpers.go": "f8a3ce2fba43bba7087740aeebf54b9301cfe5c741ffd5742a841f7a4f857a72",
+    "core/templating/parse_duration.go": "c2bcdc2f07c8fed43b0884ee84b7a0b7b8c736c063e2dee3ab91da162ba3b3e4"
+  }
+}

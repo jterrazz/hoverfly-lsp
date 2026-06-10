@@ -1,0 +1,153 @@
+name: Schema drift
+
+# Read-only upstream-drift watcher. It NEVER updates the bundled schema or registry — it only
+# detects when Hoverfly's official schema (or the Go source our matcher/templating catalogs were
+# transcribed from) has moved away from the pinned HOVERFLY_COMMIT baseline, and opens/refreshes a
+# single tracking issue so a human can re-verify and bump the pin deliberately.
+
+on:
+  schedule:
+    # Weekly, Mondays 06:00 UTC.
+    - cron: "0 6 * * 1"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
+
+env:
+  ISSUE_TITLE: "Upstream Hoverfly drift detected"
+
+jobs:
+  drift:
+    name: Detect upstream Hoverfly drift
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read pinned commit from provenance.ts
+        id: pin
+        run: |
+          set -euo pipefail
+          commit="$(grep -oE 'HOVERFLY_COMMIT = "[0-9a-f]{40}"' packages/core/src/schema/provenance.ts | grep -oE '[0-9a-f]{40}')"
+          if [ -z "$commit" ]; then
+            echo "::error::Could not parse HOVERFLY_COMMIT from packages/core/src/schema/provenance.ts"
+            exit 1
+          fi
+          echo "commit=$commit" >> "$GITHUB_OUTPUT"
+          echo "Pinned HOVERFLY_COMMIT=$commit"
+
+      - name: Verify provenance pin agrees with the baseline manifest
+        run: |
+          set -euo pipefail
+          manifest_commit="$(jq -r '.commit' schemas/upstream-source-hashes.json)"
+          if [ "$manifest_commit" != "${{ steps.pin.outputs.commit }}" ]; then
+            echo "::error::provenance.ts HOVERFLY_COMMIT (${{ steps.pin.outputs.commit }}) != schemas/upstream-source-hashes.json commit ($manifest_commit). The baseline is internally inconsistent — fix before trusting drift output."
+            exit 1
+          fi
+          echo "Provenance pin and baseline manifest agree on $manifest_commit"
+
+      - name: Compare live upstream schema against the verbatim baseline
+        id: schema
+        run: |
+          set -euo pipefail
+          url="https://raw.githubusercontent.com/SpectoLabs/hoverfly/master/core/handlers/v2/schema.json"
+          curl -fsSL "$url" -o /tmp/upstream-live-schema.json
+          if diff -u schemas/upstream-baseline.schema.json /tmp/upstream-live-schema.json > /tmp/schema.diff; then
+            echo "drift=false" >> "$GITHUB_OUTPUT"
+            echo "Official schema unchanged since baseline."
+          else
+            echo "drift=true" >> "$GITHUB_OUTPUT"
+            echo "Official schema.json has CHANGED on master."
+          fi
+
+      - name: Compare cited Go source hashes against the baseline manifest
+        id: sources
+        run: |
+          set -euo pipefail
+          : > /tmp/sources.diff
+          drift=false
+          files="$(jq -r '.files | keys[]' schemas/upstream-source-hashes.json)"
+          while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            expected="$(jq -r --arg f "$f" '.files[$f]' schemas/upstream-source-hashes.json)"
+            actual="$(curl -fsSL "https://raw.githubusercontent.com/SpectoLabs/hoverfly/master/$f" | sha256sum | awk '{print $1}')"
+            if [ "$expected" != "$actual" ]; then
+              drift=true
+              printf -- '- `%s`\n    - baseline: `%s`\n    - master:   `%s`\n' "$f" "$expected" "$actual" >> /tmp/sources.diff
+              echo "DRIFT: $f"
+            else
+              echo "ok: $f"
+            fi
+          done <<< "$files"
+          echo "drift=$drift" >> "$GITHUB_OUTPUT"
+
+      - name: Build issue body
+        if: steps.schema.outputs.drift == 'true' || steps.sources.outputs.drift == 'true'
+        run: |
+          set -euo pipefail
+          {
+            echo "Automated upstream-drift watcher (read-only) detected that Hoverfly \`master\` has moved away from the pinned baseline."
+            echo
+            echo "- Pinned \`HOVERFLY_COMMIT\`: \`${{ steps.pin.outputs.commit }}\` (\`packages/core/src/schema/provenance.ts\`)"
+            echo "- Detected at: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "- Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            echo
+            echo "## What to do"
+            echo "1. Review the diff(s) below against \`research/07-matcher-value-types.md\` and \`research/08-templating-spec.md\`."
+            echo "2. If the change is meaningful, update the bundled schema / matcher registry / templating catalog, then re-pin \`HOVERFLY_COMMIT\`, refresh \`schemas/upstream-baseline.schema.json\` and \`schemas/upstream-source-hashes.json\`, and re-run the standalone artifact generation."
+            echo "3. This job NEVER auto-updates anything — the pin bump is a deliberate, reviewed change."
+            echo
+            if [ "${{ steps.schema.outputs.drift }}" = "true" ]; then
+              echo "## Official schema drift (\`core/handlers/v2/schema.json\`)"
+              echo
+              echo '```diff'
+              # GitHub issue bodies cap at ~65k chars; keep the schema diff bounded.
+              head -c 30000 /tmp/schema.diff
+              echo
+              echo '```'
+              echo
+            fi
+            if [ "${{ steps.sources.outputs.drift }}" = "true" ]; then
+              echo "## Go source drift (matcher registry / templating spec sources)"
+              echo
+              echo "The SHA-256 of these files changed on \`master\`. The schema may be unchanged, but the *behaviour* we modelled may have moved:"
+              echo
+              cat /tmp/sources.diff
+              echo
+            fi
+          } > /tmp/issue-body.md
+          echo "Issue body prepared."
+
+      - name: Create or refresh the drift issue
+        if: steps.schema.outputs.drift == 'true' || steps.sources.outputs.drift == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('node:fs');
+            const body = fs.readFileSync('/tmp/issue-body.md', 'utf8');
+            const title = process.env.ISSUE_TITLE;
+            const { owner, repo } = context.repo;
+
+            // Find an existing open issue with this exact title (refresh instead of spamming).
+            const existing = await github.paginate(github.rest.issues.listForRepo, {
+              owner, repo, state: 'open', per_page: 100,
+            });
+            const match = existing.find((i) => !i.pull_request && i.title === title);
+
+            if (match) {
+              await github.rest.issues.update({ owner, repo, issue_number: match.number, body });
+              await github.rest.issues.createComment({
+                owner, repo, issue_number: match.number,
+                body: `Refreshed by drift run ${context.runId} on ${new Date().toISOString()}.`,
+              });
+              core.notice(`Refreshed existing drift issue #${match.number}`);
+            } else {
+              const created = await github.rest.issues.create({ owner, repo, title, body });
+              core.notice(`Opened drift issue #${created.data.number}`);
+            }
+
+      - name: No drift
+        if: steps.schema.outputs.drift != 'true' && steps.sources.outputs.drift != 'true'
+        run: echo "No upstream drift detected. Baseline still matches Hoverfly master."

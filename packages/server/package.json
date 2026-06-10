@@ -1,11 +1,11 @@
 {
   "name": "hoverfly-lsp",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Language Server for Hoverfly JSON simulation files (stdio)",
   "license": "MIT",
   "author": "Jean-Baptiste Terrazzoni <contact@jterrazz.com>",
   "bin": {
-    "hoverfly-lsp": "./bin/hoverfly-lsp.js"
+    "hoverfly-lsp": "bin/hoverfly-lsp.js"
   },
   "files": [
     "bin",

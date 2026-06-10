@@ -3,3 +3,12 @@ testdata/
 
 # Generated build output
 dist/
+
+# Generated docs (scripts/generate-diagnostic-docs.mjs owns the formatting; the docs-drift
+# CI diff must stay meaningful, so the formatter must not touch them).
+docs/diagnostics.md
+docs/template-reference.md
+
+# Verbatim upstream baseline — must stay byte-identical to Hoverfly's official
+# core/handlers/v2/schema.json (tabs and all) so the drift CI diff is meaningful.
+schemas/upstream-baseline.schema.json
