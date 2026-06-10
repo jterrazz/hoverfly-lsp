@@ -119,7 +119,8 @@
     },
     "field-matchers": {
       "title": "field-matcher",
-      "description": "A single matcher applied to a request field. The matcher name selects the matching strategy; the value's interpretation depends on the matcher. Note: the official schema declares no type here (so a stray non-object passes vacuously); the bundle stays as permissive to remain a faithful superset.",
+      "description": "A single matcher applied to a request field. The matcher name selects the matching strategy; the value's interpretation depends on the matcher. Must be a JSON object: Hoverfly's official schema types this `object`, so a non-object (e.g. an array-shaped `doMatch`) is rejected at import.",
+      "type": "object",
       "defaultSnippets": [
         {
           "label": "exact matcher",
@@ -161,7 +162,7 @@
         },
         "doMatch": {
           "title": "doMatch",
-          "description": "Matcher chaining: feed this matcher's extracted value into another matcher for further matching. Recursive.",
+          "description": "Matcher chaining: a single chained matcher object whose match runs against this matcher's extracted value. Recursive (a `doMatch` may itself carry a `doMatch`). Must be one object, not an array — Hoverfly rejects an array-shaped doMatch at import.",
           "$ref": "#/definitions/field-matchers"
         }
       }

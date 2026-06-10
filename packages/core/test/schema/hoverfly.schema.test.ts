@@ -65,12 +65,22 @@ describe("bundled hoverfly schema", () => {
     expect(method?.type).toBe("array");
   });
 
-  it("stays a faithful superset: no type on field-matchers or logNormalDelay (never stricter)", () => {
-    // Given - definitions the official schema leaves untyped
+  it("types field-matchers as object (official schema does), so an array-shaped doMatch is HF102", () => {
+    // Given - the field-matchers definition (doMatch self-$refs it)
     const fieldMatchers = hoverflySchema.definitions?.["field-matchers"];
+    /*
+     * Then - it carries `type: "object"`, mirroring Hoverfly's embedded schema (research/02).
+     * This is faithful, not stricter: an array-shaped doMatch is rejected by Hoverfly at import
+     * (HTTP 400, "Expected: object, given: array"), and our restored constraint reproduces it as
+     * an HF102 schema error.
+     */
+    expect(fieldMatchers?.type).toBe("object");
+  });
+
+  it("stays a faithful superset: no type on logNormalDelay (official leaves it untyped)", () => {
+    // Given - a definition the official schema leaves untyped
     const logNormalDelay = hoverflySchema.definitions?.["response"]?.properties?.["logNormalDelay"];
-    // Then - we do not add a `type` they lack (an array doMatch must still validate)
-    expect(fieldMatchers?.type).toBeUndefined();
+    // Then - we do not add a `type` it lacks (never stricter than official)
     expect(logNormalDelay?.type).toBeUndefined();
   });
 

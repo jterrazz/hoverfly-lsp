@@ -151,3 +151,15 @@ maxRestarts/diagnostics` (diagnostics default true, auto-injected after edits). 
 4. IntelliJ: LSP4IJ template (works on Community) — documented setup; native-API plugin deferred.
 5. Claude Code: plugin with LSP component (exact shape per report 09); content fingerprint (D3) handles `.json`-wide activation.
 6. SchemaStore: submit enhanced-but-faithful schema, `fileMatch: ["*.hoverfly.json", "hoverfly-simulation.json"]` (NOT bare `simulation.json` — too generic). Promote `$schema` self-declaration in docs.
+
+## D9 — Ground-truth corrections (2026-06-11)
+
+Phase 6 imported every valid fixture into real Hoverfly v1.12.8. Three corrections fell out, all now implemented (see core changelog "ground-truth fixes"):
+
+1. **`doMatch` is a single chained matcher OBJECT, not an array.** Hoverfly's embedded schema types `field-matchers` as `object`, and `doMatch` self-`$ref`s it; an array-shaped `doMatch` is rejected at import (HTTP 400, `Invalid type. Expected: object, given: array`). Phase 2 had dropped the `type: object` constraint to accommodate a (then wrongly array-shaped) rich fixture. The constraint is now RESTORED in `hoverfly.schema.json` (faithful to official, not stricter), so an array-shaped `doMatch` surfaces as an **HF102** schema error (`Incorrect type. Expected "object".`), mirroring Hoverfly's own import error. New marker fixture: `testdata/invalid/matchers/domatch-array-shape.hoverfly.json`.
+
+2. **HF2xx now recurses object-shaped `doMatch` chains.** `walkMatchers` (hf2xx.ts) previously recursed only `doMatch.type === "array"`; it now recurses the correct single-object shape (array handling retained so per-matcher diagnostics still fire on the schema-invalid legacy shape). HF201/HF203/HF208/HF210 all fire at every nesting level of an object chain. The HF208 marker fixture (`hf208-form-inside-domatch.hoverfly.json`) was un-suffixed from its `-VALIDATOR-GAP` name and its golden now carries HF208.
+
+3. **HF601 covers BOTH delay arrays.** `globalActions.delaysLogNormal[]` is now surfaced in the model (`GlobalActionsModel.delaysLogNormal`, with urlPattern nodes) and HF601 scans both `delays[]` and `delaysLogNormal[]` — both compile urlPattern as a Go RE2 regex (`core/models/delay.go`, `delay_log_normal.go`). Marker fixture renamed to `hf601-both-delay-arrays.hoverfly.json`; its golden now has two HF601 warnings (one per array).
+
+Side effect of (1): the intentionally-broken `testdata/invalid/parse/broken-json.hoverfly.json` gained one extra HF102 on its malformed `path` array region (the restored `field-matchers` object constraint now flags the recovered shape) — expected and harmless on an already-broken parse fixture. Valid corpus remains zero-diagnostic.

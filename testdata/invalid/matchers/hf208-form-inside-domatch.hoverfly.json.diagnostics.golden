@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF208",
+    "severity": "error",
+    "range": {
+      "start": [
+        10,
+        43
+      ],
+      "end": [
+        10,
+        49
+      ]
+    },
+    "message": "\"form\" is only valid on the body field — elsewhere Hoverfly panics"
+  }
+]

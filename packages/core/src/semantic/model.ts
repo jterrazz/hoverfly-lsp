@@ -236,6 +236,7 @@ function buildGlobalActions(dataNode: ObjectASTNode | undefined): GlobalActionsM
   return {
     node: object,
     delays: arrayItems(object, "delays").map(buildDelay),
+    delaysLogNormal: arrayItems(object, "delaysLogNormal").map(buildDelay),
   };
 }
 

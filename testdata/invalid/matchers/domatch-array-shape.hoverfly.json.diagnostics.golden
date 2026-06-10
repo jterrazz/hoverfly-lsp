@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF102",
+    "severity": "warning",
+    "range": {
+      "start": [
+        9,
+        39
+      ],
+      "end": [
+        14,
+        29
+      ]
+    },
+    "message": "Incorrect type. Expected \"object\"."
+  }
+]

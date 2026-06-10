@@ -188,7 +188,10 @@ export interface DelayModel {
 /** `globalActions` view. */
 export interface GlobalActionsModel {
   readonly node: ObjectASTNode | undefined;
+  /** `globalActions.delays[]` (fixed delays). */
   readonly delays: readonly DelayModel[];
+  /** `globalActions.delaysLogNormal[]` (log-normal delays). Same `urlPattern` regex contract. */
+  readonly delaysLogNormal: readonly DelayModel[];
 }
 
 /**

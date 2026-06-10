@@ -1,7 +1,8 @@
 /**
  * HF6xx — globalActions & misc.
  *
- *   HF601  W  `globalActions.delays[].urlPattern` is an invalid regex (range = the pattern).
+ *   HF601  W  `globalActions.delays[]` OR `delaysLogNormal[]` `urlPattern` is an invalid regex
+ *             (range = the pattern). Both delay arrays share the Go RE2 urlPattern contract.
  *   HF602  I  `response.postServeAction` not in the user-configured `registeredActions`
  *             allowlist — fires ONLY when the allowlist is configured and non-empty.
  *
@@ -46,10 +47,15 @@ function stringPropValue(node: ASTNode | undefined, key: string): ASTNode | unde
 
 /* --------------------------------------- HF601 ------------------------------------------- */
 
-/** Each `globalActions.delays[].urlPattern` that is not a valid (JS) regex. */
+/**
+ * Each invalid-regex `urlPattern` across BOTH `globalActions.delays[]` and
+ * `globalActions.delaysLogNormal[]` — Hoverfly compiles the urlPattern as a Go RE2 regex in
+ * both delay paths (`core/models/delay.go` and `delay_log_normal.go`).
+ */
 function hf601(context: RuleContext): Diagnostic[] {
+  const { delays, delaysLogNormal } = context.model.globalActions;
   const out: Diagnostic[] = [];
-  for (const delay of context.model.globalActions.delays) {
+  for (const delay of [...delays, ...delaysLogNormal]) {
     const { urlPatternNode, urlPattern } = delay;
     if (!urlPatternNode || urlPattern === undefined) {
       continue;

@@ -166,8 +166,23 @@ describe("HF208 — form mis-placed", () => {
     expect(diags[0]?.message).toContain("body");
   });
 
-  it("flags form inside a doMatch chain even on the body", () => {
-    // Given - a body jsonpath whose doMatch nests a form matcher
+  it("flags form inside an object-shaped doMatch chain even on the body", () => {
+    // Given - a body jsonpath whose (correct, single-object) doMatch nests a form matcher
+    const diags = runOnRequest({
+      body: [
+        {
+          matcher: "jsonpath",
+          value: "$.x",
+          doMatch: { matcher: "form", value: { a: [] } },
+        },
+      ],
+    });
+    // Then - HF208 for the nested form (jsonpath itself is valid, no HF210)
+    expect(codes(diags)).toEqual(["HF208"]);
+  });
+
+  it("flags form inside a legacy array-shaped doMatch chain too", () => {
+    // Given - the (schema-invalid) array shape — matcher diagnostics must still recurse
     const diags = runOnRequest({
       body: [
         {
@@ -177,7 +192,7 @@ describe("HF208 — form mis-placed", () => {
         },
       ],
     });
-    // Then - HF208 for the nested form (jsonpath itself is valid, no HF210)
+    // Then - HF208 still fires on the nested form
     expect(codes(diags)).toEqual(["HF208"]);
   });
 
@@ -210,38 +225,58 @@ describe("HF209 — wrong-case form", () => {
 });
 
 describe("HF210 — doMatch after an identity matcher", () => {
-  it("hints that a chain after exact is an AND on one value", () => {
-    // Given - exact with a doMatch chain (exact does not transform the value)
+  it("hints that a chain after exact is an AND on one value (object shape)", () => {
+    // Given - exact with a single-object doMatch (exact does not transform the value)
     const diags = runOnRequest({
-      path: [{ matcher: "exact", value: "/x", doMatch: [{ matcher: "glob", value: "/*" }] }],
+      path: [{ matcher: "exact", value: "/x", doMatch: { matcher: "glob", value: "/*" } }],
     });
     // Then - HF210 hint on the doMatch key, naming the identity matcher
     expect(codes(diags)).toEqual(["HF210"]);
     expect(diags[0]?.message).toContain("exact");
   });
 
-  it("does not hint after a transforming matcher (jsonpath)", () => {
-    // Given - jsonpath (transforms the value) with a doMatch chain
+  it("does not hint after a transforming matcher (jsonpath, object shape)", () => {
+    // Given - jsonpath (transforms the value) with a single-object doMatch chain
     const diags = runOnRequest({
-      body: [{ matcher: "jsonpath", value: "$.x", doMatch: [{ matcher: "exact", value: "y" }] }],
+      body: [{ matcher: "jsonpath", value: "$.x", doMatch: { matcher: "exact", value: "y" } }],
     });
     // Then - no HF210 (and the nested exact/string is valid)
     expect(codes(diags)).toEqual([]);
   });
 
-  it("recurses: HF210 fires at every identity level of a chain", () => {
-    // Given - exact -> exact -> exact nested doMatch chain
+  it("recurses object-shaped chains: HF210 fires at every identity level", () => {
+    // Given - exact -> exact -> exact nested single-object doMatch chain
     const diags = runOnRequest({
       path: [
         {
           matcher: "exact",
           value: "a",
-          doMatch: [{ matcher: "exact", value: "b", doMatch: [{ matcher: "exact", value: "c" }] }],
+          doMatch: { matcher: "exact", value: "b", doMatch: { matcher: "exact", value: "c" } },
         },
       ],
     });
     // Then - two HF210 hints (one per matcher that owns a doMatch)
     expect(codes(diags)).toEqual(["HF210", "HF210"]);
+  });
+});
+
+describe("object-shaped doMatch recursion (HF201/HF203/HF210)", () => {
+  it("fires HF201 on an unknown matcher nested in an object doMatch", () => {
+    // Given - jsonpath whose object-shaped doMatch names an unknown matcher
+    const diags = runOnRequest({
+      body: [{ matcher: "jsonpath", value: "$.x", doMatch: { matcher: "nope", value: "y" } }],
+    });
+    // Then - HF201 fires on the nested matcher
+    expect(codes(diags)).toEqual(["HF201"]);
+  });
+
+  it("fires HF203 on a value-type mismatch nested in an object doMatch", () => {
+    // Given - jsonpath whose object-shaped doMatch is array (array-only) with a string value
+    const diags = runOnRequest({
+      body: [{ matcher: "jsonpath", value: "$.x", doMatch: { matcher: "array", value: "a;b" } }],
+    });
+    // Then - HF203 fires on the nested value
+    expect(codes(diags)).toEqual(["HF203"]);
   });
 });
 

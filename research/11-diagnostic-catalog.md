@@ -90,3 +90,9 @@ Severity legend: E=Error, W=Warning, I=Information, H=Hint.
   positions (escape-aware source maps; the hardest part — test `\n`, `\"`, `\uXXXX` cases).
 - Verify-on-implementation: HF305 (does import actually fail?), HF306/HF307 exact runtime
   behavior, HF601 pattern dialect (regex vs glob — check Go source `regexp` vs `glob` usage).
+- Ground-truth corrections (2026-06-11, see D9 in report 10):
+  - `field-matchers` is typed `object` (restored to match official); `doMatch` self-`$ref`s it,
+    so an array-shaped `doMatch` is now an **HF102** schema error — Hoverfly rejects it at import.
+  - HF208/HF201/HF203/HF210 recurse object-shaped `doMatch` chains (not just the legacy array).
+  - HF601 scans BOTH `globalActions.delays[]` and `delaysLogNormal[]` (both use a Go RE2
+    `urlPattern`); resolves the "regex vs glob" verify note above — it is RE2 regex in both paths.

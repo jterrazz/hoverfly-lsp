@@ -13,5 +13,20 @@
       ]
     },
     "message": "Invalid pattern"
+  },
+  {
+    "code": "HF601",
+    "severity": "warning",
+    "range": {
+      "start": [
+        12,
+        34
+      ],
+      "end": [
+        12,
+        50
+      ]
+    },
+    "message": "Invalid pattern"
   }
 ]

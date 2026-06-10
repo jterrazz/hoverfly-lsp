@@ -18,9 +18,10 @@
  *   HF210 (H)  `doMatch` after an identity (non-transforming) matcher — AND on one value.
  *   HF211 (W)  empty-string value where the matcher can never match (`jwtjsonpath`/`regex`/`glob`).
  *
- * The model does not recurse into `doMatch`, so this file parses nested matcher objects from
- * the raw `doMatch` array node itself (see {@link walkMatchers}). It is the only AST re-walk
- * here and is kept minimal; reported as a framework gap for the integrator.
+ * The model does not pre-flatten `doMatch` chains, so this file recurses the chain itself (see
+ * {@link walkMatchers}): the correct shape is a single chained matcher OBJECT, and the legacy
+ * array shape (a schema error) is also walked so per-matcher diagnostics still fire on its
+ * nested objects. It is the only AST re-walk here and is kept minimal.
  */
 
 import type { ASTNode, ObjectASTNode } from "vscode-json-languageservice";
@@ -102,8 +103,19 @@ function walkMatchers(matchers: readonly MatcherModel[]): WalkedMatcher[] {
       depth,
       doMatchKeyNode: keyNodeOf(matcher.node, "doMatch"),
     });
-    if (matcher.doMatchNode?.type === "array") {
-      for (const item of matcher.doMatchNode.items) {
+    const doMatchNode = matcher.doMatchNode;
+    if (doMatchNode?.type === "object") {
+      // The correct, Hoverfly-accepted shape: `doMatch` is a single chained matcher object.
+      visit(
+        nestedMatcher(doMatchNode, matcher.parent.fieldName, matcher.parent.container),
+        depth + 1,
+      );
+    } else if (doMatchNode?.type === "array") {
+      /*
+       * Legacy/array-shaped doMatch (a schema error, HF102) — still recurse so that matcher
+       * diagnostics fire on each nested object rather than vanishing behind the shape error.
+       */
+      for (const item of doMatchNode.items) {
         visit(nestedMatcher(item, matcher.parent.fieldName, matcher.parent.container), depth + 1);
       }
     }

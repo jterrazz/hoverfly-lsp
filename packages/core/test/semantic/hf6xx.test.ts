@@ -68,6 +68,35 @@ describe("HF601 — invalid globalActions delay urlPattern", () => {
       hf601DelayPatternRule.run(contextOf(withDelays([{ urlPattern: 42, delay: 100 }]))),
     ).toEqual([]);
   });
+
+  it("also scans delaysLogNormal[] (both arrays flagged)", () => {
+    // Given - a malformed regex in BOTH delays and delaysLogNormal
+    const text = JSON.stringify({
+      data: {
+        pairs: [],
+        globalActions: {
+          delays: [{ urlPattern: "(unbalanced", delay: 100 }],
+          delaysLogNormal: [{ urlPattern: "*bad", min: 1, max: 2 }],
+        },
+      },
+      meta: { schemaVersion: "v5.3" },
+    });
+    // Then - two HF601 warnings, one per array
+    expect(codes(hf601DelayPatternRule.run(contextOf(text)))).toEqual(["HF601", "HF601"]);
+  });
+
+  it("flags a malformed regex in delaysLogNormal alone", () => {
+    // Given - only delaysLogNormal carries a bad pattern
+    const text = JSON.stringify({
+      data: {
+        pairs: [],
+        globalActions: { delaysLogNormal: [{ urlPattern: "(unbalanced", min: 1, max: 2 }] },
+      },
+      meta: { schemaVersion: "v5.3" },
+    });
+    // Then - HF601 fires on the log-normal pattern
+    expect(codes(hf601DelayPatternRule.run(contextOf(text)))).toEqual(["HF601"]);
+  });
 });
 
 describe("HF602 — postServeAction not in registeredActions allowlist", () => {

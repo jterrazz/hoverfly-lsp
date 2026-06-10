@@ -31,6 +31,21 @@
   },
   {
     "code": "HF102",
+    "severity": "warning",
+    "range": {
+      "start": [
+        6,
+        40
+      ],
+      "end": [
+        6,
+        50
+      ]
+    },
+    "message": "Incorrect type. Expected \"object\"."
+  },
+  {
+    "code": "HF102",
     "severity": "error",
     "range": {
       "start": [

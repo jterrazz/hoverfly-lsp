@@ -32,7 +32,10 @@ describe("buildSimulationModel", () => {
               },
             },
           ],
-          globalActions: { delays: [{ urlPattern: "a.*", delay: 100 }] },
+          globalActions: {
+            delays: [{ urlPattern: "a.*", delay: 100 }],
+            delaysLogNormal: [{ urlPattern: "b.*", min: 1, max: 2 }],
+          },
         },
         meta: { schemaVersion: "v5.3" },
       }),
@@ -58,6 +61,7 @@ describe("buildSimulationModel", () => {
     expect(pair.removesState[0]?.key).toBe("temp");
     expect(model.meta.schemaVersion.valueNode?.type).toBe("string");
     expect(model.globalActions.delays[0]?.urlPattern).toBe("a.*");
+    expect(model.globalActions.delaysLogNormal[0]?.urlPattern).toBe("b.*");
   });
 
   it("never throws and degrades to empty/undefined on malformed shapes", () => {
@@ -68,6 +72,7 @@ describe("buildSimulationModel", () => {
     expect(model.meta.node).toBeUndefined();
     expect(model.meta.schemaVersion.valueNode).toBeUndefined();
     expect(model.globalActions.delays).toEqual([]);
+    expect(model.globalActions.delaysLogNormal).toEqual([]);
   });
 
   it("tolerates a non-object root", () => {
