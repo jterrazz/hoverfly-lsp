@@ -1,7 +1,7 @@
 [
   {
     "code": "HF509",
-    "severity": "information",
+    "severity": "warning",
     "range": {
       "start": [
         10,

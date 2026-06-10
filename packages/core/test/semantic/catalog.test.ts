@@ -21,13 +21,55 @@ describe("diagnostic catalog", () => {
   });
 
   it("carries the catalog severities from the frozen catalog", () => {
-    // Given - representative codes spanning all four severities
-    // Then - they match research/11-diagnostic-catalog.md
-    expect(DIAGNOSTIC_CATALOG.HF101.severity).toBe(DiagnosticSeverity.Warning);
-    expect(DIAGNOSTIC_CATALOG.HF102.severity).toBe(DiagnosticSeverity.Error);
-    expect(DIAGNOSTIC_CATALOG.HF103.severity).toBe(DiagnosticSeverity.Information);
-    expect(DIAGNOSTIC_CATALOG.HF104.severity).toBe(DiagnosticSeverity.Error);
-    expect(DIAGNOSTIC_CATALOG.HF202.severity).toBe(DiagnosticSeverity.Hint);
+    // Given - the Sev column of every row in research/11-diagnostic-catalog.md
+    const { Error: E, Warning: W, Information: I, Hint: H } = DiagnosticSeverity;
+    const expectedSeverity: Readonly<Record<string, DiagnosticSeverity>> = {
+      HF101: W,
+      HF102: E,
+      HF103: I,
+      HF104: E,
+      HF201: E,
+      HF202: H,
+      HF203: E,
+      HF204: E,
+      HF205: W,
+      HF206: E,
+      HF207: W,
+      HF208: E,
+      HF209: E,
+      HF210: H,
+      HF211: W,
+      HF301: W,
+      HF302: W,
+      HF303: W,
+      HF304: W,
+      HF305: W,
+      HF306: W,
+      HF307: W,
+      HF401: W,
+      HF402: I,
+      HF403: I,
+      HF501: W,
+      HF502: E,
+      HF503: E,
+      HF504: E,
+      HF505: E,
+      HF506: E,
+      HF507: I,
+      HF508: W,
+      HF509: W,
+      HF510: E,
+      HF601: W,
+      HF602: I,
+    };
+    // Then - every code's severity matches the frozen table exactly (no row escapes coverage)
+    for (const [code, entry] of Object.entries(DIAGNOSTIC_CATALOG)) {
+      expect(entry.severity, code).toBe(expectedSeverity[code]);
+    }
+    // And - the assertion table itself stays in lockstep with the catalog (no missing rows)
+    expect(Object.keys(expectedSeverity).sort()).toStrictEqual(
+      Object.keys(DIAGNOSTIC_CATALOG).sort(),
+    );
   });
 
   it("contains all 37 catalog codes including HF5xx placeholders", () => {

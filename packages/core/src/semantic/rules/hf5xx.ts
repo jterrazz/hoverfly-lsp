@@ -17,7 +17,7 @@
  *   HF506 (E)  `Literals.X` not in `data.literals[].name`.
  *   HF507 (I)  unknown `faker '<Type>'` (string literal only) for the pinned gofakeit version.
  *   HF508 (W)  parameterized gofakeit method used as `faker '<Type>'` — panics at render.
- *   HF509 (I)  invalid `now` offset token (unit not in ns/us/µs/μs/ms/s/m/h/d/y).
+ *   HF509 (W)  invalid `now` offset token (unit not in ns/us/µs/μs/ms/s/m/h/d/y).
  *   HF510 (E)  `data.variables[].function` is a raymond block built-in, not a Hoverfly helper.
  *
  * ## Which strings are templated?

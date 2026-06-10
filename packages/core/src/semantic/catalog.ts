@@ -303,7 +303,7 @@ export const DIAGNOSTIC_CATALOG: Readonly<Record<DiagnosticCode, CatalogEntry>> 
   },
   HF509: {
     code: "HF509",
-    severity: I,
+    severity: W,
     href: href("HF509"),
     messageTemplate:
       'Offset "{o}" is silently ignored by Hoverfly (valid units: ns, us, ms, s, m, h, d, y)',
