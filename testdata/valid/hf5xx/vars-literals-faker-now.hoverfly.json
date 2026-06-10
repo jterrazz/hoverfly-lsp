@@ -1,0 +1,27 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/profile" }]
+                },
+                "response": {
+                    "status": 200,
+                    "templated": true,
+                    "headers": {
+                        "X-Generated-At": ["{{now '-1d' 'unix'}}"]
+                    },
+                    "body": "{\"id\":\"{{Vars.userId}}\",\"brand\":\"{{Literals.brand}}\",\"email\":\"{{faker 'Email'}}\",\"now\":\"{{now '' ''}}\",\"uuid\":\"{{faker 'UUID'}}\"}"
+                }
+            }
+        ],
+        "variables": [
+            { "name": "userId", "function": "randomUuid" },
+            { "name": "fromBody", "function": "requestBody", "arguments": ["jsonpath", "$.id"] }
+        ],
+        "literals": [{ "name": "brand", "value": "acme" }]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

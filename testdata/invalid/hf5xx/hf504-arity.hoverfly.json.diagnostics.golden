@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF504",
+    "severity": "error",
+    "range": {
+      "start": [
+        10,
+        31
+      ],
+      "end": [
+        10,
+        38
+      ]
+    },
+    "message": "\"replace\" expects 3 arguments, got 1 arguments"
+  }
+]

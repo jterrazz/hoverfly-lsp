@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF508",
+    "severity": "warning",
+    "range": {
+      "start": [
+        10,
+        37
+      ],
+      "end": [
+        10,
+        47
+      ]
+    },
+    "message": "faker \"Sentence\" requires arguments Hoverfly cannot pass — this panics at render time"
+  }
+]

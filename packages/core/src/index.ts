@@ -26,6 +26,31 @@ export {
 // Language service facade backed by vscode-json-languageservice + the bundled schema.
 export { createHoverflyLanguageService, type HoverflyLanguageService } from "./service.js";
 
+// Templating layer (parser + analyzer), exposed for downstream completion (Phase 5).
+export {
+  analyze,
+  type AnalyzerContext,
+  type BlockNode,
+  type BooleanLiteral,
+  type ContentNode,
+  createStringSourceMap,
+  type Expression,
+  hasTemplateSyntax,
+  type MustacheNode,
+  type NumberLiteral,
+  parse,
+  type ParseResult,
+  type PathExpression,
+  type Program,
+  type Span,
+  type Statement,
+  type StringLiteral,
+  type StringSourceMap,
+  type SubExpression,
+  type TemplateNode,
+  type TemplateParseError,
+} from "./template/index.js";
+
 // Authoritative registry data (matchers, templating helpers, faker types).
 export {
   ALL_HELPERS,

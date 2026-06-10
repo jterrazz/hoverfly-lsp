@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF501",
+    "severity": "warning",
+    "range": {
+      "start": [
+        9,
+        35
+      ],
+      "end": [
+        9,
+        37
+      ]
+    },
+    "message": "Body contains template syntax but \"templated\" is not true — it will be sent literally"
+  }
+]

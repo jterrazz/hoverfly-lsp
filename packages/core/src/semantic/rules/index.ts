@@ -11,6 +11,7 @@ import { HF1XX_RULES } from "./hf1xx.js";
 import { HF2XX_RULES } from "./hf2xx.js";
 import { HF3XX_RULES } from "./hf3xx.js";
 import { HF4XX_RULES } from "./hf4xx.js";
+import { HF5XX_RULES } from "./hf5xx.js";
 import { HF6XX_RULES } from "./hf6xx.js";
 
 export const ALL_RULES: readonly SemanticRule[] = [
@@ -18,6 +19,6 @@ export const ALL_RULES: readonly SemanticRule[] = [
   ...HF2XX_RULES,
   ...HF3XX_RULES,
   ...HF4XX_RULES,
+  ...HF5XX_RULES,
   ...HF6XX_RULES,
-  // ...HF5XX_RULES (templating family — not yet implemented).
 ];

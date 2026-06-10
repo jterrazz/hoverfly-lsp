@@ -1,0 +1,20 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/x" }]
+                },
+                "response": {
+                    "status": 200,
+                    "templated": true,
+                    "body": "{{Vars.missing}}"
+                }
+            }
+        ],
+        "variables": [{ "name": "present", "function": "randomUuid" }]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

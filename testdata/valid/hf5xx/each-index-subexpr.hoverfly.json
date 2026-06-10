@@ -1,0 +1,19 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/cart" }]
+                },
+                "response": {
+                    "status": 200,
+                    "templated": true,
+                    "body": "{{#each (csvAsMap 'pets')}}{{@index}}:{{this.name}}={{multiply (this.price) (this.qty) '0.00'}}{{#unless @last}},{{/unless}}{{/each}}"
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

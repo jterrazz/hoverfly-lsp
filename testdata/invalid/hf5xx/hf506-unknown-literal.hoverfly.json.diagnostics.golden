@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF506",
+    "severity": "error",
+    "range": {
+      "start": [
+        10,
+        31
+      ],
+      "end": [
+        10,
+        44
+      ]
+    },
+    "message": "Literal \"gone\" is not defined in data.literals"
+  }
+]

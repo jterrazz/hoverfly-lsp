@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF505",
+    "severity": "error",
+    "range": {
+      "start": [
+        10,
+        31
+      ],
+      "end": [
+        10,
+        43
+      ]
+    },
+    "message": "Variable \"missing\" is not defined in data.variables"
+  }
+]

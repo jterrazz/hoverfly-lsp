@@ -1,0 +1,19 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/order" }]
+                },
+                "response": {
+                    "status": 200,
+                    "templated": true,
+                    "body": "{{#equal (Request.Body 'jsonpath' '$.status') 'paid'}}{{setStatusCode '200'}}{\"path\":\"{{Request.Path.[1]}}\",\"state\":\"{{State.basket}}\",\"q\":\"{{Request.QueryParam.id}}\"}{{else}}{{setStatusCode '402'}}{\"error\":\"unpaid\"}{{/equal}}{{#if (isNumeric (getValue 'count'))}}ok{{/if}}"
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}
