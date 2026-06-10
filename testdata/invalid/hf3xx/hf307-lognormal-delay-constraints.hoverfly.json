@@ -1,0 +1,23 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/lognormal" }]
+                },
+                "response": {
+                    "status": 200,
+                    "logNormalDelay": {
+                        "min": 100,
+                        "max": 10,
+                        "mean": 50,
+                        "median": 40
+                    }
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

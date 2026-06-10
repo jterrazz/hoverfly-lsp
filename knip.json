@@ -6,7 +6,7 @@
       "ignoreDependencies": ["oxlint"]
     },
     "packages/core": {
-      "entry": ["src/index.ts"],
+      "entry": ["src/index.ts", "src/semantic/index.ts", "src/semantic/rules/index.ts"],
       "project": ["src/**/*.ts"],
       "ignoreDependencies": ["vscode-languageserver-types"]
     },

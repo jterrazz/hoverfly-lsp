@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF205",
+    "severity": "warning",
+    "range": {
+      "start": [
+        9,
+        61
+      ],
+      "end": [
+        9,
+        73
+      ]
+    },
+    "message": "Unknown config key \"ignoreCase\" (ignored by Hoverfly)"
+  }
+]

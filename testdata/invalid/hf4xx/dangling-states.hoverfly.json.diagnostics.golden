@@ -1,0 +1,47 @@
+[
+  {
+    "code": "HF401",
+    "severity": "warning",
+    "range": {
+      "start": [
+        7,
+        24
+      ],
+      "end": [
+        7,
+        39
+      ]
+    },
+    "message": "State \"authenticated\" is required but never set by any transitionsState — this pair can only match if the state is set externally"
+  },
+  {
+    "code": "HF402",
+    "severity": "information",
+    "range": {
+      "start": [
+        13,
+        24
+      ],
+      "end": [
+        13,
+        33
+      ]
+    },
+    "message": "State \"visited\" is set but never required in this simulation"
+  },
+  {
+    "code": "HF403",
+    "severity": "information",
+    "range": {
+      "start": [
+        23,
+        37
+      ],
+      "end": [
+        23,
+        51
+      ]
+    },
+    "message": "State \"sessionToken\" is removed but never set"
+  }
+]

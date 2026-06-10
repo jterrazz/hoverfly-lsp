@@ -1,0 +1,23 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [
+                        {
+                            "matcher": "exact",
+                            "value": "/x",
+                            "doMatch": [{ "matcher": "glob", "value": "/*" }]
+                        }
+                    ]
+                },
+                "response": {
+                    "status": 200
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

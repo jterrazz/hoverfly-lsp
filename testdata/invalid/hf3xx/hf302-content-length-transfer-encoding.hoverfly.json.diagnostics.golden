@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF302",
+    "severity": "warning",
+    "range": {
+      "start": [
+        11,
+        24
+      ],
+      "end": [
+        11,
+        43
+      ]
+    },
+    "message": "Both Content-Length and Transfer-Encoding are set; this is an invalid combination"
+  }
+]

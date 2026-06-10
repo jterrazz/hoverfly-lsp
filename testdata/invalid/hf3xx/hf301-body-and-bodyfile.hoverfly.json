@@ -1,0 +1,19 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/both" }]
+                },
+                "response": {
+                    "status": 200,
+                    "body": "inline body wins",
+                    "bodyFile": "ignored.txt"
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

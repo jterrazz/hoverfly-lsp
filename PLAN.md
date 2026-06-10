@@ -64,7 +64,7 @@ reviewers); Fable directs, reviews between phases, and gates progression on gree
 
 1. **Scaffold** — monorepo, tsconfig/ESM, Vitest, CI (validate on PR), jterrazz conventions, git init. _(task #3)_
 2. **Core foundation** — bundled schema, generated registries (matchers/helpers/faker), fingerprint, language-service wiring; first smoke tests. _(task #4)_
-3. **Semantic validators** — freeze the HFxxx catalog, implement rule-by-rule. _(task #5)_
+3. **Semantic validators** — freeze the HFxxx catalog, implement rule-by-rule. _(task #5)_ ✅ HF1xx–HF4xx + HF6xx shipped with golden + unit coverage; HF5xx (templating) lands in phase 4.
 4. **Template engine** — parser + analyzer + completions inside body strings. _(task #6)_
 5. **Completion & hover contributions.** _(task #7)_
 6. **Reference corpus** — the big one: hundreds of valid/invalid fixtures covering every matcher × value type, every response field, templating, state machines, v1–v5.3; golden diagnostic snapshots; cursor-marker (`$0`) completion/hover tests. Grown continuously from phase 2, completed here with a coverage-audit agent. _(task #8)_

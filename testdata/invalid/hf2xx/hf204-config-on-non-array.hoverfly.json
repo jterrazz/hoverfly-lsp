@@ -1,0 +1,17 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/x", "config": {} }]
+                },
+                "response": {
+                    "status": 200
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

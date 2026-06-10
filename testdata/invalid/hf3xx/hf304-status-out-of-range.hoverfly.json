@@ -1,0 +1,17 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/bad-status" }]
+                },
+                "response": {
+                    "status": 700
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

@@ -34,14 +34,17 @@
                             "value": "$.username",
                             "doMatch": [{ "matcher": "exact", "value": "alice" }]
                         }
-                    ]
+                    ],
+                    "requiresState": {
+                        "userFetched": "true"
+                    }
                 },
                 "response": {
                     "status": 204,
                     "transitionsState": {
                         "authenticated": "true"
                     },
-                    "removesState": ["guest"]
+                    "removesState": ["userFetched"]
                 }
             }
         ],

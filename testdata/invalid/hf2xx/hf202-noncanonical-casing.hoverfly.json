@@ -1,0 +1,17 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "body": [{ "matcher": "jsonPartial", "value": "{\"a\":1}" }]
+                },
+                "response": {
+                    "status": 200
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

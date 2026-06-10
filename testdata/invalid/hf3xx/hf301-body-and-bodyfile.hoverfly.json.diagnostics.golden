@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF301",
+    "severity": "warning",
+    "range": {
+      "start": [
+        10,
+        20
+      ],
+      "end": [
+        10,
+        30
+      ]
+    },
+    "message": "Both body and bodyFile are set; body takes precedence and bodyFile is ignored"
+  }
+]

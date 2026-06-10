@@ -1,0 +1,32 @@
+[
+  {
+    "code": "HF211",
+    "severity": "warning",
+    "range": {
+      "start": [
+        5,
+        60
+      ],
+      "end": [
+        5,
+        62
+      ]
+    },
+    "message": "Empty regex value never matches"
+  },
+  {
+    "code": "HF211",
+    "severity": "warning",
+    "range": {
+      "start": [
+        6,
+        66
+      ],
+      "end": [
+        6,
+        68
+      ]
+    },
+    "message": "Empty jwtjsonpath value never matches"
+  }
+]

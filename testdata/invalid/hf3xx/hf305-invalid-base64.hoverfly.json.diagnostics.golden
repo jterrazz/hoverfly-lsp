@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF305",
+    "severity": "warning",
+    "range": {
+      "start": [
+        9,
+        28
+      ],
+      "end": [
+        9,
+        50
+      ]
+    },
+    "message": "encodedBody is set but body is not valid base64"
+  }
+]

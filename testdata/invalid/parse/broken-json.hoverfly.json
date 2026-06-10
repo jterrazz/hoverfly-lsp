@@ -1,0 +1,10 @@
+{
+    "meta": {
+        "schemaVersion": "v5.3"
+    },
+    "data": {
+        "pairs": [
+            { "request": { "path": [ }, "response": { "status": 200 } }
+        ]
+    }
+}

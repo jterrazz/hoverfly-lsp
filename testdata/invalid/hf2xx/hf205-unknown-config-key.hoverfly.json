@@ -1,0 +1,23 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "body": [
+                        {
+                            "matcher": "array",
+                            "value": ["a", "b"],
+                            "config": { "ignoreOrder": true, "ignoreCase": true }
+                        }
+                    ]
+                },
+                "response": {
+                    "status": 200
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

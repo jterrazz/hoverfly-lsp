@@ -1,0 +1,32 @@
+[
+  {
+    "code": "HF203",
+    "severity": "error",
+    "range": {
+      "start": [
+        5,
+        60
+      ],
+      "end": [
+        5,
+        82
+      ]
+    },
+    "message": "Matcher \"exact\" expects a string; this pair will never match"
+  },
+  {
+    "code": "HF203",
+    "severity": "error",
+    "range": {
+      "start": [
+        6,
+        60
+      ],
+      "end": [
+        6,
+        67
+      ]
+    },
+    "message": "Matcher \"array\" expects a JSON array; this pair will never match"
+  }
+]

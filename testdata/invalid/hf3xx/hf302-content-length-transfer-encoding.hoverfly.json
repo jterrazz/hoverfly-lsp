@@ -1,0 +1,21 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/conflicting-headers" }]
+                },
+                "response": {
+                    "status": 200,
+                    "headers": {
+                        "Content-Length": ["11"],
+                        "Transfer-Encoding": ["chunked"]
+                    }
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

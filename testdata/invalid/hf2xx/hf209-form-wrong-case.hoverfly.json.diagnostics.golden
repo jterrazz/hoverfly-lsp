@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF209",
+    "severity": "error",
+    "range": {
+      "start": [
+        7,
+        39
+      ],
+      "end": [
+        7,
+        45
+      ]
+    },
+    "message": "\"form\" is case-sensitive; \"Form\" hits the registry and panics Hoverfly"
+  }
+]

@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF303",
+    "severity": "warning",
+    "range": {
+      "start": [
+        11,
+        43
+      ],
+      "end": [
+        11,
+        46
+      ]
+    },
+    "message": "Content-Length 3 does not match body length 5"
+  }
+]

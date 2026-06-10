@@ -29,7 +29,7 @@ function createServer(connection: Connection): void {
       connection.sendDiagnostics({ uri: document.uri, diagnostics: [] });
       return;
     }
-    const diagnostics = await service.diagnostics(document);
+    const diagnostics = await service.doValidation(document);
     connection.sendDiagnostics({ uri: document.uri, diagnostics });
   };
 

@@ -1,0 +1,49 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/login" }],
+                    "method": [{ "matcher": "exact", "value": "POST" }]
+                },
+                "response": {
+                    "status": 200,
+                    "transitionsState": {
+                        "loggedIn": "true"
+                    }
+                }
+            },
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/mfa" }],
+                    "method": [{ "matcher": "exact", "value": "POST" }],
+                    "requiresState": {
+                        "loggedIn": "true"
+                    }
+                },
+                "response": {
+                    "status": 200,
+                    "transitionsState": {
+                        "mfaVerified": "true"
+                    }
+                }
+            },
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/account" }],
+                    "method": [{ "matcher": "exact", "value": "GET" }],
+                    "requiresState": {
+                        "mfaVerified": "true"
+                    }
+                },
+                "response": {
+                    "status": 200,
+                    "removesState": ["mfaVerified", "loggedIn"]
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

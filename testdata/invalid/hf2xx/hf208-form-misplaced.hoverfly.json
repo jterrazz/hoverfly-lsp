@@ -1,0 +1,24 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "headers": {
+                        "Content-Type": [
+                            {
+                                "matcher": "form",
+                                "value": { "field": [{ "matcher": "exact", "value": "x" }] }
+                            }
+                        ]
+                    }
+                },
+                "response": {
+                    "status": 200
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

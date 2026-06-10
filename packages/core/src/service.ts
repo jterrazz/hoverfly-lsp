@@ -10,8 +10,21 @@ import {
 } from "vscode-json-languageservice";
 import { type TextDocument } from "vscode-languageserver-textdocument";
 
-import { isHoverflySimulation } from "./fingerprint.js";
+import {
+  hasHoverflyFilename,
+  isHoverflySimulation,
+  isHoverflySimulationAst,
+} from "./fingerprint.js";
 import { hoverflySchema } from "./schema/hoverfly.schema.generated.js";
+import {
+  ALL_RULES,
+  applyHF102Layer,
+  createRuleContext,
+  hf101NotASimulation,
+  type HoverflyServiceSettings,
+  runRules,
+  sortByRange,
+} from "./semantic/index.js";
 
 /** The `$id` of the bundled schema; also the URI it is registered under. */
 const SCHEMA_URI =
@@ -36,11 +49,6 @@ export interface HoverflyLanguageService {
    * so this currently surfaces only structural/schema problems from the bundled schema.
    */
   doValidation: (document: TextDocument, jsonDocument?: JSONDocument) => Promise<Diagnostic[]>;
-  /**
-   * Back-compat alias for {@link HoverflyLanguageService.doValidation}, kept so the existing
-   * server validate pass keeps compiling. New code should call `doValidation`.
-   */
-  diagnostics: (document: TextDocument) => Promise<Diagnostic[]>;
   /** Schema-driven completion at a position. */
   doComplete: (
     document: TextDocument,
@@ -64,9 +72,12 @@ export interface HoverflyLanguageService {
  *
  * @param contributions completion/hover participants ({@link JSONWorkerContribution}); the
  *   hook point for Hoverfly-specific intelligence. Defaults to `[]`.
+ * @param settings service-level settings threaded into every rule context (e.g. HF602's
+ *   `registeredActions` allowlist). Defaults to `{}` — settings-gated rules stay silent.
  */
 export function createHoverflyLanguageService(
   contributions: JSONWorkerContribution[] = [],
+  settings: HoverflyServiceSettings = {},
 ): HoverflyLanguageService {
   const service: LanguageService = getLanguageService({
     contributions,
@@ -88,16 +99,48 @@ export function createHoverflyLanguageService(
     return service.parseJSONDocument(document);
   }
 
+  /**
+   * The full validation pipeline (decision D3 gate + HF102 schema layer + semantic rules):
+   *
+   *   1. Fingerprint gate: if the document is NOT a Hoverfly simulation, return `[]` —
+   *      UNLESS it carries an explicit hoverfly filename, in which case emit HF101 and stop
+   *      (a non-simulation file gets no schema/semantic noise).
+   *   2. Schema diagnostics from vscode-json-languageservice, re-tagged HF102 and de-noised
+   *      where a more specific HF2xx semantic diagnostic overlaps the same node.
+   *   3. Semantic (HFxxx) rule results.
+   *   4. Concatenate and sort by range.
+   */
+  async function validate(
+    document: TextDocument,
+    jsonDocument?: JSONDocument,
+  ): Promise<Diagnostic[]> {
+    const parsed = jsonDocument ?? parse(document);
+
+    /*
+     * D3 fingerprint runs over the error-recovering AST (not raw JSON.parse) so a
+     * broken-yet-recognisable simulation still gets schema/semantic treatment, not HF101.
+     */
+    if (!isHoverflySimulationAst(parsed.root)) {
+      return hasHoverflyFilename(document.uri) ? [hf101NotASimulation(document)] : [];
+    }
+
+    const schemaDiagnostics = await service.doValidation(document, parsed);
+    const context = createRuleContext(document, parsed, settings);
+    const semanticDiagnostics = runRules(ALL_RULES, context);
+
+    return sortByRange([
+      ...applyHF102Layer(schemaDiagnostics, semanticDiagnostics),
+      ...semanticDiagnostics,
+    ]);
+  }
+
   return {
     parse,
     isSimulation(document: TextDocument): boolean {
       return isHoverflySimulation(document.getText());
     },
     doValidation(document: TextDocument, jsonDocument?: JSONDocument): Promise<Diagnostic[]> {
-      return Promise.resolve(service.doValidation(document, jsonDocument ?? parse(document)));
-    },
-    diagnostics(document: TextDocument): Promise<Diagnostic[]> {
-      return Promise.resolve(service.doValidation(document, parse(document)));
+      return validate(document, jsonDocument);
     },
     doComplete(
       document: TextDocument,

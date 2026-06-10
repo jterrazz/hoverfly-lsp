@@ -1,0 +1,19 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/encoded" }]
+                },
+                "response": {
+                    "status": 200,
+                    "body": "this is not base64!!",
+                    "encodedBody": true
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

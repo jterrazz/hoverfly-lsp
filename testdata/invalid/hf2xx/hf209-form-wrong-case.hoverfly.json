@@ -1,0 +1,22 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "body": [
+                        {
+                            "matcher": "Form",
+                            "value": { "field": [{ "matcher": "exact", "value": "x" }] }
+                        }
+                    ]
+                },
+                "response": {
+                    "status": 200
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

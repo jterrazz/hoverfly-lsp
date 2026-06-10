@@ -1,0 +1,43 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "glob", "value": "/api/*" }],
+                    "method": [{ "value": "GET" }],
+                    "query": {
+                        "expand": [{ "matcher": "exact", "value": "true" }]
+                    },
+                    "headers": {
+                        "X-Token": [
+                            {
+                                "matcher": "jwt",
+                                "value": "{\"payload\":{\"sub\":\"a\"}}",
+                                "doMatch": [
+                                    {
+                                        "matcher": "jsonpath",
+                                        "value": "$.sub",
+                                        "doMatch": [{ "matcher": "exact", "value": "a" }]
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "body": [
+                        {
+                            "matcher": "xpath",
+                            "value": "/root/id",
+                            "doMatch": [{ "matcher": "regex", "value": "[0-9]+" }]
+                        }
+                    ]
+                },
+                "response": {
+                    "status": 200
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

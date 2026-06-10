@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF204",
+    "severity": "error",
+    "range": {
+      "start": [
+        5,
+        76
+      ],
+      "end": [
+        5,
+        78
+      ]
+    },
+    "message": "\"config\" is only supported by the \"array\" matcher — Hoverfly panics on this"
+  }
+]

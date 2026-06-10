@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF306",
+    "severity": "warning",
+    "range": {
+      "start": [
+        9,
+        34
+      ],
+      "end": [
+        9,
+        38
+      ]
+    },
+    "message": "Negative delay is ignored"
+  }
+]

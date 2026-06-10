@@ -1,5 +1,27 @@
-// Fingerprint (D3): cheap content check that a JSON file is a Hoverfly simulation.
-export { isHoverflySimulation } from "./fingerprint.js";
+// Fingerprint (D3): cheap content checks that a JSON file is a Hoverfly simulation.
+export {
+  hasHoverflyFilename,
+  isHoverflySimulation,
+  isHoverflySimulationAst,
+} from "./fingerprint.js";
+
+// Semantic-analysis framework: catalog, diagnostics, engine, model, rule types.
+export {
+  ALL_RULES,
+  applyHF102Layer,
+  type CatalogEntry,
+  createRuleContext,
+  DIAGNOSTIC_CATALOG,
+  DIAGNOSTIC_SOURCE,
+  type DiagnosticCode,
+  formatMessage,
+  makeDiagnostic,
+  type RuleContext,
+  runRules,
+  type SemanticRule,
+  type SimulationModel,
+  sortByRange,
+} from "./semantic/index.js";
 
 // Language service facade backed by vscode-json-languageservice + the bundled schema.
 export { createHoverflyLanguageService, type HoverflyLanguageService } from "./service.js";

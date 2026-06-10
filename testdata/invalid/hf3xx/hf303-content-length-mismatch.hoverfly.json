@@ -1,0 +1,21 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/wrong-length" }]
+                },
+                "response": {
+                    "status": 200,
+                    "body": "hello",
+                    "headers": {
+                        "Content-Length": ["3"]
+                    }
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

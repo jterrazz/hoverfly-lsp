@@ -1,0 +1,32 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/dashboard" }],
+                    "requiresState": {
+                        "authenticated": "true"
+                    }
+                },
+                "response": {
+                    "status": 200,
+                    "transitionsState": {
+                        "visited": "true"
+                    }
+                }
+            },
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/logout" }]
+                },
+                "response": {
+                    "status": 204,
+                    "removesState": ["sessionToken"]
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

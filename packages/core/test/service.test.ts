@@ -36,16 +36,43 @@ describe("createHoverflyLanguageService — schema-driven validation", () => {
     },
   );
 
-  it("flags a structurally-broken simulation with the expected schema diagnostics", async () => {
-    // Given - pairs as an object, missing meta.schemaVersion, and a root extra property
-    const text = `{"data":{"pairs":{}},"meta":{},"extra":1}`;
+  it("flags a structurally-broken simulation with HF102 schema diagnostics", async () => {
+    // Given - a fingerprint-passing simulation (valid meta.schemaVersion) with pairs as an
+    // Object and a root extra property. (A doc that fails the D3 fingerprint is gated to
+    // HF101/[] instead — see the gate tests below.)
+    const text = `{"data":{"pairs":{}},"meta":{"schemaVersion":"v5.3"},"extra":1}`;
     // When - validated
     const diagnostics = await service.doValidation(doc(text));
     const messages = diagnostics.map((d) => d.message);
-    // Then - each structural problem is reported
+    // Then - each structural problem is reported, re-tagged as HF102
     expect(messages).toContain('Incorrect type. Expected "array".');
-    expect(messages).toContain('Missing property "schemaVersion".');
     expect(messages.some((m) => m.includes("extra") && m.includes("not allowed"))).toBe(true);
+    // Then - every schema diagnostic carries the HF102 code and hoverfly source
+    for (const d of diagnostics) {
+      expect(d.code).toBe("HF102");
+      expect(d.source).toBe("hoverfly");
+    }
+  });
+
+  it("returns [] for non-simulation JSON without a hoverfly filename (D3 gate)", async () => {
+    // Given - arbitrary JSON in a plainly-named file
+    const text = `{"hello":"world"}`;
+    const document = TextDocument.create("file:///config.json", "json", 1, text);
+    // When - validated
+    const diagnostics = await service.doValidation(document);
+    // Then - the service stays silent
+    expect(diagnostics).toEqual([]);
+  });
+
+  it("emits HF101 for a hoverfly-named file that fails the fingerprint (D3)", async () => {
+    // Given - a *.hoverfly.json file that is not actually a simulation
+    const text = `{"hello":"world"}`;
+    // When - validated
+    const diagnostics = await service.doValidation(doc(text));
+    // Then - exactly the HF101 "does not look like a simulation" diagnostic
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0]?.code).toBe("HF101");
+    expect(diagnostics[0]?.source).toBe("hoverfly");
   });
 
   it("does not flag the request.method property (valid per D5)", async () => {

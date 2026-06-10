@@ -1,0 +1,62 @@
+[
+  {
+    "code": "HF102",
+    "severity": "warning",
+    "range": {
+      "start": [
+        6,
+        12
+      ],
+      "end": [
+        6,
+        13
+      ]
+    },
+    "message": "Missing property \"response\"."
+  },
+  {
+    "code": "HF102",
+    "severity": "error",
+    "range": {
+      "start": [
+        6,
+        37
+      ],
+      "end": [
+        6,
+        38
+      ]
+    },
+    "message": "Value expected"
+  },
+  {
+    "code": "HF102",
+    "severity": "error",
+    "range": {
+      "start": [
+        6,
+        50
+      ],
+      "end": [
+        6,
+        51
+      ]
+    },
+    "message": "Expected comma"
+  },
+  {
+    "code": "HF102",
+    "severity": "error",
+    "range": {
+      "start": [
+        9,
+        0
+      ],
+      "end": [
+        9,
+        1
+      ]
+    },
+    "message": "Expected comma or closing bracket"
+  }
+]

@@ -1,0 +1,38 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "body": [
+                        {
+                            "matcher": "array",
+                            "value": ["alpha", "beta"],
+                            "config": {
+                                "ignoreUnknown": true,
+                                "ignoreOrder": true,
+                                "ignoreOccurrences": false
+                            }
+                        },
+                        {
+                            "matcher": "jsonpath",
+                            "value": "$.user.name",
+                            "doMatch": [{ "matcher": "exact", "value": "alice" }]
+                        },
+                        {
+                            "matcher": "form",
+                            "value": {
+                                "username": [{ "matcher": "exact", "value": "alice" }]
+                            }
+                        }
+                    ]
+                },
+                "response": {
+                    "status": 200
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

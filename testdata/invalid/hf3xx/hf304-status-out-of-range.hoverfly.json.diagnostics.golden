@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF304",
+    "severity": "warning",
+    "range": {
+      "start": [
+        8,
+        30
+      ],
+      "end": [
+        8,
+        33
+      ]
+    },
+    "message": "Status 700 is outside the valid HTTP range"
+  }
+]

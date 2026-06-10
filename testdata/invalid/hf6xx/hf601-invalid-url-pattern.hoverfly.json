@@ -1,0 +1,16 @@
+{
+    "data": {
+        "pairs": [],
+        "globalActions": {
+            "delays": [
+                {
+                    "urlPattern": "(unbalanced[a-z",
+                    "delay": 100
+                }
+            ]
+        }
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

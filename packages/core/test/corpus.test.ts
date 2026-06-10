@@ -9,7 +9,7 @@ import { isHoverflySimulation } from "../src/fingerprint.js";
 // Repo root is four levels up from this file: packages/core/test/ -> repo root.
 const repoRoot = fileURLToPath(new URL("../../../", import.meta.url));
 
-const validFiles = await glob("testdata/valid/*.hoverfly.json", { cwd: repoRoot });
+const validFiles = await glob("testdata/valid/**/*.hoverfly.json", { cwd: repoRoot });
 
 describe("reference corpus: testdata/valid", () => {
   it("finds at least one valid fixture", () => {
