@@ -11,7 +11,7 @@
       "ignoreDependencies": ["vscode-languageserver-types"]
     },
     "packages/server": {
-      "entry": ["src/cli.ts", "bin/hoverfly-lsp.js"],
+      "entry": ["src/main.ts", "bin/hoverfly-lsp.js", "esbuild.config.js"],
       "project": ["src/**/*.ts"]
     }
   }

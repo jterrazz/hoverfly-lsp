@@ -15,6 +15,7 @@ export {
   DIAGNOSTIC_SOURCE,
   type DiagnosticCode,
   formatMessage,
+  type HoverflyServiceSettings,
   makeDiagnostic,
   type RuleContext,
   runRules,

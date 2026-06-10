@@ -12,6 +12,11 @@ function doc(text: string): TextDocument {
   return TextDocument.create("file:///sim.hoverfly.json", "json", 1, text);
 }
 
+/** The range of the first HF201 diagnostic in a result set, or undefined. */
+function hf201RangeOf(diagnostics: readonly { code?: unknown; range?: unknown }[]): unknown {
+  return diagnostics.find((d) => d.code === "HF201")?.range;
+}
+
 const service = createHoverflyLanguageService();
 
 describe("createHoverflyLanguageService — schema-driven validation", () => {
@@ -82,6 +87,38 @@ describe("createHoverflyLanguageService — schema-driven validation", () => {
     const diagnostics = await service.doValidation(doc(text));
     // Then - method is accepted
     expect(diagnostics).toEqual([]);
+  });
+});
+
+describe("createHoverflyLanguageService — leading BOM handling", () => {
+  const BOM = "﻿";
+
+  it("does not misclassify a BOM-prefixed valid simulation as HF101", async () => {
+    // Given - a valid simulation saved with a leading UTF-8 BOM (as many editors do)
+    const valid = `{"data":{"pairs":[]},"meta":{"schemaVersion":"v5.3"}}`;
+    const document = doc(BOM + valid);
+    // When - validated and fingerprinted through the real service
+    const diagnostics = await service.doValidation(document);
+    // Then - the BOM is transparent: zero diagnostics, recognised as a simulation
+    expect(diagnostics).toEqual([]);
+    expect(service.isSimulation(document)).toBe(true);
+    expect(service.parse(document).root?.type).toBe("object");
+  });
+
+  it("keeps diagnostic positions byte-identical with vs without a leading BOM", async () => {
+    // Given - the same invalid simulation (unknown matcher on line 1), one with a leading BOM
+    const line0 = `{"data":{"pairs":[{"request":{"path":[`;
+    const line1 = `{"matcher":"frobnicate","value":"v"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
+    const body = `${line0}\n${line1}`;
+    // When - both are validated
+    const withoutBom = await service.doValidation(doc(body));
+    const withBom = await service.doValidation(doc(BOM + body));
+    /*
+     * Then - the HF201 diagnostic lands at the exact same range; replacing the BOM with a
+     * space (not deleting it) preserves every UTF-16 offset.
+     */
+    expect(hf201RangeOf(withoutBom)).toBeDefined();
+    expect(hf201RangeOf(withBom)).toEqual(hf201RangeOf(withoutBom));
   });
 });
 

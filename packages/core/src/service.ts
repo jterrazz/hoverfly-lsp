@@ -8,7 +8,7 @@ import {
   type LanguageService,
   type Position,
 } from "vscode-json-languageservice";
-import { type TextDocument } from "vscode-languageserver-textdocument";
+import { TextDocument } from "vscode-languageserver-textdocument";
 
 import { createHoverflyContribution } from "./contributions/index.js";
 import { getTemplateCompletions } from "./contributions/template-completion.js";
@@ -34,6 +34,30 @@ const SCHEMA_URI =
   hoverflySchema.$id ?? "https://hoverfly-lsp.dev/schemas/hoverfly-simulation.json";
 
 const SCHEMA_TEXT = JSON.stringify(hoverflySchema);
+
+/** UTF-8/UTF-16 byte-order mark. Many editors prepend it when saving JSON. */
+const BOM = "﻿";
+
+/**
+ * The JSON parser treats a leading BOM (U+FEFF) as an unexpected token and produces no root at
+ * all, which makes a perfectly valid simulation fail the D3 fingerprint and surface a spurious
+ * HF101. Replacing the BOM with a single space (rather than deleting it) lets the parser skip it
+ * as leading whitespace while keeping every byte/UTF-16 offset identical to the original
+ * document — so diagnostic ranges, hover, and completion positions stay aligned. Documents
+ * without a leading BOM are returned unchanged (no allocation).
+ */
+function stripLeadingBom(document: TextDocument): TextDocument {
+  const text = document.getText();
+  if (!text.startsWith(BOM)) {
+    return document;
+  }
+  return TextDocument.create(
+    document.uri,
+    document.languageId,
+    document.version,
+    ` ${text.slice(BOM.length)}`,
+  );
+}
 
 /**
  * The facade returned by {@link createHoverflyLanguageService}.
@@ -152,21 +176,28 @@ export function createHoverflyLanguageService(
   }
 
   return {
-    parse,
+    parse(document: TextDocument): JSONDocument {
+      return parse(stripLeadingBom(document));
+    },
     isSimulation(document: TextDocument): boolean {
-      return isHoverflySimulation(document.getText());
+      return isHoverflySimulation(stripLeadingBom(document).getText());
     },
     doValidation(document: TextDocument, jsonDocument?: JSONDocument): Promise<Diagnostic[]> {
-      return validate(document, jsonDocument);
+      /*
+       * Normalise a leading BOM (offset-preserving) so a BOM-prefixed valid simulation is not
+       * misclassified as HF101; the normalised view is threaded through the whole pipeline.
+       */
+      return validate(stripLeadingBom(document), jsonDocument);
     },
     async doComplete(
       document: TextDocument,
       position: Position,
       jsonDocument?: JSONDocument,
     ): Promise<CompletionList | null> {
+      const normalized = stripLeadingBom(document);
       // Register the document so the contribution can resolve it for cross-reference completions.
-      seenDocuments.set(document.uri, document);
-      const parsed = jsonDocument ?? parse(document);
+      seenDocuments.set(normalized.uri, normalized);
+      const parsed = jsonDocument ?? parse(normalized);
 
       /*
        * Templated-string IntelliSense: when the cursor sits inside a templatable body/header
@@ -174,25 +205,26 @@ export function createHoverflyLanguageService(
        * so the template completions REPLACE them. The contribution API has no cursor offset, so
        * this is driven here, where the Position is available. Outside a template, fall through.
        */
-      const templateItems = getTemplateCompletions(document, parsed, position);
+      const templateItems = getTemplateCompletions(normalized, parsed, position);
       if (templateItems) {
         return { isIncomplete: false, items: templateItems };
       }
-      return service.doComplete(document, position, parsed);
+      return service.doComplete(normalized, position, parsed);
     },
     async doHover(
       document: TextDocument,
       position: Position,
       jsonDocument?: JSONDocument,
     ): Promise<Hover | null> {
-      seenDocuments.set(document.uri, document);
-      const parsed = jsonDocument ?? parse(document);
+      const normalized = stripLeadingBom(document);
+      seenDocuments.set(normalized.uri, normalized);
+      const parsed = jsonDocument ?? parse(normalized);
       // Template-token hover takes precedence inside templatable strings; else schema hover.
-      const templateHover = getTemplateHover(document, parsed, position);
+      const templateHover = getTemplateHover(normalized, parsed, position);
       if (templateHover) {
         return templateHover;
       }
-      return service.doHover(document, position, parsed);
+      return service.doHover(normalized, position, parsed);
     },
   };
 }

@@ -21,14 +21,24 @@ decisions in `research/03-lsp-architecture.md` and `research/10-architect-decisi
   `packages/server` as a real project-reference build (no bundler in the scaffold phase).
   `tsc --build` is the build and typecheck driver.
 
-### 2. No build tool (no `tsdown`/`@jterrazz/typescript` CLI) — plain `tsc --build`
+### 2. Build tool — `tsc --build` for typecheck/tests, **esbuild** for the published bin
 
 - House libraries build/bundle via `tsdown` (the `@jterrazz/typescript` CLI).
-- Here each package builds with **`tsc --build`** to `dist/` (emitting `.js` + `.d.ts`).
-- Reason: per decision D7, bundling (esbuild/tsup single-file bin) is a **release-phase**
-  concern, not a scaffold concern. The scaffold keeps the toolchain minimal and the
-  project-reference graph honest. A bundler will be introduced when the `hoverfly-lsp`
-  bin is prepared for npm publication.
+- Here `tsc --build` remains the typecheck/test driver (emits `.js` + `.d.ts` to `dist/`,
+  keeps the project-reference graph honest). The **`hoverfly-lsp` bin** is additionally
+  bundled by **esbuild** (`packages/server/esbuild.config.js`, devDep on `packages/server`)
+  into a single self-contained file, per decision D7's distribution guidance.
+- `packages/server` build is now `tsc --build && npm run build:bundle`; the root
+  `build` script picks it up via `--workspaces --if-present`.
+- **Bundle format = CommonJS** (`dist/cli.cjs`): `vscode-languageserver` + protocol/jsonrpc
+  are CJS, so a CJS bundle avoids ESM<->CJS interop shims. Explicit `.cjs` extension makes
+  Node treat it as CommonJS despite the package's `"type": "module"`; the ESM bin
+  (`bin/hoverfly-lsp.js`) imports it for its side effect. `mainFields: ["module", "main"]`
+  is required so esbuild picks `vscode-json-languageservice`'s clean ESM build instead of its
+  UMD `main` (whose shadowed `require` parameter leaves relative requires unresolved). The
+  version is injected via esbuild `define` (`HOVERFLY_LSP_VERSION`) so the bundle never reads
+  package.json at runtime. The bundle is proven by spawning it over stdio in the integration
+  tests and by the `--version`/`--help` bin smoke tests.
 
 ### 3. Linting — `@jterrazz/codestyle` retained, with monorepo-shaped config
 

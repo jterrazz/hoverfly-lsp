@@ -1,49 +1,281 @@
-import { createHoverflyLanguageService } from "@hoverfly-lsp/core";
+import {
+  createHoverflyLanguageService,
+  type HoverflyLanguageService,
+  type HoverflyServiceSettings,
+} from "@hoverfly-lsp/core";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import {
+  type ClientCapabilities,
   type Connection,
   createConnection,
+  type DiagnosticServerCancellationData,
+  DidChangeConfigurationNotification,
+  ErrorCodes,
+  type InitializeError,
+  type InitializeParams,
+  type InitializeResult,
   ProposedFeatures,
+  ResponseError,
   TextDocuments,
 } from "vscode-languageserver/node";
 
-import { initializeResult } from "./capabilities.js";
+import {
+  buildServerCapabilities,
+  clientSupportsConfiguration,
+  clientSupportsDidChangeConfiguration,
+  clientSupportsPullDiagnostics,
+} from "./capabilities.js";
+
+/** Debounce window for the push-diagnostics path, in milliseconds. */
+const PUSH_DEBOUNCE_MS = 200;
+
+/** The configuration section the client is asked to resolve / that carries our settings. */
+const CONFIGURATION_SECTION = "hoverfly";
+
+/**
+ * Read the `hoverfly.*` settings out of an arbitrary configuration object (from either
+ * `initializationOptions` or a `workspace/configuration` response). Only known, well-typed
+ * keys are lifted; everything else is ignored so a malformed client config cannot crash us.
+ */
+function pickSettings(raw: unknown): HoverflyServiceSettings {
+  if (typeof raw !== "object" || raw === null) {
+    return {};
+  }
+  const candidate = raw as { registeredActions?: unknown };
+  const actions = candidate.registeredActions;
+  if (Array.isArray(actions)) {
+    const registeredActions = actions.filter((a): a is string => typeof a === "string");
+    return { registeredActions };
+  }
+  return {};
+}
 
 /**
  * Build (but do not start) the Hoverfly language server over a given connection.
  *
- * Scaffold phase: the `initialize` handshake is real, and didOpen/didChange are wired to
- * a validate pass that delegates to `@hoverfly-lsp/core`. Core currently returns `[]` for
- * every document (no-op validate), and the server skips non-Hoverfly files via the D3
- * fingerprint before even calling validate. Real diagnostics land in later phases.
+ * Diagnostics flow through both LSP channels (decision D1):
+ *   - PULL: `textDocument/diagnostic` returns a full report on demand.
+ *   - PUSH: `connection.sendDiagnostics` on didOpen/didChange, debounced ~200ms with stale
+ *     cancellation.
+ * To avoid doing the work twice, push is SKIPPED whenever the client advertised pull support
+ * (it will call `textDocument/diagnostic` itself). Clients without pull still get push.
+ *
+ * The fingerprint/HF101 gate (decision D3) lives entirely in `core.doValidation`, so the
+ * server does NOT pre-gate with `isSimulation` — a non-simulation file simply validates to
+ * `[]` (or HF101 for a hoverfly-named file), with no double fingerprinting.
  */
+/**
+ * Spec: any request other than `initialize` (and `$/...`) received before `initialize` has
+ * succeeded must fail with ServerNotInitialized (-32002). Feature request handlers return this
+ * when the lifecycle guard is not yet set.
+ */
+function notInitialized<E>(): ResponseError<E> {
+  return new ResponseError<E>(
+    ErrorCodes.ServerNotInitialized,
+    "Server received a request before `initialize`.",
+  );
+}
+
 function createServer(connection: Connection): void {
   const documents = new TextDocuments(TextDocument);
-  const service = createHoverflyLanguageService();
 
-  connection.onInitialize(() => initializeResult);
+  /*
+   * Live, recreatable service: setting changes rebuild it so every rule context (HF602's
+   * registeredActions allowlist, etc.) picks up new values. Cheap to recreate (no I/O — the
+   * schema is bundled and resolved offline).
+   */
+  let settings: HoverflyServiceSettings = {};
+  let service: HoverflyLanguageService = createHoverflyLanguageService([], settings);
 
-  const validate = async (document: TextDocument): Promise<void> => {
-    // Skip JSON that does not look like a Hoverfly simulation (decision D3).
-    if (!service.isSimulation(document)) {
-      connection.sendDiagnostics({ uri: document.uri, diagnostics: [] });
-      return;
-    }
-    const diagnostics = await service.doValidation(document);
-    connection.sendDiagnostics({ uri: document.uri, diagnostics });
+  let clientCapabilities: ClientCapabilities = {};
+  let usePull = false;
+  let hasConfigurationCapability = false;
+  /*
+   * LSP $/lifecycle ordering guard. Set once `initialize` succeeds. Feature requests received
+   * before this is set must fail with ServerNotInitialized (-32002); a second `initialize`
+   * while set must fail with InvalidRequest (-32600). See the LSP 3.17 Lifecycle section.
+   */
+  let hasInitialized = false;
+
+  const rebuildService = (): void => {
+    service = createHoverflyLanguageService([], settings);
   };
 
+  // ----- Diagnostics -------------------------------------------------------------------------
+
+  const pushTimers = new Map<string, ReturnType<typeof setTimeout>>();
+
+  const cancelPush = (uri: string): void => {
+    const pending = pushTimers.get(uri);
+    if (pending !== undefined) {
+      clearTimeout(pending);
+      pushTimers.delete(uri);
+    }
+  };
+
+  const schedulePush = (document: TextDocument): void => {
+    // Pull-capable clients fetch diagnostics themselves; never push to them (avoid double work).
+    if (usePull) {
+      return;
+    }
+    const { uri } = document;
+    const { version } = document;
+    cancelPush(uri);
+    const timer = setTimeout(() => {
+      pushTimers.delete(uri);
+      // Stale-edit guard: a newer version may have arrived (and rescheduled) while we waited.
+      const current = documents.get(uri);
+      if (current !== undefined && current.version !== version) {
+        return;
+      }
+      void service
+        .doValidation(document)
+        .then((diagnostics) => {
+          connection.sendDiagnostics({ uri, version, diagnostics });
+        })
+        .catch((error: unknown) => {
+          connection.console.error(`hoverfly-lsp: validation failed for ${uri}: ${String(error)}`);
+        });
+    }, PUSH_DEBOUNCE_MS);
+    pushTimers.set(uri, timer);
+  };
+
+  // ----- Settings ----------------------------------------------------------------------------
+
+  const refreshConfiguration = async (): Promise<void> => {
+    if (!hasConfigurationCapability) {
+      return;
+    }
+    try {
+      const result: unknown = await connection.workspace.getConfiguration(CONFIGURATION_SECTION);
+      settings = pickSettings(result);
+      rebuildService();
+    } catch (error: unknown) {
+      connection.console.error(`hoverfly-lsp: failed to read configuration: ${String(error)}`);
+    }
+  };
+
+  const revalidateOpenDocuments = (): void => {
+    for (const document of documents.all()) {
+      schedulePush(document);
+    }
+  };
+
+  // ----- Lifecycle ---------------------------------------------------------------------------
+
+  connection.onInitialize(
+    (params: InitializeParams): InitializeResult | ResponseError<InitializeError> => {
+      // Spec: a second `initialize` is an InvalidRequest; the first result still stands.
+      if (hasInitialized) {
+        return new ResponseError<InitializeError>(
+          ErrorCodes.InvalidRequest,
+          "Server already initialized; a second initialize request is not allowed.",
+        );
+      }
+      clientCapabilities = params.capabilities;
+      usePull = clientSupportsPullDiagnostics(clientCapabilities);
+      hasConfigurationCapability = clientSupportsConfiguration(clientCapabilities);
+
+      /*
+       * The initializationOptions object is the fallback settings source for clients that lack
+       * workspace/configuration support; workspace/configuration (if supported) overrides it
+       * once the connection is initialized.
+       */
+      settings = pickSettings(params.initializationOptions);
+      rebuildService();
+
+      hasInitialized = true;
+      return {
+        capabilities: buildServerCapabilities(),
+        serverInfo: { name: "hoverfly-lsp" },
+      };
+    },
+  );
+
+  connection.onInitialized(() => {
+    if (clientSupportsDidChangeConfiguration(clientCapabilities)) {
+      void connection.client.register(DidChangeConfigurationNotification.type, {
+        section: CONFIGURATION_SECTION,
+      });
+    }
+    // Pull the authoritative config now that the client can answer workspace/configuration.
+    void refreshConfiguration().then(() => {
+      revalidateOpenDocuments();
+    });
+  });
+
+  connection.onDidChangeConfiguration((change) => {
+    if (hasConfigurationCapability) {
+      void refreshConfiguration().then(() => {
+        revalidateOpenDocuments();
+      });
+      return;
+    }
+    // Push-config clients send the settings inline.
+    settings = pickSettings((change.settings as null | { hoverfly?: unknown })?.hoverfly);
+    rebuildService();
+    revalidateOpenDocuments();
+  });
+
+  // ----- PULL diagnostics --------------------------------------------------------------------
+
+  connection.languages.diagnostics.on(async (params) => {
+    if (!hasInitialized) {
+      return notInitialized<DiagnosticServerCancellationData>();
+    }
+    const document = documents.get(params.textDocument.uri);
+    return {
+      kind: "full",
+      items: document === undefined ? [] : await service.doValidation(document),
+    };
+  });
+
+  // ----- Completion & hover ------------------------------------------------------------------
+
+  connection.onCompletion((params) => {
+    if (!hasInitialized) {
+      return notInitialized<void>();
+    }
+    const document = documents.get(params.textDocument.uri);
+    if (document === undefined) {
+      return null;
+    }
+    return service.doComplete(document, params.position);
+  });
+
+  connection.onHover((params) => {
+    if (!hasInitialized) {
+      return notInitialized<void>();
+    }
+    const document = documents.get(params.textDocument.uri);
+    if (document === undefined) {
+      return null;
+    }
+    return service.doHover(document, params.position);
+  });
+
+  // ----- Document sync -> push diagnostics ---------------------------------------------------
+
   documents.onDidChangeContent(({ document }) => {
-    void validate(document);
+    schedulePush(document);
+  });
+
+  documents.onDidClose(({ document }) => {
+    cancelPush(document.uri);
+    // Clear diagnostics for the closed document (push clients only; pull clients re-query).
+    if (!usePull) {
+      connection.sendDiagnostics({ uri: document.uri, diagnostics: [] });
+    }
   });
 
   documents.listen(connection);
 }
 
 /**
- * Start the server over stdio (the default transport).
+ * Start the server. The transport (`--stdio` / `--node-ipc` / `--socket=PORT`) is detected by
+ * `vscode-languageserver/node` from `process.argv`; the CLI validates the flags up front.
  */
-export function startStdioServer(): void {
+export function startServer(): void {
   const connection = createConnection(ProposedFeatures.all);
   createServer(connection);
   connection.listen();
