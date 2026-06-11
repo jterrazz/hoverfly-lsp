@@ -162,19 +162,32 @@ requires the wasm std component, which only `rustup` provides — see Prerequisi
 
 ### Semantic highlighting
 
-The server advertises an LSP **semantic tokens** provider, and Zed consumes LSP semantic tokens
-natively — there is **no per-language opt-in to flip**. As long as the **Hoverfly LSP** server is
-running, Zed requests `textDocument/semanticTokens/full` for open `*.hoverfly.json` files and layers
-the server's tokens on top of the JSON tree-sitter highlighting. This colors the Handlebars template
+The server advertises an LSP **semantic tokens** provider that colors the Handlebars template
 syntax inside templated body/header strings (helper names, `{{ }}` delimiters, path roots/segments,
 known faker types, matcher-name enums) that the JSON grammar alone cannot see.
 
+> **Zed requires you to opt in — semantic tokens are OFF by default** (`semantic_tokens: "off"`).
+> Until you enable them, Zed never sends `textDocument/semanticTokens/full`, so the templates stay
+> the plain string color. Add to your Zed `settings.json` (`cmd-,`):
+>
+> ```json
+> {
+>   "semantic_tokens": "combined"
+> }
+> ```
+>
+> `"combined"` overlays the server's tokens on Zed's tree-sitter JSON highlighting (recommended);
+> `"full"` uses the server's tokens exclusively. To scope it to Hoverfly files only, nest it instead:
+> `{ "languages": { "Hoverfly": { "semantic_tokens": "combined" } } }`. Then run
+> **`editor: restart language server`** from the command palette (a mode change needs a server
+> restart to take effect).
+
 The legend uses only standard LSP token types, which Zed maps to its theme's existing highlight
-categories (`function`, `keyword`, `property`, `variable`, `enum`/`enumMember`, `string`, `number`,
-`operator`). No theme edit is required for the tokens to take color, though a given theme may render
-some standard types more subtly than others. If you see no semantic coloring at all, first confirm
-the language server is actually **running** (semantic tokens are a server feature, not a grammar
-feature) and check `~/.local/share/zed/logs/Zed.log` for `semanticTokens` traffic.
+categories (`function`, `keyword`, `property`, `variable`, `enumMember`, `string`, `number`,
+`operator`); a given theme may render some types more subtly than others. To debug what is actually
+applied, run **`dev: open highlights tree view`** from the command palette — it lists every token
+(including LSP semantic tokens) for the current buffer. If you see nothing, confirm `semantic_tokens`
+is enabled, the **Hoverfly LSP** server is running, and check `~/.local/share/zed/logs/Zed.log`.
 
 ### Manual QA checklist (in Zed)
 
@@ -185,9 +198,10 @@ feature) and check `~/.local/share/zed/logs/Zed.log` for `semanticTokens` traffi
 - [ ] Opening `hoverfly-simulation.json` is detected the same way.
 - [ ] JSON syntax highlighting is applied (keys, strings, numbers, `true`/`false`/
       `null`).
-- [ ] In a templated body (`"templated": true`, `"body": "{{ faker 'Name' }}"`), the template
-      syntax is colored differently from plain string content (helper name as a function, `{{`/`}}`
-      as operators) — i.e. semantic tokens are being applied. A plain `.json` shows no such coloring.
+- [ ] With `"semantic_tokens": "combined"` set in Zed settings and the server restarted: in a
+      templated body (`"templated": true`, `"body": "{{ faker 'Name' }}"`), the template syntax is
+      colored differently from plain string content (helper name as a function, `{{`/`}}` as
+      operators). Without the setting, Zed shows no semantic coloring (it is off by default).
 - [ ] The **Hoverfly LSP** server starts (visible in the language server logs).
 - [ ] Introduce a deliberate error (e.g. set `meta.schemaVersion` to a bad value)
       and confirm a diagnostic appears.

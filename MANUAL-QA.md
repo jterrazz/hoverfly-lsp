@@ -80,10 +80,12 @@ work until it is published.
 - [ ] Opening `testdata/valid/minimal.hoverfly.json` shows language **Hoverfly**.
 - [ ] Opening a file named `hoverfly-simulation.json` is detected the same way.
 - [ ] JSON syntax highlighting applies (keys, strings, numbers, `true`/`false`/`null`).
-- [ ] **Semantic highlighting:** in a templated body (`"templated": true`,
-      `"body": "{{ faker 'Name' }}"`), the template syntax is colored distinctly from plain string
-      content (helper as function, `{{`/`}}` as operators). Zed consumes LSP semantic tokens natively
-      with no per-language opt-in — they appear once the server is running. A plain `.json` shows none.
+- [ ] **Semantic highlighting (opt-in):** Zed has semantic tokens **off by default**. Set
+      `"semantic_tokens": "combined"` in Zed `settings.json`, then `editor: restart language server`.
+      In a templated body (`"templated": true`, `"body": "{{ faker 'Name' }}"`), the template syntax
+      is then colored distinctly from plain string content (helper as function, `{{`/`}}` as
+      operators). Inspect with `dev: open highlights tree view`. Without the setting, no semantic
+      coloring appears — expected.
 - [ ] The **Hoverfly LSP** server starts (visible in the language-server logs).
 - [ ] Introduce an error (e.g. bad `meta.schemaVersion`) → a diagnostic appears.
 - [ ] Open an unrelated `.json` (e.g. `package.json`) → NOT detected as Hoverfly, no diagnostics.
