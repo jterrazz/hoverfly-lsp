@@ -267,13 +267,37 @@ interface CorpusExpectation {
 }
 
 /**
- * Read and parse a `<case>.expect.json` sidecar from disk. No schema validation beyond JSON
- * parsing — the runner asserts shape by use, and a malformed sidecar surfaces as a readable test
- * failure naming the file.
+ * Read and parse a `<case>.expect.json` sidecar from disk. Robustness: a missing sidecar, malformed
+ * JSON, or an empty/absent `markers` map each surface as a readable error NAMING the file (rather
+ * than a raw `ENOENT`/`SyntaxError`, or — worse — a fixture that silently asserts nothing). Beyond
+ * those, the runner asserts shape by use.
  */
 function loadCorpusExpectation(sidecarPath: string): CorpusExpectation {
-  const raw = readFileSync(sidecarPath, "utf8");
-  return JSON.parse(raw) as CorpusExpectation;
+  let raw: string;
+  try {
+    raw = readFileSync(sidecarPath, "utf8");
+  } catch {
+    throw new Error(
+      `Missing expectation sidecar '${sidecarPath}'. Every '*.hoverfly.json' fixture needs a sibling '*.expect.json'.`,
+    );
+  }
+  let parsed: CorpusExpectation;
+  try {
+    parsed = JSON.parse(raw) as CorpusExpectation;
+  } catch (error) {
+    throw new Error(`Malformed expectation sidecar '${sidecarPath}': ${(error as Error).message}`, { cause: cause });
+  }
+  if (
+    parsed.markers === undefined ||
+    typeof parsed.markers !== "object" ||
+    Object.keys(parsed.markers).length === 0
+  ) {
+    throw new Error(
+      `Expectation sidecar '${sidecarPath}' declares no markers — it would assert nothing. ` +
+        `Add a 'markers' map keyed by marker name ('' for the single unnamed ⟦⟧ marker).`,
+    );
+  }
+  return parsed;
 }
 
 /**

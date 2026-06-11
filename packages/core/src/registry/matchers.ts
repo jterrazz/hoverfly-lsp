@@ -216,7 +216,7 @@ export const MATCHER_SPECS: readonly MatcherSpec[] = [
     bodyOnly: true,
     // BodyMatching / getValueFromMatcherView use a literal == comparison, not lowercasing.
     caseSensitiveLookup: true,
-    docs: `Body-layer pseudo-matcher (NOT in the registry). Value is an object {fieldName: [matchers...]}. Valid ONLY on the request \`body\` and ONLY as a top-level matcher; case-SENSITIVE literal \`form\` (\`Form\`/\`FORM\` or non-body placement falls through to the registry and PANICs). ${DOCS_BASE}`,
+    docs: `Body-layer pseudo-matcher (NOT in the registry). Value is an object {fieldName: [matchers...]}. Valid ONLY on the request \`body\` and ONLY as a top-level matcher; the literal name \`form\` is case-SENSITIVE (\`Form\`/\`FORM\` or non-body placement is not recognised). ${DOCS_BASE}`,
   },
 ];
 

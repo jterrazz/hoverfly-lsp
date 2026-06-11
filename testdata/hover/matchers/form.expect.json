@@ -11,6 +11,9 @@
             ],
             "excludes": [
                 "CRASHES",
+                "PANIC",
+                "PANICs",
+                "panic",
                 "Unknown matcher name",
                 "config on a non-array matcher"
             ]

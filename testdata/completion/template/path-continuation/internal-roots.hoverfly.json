@@ -1,0 +1,17 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": { "path": [{ "matcher": "exact", "value": "/x" }] },
+                "response": {
+                    "status": 200,
+                    "templated": true,
+                    "body": "kvs={{Kvs.⟦a⟧key}} iv={{InternalVars.⟦b⟧token}}"
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

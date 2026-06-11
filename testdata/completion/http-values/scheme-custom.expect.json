@@ -1,0 +1,10 @@
+{
+    "markers": {
+        "": {
+            "includes": ["http", "https", "ws", "wss"],
+            "excludes": ["gopher", "GET", "ftp"],
+            "count": 4,
+            "kindOf": { "https": "EnumMember" }
+        }
+    }
+}
