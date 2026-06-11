@@ -9,7 +9,7 @@
     {
       "fileType": {
         "name": "Hoverfly",
-        "patterns": ["*.hoverfly.json", "hoverfly-simulation.json"]
+        "patterns": ["*.hoverfly.json", "*.hfy", "hoverfly-simulation.json"]
       },
       "languageId": "hoverfly-simulation"
     }

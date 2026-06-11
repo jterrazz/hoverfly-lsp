@@ -33,8 +33,9 @@ the artifact and the bundle can never drift apart silently.
 
 ## How to use it today (before SchemaStore lists it)
 
-Name your simulation files `*.hoverfly.json` (or `hoverfly-simulation.json`) — that is the
-convention this schema and the LSP promote.
+Name your simulation files `*.hoverfly.json`, `*.hfy`, or `hoverfly-simulation.json` — those are
+the conventions this schema and the LSP promote. (`.hfy` is the compact extension; the others keep
+the `.json` suffix so generic JSON tooling still applies.)
 
 ### Self-declare with `$schema` (works everywhere)
 
@@ -61,7 +62,7 @@ In `.vscode/settings.json` (or user settings):
 {
   "json.schemas": [
     {
-      "fileMatch": ["*.hoverfly.json", "hoverfly-simulation.json"],
+      "fileMatch": ["*.hoverfly.json", "*.hfy", "hoverfly-simulation.json"],
       "url": "https://json.schemastore.org/hoverfly-simulation.json",
     },
   ],

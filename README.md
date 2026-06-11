@@ -284,9 +284,11 @@ the bundled schema by hand via `json.schemas` in your settings.
 
 ## File conventions
 
-Name simulations **`*.hoverfly.json`** (canonical) or **`hoverfly-simulation.json`**. Explicitly
-named files always get full treatment, including a "this doesn't look like a simulation"
-diagnostic when the shape is wrong.
+Name simulations **`*.hoverfly.json`** (canonical), **`*.hfy`** (compact), or
+**`hoverfly-simulation.json`**. Explicitly named files always get full treatment, including a
+"this doesn't look like a simulation" diagnostic when the shape is wrong. `*.hoverfly.json` keeps
+the `.json` suffix so generic JSON tooling still applies; `*.hfy` is the shortest option and is the
+cleanest fit for editors that key off a single file extension (e.g. Claude Code).
 
 For any other `.json`, the server **content-fingerprints** it — a root `data` object plus a
 `meta.schemaVersion` starting with `v`. Files that aren't simulations get **zero** diagnostics, so

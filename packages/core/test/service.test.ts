@@ -80,6 +80,28 @@ describe("createHoverflyLanguageService — schema-driven validation", () => {
     expect(diagnostics[0]?.source).toBe("hoverfly");
   });
 
+  it("treats a .hfy file as a Hoverfly simulation (schema + semantic)", async () => {
+    // Given - a structurally-broken simulation in a .hfy file (not a .json extension)
+    const text = `{"data":{"pairs":{}},"meta":{"schemaVersion":"v5.3"}}`;
+    const document = TextDocument.create("file:///api.hfy", "json", 1, text);
+    // When - validated
+    const diagnostics = await service.doValidation(document);
+    // Then - the bundled schema still applies via the *.hfy fileMatch (HF102)
+    expect(diagnostics.length).toBeGreaterThan(0);
+    expect(diagnostics.some((d) => d.code === "HF102")).toBe(true);
+  });
+
+  it("emits HF101 for a .hfy file that is not a simulation", async () => {
+    // Given - arbitrary JSON in a .hfy file (explicit hoverfly name)
+    const text = `{"hello":"world"}`;
+    const document = TextDocument.create("file:///notes.hfy", "json", 1, text);
+    // When - validated
+    const diagnostics = await service.doValidation(document);
+    // Then - the explicit .hfy name gets the "does not look like a simulation" diagnostic
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0]?.code).toBe("HF101");
+  });
+
   it("does not flag the request.method property (valid per D5)", async () => {
     // Given - a pair using the method field, which the official schema omits
     const text = `{"data":{"pairs":[{"request":{"method":[{"matcher":"exact","value":"GET"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;

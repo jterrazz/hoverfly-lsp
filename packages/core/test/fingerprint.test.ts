@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { isHoverflySimulation } from "../src/fingerprint.js";
+import { hasHoverflyFilename, isHoverflySimulation } from "../src/fingerprint.js";
 
 describe("isHoverflySimulation", () => {
   it("accepts a minimal valid v5.3 simulation", () => {
@@ -109,5 +109,27 @@ describe("isHoverflySimulation", () => {
     });
     // Then - rejected
     expect(isHoverflySimulation(text)).toBe(false);
+  });
+});
+
+describe("hasHoverflyFilename", () => {
+  it("matches the canonical filename conventions", () => {
+    expect(hasHoverflyFilename("api.hoverfly.json")).toBe(true);
+    expect(hasHoverflyFilename("hoverfly-simulation.json")).toBe(true);
+    expect(hasHoverflyFilename("file:///a/b/users.hoverfly.json")).toBe(true);
+  });
+
+  it("matches the .hfy extension", () => {
+    expect(hasHoverflyFilename("api.hfy")).toBe(true);
+    expect(hasHoverflyFilename("file:///some/dir/login.hfy")).toBe(true);
+    expect(hasHoverflyFilename("API.HFY")).toBe(true); // Case-insensitive
+    expect(hasHoverflyFilename("login.hfy?version=2")).toBe(true); // URI query stripped
+  });
+
+  it("does not match plain or unrelated files", () => {
+    expect(hasHoverflyFilename("package.json")).toBe(false);
+    expect(hasHoverflyFilename("notes.hfyx")).toBe(false);
+    expect(hasHoverflyFilename("hfy")).toBe(false);
+    expect(hasHoverflyFilename("config.yaml")).toBe(false);
   });
 });

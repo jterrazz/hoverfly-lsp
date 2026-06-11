@@ -132,7 +132,7 @@ export function createHoverflyLanguageService(
   service.configure({
     validate: true,
     allowComments: false,
-    schemas: [{ uri: SCHEMA_URI, fileMatch: ["*.json"] }],
+    schemas: [{ uri: SCHEMA_URI, fileMatch: ["*.json", "*.hfy"] }],
   });
 
   function parse(document: TextDocument): JSONDocument {

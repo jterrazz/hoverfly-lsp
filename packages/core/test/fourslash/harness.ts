@@ -285,7 +285,9 @@ function loadCorpusExpectation(sidecarPath: string): CorpusExpectation {
   try {
     parsed = JSON.parse(raw) as CorpusExpectation;
   } catch (error) {
-    throw new Error(`Malformed expectation sidecar '${sidecarPath}': ${(error as Error).message}`, { cause: cause });
+    throw new Error(`Malformed expectation sidecar '${sidecarPath}': ${(error as Error).message}`, {
+      cause: error,
+    });
   }
   if (
     parsed.markers === undefined ||

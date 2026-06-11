@@ -53,8 +53,9 @@ export function isHoverflySimulationAst(root: ASTNode | undefined): boolean {
  */
 /**
  * Whether a document URI/path matches the canonical Hoverfly filename conventions
- * (`*.hoverfly.json` or `hoverfly-simulation.json`, decision D3). Explicitly-named files
- * always get full treatment, including the "this doesn't look like a simulation" diagnostic.
+ * (`*.hoverfly.json`, `*.hfy`, or `hoverfly-simulation.json`, decision D3). Explicitly-named
+ * files always get full treatment, including the "this doesn't look like a simulation"
+ * diagnostic.
  *
  * Robust to URIs (`file:///a/b/foo.hoverfly.json`) and bare paths; case-insensitive on the
  * filename. Never throws.
@@ -63,7 +64,11 @@ export function hasHoverflyFilename(uri: string): boolean {
   // Take the last path segment (strip any query/fragment a URI might carry).
   const withoutQuery = uri.split(/[?#]/, 1)[0] ?? uri;
   const segment = (withoutQuery.split("/").pop() ?? withoutQuery).toLowerCase();
-  return segment.endsWith(".hoverfly.json") || segment === "hoverfly-simulation.json";
+  return (
+    segment.endsWith(".hoverfly.json") ||
+    segment.endsWith(".hfy") ||
+    segment === "hoverfly-simulation.json"
+  );
 }
 
 export function isHoverflySimulation(text: string): boolean {

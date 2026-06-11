@@ -45,6 +45,9 @@
           "Hoverfly Simulation",
           "hoverfly"
         ],
+        "extensions": [
+          ".hfy"
+        ],
         "filenamePatterns": [
           "*.hoverfly.json",
           "hoverfly-simulation.json"
