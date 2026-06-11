@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF511",
+    "severity": "error",
+    "range": {
+      "start": [
+        14,
+        55
+      ],
+      "end": [
+        14,
+        67
+      ]
+    },
+    "message": "Unknown variable function \"notAHelper\" — Hoverfly rejects the import (only the 52 helper functions are valid)"
+  }
+]

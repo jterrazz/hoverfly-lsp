@@ -20,6 +20,8 @@
     "build": "tsc --build"
   },
   "dependencies": {
+    "fast-xml-parser": "^5.8.0",
+    "re2js": "^2.8.3",
     "vscode-json-languageservice": "^5.7.2",
     "vscode-languageserver-textdocument": "^1.0.12",
     "vscode-languageserver-types": "^3.18.0"

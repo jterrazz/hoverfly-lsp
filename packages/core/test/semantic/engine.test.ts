@@ -68,14 +68,25 @@ describe("applyHF102Layer", () => {
     expect(out).toEqual([]);
   });
 
-  it("keeps a schema diagnostic that overlaps a non-HF2xx semantic diagnostic", () => {
-    // Given - a schema diagnostic overlapping an HF1xx (non-matcher) diagnostic
+  it("keeps a schema diagnostic that overlaps a non-suppressing semantic diagnostic", () => {
+    // Given - a schema diagnostic overlapping an HF1xx (non-suppressing) diagnostic
     const node = range(3, 10, 17);
     const out = applyHF102Layer([diag("0", node)], [diag("HF104", node)]);
-    // Then - only HF2xx suppresses schema noise, so it survives
+    // Then - only the suppressing set (HF2xx + value-shape codes) de-noises schema, so it survives
     expect(out).toHaveLength(1);
     expect(out[0]?.code).toBe("HF102");
   });
+
+  it.each(["HF308", "HF404", "HF405"])(
+    "suppresses a schema diagnostic overlapping a value-shape %s diagnostic",
+    (code) => {
+      // Given - a schema diagnostic and a value-shape error on the same node (a re-stated 400)
+      const node = range(4, 8, 20);
+      const out = applyHF102Layer([diag("0", node)], [diag(code, node)]);
+      // Then - the noisy schema passthrough is dropped in favour of the targeted message
+      expect(out).toEqual([]);
+    },
+  );
 });
 
 describe("sortByRange", () => {

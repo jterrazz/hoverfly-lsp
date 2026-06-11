@@ -1,0 +1,47 @@
+[
+  {
+    "code": "HF230",
+    "severity": "error",
+    "range": {
+      "start": [
+        5,
+        60
+      ],
+      "end": [
+        5,
+        65
+      ]
+    },
+    "message": "Invalid RE2 regex — Hoverfly (Go regexp) silently never matches this"
+  },
+  {
+    "code": "HF230",
+    "severity": "error",
+    "range": {
+      "start": [
+        6,
+        67
+      ],
+      "end": [
+        6,
+        80
+      ]
+    },
+    "message": "Invalid RE2 regex — Hoverfly (Go regexp) silently never matches this"
+  },
+  {
+    "code": "HF230",
+    "severity": "error",
+    "range": {
+      "start": [
+        8,
+        65
+      ],
+      "end": [
+        8,
+        77
+      ]
+    },
+    "message": "Invalid RE2 regex — Hoverfly (Go regexp) silently never matches this"
+  }
+]

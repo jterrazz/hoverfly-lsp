@@ -1,0 +1,32 @@
+[
+  {
+    "code": "HF231",
+    "severity": "error",
+    "range": {
+      "start": [
+        5,
+        59
+      ],
+      "end": [
+        5,
+        76
+      ]
+    },
+    "message": "\"json\" value must be JSON text; this is not valid JSON, so the pair never matches"
+  },
+  {
+    "code": "HF231",
+    "severity": "error",
+    "range": {
+      "start": [
+        6,
+        66
+      ],
+      "end": [
+        6,
+        75
+      ]
+    },
+    "message": "\"jsonpartial\" value must be JSON text; this is not valid JSON, so the pair never matches"
+  }
+]

@@ -39,6 +39,16 @@ describe("diagnostic catalog", () => {
       HF209: E,
       HF210: H,
       HF211: W,
+      HF212: W,
+      HF213: I,
+      HF214: W,
+      HF230: E,
+      HF231: E,
+      HF232: W,
+      HF233: W,
+      HF234: W,
+      HF235: W,
+      HF236: W,
       HF301: W,
       HF302: W,
       HF303: W,
@@ -46,9 +56,12 @@ describe("diagnostic catalog", () => {
       HF305: W,
       HF306: W,
       HF307: W,
+      HF308: E,
       HF401: W,
       HF402: I,
       HF403: I,
+      HF404: E,
+      HF405: E,
       HF501: W,
       HF502: E,
       HF503: E,
@@ -59,8 +72,12 @@ describe("diagnostic catalog", () => {
       HF508: W,
       HF509: W,
       HF510: E,
+      HF511: E,
+      HF512: W,
       HF601: W,
       HF602: I,
+      HF603: W,
+      HF604: I,
     };
     // Then - every code's severity matches the frozen table exactly (no row escapes coverage)
     for (const [code, entry] of Object.entries(DIAGNOSTIC_CATALOG)) {
@@ -72,14 +89,16 @@ describe("diagnostic catalog", () => {
     );
   });
 
-  it("contains all 37 catalog codes including HF5xx placeholders", () => {
+  it("contains all 54 catalog codes including the structural-strictness extension", () => {
     // Given - the catalog
-    // Then - HF101..HF602 are all present
+    // Then - HF101..HF604 are all present (37 original + 17 additive structural-strictness codes)
     const codes = Object.keys(DIAGNOSTIC_CATALOG);
     expect(codes).toContain("HF101");
-    expect(codes).toContain("HF510");
-    expect(codes).toContain("HF602");
-    expect(codes).toHaveLength(37);
+    expect(codes).toContain("HF230");
+    expect(codes).toContain("HF511");
+    expect(codes).toContain("HF603");
+    expect(codes).toContain("HF604");
+    expect(codes).toHaveLength(54);
   });
 });
 

@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF213",
+    "severity": "information",
+    "range": {
+      "start": [
+        5,
+        47
+      ],
+      "end": [
+        5,
+        80
+      ]
+    },
+    "message": "destination matches the request host only (host[:port]); \"https://host.internal:8443/path\" includes a scheme or path and will never match"
+  }
+]

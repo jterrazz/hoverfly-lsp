@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF235",
+    "severity": "warning",
+    "range": {
+      "start": [
+        9,
+        41
+      ],
+      "end": [
+        9,
+        67
+      ]
+    },
+    "message": "jwt value should be a partial {\"header\":…,\"payload\":…} spec; key \"username\" can never match a JWT"
+  }
+]

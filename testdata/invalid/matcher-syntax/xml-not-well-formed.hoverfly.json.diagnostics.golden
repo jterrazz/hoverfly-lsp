@@ -1,0 +1,32 @@
+[
+  {
+    "code": "HF234",
+    "severity": "warning",
+    "range": {
+      "start": [
+        5,
+        58
+      ],
+      "end": [
+        5,
+        70
+      ]
+    },
+    "message": "\"xml\" value is not well-formed XML; this pair never matches"
+  },
+  {
+    "code": "HF234",
+    "severity": "warning",
+    "range": {
+      "start": [
+        16,
+        37
+      ],
+      "end": [
+        16,
+        82
+      ]
+    },
+    "message": "\"xmltemplated\" value is not well-formed XML; this pair never matches"
+  }
+]

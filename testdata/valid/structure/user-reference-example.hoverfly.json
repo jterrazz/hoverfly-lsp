@@ -1,0 +1,124 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [
+                        {
+                            "matcher": "glob",
+                            "value": "/users/*"
+                        }
+                    ],
+                    "method": [
+                        {
+                            "matcher": "exact",
+                            "value": "GET"
+                        }
+                    ],
+                    "query": {
+                        "expand": [
+                            {
+                                "matcher": "regex",
+                                "value": "^(true|false)$"
+                            }
+                        ]
+                    },
+                    "requiresState": {
+                        "authenticated": "true"
+                    }
+                },
+                "response": {
+                    "status": 200,
+                    "body": "{\"id\":\"{{ Request.Path.[1] }}\",\"now\":\"{{ now '' }}\",\"name\":\"{{ faker 'Name' }}\",\"v\":\"{{ Literals.apiVersion }}\"}",
+                    "templated": true,
+                    "headers": {
+                        "Content-Type": ["application/json"]
+                    },
+                    "transitionsState": {
+                        "userFetched": "true"
+                    }
+                }
+            },
+            {
+                "request": {
+                    "path": [
+                        {
+                            "matcher": "exact",
+                            "value": "/login"
+                        }
+                    ],
+                    "method": [
+                        {
+                            "matcher": "exact",
+                            "value": "POST"
+                        }
+                    ],
+                    "body": [
+                        {
+                            "matcher": "jsonpath",
+                            "value": "$.username",
+                            "doMatch": {
+                                "matcher": "exact",
+                                "value": "alice"
+                            }
+                        }
+                    ],
+                    "headers": {
+                        "Authorization": [
+                            {
+                                "matcher": "glob",
+                                "value": "Bearer *"
+                            }
+                        ]
+                    },
+                    "requiresState": {
+                        "userFetched": "true"
+                    }
+                },
+                "response": {
+                    "status": 204,
+                    "transitionsState": {
+                        "authenticated": "true"
+                    },
+                    "removesState": ["userFetched"]
+                }
+            }
+        ],
+        "globalActions": {
+            "delays": [
+                {
+                    "urlPattern": "/users/.*",
+                    "httpMethod": "GET",
+                    "delay": 50
+                }
+            ],
+            "delaysLogNormal": [
+                {
+                    "urlPattern": "/login",
+                    "min": 10,
+                    "max": 100,
+                    "mean": 50,
+                    "median": 40
+                }
+            ]
+        },
+        "literals": [
+            {
+                "name": "apiVersion",
+                "value": "2026-06"
+            }
+        ],
+        "variables": [
+            {
+                "name": "randomName",
+                "function": "faker",
+                "arguments": ["Name"]
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3",
+        "hoverflyVersion": "v1.12.8",
+        "timeExported": "2026-06-11T00:00:00Z"
+    }
+}

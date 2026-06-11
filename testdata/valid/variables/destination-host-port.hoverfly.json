@@ -1,0 +1,28 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "destination": [{ "matcher": "exact", "value": "api.example.com:8443" }],
+                    "path": [{ "matcher": "exact", "value": "/v1/ping" }]
+                },
+                "response": {
+                    "status": 200,
+                    "body": "pong"
+                }
+            },
+            {
+                "request": {
+                    "destination": [{ "matcher": "glob", "value": "*.example.com" }]
+                },
+                "response": {
+                    "status": 200,
+                    "body": "ok"
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

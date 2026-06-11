@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF603",
+    "severity": "warning",
+    "range": {
+      "start": [
+        5,
+        20
+      ],
+      "end": [
+        5,
+        27
+      ]
+    },
+    "message": "Unknown key \"methd\" (did you mean \"method\"?) — silently ignored by Hoverfly"
+  }
+]

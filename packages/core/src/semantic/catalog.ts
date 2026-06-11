@@ -39,6 +39,16 @@ export type DiagnosticCode =
   | "HF209"
   | "HF210"
   | "HF211"
+  | "HF212"
+  | "HF213"
+  | "HF214"
+  | "HF230"
+  | "HF231"
+  | "HF232"
+  | "HF233"
+  | "HF234"
+  | "HF235"
+  | "HF236"
   | "HF301"
   | "HF302"
   | "HF303"
@@ -46,9 +56,12 @@ export type DiagnosticCode =
   | "HF305"
   | "HF306"
   | "HF307"
+  | "HF308"
   | "HF401"
   | "HF402"
   | "HF403"
+  | "HF404"
+  | "HF405"
   | "HF501"
   | "HF502"
   | "HF503"
@@ -59,8 +72,12 @@ export type DiagnosticCode =
   | "HF508"
   | "HF509"
   | "HF510"
+  | "HF511"
+  | "HF512"
   | "HF601"
-  | "HF602";
+  | "HF602"
+  | "HF603"
+  | "HF604";
 
 export interface CatalogEntry {
   readonly code: DiagnosticCode;
@@ -180,6 +197,72 @@ export const DIAGNOSTIC_CATALOG: Readonly<Record<DiagnosticCode, CatalogEntry>> 
     href: href("HF211"),
     messageTemplate: "Empty {name} value never matches",
   },
+  // Additive — structural strictness (report 13 §6); value-syntax (report 14 §4).
+  HF212: {
+    code: "HF212",
+    severity: W,
+    href: href("HF212"),
+    messageTemplate: 'Matcher has no "value" — it can never match (the value is nil)',
+  },
+  HF213: {
+    code: "HF213",
+    severity: I,
+    href: href("HF213"),
+    messageTemplate:
+      'destination matches the request host only (host[:port]); "{v}" includes a scheme or path and will never match',
+  },
+  HF214: {
+    code: "HF214",
+    severity: W,
+    href: href("HF214"),
+    messageTemplate:
+      'Name "{n}" contains a character that breaks "{{Literals.{n}}}" / "{{Vars.{n}}}" templating references',
+  },
+  HF230: {
+    code: "HF230",
+    severity: E,
+    href: href("HF230"),
+    messageTemplate: "Invalid RE2 regex — Hoverfly (Go regexp) silently never matches this",
+  },
+  HF231: {
+    code: "HF231",
+    severity: E,
+    href: href("HF231"),
+    messageTemplate:
+      '"{name}" value must be JSON text; this is not valid JSON, so the pair never matches',
+  },
+  HF232: {
+    code: "HF232",
+    severity: W,
+    href: href("HF232"),
+    messageTemplate: "JSONPath has unbalanced brackets or quotes",
+  },
+  HF233: {
+    code: "HF233",
+    severity: W,
+    href: href("HF233"),
+    messageTemplate: "XPath has unbalanced brackets or quotes",
+  },
+  HF234: {
+    code: "HF234",
+    severity: W,
+    href: href("HF234"),
+    messageTemplate: '"{name}" value is not well-formed XML; this pair never matches',
+  },
+  HF235: {
+    code: "HF235",
+    severity: W,
+    href: href("HF235"),
+    messageTemplate:
+      'jwt value should be a partial {"header":…,"payload":…} spec; key "{k}" can never match a JWT',
+  },
+  HF236: {
+    code: "HF236",
+    severity: W,
+    href: href("HF236"),
+    messageTemplate:
+      "array element {i} is not a string; Hoverfly cannot match a non-string element as written",
+  },
 
   // HF3xx — response.
   HF301: {
@@ -228,6 +311,12 @@ export const DIAGNOSTIC_CATALOG: Readonly<Record<DiagnosticCode, CatalogEntry>> 
     href: href("HF307"),
     messageTemplate: "{explain}",
   },
+  HF308: {
+    code: "HF308",
+    severity: E,
+    href: href("HF308"),
+    messageTemplate: "Response header values must be an array of strings — wrap it in [ … ]",
+  },
 
   // HF4xx — state.
   HF401: {
@@ -248,6 +337,18 @@ export const DIAGNOSTIC_CATALOG: Readonly<Record<DiagnosticCode, CatalogEntry>> 
     severity: I,
     href: href("HF403"),
     messageTemplate: 'State "{key}" is removed but never set',
+  },
+  HF404: {
+    code: "HF404",
+    severity: E,
+    href: href("HF404"),
+    messageTemplate: "State values must be strings — Hoverfly rejects this at import",
+  },
+  HF405: {
+    code: "HF405",
+    severity: E,
+    href: href("HF405"),
+    messageTemplate: "removesState entries must be strings — Hoverfly rejects this at import",
   },
 
   // HF5xx — templating.
@@ -314,6 +415,19 @@ export const DIAGNOSTIC_CATALOG: Readonly<Record<DiagnosticCode, CatalogEntry>> 
     href: href("HF510"),
     messageTemplate: "data.variables only accepts Hoverfly helper functions, not block built-ins",
   },
+  HF511: {
+    code: "HF511",
+    severity: E,
+    href: href("HF511"),
+    messageTemplate:
+      'Unknown variable function "{name}" — Hoverfly rejects the import (only the 52 helper functions are valid)',
+  },
+  HF512: {
+    code: "HF512",
+    severity: W,
+    href: href("HF512"),
+    messageTemplate: '"{fn}" expects {sig} arguments, got {n} — the variable renders empty',
+  },
 
   // HF6xx — globalActions & misc.
   HF601: {
@@ -327,6 +441,24 @@ export const DIAGNOSTIC_CATALOG: Readonly<Record<DiagnosticCode, CatalogEntry>> 
     severity: I,
     href: href("HF602"),
     messageTemplate: 'Action "{a}" is not in your configured registeredActions',
+  },
+  /*
+   * The unknown-key flagship. Severity is Warning because the doc still imports — it is a silent
+   * feature loss, not a reject (report 13 §6 false-positive guard (d)). The `{didYouMean}` slot is
+   * a pre-formatted suffix the rule supplies (e.g. ` (did you mean "status"?)`) or the empty string.
+   */
+  HF603: {
+    code: "HF603",
+    severity: W,
+    href: href("HF603"),
+    messageTemplate: 'Unknown key "{key}"{didYouMean} — silently ignored by Hoverfly',
+  },
+  HF604: {
+    code: "HF604",
+    severity: I,
+    href: href("HF604"),
+    messageTemplate:
+      'Prefer canonical "{canonical}" — "{key}" works (Go matches case-insensitively) but is non-standard',
   },
 };
 

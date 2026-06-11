@@ -1,0 +1,68 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/a" }],
+                    "method": [{ "matcher": "exact", "value": "GET" }],
+                    "destination": [{ "matcher": "exact", "value": "example.com" }],
+                    "scheme": [{ "matcher": "exact", "value": "https" }],
+                    "body": [
+                        {
+                            "matcher": "array",
+                            "value": ["a", "b"],
+                            "config": { "ignoreOrder": true }
+                        },
+                        {
+                            "matcher": "jsonpath",
+                            "value": "$.id",
+                            "doMatch": { "matcher": "exact", "value": "a" }
+                        }
+                    ],
+                    "headers": {
+                        "X-Req": [{ "matcher": "glob", "value": "*" }]
+                    },
+                    "query": {
+                        "q": [{ "matcher": "exact", "value": "1" }]
+                    }
+                },
+                "response": {
+                    "status": 200,
+                    "body": "ok",
+                    "encodedBody": false,
+                    "headers": { "Content-Type": ["text/plain"] },
+                    "templated": false,
+                    "transitionsState": { "ready": "yes" },
+                    "fixedDelay": 0,
+                    "logNormalDelay": { "min": 1, "max": 10, "mean": 5, "median": 4 },
+                    "postServeAction": ""
+                },
+                "labels": ["smoke"]
+            },
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/b" }],
+                    "requiresState": { "ready": "yes" }
+                },
+                "response": {
+                    "status": 200,
+                    "bodyFile": "page.html",
+                    "removesState": ["ready"]
+                }
+            }
+        ],
+        "globalActions": {
+            "delays": [{ "delay": 10, "httpMethod": "GET", "urlPattern": "/a" }],
+            "delaysLogNormal": [
+                { "min": 1, "max": 2, "mean": 1, "median": 1, "httpMethod": "POST", "urlPattern": "/b" }
+            ]
+        },
+        "literals": [{ "name": "x", "value": "y" }],
+        "variables": [{ "name": "n", "function": "randomString", "arguments": [] }]
+    },
+    "meta": {
+        "schemaVersion": "v5.3",
+        "hoverflyVersion": "v1.12.8",
+        "timeExported": "2026-06-11T00:00:00Z"
+    }
+}

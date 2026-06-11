@@ -1,0 +1,32 @@
+[
+  {
+    "code": "HF236",
+    "severity": "warning",
+    "range": {
+      "start": [
+        8,
+        47
+      ],
+      "end": [
+        8,
+        49
+      ]
+    },
+    "message": "array element 1 is not a string; Hoverfly cannot match a non-string element as written"
+  },
+  {
+    "code": "HF236",
+    "severity": "warning",
+    "range": {
+      "start": [
+        8,
+        51
+      ],
+      "end": [
+        8,
+        55
+      ]
+    },
+    "message": "array element 2 is not a string; Hoverfly cannot match a non-string element as written"
+  }
+]

@@ -96,3 +96,66 @@ Severity legend: E=Error, W=Warning, I=Information, H=Hint.
   - HF208/HF201/HF203/HF210 recurse object-shaped `doMatch` chains (not just the legacy array).
   - HF601 scans BOTH `globalActions.delays[]` and `delaysLogNormal[]` (both use a Go RE2
     `urlPattern`); resolves the "regex vs glob" verify note above — it is RE2 regex in both paths.
+
+## Additive extension — structural strictness (2026-06-11)
+
+Seventeen ADDITIVE codes adopted from `research/13-field-constraints.md` (whole-structure
+field-constraint matrix) and `research/14-matcher-value-syntax.md` (matcher value-SYNTAX),
+both ground-truth-verified against real Hoverfly v1.12.8. No existing code (HF101–HF602) is
+changed. Severities follow D4: **E** = never-match / import-reject (400/500) / silently-dropped
+feature; **W** = legal but almost-certainly a mistake; **I** = advisory. Range = the smallest
+node the user must change.
+
+Binding carve-outs (architect ruling): case-insensitive Go key matching means HF603 fires only
+when NO case-fold match exists (a case-only variant goes to HF604); regex validation ONLY via
+`re2js` (never `new RegExp`); no glob diagnostics; `jsonpath`/`xpath` = balance-lint only; custom
+HTTP methods stay silent.
+
+### HF2xx — request matchers (extension)
+
+| Code  | Sev | Trigger                                                                                                                                                       | Range                                     | Message template                                                                                                |
+| ----- | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| HF212 | W   | Field-matcher with a `matcher` (or empty/default) but no `value` key, OR an empty `{}` — EXCEPT when `matcher` is `negate` (defer to HF207) or `form` (HF208) | the matcher object (or its `matcher` key) | `Matcher has no "value" — it can never match (the value is nil)`                                                |
+| HF213 | I   | `destination` matcher with `exact`/empty matcher whose value contains `://` (full URL pasted where a host[:port] is expected); off by default acceptable      | value node                                | `destination matches the request host only (host[:port]); "{v}" includes a scheme or path and will never match` |
+| HF214 | W   | `literals[].name` or `variables[].name` contains a char outside `[A-Za-z0-9_]` (un-referenceable via `{{Literals.x}}`/`{{Vars.x}}`)                           | the name value node                       | `Name "{n}" contains a character that breaks "{{Literals.{n}}}" / "{{Vars.{n}}}" templating references`         |
+| HF230 | E   | `regex` value (or `xmltemplated` `{{regex:…}}` leaf) is not a valid Go RE2 pattern (RE2 ≠ JS RegExp); validate with `re2js`, reuse for HF601                  | value node                                | `Invalid RE2 regex — Hoverfly (Go regexp) silently never matches this`                                          |
+| HF231 | E   | `json`/`jsonpartial`/`jwt` value string does not parse as JSON text (the `jwt` `"$.username"` bug)                                                            | value node                                | `"{name}" value must be JSON text; this is not valid JSON, so the pair never matches`                           |
+| HF232 | W   | `jsonpath`/`jwtjsonpath` value has unbalanced `[]`/`()`/`{}`/quotes (balance lint only — no full kubectl-JSONPath parser)                                     | value node                                | `JSONPath has unbalanced brackets or quotes`                                                                    |
+| HF233 | W   | `xpath` value has unbalanced `[]`/`()`/quotes (balance lint only — no full XPath engine)                                                                      | value node                                | `XPath has unbalanced brackets or quotes`                                                                       |
+| HF234 | W   | `xml`/`xmltemplated` value is not well-formed XML (after neutralizing `{{ignore}}`/`{{regex:…}}` template tokens); validate with `fast-xml-parser`            | value node                                | `"{name}" value is not well-formed XML; this pair never matches`                                                |
+| HF235 | W   | `jwt` value parses as JSON but has a top-level key outside {`header`,`payload`}                                                                               | the offending key (value node)            | `jwt value should be a partial {"header":…,"payload":…} spec; key "{k}" can never match a JWT`                  |
+| HF236 | W   | `array` value element is not a JSON string (Hoverfly stringifies it to a non-literal)                                                                         | the offending array element               | `array element {i} is not a string; Hoverfly cannot match a non-string element as written`                      |
+
+### HF3xx — response (extension)
+
+| Code  | Sev | Trigger                                                                          | Range          | Message template                                                        |
+| ----- | --- | -------------------------------------------------------------------------------- | -------------- | ----------------------------------------------------------------------- |
+| HF308 | E   | A `response.headers` value that is a plain string instead of an array of strings | the value node | `Response header values must be an array of strings — wrap it in [ … ]` |
+
+### HF4xx — state (extension)
+
+| Code  | Sev | Trigger                                                            | Range                       | Message template                                                         |
+| ----- | --- | ------------------------------------------------------------------ | --------------------------- | ------------------------------------------------------------------------ |
+| HF404 | E   | A `requiresState` or `transitionsState` value that is not a string | the offending value node    | `State values must be strings — Hoverfly rejects this at import`         |
+| HF405 | E   | A `removesState[]` entry that is not a string                      | the offending array element | `removesState entries must be strings — Hoverfly rejects this at import` |
+
+### HF5xx — templating / variables (extension)
+
+| Code  | Sev | Trigger                                                                                                                                     | Range                      | Message template                                                                                            |
+| ----- | --- | ------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| HF511 | E   | `variables[].function` is a string that is NOT one of the 52 Hoverfly helpers and NOT one of the 8 built-ins (HF510 owns the built-in case) | function value node        | `Unknown variable function "{name}" — Hoverfly rejects the import (only the 52 helper functions are valid)` |
+| HF512 | W   | `variables[].arguments` length ≠ the helper's arity (known-52 `function`; variadic → minimum; `requestBody` → exactly 2)                    | the `arguments` array node | `"{fn}" expects {sig} arguments, got {n} — the variable renders empty`                                      |
+
+### HF6xx — globalActions & misc (extension)
+
+| Code  | Sev | Trigger                                                                                                                                                                                                                                                                     | Range           | Message template                                                                                     |
+| ----- | --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------- | ---------------------------------------------------------------------------------------------------- |
+| HF603 | W   | UNKNOWN-KEY flagship — a key that does not (case-insensitively) match any allowed key for its object (per the `registry/structure.ts` matrix). SKIP the root (HF102), the user-keyed maps (`headers`/`query`/`requiresState`/`transitionsState`), and `request.method` (D5) | the unknown key | `Unknown key "{key}"{didYouMean} — silently ignored by Hoverfly`                                     |
+| HF604 | I   | A key that is a case-only variant of an allowed key (Go binds it case-insensitively, but it is non-canonical)                                                                                                                                                               | the key         | `Prefer canonical "{canonical}" — "{key}" works (Go matches case-insensitively) but is non-standard` |
+
+> `{didYouMean}` is a pre-formatted suffix the HF603 rule supplies (e.g. ` (did you mean
+"status"?)`) or the empty string. The allowed-key matrix, user-keyed-map skip list, and the
+> did-you-mean Levenshtein threshold live in `packages/core/src/registry/structure.ts`.
+
+This extension brings the catalog to **54 codes** (37 original + 17 additive). The exhaustive
+severity table in `packages/core/test/semantic/catalog.test.ts` pins all 54.

@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF231",
+    "severity": "error",
+    "range": {
+      "start": [
+        9,
+        41
+      ],
+      "end": [
+        9,
+        53
+      ]
+    },
+    "message": "\"jwt\" value must be JSON text; this is not valid JSON, so the pair never matches"
+  }
+]

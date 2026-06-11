@@ -1,0 +1,21 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "regex", "value": "a(b" }],
+                    "destination": [{ "matcher": "regex", "value": "(?<=foo)bar" }],
+                    "query": {
+                        "token": [{ "matcher": "regex", "value": "(group)\\1" }]
+                    }
+                },
+                "response": {
+                    "status": 200
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

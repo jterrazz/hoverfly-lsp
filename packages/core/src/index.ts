@@ -52,10 +52,11 @@ export {
   type TemplateParseError,
 } from "./template/index.js";
 
-// Authoritative registry data (matchers, templating helpers, faker types).
+// Authoritative registry data (matchers, templating helpers, faker types, structure matrix).
 export {
   ALL_HELPERS,
   type ArrayConfigKey,
+  DID_YOU_MEAN_MAX_DISTANCE,
   FAKER_NAMES,
   FAKER_PARAMETERIZED_PANICS,
   GOFAKEIT_VERSION,
@@ -71,7 +72,11 @@ export {
   NOW_OFFSET_UNITS,
   RAYMOND_BUILTINS,
   REGISTRY_MATCHER_NAMES,
+  SCHEMA_ABSENT_LEGAL_KEYS,
+  STRUCTURE_ALLOWED_KEYS,
+  type StructureObjectKind,
   TRANSFORMING_MATCHER_NAMES,
+  USER_KEYED_MAP_PATHS,
   VARIABLE_FUNCTION_NAMES,
   type WrongTypeBehavior,
 } from "./registry/index.js";

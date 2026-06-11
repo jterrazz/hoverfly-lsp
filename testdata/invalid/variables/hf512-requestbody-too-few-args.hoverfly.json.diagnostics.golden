@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF512",
+    "severity": "warning",
+    "range": {
+      "start": [
+        14,
+        79
+      ],
+      "end": [
+        14,
+        91
+      ]
+    },
+    "message": "\"requestBody\" expects 2 arguments, got 1 — the variable renders empty"
+  }
+]

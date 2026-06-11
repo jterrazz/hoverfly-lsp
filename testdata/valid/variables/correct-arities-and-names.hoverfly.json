@@ -1,0 +1,26 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/v1/users" }]
+                },
+                "response": {
+                    "status": 200,
+                    "templated": true,
+                    "body": "{\"id\":\"{{Vars.id}}\",\"name\":\"{{Vars.fullName}}\",\"who\":\"{{Vars.who}}\"}"
+                }
+            }
+        ],
+        "variables": [
+            { "name": "id", "function": "randomUuid" },
+            { "name": "fullName", "function": "faker", "arguments": ["Name"] },
+            { "name": "who", "function": "requestBody", "arguments": ["jsonpath", "$.user.id"] },
+            { "name": "tags", "function": "concat", "arguments": ["a", "b", "c"] }
+        ],
+        "literals": [{ "name": "brand_1", "value": "acme" }]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

@@ -1,0 +1,32 @@
+[
+  {
+    "code": "HF308",
+    "severity": "error",
+    "range": {
+      "start": [
+        10,
+        40
+      ],
+      "end": [
+        10,
+        58
+      ]
+    },
+    "message": "Response header values must be an array of strings — wrap it in [ … ]"
+  },
+  {
+    "code": "HF308",
+    "severity": "error",
+    "range": {
+      "start": [
+        11,
+        35
+      ],
+      "end": [
+        11,
+        43
+      ]
+    },
+    "message": "Response header values must be an array of strings — wrap it in [ … ]"
+  }
+]

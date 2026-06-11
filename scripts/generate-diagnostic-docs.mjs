@@ -110,6 +110,56 @@ const DIAGNOSTIC_PROSE = {
       "Empty-string matcher value where it can never match (`jwtjsonpath` rejects empty; empty `regex`/`glob` is suspicious).",
     range: "value node",
   },
+  HF212: {
+    trigger:
+      "Field-matcher with a `matcher` (or empty/default) but no `value` key, or an empty `{}` — except when `matcher` is `negate` (HF207) or `form` (HF208). The value is nil, so it can never match.",
+    range: "the matcher object (or its `matcher` key)",
+  },
+  HF213: {
+    trigger:
+      "`destination` matcher with an `exact`/empty matcher whose value contains `://` (a full URL pasted where a host[:port] is expected). Off by default — high false-positive caution.",
+    range: "value node",
+  },
+  HF214: {
+    trigger:
+      "`literals[].name` or `variables[].name` contains a character outside `[A-Za-z0-9_]`, making it un-referenceable via `{{Literals.x}}` / `{{Vars.x}}`.",
+    range: "the name value node",
+  },
+  HF230: {
+    trigger:
+      "A `regex` value (or an `xmltemplated` `{{regex:…}}` leaf) is not a valid Go RE2 pattern. Validated with a true RE2 engine (`re2js`), never `new RegExp`. Shared with HF601's urlPattern check.",
+    range: "value node",
+  },
+  HF231: {
+    trigger:
+      'A `json`, `jsonpartial`, or `jwt` value string does not parse as JSON text (e.g. the `jwt` `"$.username"` bug).',
+    range: "value node",
+  },
+  HF232: {
+    trigger:
+      "A `jsonpath`/`jwtjsonpath` value has unbalanced `[]`/`()`/`{}`/quotes (a structural lint only — no full kubectl-JSONPath parser, so heuristic and warning-level).",
+    range: "value node",
+  },
+  HF233: {
+    trigger:
+      "An `xpath` value has unbalanced `[]`/`()`/quotes (balance-only lint — no full XPath engine, so heuristic and warning-level).",
+    range: "value node",
+  },
+  HF234: {
+    trigger:
+      "An `xml`/`xmltemplated` value is not well-formed XML (after neutralizing `{{ignore}}`/`{{regex:…}}` template tokens). Validated with `fast-xml-parser`.",
+    range: "value node",
+  },
+  HF235: {
+    trigger:
+      "A `jwt` value parses as JSON but has a top-level key outside {`header`,`payload`}, so it can never match a JWT composite.",
+    range: "the offending key (value node)",
+  },
+  HF236: {
+    trigger:
+      "An `array` value element is not a JSON string; Hoverfly stringifies it to a non-literal and it will not match as written (finer-grained sibling of HF203).",
+    range: "the offending array element",
+  },
   HF301: { trigger: "`body` and `bodyFile` both set.", range: "bodyFile key" },
   HF302: {
     trigger: "`Content-Length` and `Transfer-Encoding` headers both set.",
@@ -127,6 +177,11 @@ const DIAGNOSTIC_PROSE = {
     trigger: "`logNormalDelay` constraint violation (min/max/mean/median sanity).",
     range: "offending field",
   },
+  HF308: {
+    trigger:
+      "A `response.headers` value that is a plain string instead of an array of strings (Hoverfly rejects the import — HTTP 400).",
+    range: "the value node",
+  },
   HF401: {
     trigger:
       "`requiresState` key (non-`sequence:`-prefixed) never set by any `transitionsState` in the file. A key set only by the same pair's own `transitionsState` still fires (the transition runs after the match).",
@@ -137,6 +192,16 @@ const DIAGNOSTIC_PROSE = {
     range: "the key",
   },
   HF403: { trigger: "`removesState` entry never set anywhere.", range: "the entry" },
+  HF404: {
+    trigger:
+      "A `requiresState` or `transitionsState` value that is not a string (Hoverfly rejects the import — HTTP 400).",
+    range: "the offending value node",
+  },
+  HF405: {
+    trigger:
+      "A `removesState[]` entry that is not a string (Hoverfly rejects the import — HTTP 400, Go-unmarshal layer).",
+    range: "the offending array element",
+  },
   HF501: {
     trigger: "`{{ ... }}` syntax in `body` while `templated` is absent/false.",
     range: "first mustache",
@@ -169,6 +234,16 @@ const DIAGNOSTIC_PROSE = {
       "Raymond built-in (`if`/`unless`/`with`/`each`/`first`/`log`/`lookup`/`equal`) used in `data.variables[].function`.",
     range: "function value",
   },
+  HF511: {
+    trigger:
+      "`variables[].function` is a string that is NOT one of the 52 Hoverfly helpers and NOT one of the 8 built-ins (HF510 owns the built-in case). Hoverfly rejects the import — HTTP 500.",
+    range: "function value node",
+  },
+  HF512: {
+    trigger:
+      "`variables[].arguments` length ≠ the helper's arity (for a known-52 `function`; variadic enforces a minimum, `requestBody` exactly 2). The variable renders empty.",
+    range: "the `arguments` array node",
+  },
   HF601: {
     trigger:
       "`globalActions.delays[].urlPattern` (or `delaysLogNormal[]`) is an invalid Go RE2 regex.",
@@ -178,6 +253,16 @@ const DIAGNOSTIC_PROSE = {
     trigger:
       "`postServeAction` not in the user-configured `hoverfly.registeredActions` allowlist (only when the setting is non-empty).",
     range: "the value",
+  },
+  HF603: {
+    trigger:
+      "Unknown-key flagship: a key that does not (case-insensitively) match any allowed key for its object (`data`, `request`, `response`, field-matcher, `logNormalDelay`, `delays[]`, `delaysLogNormal[]`, `globalActions`, `literals[]`, `variables[]`, `meta`, pair). Silently dropped by Hoverfly. Skips the root (HF102), the user-keyed maps (`headers`/`query`/`requiresState`/`transitionsState`), and `request.method` (D5).",
+    range: "the unknown key",
+  },
+  HF604: {
+    trigger:
+      "A key that is a case-only variant of an allowed key — Go binds it case-insensitively, but it is non-canonical.",
+    range: "the key",
   },
 };
 

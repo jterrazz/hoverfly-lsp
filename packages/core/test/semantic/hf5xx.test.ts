@@ -183,39 +183,6 @@ describe("headers are templated too (report 01 §8)", () => {
   });
 });
 
-describe("HF510 — data.variables[].function must be a Hoverfly helper", () => {
-  it("flags a raymond block built-in used as a function", () => {
-    // Given - a variable whose function is the block built-in `each`
-    const diags = runResponse(
-      { status: 200 },
-      { variables: [{ name: "v", function: "each", arguments: [] }] },
-    );
-    // Then - HF510
-    expect(codes(diags)).toEqual(["HF510"]);
-    expect(diags[0]?.message).toContain("block built-ins");
-  });
-
-  it("accepts a valid Hoverfly helper function", () => {
-    // Given - function: faker (a Hoverfly helper)
-    const diags = runResponse(
-      { status: 200 },
-      { variables: [{ name: "v", function: "faker", arguments: ["Name"] }] },
-    );
-    // Then - nothing fires
-    expect(codes(diags)).toEqual([]);
-  });
-
-  it("flags an unknown function name too", () => {
-    // Given - function: notAHelper
-    const diags = runResponse(
-      { status: 200 },
-      { variables: [{ name: "v", function: "notAHelper" }] },
-    );
-    // Then - HF510 (only the 52 Hoverfly helpers are accepted)
-    expect(codes(diags)).toEqual(["HF510"]);
-  });
-});
-
 describe("rich valid templates stay silent", () => {
   it("nested #each with @index, subexpression math, faker, Vars+Literals, now", () => {
     // Given - a dense but fully-valid templated body with all the moving parts

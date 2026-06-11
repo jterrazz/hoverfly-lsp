@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF512",
+    "severity": "warning",
+    "range": {
+      "start": [
+        14,
+        22
+      ],
+      "end": [
+        14,
+        74
+      ]
+    },
+    "message": "\"randomStringLength\" expects 1 arguments, got 0 — the variable renders empty"
+  }
+]

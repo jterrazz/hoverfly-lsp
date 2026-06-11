@@ -1,0 +1,19 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/x" }]
+                },
+                "response": {
+                    "status": 200,
+                    "body": "ok"
+                }
+            }
+        ],
+        "literals": [{ "name": "brand name", "value": "acme" }]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

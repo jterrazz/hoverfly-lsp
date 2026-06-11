@@ -1,0 +1,107 @@
+[
+  {
+    "code": "HF401",
+    "severity": "warning",
+    "range": {
+      "start": [
+        7,
+        24
+      ],
+      "end": [
+        7,
+        39
+      ]
+    },
+    "message": "State \"authenticated\" is required but never set by any transitionsState — this pair can only match if the state is set externally"
+  },
+  {
+    "code": "HF404",
+    "severity": "error",
+    "range": {
+      "start": [
+        7,
+        41
+      ],
+      "end": [
+        7,
+        45
+      ]
+    },
+    "message": "State values must be strings — Hoverfly rejects this at import"
+  },
+  {
+    "code": "HF402",
+    "severity": "information",
+    "range": {
+      "start": [
+        13,
+        24
+      ],
+      "end": [
+        13,
+        30
+      ]
+    },
+    "message": "State \"step\" is set but never required in this simulation"
+  },
+  {
+    "code": "HF404",
+    "severity": "error",
+    "range": {
+      "start": [
+        13,
+        32
+      ],
+      "end": [
+        13,
+        33
+      ]
+    },
+    "message": "State values must be strings — Hoverfly rejects this at import"
+  },
+  {
+    "code": "HF403",
+    "severity": "information",
+    "range": {
+      "start": [
+        15,
+        37
+      ],
+      "end": [
+        15,
+        41
+      ]
+    },
+    "message": "State \"ok\" is removed but never set"
+  },
+  {
+    "code": "HF405",
+    "severity": "error",
+    "range": {
+      "start": [
+        15,
+        43
+      ],
+      "end": [
+        15,
+        44
+      ]
+    },
+    "message": "removesState entries must be strings — Hoverfly rejects this at import"
+  },
+  {
+    "code": "HF405",
+    "severity": "error",
+    "range": {
+      "start": [
+        15,
+        46
+      ],
+      "end": [
+        15,
+        50
+      ]
+    },
+    "message": "removesState entries must be strings — Hoverfly rejects this at import"
+  }
+]

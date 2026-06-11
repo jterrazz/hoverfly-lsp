@@ -28,3 +28,11 @@ export {
 } from "./helpers.js";
 
 export { FAKER_NAMES, FAKER_PARAMETERIZED_PANICS, GOFAKEIT_VERSION } from "./faker.js";
+
+export {
+  DID_YOU_MEAN_MAX_DISTANCE,
+  SCHEMA_ABSENT_LEGAL_KEYS,
+  STRUCTURE_ALLOWED_KEYS,
+  type StructureObjectKind,
+  USER_KEYED_MAP_PATHS,
+} from "./structure.js";

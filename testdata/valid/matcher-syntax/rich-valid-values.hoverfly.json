@@ -1,0 +1,82 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "regex", "value": "^/users/(?P<id>[0-9]+)/profile$" }],
+                    "destination": [{ "matcher": "regex", "value": "[a-z0-9.-]+\\.example\\.com" }],
+                    "body": [
+                        {
+                            "matcher": "json",
+                            "value": "{\"order\":{\"id\":42,\"items\":[\"a\",\"b\"]}}"
+                        }
+                    ],
+                    "query": {
+                        "filter": [{ "matcher": "jsonpartial", "value": "{\"status\":\"active\"}" }]
+                    },
+                    "headers": {
+                        "Authorization": [
+                            {
+                                "matcher": "jwt",
+                                "value": "{\"header\":{\"alg\":\"HS256\"},\"payload\":{\"sub\":\"alice\",\"roles\":[\"admin\"]}}"
+                            }
+                        ]
+                    }
+                },
+                "response": { "status": 200 }
+            },
+            {
+                "request": {
+                    "body": [
+                        {
+                            "matcher": "jsonpath",
+                            "value": "{range .items[*]}{.metadata.name}{end}"
+                        }
+                    ],
+                    "path": [{ "matcher": "jwtjsonpath", "value": "$.payload['custom-claim']" }],
+                    "destination": [
+                        { "matcher": "xpath", "value": "//book[@category='fiction']/title/text()" }
+                    ]
+                },
+                "response": { "status": 200 }
+            },
+            {
+                "request": {
+                    "body": [
+                        {
+                            "matcher": "xml",
+                            "value": "<order id=\"42\"><item qty=\"2\">widget</item><note><![CDATA[x < y & z]]></note></order>"
+                        }
+                    ]
+                },
+                "response": { "status": 200 }
+            },
+            {
+                "request": {
+                    "body": [
+                        {
+                            "matcher": "xmltemplated",
+                            "value": "<user><id>{{ regex: [0-9]{3,} }}</id><name>{{ ignore }}</name></user>"
+                        }
+                    ]
+                },
+                "response": { "status": 200 }
+            },
+            {
+                "request": {
+                    "body": [
+                        {
+                            "matcher": "array",
+                            "value": ["alpha", "beta", "gamma"],
+                            "config": { "ignoreOrder": true }
+                        }
+                    ]
+                },
+                "response": { "status": 200 }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

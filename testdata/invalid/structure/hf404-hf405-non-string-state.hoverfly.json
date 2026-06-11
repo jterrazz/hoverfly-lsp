@@ -1,0 +1,24 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/a" }],
+                    "requiresState": {
+                        "authenticated": true
+                    }
+                },
+                "response": {
+                    "status": 200,
+                    "transitionsState": {
+                        "step": 2
+                    },
+                    "removesState": ["ok", 5, true]
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

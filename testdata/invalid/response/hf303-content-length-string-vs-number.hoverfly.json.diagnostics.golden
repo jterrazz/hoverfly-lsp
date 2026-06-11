@@ -1,18 +1,18 @@
 [
   {
-    "code": "HF102",
-    "severity": "warning",
+    "code": "HF308",
+    "severity": "error",
     "range": {
       "start": [
         12,
-        43
+        42
       ],
       "end": [
         12,
-        44
+        45
       ]
     },
-    "message": "Incorrect type. Expected \"string\"."
+    "message": "Response header values must be an array of strings — wrap it in [ … ]"
   },
   {
     "code": "HF303",

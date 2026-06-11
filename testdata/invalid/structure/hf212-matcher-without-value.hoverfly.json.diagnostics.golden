@@ -1,0 +1,32 @@
+[
+  {
+    "code": "HF212",
+    "severity": "warning",
+    "range": {
+      "start": [
+        5,
+        29
+      ],
+      "end": [
+        5,
+        51
+      ]
+    },
+    "message": "Matcher has no \"value\" — it can never match (the value is nil)"
+  },
+  {
+    "code": "HF212",
+    "severity": "warning",
+    "range": {
+      "start": [
+        6,
+        31
+      ],
+      "end": [
+        6,
+        33
+      ]
+    },
+    "message": "Matcher has no \"value\" — it can never match (the value is nil)"
+  }
+]

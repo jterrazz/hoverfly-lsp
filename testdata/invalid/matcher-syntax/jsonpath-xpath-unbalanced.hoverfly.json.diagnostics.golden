@@ -1,0 +1,47 @@
+[
+  {
+    "code": "HF232",
+    "severity": "warning",
+    "range": {
+      "start": [
+        5,
+        63
+      ],
+      "end": [
+        5,
+        75
+      ]
+    },
+    "message": "JSONPath has unbalanced brackets or quotes"
+  },
+  {
+    "code": "HF232",
+    "severity": "warning",
+    "range": {
+      "start": [
+        6,
+        66
+      ],
+      "end": [
+        6,
+        82
+      ]
+    },
+    "message": "JSONPath has unbalanced brackets or quotes"
+  },
+  {
+    "code": "HF233",
+    "severity": "warning",
+    "range": {
+      "start": [
+        7,
+        67
+      ],
+      "end": [
+        7,
+        85
+      ]
+    },
+    "message": "XPath has unbalanced brackets or quotes"
+  }
+]

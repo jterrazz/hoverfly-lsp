@@ -1,0 +1,20 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/v1/code" }]
+                },
+                "response": {
+                    "status": 200,
+                    "templated": true,
+                    "body": "{\"code\":\"{{Vars.code}}\"}"
+                }
+            }
+        ],
+        "variables": [{ "name": "code", "function": "randomStringLength" }]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

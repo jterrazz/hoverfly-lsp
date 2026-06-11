@@ -1,0 +1,22 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/a" }]
+                },
+                "response": {
+                    "status": 200,
+                    "headers": {
+                        "Content-Type": "application/json",
+                        "X-Count": [1, "2"],
+                        "X-Ok": ["fine"]
+                    }
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

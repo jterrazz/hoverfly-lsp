@@ -9,10 +9,10 @@
  * Verified against SpectoLabs/hoverfly master (see this family's report notes):
  *   - HF601: `core/models/delay.go` (and `delay_log_normal.go`) match urlPattern with
  *            `regexp.Compile` / `regexp.MustCompile(...).MatchString(...)` — so urlPattern is a
- *            Go RE2 REGEX, not a glob. JS `RegExp` and Go RE2 are different dialects, so to
- *            avoid false positives this rule flags ONLY patterns that fail to compile as a JS
- *            `RegExp` (clearly malformed — unbalanced brackets/quantifiers). Patterns that are
- *            valid JS but use RE2-only or JS-only constructs are NOT flagged.
+ *            Go RE2 REGEX, not a glob. It is validated with the SHARED `re2js` engine (the real
+ *            RE2 grammar; see `../re2.js`), the same validator HF230 uses for the `regex` matcher
+ *            value (research/14 §3.1/§4: one RE2 checker, two call sites). This is sound for RE2 —
+ *            `new RegExp` would false-positive `(?P<name>…)` and false-negative lookarounds/backrefs.
  *   - HF602: post-serve actions are registered at Hoverfly runtime and are unknowable from the
  *            file, so the catalog scopes this to a USER-configured allowlist. The allowlist is
  *            read from {@link RuleContext.settings}.registeredActions, threaded through the
@@ -24,18 +24,8 @@ import type { ASTNode } from "vscode-json-languageservice";
 import type { Diagnostic } from "vscode-languageserver-types";
 
 import { makeDiagnostic } from "../diagnostics.js";
+import { isValidRe2 } from "../re2.js";
 import type { RuleContext, SemanticRule } from "../types.js";
-
-/** Whether a string is a syntactically-valid JS regular expression (HF601 conservative check). */
-function isValidJsRegex(pattern: string): boolean {
-  try {
-    // eslint-disable-next-line no-new
-    new RegExp(pattern);
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 /** First string property value for `key` on an object node, with its node. */
 function stringPropValue(node: ASTNode | undefined, key: string): ASTNode | undefined {
@@ -60,7 +50,7 @@ function hf601(context: RuleContext): Diagnostic[] {
     if (!urlPatternNode || urlPattern === undefined) {
       continue;
     }
-    if (!isValidJsRegex(urlPattern)) {
+    if (!isValidRe2(urlPattern)) {
       out.push(makeDiagnostic(context.textDocument, "HF601", urlPatternNode));
     }
   }

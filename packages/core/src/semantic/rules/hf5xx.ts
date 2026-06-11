@@ -18,7 +18,10 @@
  *   HF507 (I)  unknown `faker '<Type>'` (string literal only) for the pinned gofakeit version.
  *   HF508 (W)  parameterized gofakeit method used as `faker '<Type>'` — panics at render.
  *   HF509 (W)  invalid `now` offset token (unit not in ns/us/µs/μs/ms/s/m/h/d/y).
- *   HF510 (E)  `data.variables[].function` is a raymond block built-in, not a Hoverfly helper.
+ *
+ * NOTE: `data.variables[].function` validation (HF510/HF511) and `arguments` arity (HF512) live
+ * in `hf5xx-variables.ts`, not here — those check the STRUCTURED variable inputs, while this file
+ * checks `{{ … }}` template syntax inside response bodies/headers.
  *
  * ## Which strings are templated?
  * Per report 01 §8 (`templated: true` enables `{{ }}` in `body` AND `headers`) and §10, this
@@ -28,14 +31,13 @@
  * HF501 (syntax-while-not-templated) is checked on the `body` only — that is the catalog's
  * trigger ("Body contains template syntax…").
  *
- * The HF502–HF509 finding `kind` maps 1:1 to the catalog code; HF501 and HF510 are emitted here
- * directly because they need model/document context the template AST does not carry.
+ * The HF502–HF509 finding `kind` maps 1:1 to the catalog code; HF501 is emitted here directly
+ * because it needs model/document context the template AST does not carry.
  */
 
 import type { ASTNode, ObjectASTNode } from "vscode-json-languageservice";
 import { type Diagnostic, type Range } from "vscode-languageserver-types";
 
-import { VARIABLE_FUNCTION_NAMES } from "../../registry/index.js";
 import {
   analyze,
   type AnalyzerContext,
@@ -45,9 +47,6 @@ import {
 import type { DiagnosticCode } from "../catalog.js";
 import { makeDiagnostic } from "../diagnostics.js";
 import type { RuleContext, SemanticRule, SimulationModel } from "../types.js";
-
-/** Built-in `data.variables[].function` names that are valid (the 52 Hoverfly helpers). */
-const VALID_VARIABLE_FUNCTIONS: ReadonlySet<string> = new Set(VARIABLE_FUNCTION_NAMES);
 
 /* --------------------------------- string source mapping --------------------------------- */
 
@@ -123,33 +122,6 @@ function collectNames(
   return names;
 }
 
-/**
- * HF510 — every `data.variables[].function` whose value is a string NOT in the 52 Hoverfly
- * helper names (raymond block built-ins like `each`/`if` are rejected by `SupportedMethodMap`).
- */
-function checkVariableFunctions(
-  context: RuleContext,
-  dataNode: ObjectASTNode | undefined,
-  diagnostics: Diagnostic[],
-): void {
-  const array = propValue(dataNode, "variables");
-  if (array?.type !== "array") {
-    return;
-  }
-  for (const item of array.items) {
-    if (item.type !== "object") {
-      continue;
-    }
-    const fnNode = propValue(item, "function");
-    if (fnNode?.type !== "string") {
-      continue;
-    }
-    if (!VALID_VARIABLE_FUNCTIONS.has(fnNode.value)) {
-      diagnostics.push(makeDiagnostic(context.textDocument, "HF510", fnNode));
-    }
-  }
-}
-
 /* ------------------------------------------ rule ----------------------------------------- */
 
 /** Whether a `templated` field node is the JSON boolean `true`. */
@@ -167,7 +139,6 @@ const HF5XX_CODES: readonly DiagnosticCode[] = [
   "HF507",
   "HF508",
   "HF509",
-  "HF510",
 ];
 
 /**
@@ -208,9 +179,6 @@ const hf5xxTemplateRule: SemanticRule = {
       variableNames: collectNames(model.dataNode, "variables", "name"),
       literalNames: collectNames(model.dataNode, "literals", "name"),
     };
-
-    // HF510 — data.variables[].function validity (independent of any response).
-    checkVariableFunctions(context, model.dataNode, diagnostics);
 
     for (const pair of model.pairs) {
       const { response } = pair;

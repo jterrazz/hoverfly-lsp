@@ -1,0 +1,22 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "body": [
+                        {
+                            "matcher": "xmltemplated",
+                            "value": "<user><id>{{ regex: (?<=x)y }}</id></user>"
+                        }
+                    ]
+                },
+                "response": {
+                    "status": 200
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

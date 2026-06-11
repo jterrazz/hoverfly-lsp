@@ -1,0 +1,182 @@
+[
+  {
+    "code": "HF603",
+    "severity": "warning",
+    "range": {
+      "start": [
+        2,
+        8
+      ],
+      "end": [
+        2,
+        14
+      ]
+    },
+    "message": "Unknown key \"pair\" (did you mean \"pairs\"?) — silently ignored by Hoverfly"
+  },
+  {
+    "code": "HF603",
+    "severity": "warning",
+    "range": {
+      "start": [
+        6,
+        66
+      ],
+      "end": [
+        6,
+        75
+      ]
+    },
+    "message": "Unknown key \"machter\" (did you mean \"matcher\"?) — silently ignored by Hoverfly"
+  },
+  {
+    "code": "HF603",
+    "severity": "warning",
+    "range": {
+      "start": [
+        7,
+        20
+      ],
+      "end": [
+        7,
+        34
+      ]
+    },
+    "message": "Unknown key \"requireState\" (did you mean \"requiresState\"?) — silently ignored by Hoverfly"
+  },
+  {
+    "code": "HF603",
+    "severity": "warning",
+    "range": {
+      "start": [
+        11,
+        20
+      ],
+      "end": [
+        11,
+        37
+      ]
+    },
+    "message": "Unknown key \"transitionState\" (did you mean \"transitionsState\"?) — silently ignored by Hoverfly"
+  },
+  {
+    "code": "HF603",
+    "severity": "warning",
+    "range": {
+      "start": [
+        12,
+        20
+      ],
+      "end": [
+        12,
+        33
+      ]
+    },
+    "message": "Unknown key \"removeState\" (did you mean \"removesState\"?) — silently ignored by Hoverfly"
+  },
+  {
+    "code": "HF307",
+    "severity": "warning",
+    "range": {
+      "start": [
+        13,
+        38
+      ],
+      "end": [
+        13,
+        73
+      ]
+    },
+    "message": "logNormalDelay mean and median cannot be less than or equal to 0"
+  },
+  {
+    "code": "HF603",
+    "severity": "warning",
+    "range": {
+      "start": [
+        13,
+        60
+      ],
+      "end": [
+        13,
+        68
+      ]
+    },
+    "message": "Unknown key \"medain\" (did you mean \"mean\"?) — silently ignored by Hoverfly"
+  },
+  {
+    "code": "HF603",
+    "severity": "warning",
+    "range": {
+      "start": [
+        18,
+        38
+      ],
+      "end": [
+        18,
+        49
+      ]
+    },
+    "message": "Unknown key \"urlPatter\" (did you mean \"urlPattern\"?) — silently ignored by Hoverfly"
+  },
+  {
+    "code": "HF603",
+    "severity": "warning",
+    "range": {
+      "start": [
+        20,
+        50
+      ],
+      "end": [
+        20,
+        58
+      ]
+    },
+    "message": "Unknown key \"values\" (did you mean \"value\"?) — silently ignored by Hoverfly"
+  },
+  {
+    "code": "HF512",
+    "severity": "warning",
+    "range": {
+      "start": [
+        21,
+        22
+      ],
+      "end": [
+        21,
+        70
+      ]
+    },
+    "message": "\"faker\" expects 1 arguments, got 0 — the variable renders empty"
+  },
+  {
+    "code": "HF603",
+    "severity": "warning",
+    "range": {
+      "start": [
+        21,
+        58
+      ],
+      "end": [
+        21,
+        64
+      ]
+    },
+    "message": "Unknown key \"args\" — silently ignored by Hoverfly"
+  },
+  {
+    "code": "HF603",
+    "severity": "warning",
+    "range": {
+      "start": [
+        25,
+        8
+      ],
+      "end": [
+        25,
+        20
+      ]
+    },
+    "message": "Unknown key \"exportedAt\" — silently ignored by Hoverfly"
+  }
+]

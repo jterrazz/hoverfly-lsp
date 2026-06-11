@@ -1,0 +1,24 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "headers": {
+                        "Authorization": [
+                            {
+                                "matcher": "jwt",
+                                "value": "{\"username\":\"alice\"}"
+                            }
+                        ]
+                    }
+                },
+                "response": {
+                    "status": 200
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF214",
+    "severity": "warning",
+    "range": {
+      "start": [
+        13,
+        31
+      ],
+      "end": [
+        13,
+        43
+      ]
+    },
+    "message": "Name \"brand name\" contains a character that breaks \"{{Literals.brand name}}\" / \"{{Vars.brand name}}\" templating references"
+  }
+]

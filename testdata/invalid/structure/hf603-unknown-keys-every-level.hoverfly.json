@@ -1,0 +1,28 @@
+{
+    "data": {
+        "pair": [],
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/a", "machter": "glob" }],
+                    "requireState": { "x": "1" }
+                },
+                "response": {
+                    "status": 200,
+                    "transitionState": { "y": "1" },
+                    "removeState": ["z"],
+                    "logNormalDelay": { "min": 1, "max": 2, "medain": 3 }
+                }
+            }
+        ],
+        "globalActions": {
+            "delays": [{ "delay": 50, "urlPatter": "/a.*" }]
+        },
+        "literals": [{ "name": "v", "value": "1", "values": "oops" }],
+        "variables": [{ "name": "n", "function": "faker", "args": [] }]
+    },
+    "meta": {
+        "schemaVersion": "v5.3",
+        "exportedAt": "2026-06-11"
+    }
+}

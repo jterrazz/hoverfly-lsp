@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF214",
+    "severity": "warning",
+    "range": {
+      "start": [
+        13,
+        32
+      ],
+      "end": [
+        13,
+        42
+      ]
+    },
+    "message": "Name \"order.id\" contains a character that breaks \"{{Literals.order.id}}\" / \"{{Vars.order.id}}\" templating references"
+  }
+]

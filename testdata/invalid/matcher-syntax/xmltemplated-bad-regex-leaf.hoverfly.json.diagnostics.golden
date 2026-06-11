@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF230",
+    "severity": "error",
+    "range": {
+      "start": [
+        8,
+        37
+      ],
+      "end": [
+        8,
+        81
+      ]
+    },
+    "message": "Invalid RE2 regex — Hoverfly (Go regexp) silently never matches this"
+  }
+]

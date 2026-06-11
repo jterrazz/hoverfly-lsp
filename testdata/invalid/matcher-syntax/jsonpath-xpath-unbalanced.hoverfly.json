@@ -1,0 +1,19 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "body": [{ "matcher": "jsonpath", "value": "$$$[broken" }],
+                    "path": [{ "matcher": "jwtjsonpath", "value": "$.payload['sub" }],
+                    "destination": [{ "matcher": "xpath", "value": "//book[author='a" }]
+                },
+                "response": {
+                    "status": 200
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

@@ -1,0 +1,22 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "body": [
+                        {
+                            "matcher": "array",
+                            "value": ["alice", 42, true, "bob"]
+                        }
+                    ]
+                },
+                "response": {
+                    "status": 200
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

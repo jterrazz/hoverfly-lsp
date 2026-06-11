@@ -1,0 +1,19 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "Method": [{ "matcher": "exact", "value": "GET" }],
+                    "path": [{ "matcher": "exact", "value": "/widgets" }]
+                },
+                "response": {
+                    "status": 200,
+                    "BodyFile": "widgets.json"
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

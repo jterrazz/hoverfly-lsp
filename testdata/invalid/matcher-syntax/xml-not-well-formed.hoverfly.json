@@ -1,0 +1,30 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "body": [{ "matcher": "xml", "value": "<a><b></a>" }]
+                },
+                "response": {
+                    "status": 200
+                }
+            },
+            {
+                "request": {
+                    "body": [
+                        {
+                            "matcher": "xmltemplated",
+                            "value": "<order><id>{{ ignore }}</id><total></order>"
+                        }
+                    ]
+                },
+                "response": {
+                    "status": 200
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

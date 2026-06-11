@@ -1,0 +1,17 @@
+[
+  {
+    "code": "HF213",
+    "severity": "information",
+    "range": {
+      "start": [
+        5,
+        67
+      ],
+      "end": [
+        5,
+        94
+      ]
+    },
+    "message": "destination matches the request host only (host[:port]); \"http://api.example.com/v1\" includes a scheme or path and will never match"
+  }
+]
