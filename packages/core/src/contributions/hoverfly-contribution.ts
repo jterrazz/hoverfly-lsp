@@ -229,9 +229,10 @@ function collectSchemaVersionCompletions(result: CompletionsCollector): void {
 }
 
 /**
- * Add state-KEY property completions: the union of every `requiresState` key declared anywhere
- * in the simulation (cross-reference), plus optionally a `sequence:` snippet. `addValue` mirrors
- * the schema completion's behaviour of appending `: "$1"` when the value is not already present.
+ * Add state-KEY property completions: the union of every state key declared anywhere in the
+ * simulation (cross-reference), plus optionally a `sequence:` snippet. `addValue` mirrors the
+ * schema completion's behaviour of appending `: "$1"` when the value is not already present
+ * (true at a bare `{` position, false when the key already carries `: ""`).
  */
 function collectStateKeyCompletions(
   result: CompletionsCollector,
@@ -239,7 +240,7 @@ function collectStateKeyCompletions(
   addValue: boolean,
   options: { includeSequence: boolean },
 ): void {
-  const keys = collectRequiresStateKeys(simulation);
+  const keys = collectStateKeys(simulation);
   for (const key of keys) {
     result.add({
       label: key,
@@ -302,14 +303,32 @@ function specForName(name: string, isBody: boolean): MatcherSpec | undefined {
   return undefined;
 }
 
-/** Every distinct `requiresState` key declared anywhere in the simulation, sorted. */
-function collectRequiresStateKeys(simulation: SimulationModel | undefined): string[] {
+/**
+ * Every distinct state key declared anywhere in the simulation, sorted. State keys share ONE
+ * namespace across the three places a pair touches state: `requiresState` (the consumer side),
+ * `transitionsState` (the producer side), and `removesState` (the eraser side). A key set by a
+ * `transitionsState` on one pair is exactly the key another pair will `requiresState`, so all
+ * three sources must feed the cross-reference — otherwise the common "produce here, require
+ * there" flow offers no completion for the requiring side (the originally-reported gap: a key
+ * only ever set via `transitionsState` was invisible when typed into `requiresState`).
+ */
+function collectStateKeys(simulation: SimulationModel | undefined): string[] {
   if (!simulation) {
     return [];
   }
   const keys = new Set<string>();
   for (const pair of simulation.pairs) {
     for (const entry of pair.requiresState) {
+      if (entry.key.length > 0) {
+        keys.add(entry.key);
+      }
+    }
+    for (const entry of pair.transitionsState) {
+      if (entry.key.length > 0) {
+        keys.add(entry.key);
+      }
+    }
+    for (const entry of pair.removesState) {
       if (entry.key.length > 0) {
         keys.add(entry.key);
       }

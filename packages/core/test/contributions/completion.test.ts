@@ -62,8 +62,27 @@ describe("matcher-name completions", () => {
     const docText = typeof documentation === "string" ? documentation : documentation?.value;
     expect(docText).toContain("Regular-expression match");
     expect(docText).toContain("Value type:");
-    expect(docText).toContain("⚠️"); // Panic warning present
     expect(regex?.insertText).toBe('"regex"');
+  });
+
+  it("keeps completion documentation consistent with the hover policy (no generic panic notes)", async () => {
+    // Given - a matcher value position; documentation shares the docs.ts renderer with hover
+    const doc = `{"data":{"pairs":[{"request":{"path":[{"matcher":"⟦⟧"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
+    const items = await expectCompletions(doc, "", { contains: ["regex", "array"] });
+    const docOf = (label: string): string => {
+      const documentation = items.find((i) => i.label === label)?.documentation;
+      return typeof documentation === "string" ? documentation : (documentation?.value ?? "");
+    };
+    // Then - regex (no footgun) carries no ⚠️ note and no generic panic text
+    const regexDoc = docOf("regex");
+    expect(regexDoc).not.toContain("⚠️");
+    expect(regexDoc).not.toContain("Unknown matcher name");
+    expect(regexDoc).toContain("**Config:** not supported.");
+    // And - array still carries its OWN config-keys footgun, but not the generic panic
+    const arrayDoc = docOf("array");
+    expect(arrayDoc).toContain("⚠️");
+    expect(arrayDoc).toContain("must be a JSON boolean");
+    expect(arrayDoc).not.toContain("Unknown matcher name");
   });
 });
 

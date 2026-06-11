@@ -419,6 +419,30 @@ describe("hoverfly-lsp — completion & hover", () => {
     expect(labels).toEqual(expect.arrayContaining(["exact", "regex", "jsonpath"]));
   });
 
+  it("completes a requiresState KEY cross-referenced from another pair (state-key round-trip)", async () => {
+    // Given - a producer sets `authenticated` via transitionsState; a consumer types a new key.
+    // This is the real-server path for the originally-reported requiresState cross-ref gap.
+    const uri = "file:///complete-state-key.hoverfly.json";
+    const producer = `{"request":{"path":[{"matcher":"exact","value":"/login"}]},"response":{"status":200,"transitionsState":{"authenticated":"yes"}}}`;
+    const consumer = `{"request":{"path":[{"matcher":"exact","value":"/me"}],"requiresState":{"":""}},"response":{"status":200}}`;
+    const text = `{"data":{"pairs":[${producer},${consumer}]},"meta":{"schemaVersion":"v5.3"}}`;
+    void connection.sendNotification(DidOpenTextDocumentNotification.type, {
+      textDocument: { uri, languageId: "json", version: 1, text },
+    });
+
+    // When - completion is requested inside the consumer's empty requiresState key quotes
+    const cursor = text.indexOf(`"requiresState":{""`) + `"requiresState":{"`.length;
+    const completions = (await connection.sendRequest(CompletionRequest.type, {
+      textDocument: { uri },
+      position: { line: 0, character: cursor },
+    })) as CompletionList | null;
+    const labels = (completions?.items ?? []).map((i) => i.label);
+
+    // Then - the producer's state key is offered for the requiring side, plus the sequence: snippet
+    expect(labels).toContain("authenticated");
+    expect(labels).toContain("sequence:");
+  });
+
   it("hovers a matcher name and surfaces registry docs markdown", async () => {
     // Given - a "glob" matcher name on request.path
     const uri = "file:///hover-matcher.hoverfly.json";
