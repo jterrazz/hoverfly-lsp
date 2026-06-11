@@ -142,7 +142,9 @@ jobs:
 
             ### Manual distribution steps (no tokens in CI)
             - **VS Code Marketplace**: `vsce publish` with the attached `.vsix` (publisher `jterrazz`)
-            - **Open VSX**: `ovsx publish` with the attached `.vsix`
+            - **Open VSX** (**required**): `ovsx publish` with the attached `.vsix` — Cursor,
+              Windsurf, and VSCodium default to Open VSX (they cannot use the MS Marketplace), so
+              this is required for one-click install on the VS Code forks, not just an alternative
             - **Zed**: bump `editors/zed/extension.toml` and open a PR against `zed-industries/extensions`
             - **Claude Code**: the `editors/claude-code` plugin resolves `hoverfly-lsp` from npm; submit/refresh the marketplace entry
             - **SchemaStore**: submit the enhanced schema with `fileMatch: ["*.hoverfly.json", "hoverfly-simulation.json"]`

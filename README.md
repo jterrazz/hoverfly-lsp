@@ -202,6 +202,76 @@ require("lspconfig.configs").hoverfly = {
 require("lspconfig").hoverfly.setup({})
 ```
 
+### Use with AI coding agents
+
+`hoverfly-lsp` is a standard stdio LSP — **point your agent at `hoverfly-lsp --stdio` for `.json`
+files** and it gets Hoverfly diagnostics in-context after every edit. The broad `.json` extension
+is safe: the server content-fingerprints each file and stays silent on non-Hoverfly JSON (see
+[File conventions](#file-conventions)). The recipes below show the future npm-installed path
+(`hoverfly-lsp` on `$PATH`); **until the npm package ships**, build the server and link it locally
+first — `npm run build && npm link --workspace packages/server` — or substitute the absolute path
+to `packages/server/dist/cli.cjs`.
+
+**Claude Code** — shipped plugin (diagnostics pushed into context right after Claude edits a
+simulation). See [the Claude Code section above](#claude-code).
+
+**GitHub Copilot CLI** — `~/.copilot/lsp-config.json` (user) or `.github/lsp.json` (repo):
+
+```json
+{
+  "lspServers": {
+    "hoverfly": {
+      "command": "hoverfly-lsp",
+      "args": ["--stdio"],
+      "fileExtensions": { ".json": "json" }
+    }
+  }
+}
+```
+
+**OpenCode** — `opencode.json`:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "lsp": {
+    "hoverfly": {
+      "command": ["hoverfly-lsp", "--stdio"],
+      "extensions": [".json"]
+    }
+  }
+}
+```
+
+**Codex CLI** — via the [`code-yeongyu/codex-lsp`](https://github.com/code-yeongyu/codex-lsp)
+plugin (Codex has no native LSP yet); `.codex/lsp-client.json` (project) or
+`~/.codex/lsp-client.json`:
+
+```json
+{
+  "lsp": {
+    "hoverfly": {
+      "command": ["hoverfly-lsp", "--stdio"],
+      "extensions": [".json"]
+    }
+  }
+}
+```
+
+**Qwen Code** — native [LSP config](https://qwenlm.github.io/qwen-code-docs/en/users/features/lsp/),
+same shape: a `hoverfly` server with `command` `["hoverfly-lsp", "--stdio"]` over `.json`.
+
+**Any MCP-capable agent (e.g. Gemini CLI)** — agents that speak MCP but not LSP reach the server
+through a generic LSP→MCP bridge such as
+[`isaacphi/mcp-language-server`](https://github.com/isaacphi/mcp-language-server). Register an MCP
+server whose command launches the bridge against the workspace with the LSP set to
+`hoverfly-lsp --stdio` (flags vary per bridge); it exposes `diagnostics`/`definition`/`references`
+to the agent. No Hoverfly-specific artifact needed.
+
+> **Cursor / Windsurf / VSCodium** run standard VS Code extensions — install the
+> [VS Code extension](#vs-code) from **[Open VSX](https://open-vsx.org/)** (the fork default) for
+> one-click setup; their agent modes then read Hoverfly diagnostics from the running extension.
+
 ### Zero-install: JSON Schema fallback
 
 A JSON Schema gives basic validation and completion in **any** editor that consumes the

@@ -35,6 +35,10 @@ The end-to-end editor behaviour cannot run headlessly (no extension host in CI).
       confirm `<workspace>/node_modules/.bin/hoverfly-lsp` is preferred over the bundled server.
 - [ ] **Marketplace publish (future):** `code --install-extension jterrazz.hoverfly-lsp-vscode`
       installs the published extension.
+- [ ] **Open VSX publish (REQUIRED, not optional):** `ovsx publish` the `.vsix` to
+      [Open VSX](https://open-vsx.org/). Cursor, Windsurf, and VSCodium default to Open VSX and
+      **cannot** use the MS Marketplace, so this is required for one-click install on the VS Code
+      forks. Verify by installing the extension from the marketplace UI inside Cursor/Windsurf.
 
 > Note: `vsce package` emits a "LICENSE not found" warning because the extension directory has no
 > own LICENSE file (the repo is MIT at root). Add a `LICENSE` under `editors/vscode/` before
