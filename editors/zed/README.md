@@ -20,11 +20,34 @@ this Rust/WASM extension is a thin launcher that locates and starts that binary.
    storage and launches `node node_modules/hoverfly-lsp/bin/hoverfly-lsp.js`.
 
 In all cases the server is invoked with `--stdio`. If none of the above resolves,
-Zed surfaces an installation error in its log.
+Zed surfaces an actionable installation error in its log telling you to
+`npm install hoverfly-lsp` (project) or `npm install -g hoverfly-lsp` (global).
+
+This is the canonical pattern used by first-party Node-LSP extensions
+(`zed-industries/zed`'s `html`, `zed-extensions/vue`, `zed-extensions/svelte`):
+they `npm_install_package` the server into the extension's work dir, compare
+`npm_package_installed_version` against `npm_package_latest_version`, reinstall on
+update, and launch via Zed's managed Node. Steps 1–2 are an extra project-local /
+`$PATH` override (vue and svelte do the project-local lookup too), useful for a
+locally-built server.
 
 > The `hoverfly-lsp` npm package is not yet published. Until it is, **step 3 will
 > fail** (npm can't find the package) — use step 1 or 2 with a local build of the
 > server. See [Dev install](#dev-install).
+
+### Why not ship the server inside the extension (zero-setup)?
+
+It is not possible. A Zed extension runs as WebAssembly in a WASI sandbox that
+**preopens only the extension's _work_ directory** as its working directory
+(`crates/extension_host/src/wasm_host.rs`). Files committed to this repo live in
+Zed's _installed_ directory, which the wasm cannot read. On top of that, the
+published extension archive only contains `extension.toml`, `extension.wasm`,
+`languages/`, and `grammars/` (per Zed's
+[packaging](https://zed.dev/blog/zed-decoded-extensions)) — an arbitrary `server/`
+directory would never even be included. So a bundled `dist/cli.cjs` asset is
+unreachable at runtime for both dev _and_ registry installs. The only viable
+zero-setup path is publishing `hoverfly-lsp` to npm, after which resolution step 3
+installs it automatically with no manual setup.
 
 ## File targeting
 

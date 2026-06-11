@@ -53,6 +53,12 @@ rustup, no wasm target). The wasm build and all in-editor behaviour are manual.
 because `hoverfly-lsp` is not on npm yet — Zed's managed-install path (resolution step 3) cannot
 work until it is published.
 
+> **No zero-setup bundling.** The server file cannot be shipped inside the extension: Zed's wasm
+> sandbox preopens only the extension _work_ dir as cwd (`crates/extension_host/.../wasm_host.rs`),
+> so committed files (in the _installed_ dir) are unreachable at runtime, and the published archive
+> only contains `extension.toml`/`extension.wasm`/`languages/`/`grammars/`. Zero-setup arrives only
+> when `hoverfly-lsp` is published to npm (resolution step 3 then auto-installs it).
+
 - [ ] `cargo build --release --target wasm32-wasip1` succeeds (needs rustup + wasm target).
 - [ ] `zed: install dev extension` on `editors/zed` compiles without errors (check
       `~/.local/share/zed/logs/Zed.log`).
