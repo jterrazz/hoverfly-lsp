@@ -1,0 +1,8 @@
+{
+    "markers": {
+        "": {
+            "includes": ["Simulation schema version", "the v5 schema"],
+            "excludes": ["CRASHES", "PANIC", "Unknown matcher"]
+        }
+    }
+}

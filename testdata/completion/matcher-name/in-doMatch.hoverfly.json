@@ -1,0 +1,23 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "headers": {
+                        "Authorization": [
+                            {
+                                "matcher": "jwt",
+                                "value": "{\"header\":{\"alg\":\"HS256\"}}",
+                                "doMatch": { "matcher": "⟦⟧", "value": "x" }
+                            }
+                        ]
+                    }
+                },
+                "response": { "status": 200 }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

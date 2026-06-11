@@ -1,0 +1,17 @@
+{
+    "markers": {
+        "": {
+            "includes": [
+                "faker",
+                "inline helper",
+                "gofakeit",
+                "Arity:",
+                "Example:"
+            ],
+            "excludes": [
+                "CRASHES",
+                "PANIC"
+            ]
+        }
+    }
+}

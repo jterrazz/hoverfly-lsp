@@ -1,0 +1,17 @@
+{
+    "markers": {
+        "": {
+            "includes": [
+                "csvAsMap",
+                "inline helper",
+                "[]RowMap",
+                "Arity:",
+                "Example:"
+            ],
+            "excludes": [
+                "CRASHES",
+                "PANIC"
+            ]
+        }
+    }
+}

@@ -1,0 +1,17 @@
+{
+    "markers": {
+        "": {
+            "includes": [
+                "faker",
+                "Name",
+                "zero-arg",
+                "gofakeit",
+                "6.28.0"
+            ],
+            "excludes": [
+                "CRASHES",
+                "PANIC"
+            ]
+        }
+    }
+}

@@ -1,0 +1,19 @@
+{
+    "markers": {
+        "": {
+            "includes": [
+                "`xmltemplated` matcher",
+                "Templated XML match",
+                "Value type:"
+            ],
+            "excludes": [
+                "CRASHES",
+                "PANIC",
+                "Unknown matcher",
+                "panic",
+                "PANICs",
+                "⚠️"
+            ]
+        }
+    }
+}

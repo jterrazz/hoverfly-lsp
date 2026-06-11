@@ -1,0 +1,19 @@
+{
+    "markers": {
+        "": {
+            "includes": [
+                "`jsonpartial` matcher",
+                "Partial JSON containment",
+                "Value type:"
+            ],
+            "excludes": [
+                "CRASHES",
+                "PANIC",
+                "Unknown matcher",
+                "panic",
+                "PANICs",
+                "⚠️"
+            ]
+        }
+    }
+}

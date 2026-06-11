@@ -1,0 +1,28 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/login" }]
+                },
+                "response": {
+                    "status": 200,
+                    "transitionsState": { "session": "active" }
+                }
+            },
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/logout" }],
+                    "requiresState": { "session": "active" }
+                },
+                "response": {
+                    "status": 200,
+                    "removesState": ["⟦⟧session"]
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

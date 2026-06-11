@@ -1,0 +1,15 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "body": [{ "matcher": "⟦⟧xmltemplated", "value": "<a>{{ ignore }}</a>" }]
+                },
+                "response": { "status": 200 }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

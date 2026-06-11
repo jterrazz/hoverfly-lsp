@@ -1,0 +1,9 @@
+{
+    "markers": {
+        "": {
+            "includes": ["Email", "Name", "FirstName", "UUID", "Digit"],
+            "excludes": ["faker", "now", "Request", "Number", "Password"],
+            "kindOf": { "Email": "Value" }
+        }
+    }
+}

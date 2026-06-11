@@ -1,0 +1,20 @@
+{
+    "markers": {
+        "": {
+            "includes": [
+                "`jwt` matcher",
+                "JWT match",
+                "Value type:",
+                "transforms/extracts a value"
+            ],
+            "excludes": [
+                "CRASHES",
+                "PANIC",
+                "Unknown matcher",
+                "panic",
+                "PANICs",
+                "⚠️"
+            ]
+        }
+    }
+}

@@ -1,0 +1,17 @@
+{
+    "markers": {
+        "": {
+            "includes": [
+                "Request.Body",
+                "method call",
+                "kubectl",
+                "jsonpath",
+                "Example:"
+            ],
+            "excludes": [
+                "CRASHES",
+                "PANIC"
+            ]
+        }
+    }
+}

@@ -1,0 +1,10 @@
+{
+    "markers": {
+        "": {
+            "includes": ["each"],
+            "excludes": ["faker", "Method", "if"],
+            "count": 1,
+            "kindOf": { "each": "Keyword" }
+        }
+    }
+}

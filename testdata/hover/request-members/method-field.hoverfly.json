@@ -1,0 +1,19 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/r" }]
+                },
+                "response": {
+                    "status": 200,
+                    "body": "{{Request.⟦⟧Method}}",
+                    "templated": true
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

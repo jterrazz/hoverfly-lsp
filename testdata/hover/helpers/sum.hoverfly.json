@@ -1,0 +1,19 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/h" }]
+                },
+                "response": {
+                    "status": 200,
+                    "body": "{{⟦⟧sum (getArray 'subtotal') '0.00'}}",
+                    "templated": true
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

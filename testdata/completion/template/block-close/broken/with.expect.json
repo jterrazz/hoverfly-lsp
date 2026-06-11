@@ -1,0 +1,10 @@
+{
+    "markers": {
+        "": {
+            "includes": ["with"],
+            "excludes": ["each", "if"],
+            "count": 1,
+            "kindOf": { "with": "Keyword" }
+        }
+    }
+}

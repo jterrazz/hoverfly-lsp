@@ -1,0 +1,10 @@
+{
+    "settings": { "registeredActions": ["webhook", "logger"] },
+    "markers": {
+        "": {
+            "includes": ["webhook", "logger"],
+            "count": 2,
+            "kindOf": { "webhook": "Value" }
+        }
+    }
+}

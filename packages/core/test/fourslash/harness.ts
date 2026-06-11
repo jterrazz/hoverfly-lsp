@@ -16,6 +16,7 @@
  * document and its offset recorded as the cursor Position.
  */
 
+import { readFileSync } from "node:fs";
 import { expect } from "vitest";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import type { CompletionItem, Hover, MarkupContent, Position } from "vscode-languageserver-types";
@@ -36,6 +37,12 @@ interface MarkedDocument {
   readonly text: string;
   /** Cursor positions keyed by marker name (`""` is the default/anonymous marker). */
   readonly positions: ReadonlyMap<string, Position>;
+  /**
+   * Cursor *offsets* (0-based character index into {@link text}) keyed by marker name. Offsets are
+   * the same information as {@link positions} in a representation the corpus runner can feed
+   * straight back to `document.positionAt`. Append-only addition for the on-disk corpus runner.
+   */
+  readonly offsets: ReadonlyMap<string, number>;
 }
 
 /* ------------------------------------- request set-up ------------------------------------ */
@@ -95,10 +102,12 @@ function scan(source: string): MarkedDocument {
   // Convert offsets to Positions via a TextDocument over the stripped text.
   const document = TextDocument.create("file:///marker.json", "json", 1, stripped);
   const resolved = new Map<string, Position>();
+  const offsets = new Map<string, number>();
   for (const [name, { offset }] of positions) {
     resolved.set(name, document.positionAt(offset));
+    offsets.set(name, offset);
   }
-  return { text: stripped, positions: resolved };
+  return { text: stripped, positions: resolved, offsets };
 }
 
 function prepare(
@@ -210,13 +219,87 @@ async function getHoverText(
   return renderHover(await service.doHover(document, position));
 }
 
+/* -------------------------------- on-disk corpus sidecars -------------------------------- */
+/*
+ * The `testdata/{completion,hover}/**\/*.hoverfly.json` corpus pairs each marked fixture with a
+ * sibling `<case>.expect.json` sidecar describing — per marker name — what the service MUST and
+ * MUST NOT produce. The schema is intentionally NON-BRITTLE: `includes`/`excludes` are
+ * substring/label assertions and `count` is opt-in (use it only for CLOSED enum sets, never for
+ * open sets that a later helper/faker addition would grow). The single unnamed marker uses key
+ * `""`. See `testdata/completion/README.md` and `testdata/hover/README.md` for the full contract.
+ */
+
+/** A `vscode-languageserver-types` CompletionItemKind name, e.g. `"Value"`, `"Property"`. */
+type CompletionKindName = string;
+
+/** Per-marker expectations for a COMPLETION fixture. */
+interface CompletionMarkerExpectation {
+  /** Labels that MUST appear in the completion list at this marker. */
+  readonly includes?: readonly string[];
+  /** Labels that MUST NOT appear at this marker. */
+  readonly excludes?: readonly string[];
+  /**
+   * Exact size of the completion list. Pin this ONLY for closed sets (off-body matchers = 13,
+   * on-body = 14, methods = 9, scheme = 4). Never pin open sets (helpers, fakers, state keys).
+   */
+  readonly count?: number;
+  /** Per-label CompletionItemKind assertions, e.g. `{ "GET": "Value" }`. */
+  readonly kindOf?: Readonly<Record<string, CompletionKindName>>;
+}
+
+/** Per-marker expectations for a HOVER fixture. */
+interface HoverMarkerExpectation {
+  /** Substrings the rendered hover markdown MUST contain at this marker. */
+  readonly includes?: readonly string[];
+  /** Substrings the rendered hover markdown MUST NOT contain at this marker (e.g. panic noise). */
+  readonly excludes?: readonly string[];
+}
+
+/** Shape of a `<case>.expect.json` sidecar. `kind` is inferred from the fixture's tree. */
+interface CorpusExpectation {
+  /**
+   * Optional per-fixture service settings (e.g. `{ "registeredActions": ["webhook"] }` for
+   * postServeAction completion fixtures). Passed straight to `createHoverflyLanguageService`.
+   */
+  readonly settings?: HoverflyServiceSettings;
+  /** Expectations keyed by marker name. The single unnamed marker uses key `""`. */
+  readonly markers: Readonly<Record<string, CompletionMarkerExpectation | HoverMarkerExpectation>>;
+}
+
+/**
+ * Read and parse a `<case>.expect.json` sidecar from disk. No schema validation beyond JSON
+ * parsing — the runner asserts shape by use, and a malformed sidecar surfaces as a readable test
+ * failure naming the file.
+ */
+function loadCorpusExpectation(sidecarPath: string): CorpusExpectation {
+  const raw = readFileSync(sidecarPath, "utf8");
+  return JSON.parse(raw) as CorpusExpectation;
+}
+
+/**
+ * Strip `⟦name⟧` markers from `source` and return the clean text plus each marker's 0-based
+ * character {@link offsets} (and {@link positions}). This is the corpus runner's entry point: it
+ * feeds the offsets back through `document.positionAt` against a freshly created `TextDocument`
+ * whose URI controls the `*.hoverfly.json` filename gate. Thin alias over {@link parseMarkedDocument}
+ * kept distinct so the corpus runner's intent (offsets, not assertions) reads clearly.
+ */
+function stripMarkersToOffsets(source: string): MarkedDocument {
+  return scan(source);
+}
+
 export {
   type CompletionExpectations,
+  type CompletionKindName,
+  type CompletionMarkerExpectation,
+  type CorpusExpectation,
   expectCompletions,
   expectHover,
   expectNoCompletions,
   getHoverText,
+  type HoverMarkerExpectation,
+  loadCorpusExpectation,
   type MarkedDocument,
   parseMarkedDocument,
   type ServiceOptions,
+  stripMarkersToOffsets,
 };

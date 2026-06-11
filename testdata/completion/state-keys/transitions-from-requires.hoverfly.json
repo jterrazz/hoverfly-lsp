@@ -1,0 +1,25 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/wishlist" }],
+                    "requiresState": { "wishlist": "ready" }
+                },
+                "response": { "status": 200 }
+            },
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/wishlist/prepare" }]
+                },
+                "response": {
+                    "status": 200,
+                    "transitionsState": { "⟦⟧wishlist": "ready" }
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

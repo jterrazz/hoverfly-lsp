@@ -1,0 +1,8 @@
+{
+    "markers": {
+        "": {
+            "includes": ["faker", "now", "randomString", "each"],
+            "excludes": []
+        }
+    }
+}

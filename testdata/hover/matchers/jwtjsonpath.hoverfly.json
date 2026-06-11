@@ -1,0 +1,15 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "body": [{ "matcher": "⟦⟧jwtjsonpath", "value": "$.payload.sub" }]
+                },
+                "response": { "status": 200 }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

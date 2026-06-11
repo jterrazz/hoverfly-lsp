@@ -1,0 +1,15 @@
+{
+    "markers": {
+        "": {
+            "includes": [
+                "faker",
+                "Number",
+                "PARAMETERIZED",
+                "panics at render"
+            ],
+            "excludes": [
+                "CRASHES"
+            ]
+        }
+    }
+}

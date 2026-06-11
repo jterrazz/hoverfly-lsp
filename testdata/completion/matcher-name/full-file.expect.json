@@ -1,0 +1,18 @@
+{
+    "markers": {
+        "body": {
+            "includes": ["form", "exact", "regex"],
+            "excludes": [],
+            "count": 14
+        },
+        "path": {
+            "includes": ["exact", "regex"],
+            "excludes": ["form"],
+            "count": 13
+        },
+        "version": {
+            "includes": ["v5.3", "v5", "v5.1", "v5.2"],
+            "excludes": []
+        }
+    }
+}

@@ -1,0 +1,19 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/h" }]
+                },
+                "response": {
+                    "status": 200,
+                    "body": "{{#⟦⟧each (csvAsMap 'pets')}}{{this.name}}{{/each}}",
+                    "templated": true
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

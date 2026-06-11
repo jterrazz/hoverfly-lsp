@@ -1,0 +1,9 @@
+{
+    "markers": {
+        "": {
+            "includes": ["exact", "regex", "glob", "json"],
+            "excludes": ["form"],
+            "count": 13
+        }
+    }
+}

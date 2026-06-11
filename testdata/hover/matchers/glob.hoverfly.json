@@ -1,0 +1,15 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "⟦⟧glob", "value": "/api/*" }]
+                },
+                "response": { "status": 200 }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

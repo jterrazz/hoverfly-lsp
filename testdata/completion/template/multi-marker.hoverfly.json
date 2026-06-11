@@ -1,0 +1,17 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": { "path": [{ "matcher": "exact", "value": "/x" }] },
+                "response": {
+                    "status": 200,
+                    "templated": true,
+                    "body": "m={{Request.⟦req⟧Method}} e={{faker '⟦fk⟧Email'}} s={{⟦start⟧now}}"
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

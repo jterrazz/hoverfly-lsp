@@ -1,0 +1,21 @@
+{
+    "data": {
+        "literals": [
+            { "name": "apiBase", "value": "https://api.example.com" },
+            { "name": "region", "value": "eu-west" }
+        ],
+        "pairs": [
+            {
+                "request": { "path": [{ "matcher": "exact", "value": "/x" }] },
+                "response": {
+                    "status": 200,
+                    "templated": true,
+                    "body": "base={{Literals.⟦⟧apiBase}}"
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

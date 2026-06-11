@@ -1,0 +1,10 @@
+{
+    "markers": {
+        "": {
+            "includes": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"],
+            "excludes": ["get", "post", "http"],
+            "count": 9,
+            "kindOf": { "GET": "EnumMember" }
+        }
+    }
+}

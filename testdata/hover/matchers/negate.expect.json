@@ -1,0 +1,19 @@
+{
+    "markers": {
+        "": {
+            "includes": [
+                "`negate` matcher",
+                "Matches when the value is NOT equal",
+                "Value type:",
+                "matches vacuously (always true)"
+            ],
+            "excludes": [
+                "CRASHES",
+                "PANIC",
+                "Unknown matcher",
+                "panic",
+                "PANICs"
+            ]
+        }
+    }
+}

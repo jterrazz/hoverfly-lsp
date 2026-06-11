@@ -1,0 +1,10 @@
+{
+    "markers": {
+        "": {
+            "includes": ["apiBase", "region"],
+            "excludes": ["Method", "faker", "Literals"],
+            "count": 2,
+            "kindOf": { "apiBase": "Variable" }
+        }
+    }
+}

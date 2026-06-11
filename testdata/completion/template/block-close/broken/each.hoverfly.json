@@ -1,0 +1,17 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": { "path": [{ "matcher": "exact", "value": "/x" }] },
+                "response": {
+                    "status": 200,
+                    "templated": true,
+                    "body": "{{#each (Request.QueryParam.ids)}}item{{/⟦⟧"
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

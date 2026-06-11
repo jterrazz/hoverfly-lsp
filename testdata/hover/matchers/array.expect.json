@@ -1,0 +1,25 @@
+{
+    "markers": {
+        "": {
+            "includes": [
+                "`array` matcher",
+                "Array match",
+                "Value type:",
+                "`array`",
+                "Config:",
+                "supported",
+                "ignoreUnknown",
+                "ignoreOrder",
+                "ignoreOccurrences",
+                "Each `config` value must be a JSON boolean"
+            ],
+            "excludes": [
+                "CRASHES",
+                "PANIC",
+                "Unknown matcher",
+                "panic",
+                "PANICs"
+            ]
+        }
+    }
+}

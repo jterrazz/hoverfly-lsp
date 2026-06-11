@@ -1,0 +1,19 @@
+{
+    "markers": {
+        "": {
+            "includes": [
+                "`json` matcher",
+                "Deep JSON equality",
+                "Value type:"
+            ],
+            "excludes": [
+                "CRASHES",
+                "PANIC",
+                "Unknown matcher",
+                "panic",
+                "PANICs",
+                "⚠️"
+            ]
+        }
+    }
+}

@@ -1,0 +1,19 @@
+{
+    "markers": {
+        "": {
+            "includes": [
+                "`regex` matcher",
+                "Regular-expression match",
+                "Value type:"
+            ],
+            "excludes": [
+                "CRASHES",
+                "PANIC",
+                "Unknown matcher",
+                "panic",
+                "PANICs",
+                "⚠️"
+            ]
+        }
+    }
+}

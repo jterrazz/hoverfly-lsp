@@ -1,0 +1,20 @@
+{
+    "markers": {
+        "": {
+            "includes": [
+                "`exact` matcher",
+                "Exact string equality",
+                "Value type:",
+                "`string`"
+            ],
+            "excludes": [
+                "CRASHES",
+                "PANIC",
+                "Unknown matcher",
+                "panic",
+                "PANICs",
+                "⚠️"
+            ]
+        }
+    }
+}

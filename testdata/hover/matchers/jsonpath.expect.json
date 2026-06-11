@@ -1,0 +1,21 @@
+{
+    "markers": {
+        "": {
+            "includes": [
+                "`jsonpath` matcher",
+                "JSONPath query match",
+                "kubectl dialect",
+                "Value type:",
+                "transforms/extracts a value"
+            ],
+            "excludes": [
+                "CRASHES",
+                "PANIC",
+                "Unknown matcher",
+                "panic",
+                "PANICs",
+                "⚠️"
+            ]
+        }
+    }
+}

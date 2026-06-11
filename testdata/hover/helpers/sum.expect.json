@@ -1,0 +1,18 @@
+{
+    "markers": {
+        "": {
+            "includes": [
+                "sum",
+                "inline helper",
+                "Sum a",
+                "numbers",
+                "Arity:",
+                "Example:"
+            ],
+            "excludes": [
+                "CRASHES",
+                "PANIC"
+            ]
+        }
+    }
+}

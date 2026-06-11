@@ -1,0 +1,16 @@
+{
+    "markers": {
+        "": {
+            "includes": [
+                "Request.Method",
+                "field",
+                "HTTP method",
+                "Example:"
+            ],
+            "excludes": [
+                "CRASHES",
+                "PANIC"
+            ]
+        }
+    }
+}

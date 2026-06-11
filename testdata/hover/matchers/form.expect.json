@@ -1,0 +1,19 @@
+{
+    "markers": {
+        "": {
+            "includes": [
+                "`form` matcher",
+                "Body-layer pseudo-matcher",
+                "Value type:",
+                "`object`",
+                "Valid ONLY on the request `body`",
+                "case-SENSITIVE"
+            ],
+            "excludes": [
+                "CRASHES",
+                "Unknown matcher name",
+                "config on a non-array matcher"
+            ]
+        }
+    }
+}

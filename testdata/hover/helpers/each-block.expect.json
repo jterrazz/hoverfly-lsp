@@ -1,0 +1,18 @@
+{
+    "markers": {
+        "": {
+            "includes": [
+                "each",
+                "block helper",
+                "iterate",
+                "@index",
+                "Arity:",
+                "Example:"
+            ],
+            "excludes": [
+                "CRASHES",
+                "PANIC"
+            ]
+        }
+    }
+}

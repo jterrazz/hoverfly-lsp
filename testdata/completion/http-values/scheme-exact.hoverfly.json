@@ -1,0 +1,15 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "scheme": [{ "matcher": "exact", "value": "⟦⟧https" }]
+                },
+                "response": { "status": 200 }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

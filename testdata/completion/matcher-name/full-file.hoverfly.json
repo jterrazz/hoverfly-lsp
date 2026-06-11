@@ -3,13 +3,14 @@
         "pairs": [
             {
                 "request": {
-                    "path": [{ "matcher": "⟦regex⟧regex", "value": "/api/.*" }]
+                    "body": [{ "matcher": "⟦body⟧", "value": "x" }],
+                    "path": [{ "matcher": "⟦path⟧", "value": "/x" }]
                 },
                 "response": { "status": 200 }
             }
         ]
     },
     "meta": {
-        "schemaVersion": "v5.3"
+        "schemaVersion": "⟦version⟧v5.3"
     }
 }

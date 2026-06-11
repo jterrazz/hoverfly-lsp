@@ -1,0 +1,18 @@
+{
+    "markers": {
+        "": {
+            "includes": [
+                "setStatusCode",
+                "inline helper",
+                "Override the response status",
+                "Side effect",
+                "Arity:",
+                "Example:"
+            ],
+            "excludes": [
+                "CRASHES",
+                "PANIC"
+            ]
+        }
+    }
+}

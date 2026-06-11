@@ -1,0 +1,37 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/login" }],
+                    "method": [{ "matcher": "exact", "value": "POST" }]
+                },
+                "response": {
+                    "status": 200,
+                    "transitionsState": { "session": "active" }
+                }
+            },
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/cart" }],
+                    "method": [{ "matcher": "exact", "value": "POST" }],
+                    "requiresState": { "session": "active" }
+                },
+                "response": {
+                    "status": 200,
+                    "transitionsState": { "cart": "filled" }
+                }
+            },
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/fetch" }],
+                    "requiresState": { "session": "active", "⟦⟧cart": "filled" }
+                },
+                "response": { "status": 200 }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

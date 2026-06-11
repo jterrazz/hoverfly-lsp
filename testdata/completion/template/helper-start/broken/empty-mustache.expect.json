@@ -1,0 +1,8 @@
+{
+    "markers": {
+        "": {
+            "includes": ["now", "faker", "randomString", "each", "Request", "State", "Vars", "Literals"],
+            "excludes": []
+        }
+    }
+}

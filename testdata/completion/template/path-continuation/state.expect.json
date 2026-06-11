@@ -1,0 +1,10 @@
+{
+    "markers": {
+        "": {
+            "includes": ["cart", "checkout"],
+            "excludes": ["Method", "faker", "State"],
+            "count": 2,
+            "kindOf": { "cart": "Variable" }
+        }
+    }
+}

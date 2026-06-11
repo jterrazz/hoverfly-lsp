@@ -13,8 +13,10 @@ function fixture(...parts: string[]): string {
 
 describe("full-file marker fixtures (testdata/completion, testdata/hover)", () => {
   it("offers body/path/version completions from a full marked simulation file", async () => {
-    // Given - a real multi-marker fixture file
-    const doc = parseMarkedDocument(fixture("completion", "matcher-name-on-body.hoverfly.json"));
+    // Given - a real multi-marker fixture file (migrated into the on-disk corpus tree)
+    const doc = parseMarkedDocument(
+      fixture("completion", "matcher-name", "full-file.hoverfly.json"),
+    );
     // Then - `form` appears on body but not on path; the version marker offers v5.3
     await expectCompletions(doc, "body", { contains: ["form", "exact"] });
     await expectCompletions(doc, "path", { contains: ["exact"], notContains: ["form"] });
@@ -22,9 +24,9 @@ describe("full-file marker fixtures (testdata/completion, testdata/hover)", () =
   });
 
   it("hovers a matcher name from a full marked simulation file", async () => {
-    // Given - a fixture with a cursor on the "regex" matcher name
-    const doc = parseMarkedDocument(fixture("hover", "matcher-name.hoverfly.json"));
+    // Given - a fixture with a cursor on the "regex" matcher name (migrated into the corpus tree)
+    const doc = parseMarkedDocument(fixture("hover", "matchers", "regex.hoverfly.json"));
     // Then - registry-sourced regex docs are rendered
-    await expectHover(doc, "regex", { includes: ["Regular-expression match", "Value type:"] });
+    await expectHover(doc, "", { includes: ["Regular-expression match", "Value type:"] });
   });
 });

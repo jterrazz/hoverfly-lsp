@@ -1,0 +1,16 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": { "path": [{ "matcher": "exact", "value": "/x" }] },
+                "response": {
+                    "status": 200,
+                    "body": "value={{⟦⟧now}}"
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

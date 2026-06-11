@@ -1,0 +1,9 @@
+{
+    "markers": {
+        "": {
+            "includes": ["-1d", "+1h", "-30m"],
+            "excludes": ["faker", "unix", "Request"],
+            "kindOf": { "-1d": "Value" }
+        }
+    }
+}

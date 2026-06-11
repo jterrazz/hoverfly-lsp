@@ -1,0 +1,19 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/time" }]
+                },
+                "response": {
+                    "status": 200,
+                    "body": "{{⟦⟧now '-1d' 'unix'}}",
+                    "templated": true
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

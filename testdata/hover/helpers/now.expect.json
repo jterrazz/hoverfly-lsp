@@ -1,0 +1,8 @@
+{
+    "markers": {
+        "": {
+            "includes": ["now", "inline helper", "Arity:", "Source:", "Example:"],
+            "excludes": ["CRASHES", "PANIC"]
+        }
+    }
+}

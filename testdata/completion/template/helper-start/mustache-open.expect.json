@@ -1,0 +1,9 @@
+{
+    "markers": {
+        "": {
+            "includes": ["now", "randomString", "faker", "each", "Request", "State", "Vars", "Literals"],
+            "excludes": [],
+            "kindOf": { "now": "Method", "each": "Function", "Request": "Variable" }
+        }
+    }
+}

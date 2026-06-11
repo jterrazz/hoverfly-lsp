@@ -1,0 +1,10 @@
+{
+    "markers": {
+        "": {
+            "includes": ["@index", "@first", "@last", "@key"],
+            "excludes": ["Method", "faker", "this"],
+            "count": 4,
+            "kindOf": { "@index": "Variable" }
+        }
+    }
+}

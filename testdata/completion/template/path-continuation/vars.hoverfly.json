@@ -1,0 +1,21 @@
+{
+    "data": {
+        "variables": [
+            { "name": "token", "function": "randomUuid" },
+            { "name": "userId", "function": "randomInteger" }
+        ],
+        "pairs": [
+            {
+                "request": { "path": [{ "matcher": "exact", "value": "/x" }] },
+                "response": {
+                    "status": 200,
+                    "templated": true,
+                    "body": "token={{Vars.⟦⟧token}}"
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

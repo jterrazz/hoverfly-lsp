@@ -1,0 +1,8 @@
+{
+    "markers": {
+        "": {
+            "includes": ["Handlebars", "templating"],
+            "excludes": ["CRASHES", "PANIC", "Unknown matcher"]
+        }
+    }
+}

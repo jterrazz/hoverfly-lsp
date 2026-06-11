@@ -1,0 +1,16 @@
+{
+    "markers": {
+        "req": {
+            "includes": ["Scheme", "Method", "Body"],
+            "excludes": ["faker", "Request"]
+        },
+        "fk": {
+            "includes": ["Email", "Name"],
+            "excludes": ["faker", "Number"]
+        },
+        "start": {
+            "includes": ["now", "faker", "Request", "each"],
+            "excludes": []
+        }
+    }
+}

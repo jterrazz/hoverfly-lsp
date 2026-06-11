@@ -1,0 +1,25 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/login" }]
+                },
+                "response": {
+                    "status": 200,
+                    "transitionsState": { "session": "active" }
+                }
+            },
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/x" }],
+                    "requiresState": { "session": "⟦⟧active" }
+                },
+                "response": { "status": 200 }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

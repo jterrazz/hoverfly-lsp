@@ -1,0 +1,10 @@
+{
+    "markers": {
+        "": {
+            "includes": ["exact", "regex", "glob", "json", "jwt"],
+            "excludes": ["form"],
+            "count": 13,
+            "kindOf": { "exact": "EnumMember" }
+        }
+    }
+}

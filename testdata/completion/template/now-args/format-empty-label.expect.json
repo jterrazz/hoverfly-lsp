@@ -1,0 +1,8 @@
+{
+    "markers": {
+        "": {
+            "includes": ["(empty → RFC3339)", "unix", "epoch"],
+            "excludes": ["faker", "-1d"]
+        }
+    }
+}
