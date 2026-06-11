@@ -6,14 +6,37 @@
 [![npm](https://img.shields.io/badge/npm-hoverfly--lsp-cb3837)](https://www.npmjs.com/package/hoverfly-lsp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](#license)
 
-**Language server for [Hoverfly](https://hoverfly.io) simulation files** — schema validation,
-semantic type-checking, template-aware completion, and hover docs, everywhere JSON is edited.
+**Stop debugging silent mock failures.** Hoverfly gives your editor full understanding of
+[Hoverfly](https://hoverfly.io) simulation files — errors as you type, autocomplete everywhere,
+docs on hover. It's **the first and only IDE tooling for Hoverfly**.
 
-Hoverfly fails silently. Its import schema is permissive, so the mistakes that actually break a
-mock — a mis-cased matcher, a wrong value type, a template variable that never resolves, a dead
-state transition — don't error at import; they just produce pairs that never match (or, for an
-unknown matcher, **panic the running instance** at match time). This server catches them at edit
-time, with severities and messages ground-truth-verified against real **Hoverfly v1.12.8**.
+- **Catches the mistakes Hoverfly never tells you about.** A typo'd key, a wrong matcher casing, a
+  malformed template — Hoverfly imports them fine, and then your mock silently never matches. This
+  flags them as you type, before you ever run a request.
+- **Autocomplete for everything.** Every field, all 14 matchers (with docs), 60 template helpers
+  with argument snippets, 210 faker types — and even your own state keys, variables, and literals.
+- **Hover any field, matcher, or helper for instant docs.** No more tab-switching to
+  docs.hoverfly.io to remember what a matcher expects or what a helper returns.
+- **Works everywhere.** VS Code, Zed, IntelliJ, Neovim, Claude Code agents — any editor that
+  speaks the standard editor protocol.
+- **Trustworthy by design.** Every check is verified against a real Hoverfly instance — not just
+  the docs — under a zero-false-positive policy: if it underlines something, Hoverfly really does
+  treat it as wrong.
+
+### New to language servers?
+
+It's the same technology behind TypeScript's red squiggles and the autocomplete you already use in
+your editor. One server implements the smarts once; a shared standard — the Language Server
+Protocol — lets every editor plug into it without each one reinventing the wheel. This project is
+exactly that, built for Hoverfly simulation JSON. No prior tooling for Hoverfly has ever existed —
+this is the first.
+
+### Without it vs. with it
+
+|             | The loop                                                                                |
+| ----------- | --------------------------------------------------------------------------------------- |
+| **Without** | Edit the JSON blind → import → `curl` → get a 502 → stare at the logs → guess → repeat. |
+| **With**    | The editor underlines the exact token and tells you why — before Hoverfly ever runs.    |
 
 > **Status: pre-release.** The analyzer and the stdio LSP server are implemented and tested
 > (616 tests), with editor integrations for VS Code, Zed, IntelliJ, and Claude Code. The
@@ -21,6 +44,16 @@ time, with severities and messages ground-truth-verified against real **Hoverfly
 > **not published yet**, so every integration below ships a dev/local path alongside the future
 > published one. See [MANUAL-QA.md](./MANUAL-QA.md) for the in-editor checks that cannot run
 > headlessly.
+
+---
+
+## Why it matters
+
+Hoverfly fails silently. Its import schema is permissive, so the mistakes that actually break a
+mock — a mis-cased matcher, a wrong value type, a template variable that never resolves, a dead
+state transition — don't error at import; they just produce pairs that never match (or, for an
+unknown matcher, **panic the running instance** at match time). This server catches them at edit
+time, with severities and messages ground-truth-verified against real **Hoverfly v1.12.8**.
 
 ---
 
@@ -206,7 +239,7 @@ added; deprecated ones are never reused). Severity policy: **error** = Hoverfly 
 import or the pair could silently never match (or panic); **warning** = legal but almost certainly
 a mistake; **information**/**hint** = style and upgrade nudges.
 
-There are **37 codes across 6 families** (`HF1xx` structure · `HF2xx` matchers · `HF3xx` response ·
+There are **50+ codes across 6 families** (`HF1xx` structure · `HF2xx` matchers · `HF3xx` response ·
 `HF4xx` state · `HF5xx` templating · `HF6xx` global actions). Full reference:
 **[docs/diagnostics.md](./docs/diagnostics.md)**.
 
