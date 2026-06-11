@@ -1,5 +1,5 @@
 id = "hoverfly"
-name = "Hoverfly Simulation"
+name = "Hoverfly"
 version = "0.1.0"
 schema_version = 1
 authors = ["Jean-Baptiste Terrazzoni <contact@jterrazz.com>"]
@@ -10,12 +10,12 @@ repository = "https://github.com/jterrazz/hoverfly-lsp"
 # package `hoverfly-lsp`, resolved at runtime in src/lib.rs.
 [language_servers.hoverfly-lsp]
 name = "Hoverfly LSP"
-languages = ["Hoverfly Simulation"]
+languages = ["Hoverfly"]
 
 # Map the Zed language name to the LSP `languageId` sent to the server on
 # `textDocument/didOpen`, so the server can identify Hoverfly documents.
 [language_servers.hoverfly-lsp.language_ids]
-"Hoverfly Simulation" = "hoverfly-simulation"
+"Hoverfly" = "hoverfly-simulation"
 
 # Hoverfly simulations are JSON. Reuse the canonical tree-sitter-json grammar
 # for syntax highlighting. Pinned to v0.24.8, the same 0.24 line Zed bundles,

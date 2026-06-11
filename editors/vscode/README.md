@@ -1,4 +1,4 @@
-# Hoverfly Simulation — VS Code extension
+# Hoverfly — VS Code extension
 
 Language support for [Hoverfly](https://docs.hoverfly.io/) JSON simulation files: diagnostics,
 completion, and hover docs, powered by the `hoverfly-lsp` language server.
@@ -47,7 +47,7 @@ code --install-extension editors/vscode/hoverfly-lsp-vscode-0.1.0.vsix
 
 ### From the Marketplace (future — once published)
 
-Once published, install via the Extensions view (search "Hoverfly Simulation") or:
+Once published, install via the Extensions view (search "Hoverfly") or:
 
 ```bash
 code --install-extension jterrazz.hoverfly-lsp-vscode
@@ -110,7 +110,7 @@ VS Code window:
      `HF401`/`HF402`/`HF403` dangling-state diagnostics.
 3. In a `*.hoverfly.json` file, type a matcher value `{ "matcher": "" }` and trigger completion
    inside the quotes — expect matcher names (`exact`, `regex`, `jsonpath`, …).
-4. Confirm the bottom-right language indicator reads **Hoverfly Simulation**.
+4. Confirm the bottom-right language indicator reads **Hoverfly**.
 5. Open an unrelated `.json` (e.g. `package.json`) — expect **no** Hoverfly diagnostics and the
    normal JSON language mode.
 6. Optional: set `"hoverfly.trace.server": "verbose"` and check the **Hoverfly LSP** output

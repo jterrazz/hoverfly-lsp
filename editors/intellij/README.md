@@ -71,7 +71,7 @@ LSP4IJ supports importing a pre-built user-defined language server template.
 1. Open **Settings → Tools → Language Servers**.
 2. Click the **+** icon, then **Import from template...** (or **New Language Server → Import**).
 3. Select the file [`editors/intellij/template.json`](./template.json) from this repository.
-4. Click **OK** — the server named **Hoverfly LSP** appears in the list.
+4. Click **OK** — the server named **Hoverfly** appears in the list.
 5. Proceed to Step 5.
 
 > If the **Import from template** option is absent in your LSP4IJ version, use
@@ -91,7 +91,7 @@ individual fields.
 
 | Field       | Value                  |
 | ----------- | ---------------------- |
-| Server name | `Hoverfly LSP`         |
+| Server name | `Hoverfly`             |
 | Command     | `hoverfly-lsp --stdio` |
 
 For Windows, use: `cmd /C hoverfly-lsp --stdio`
@@ -142,7 +142,7 @@ the server returns empty results for non-simulation JSON regardless of this obje
 ## Step 5 — Verify the integration
 
 Open any `*.hoverfly.json` file. In the bottom-right of the IDE status bar you should see
-`Hoverfly LSP` appear with a green indicator once the server starts.
+`Hoverfly` appear with a green indicator once the server starts.
 
 Trigger a diagnostic:
 
@@ -166,12 +166,12 @@ Verify the server is running:
 Settings → Tools → Language Servers
 ```
 
-The **Hoverfly LSP** row should show **Running** status.
+The **Hoverfly** row should show **Running** status.
 
 Check the LSP4IJ logs if the server fails to start:
 
 ```
-View → Tool Windows → LSP → Console (select "Hoverfly LSP" in the dropdown)
+View → Tool Windows → LSP → Console (select "Hoverfly" in the dropdown)
 ```
 
 Common failure: `hoverfly-lsp: command not found` — run `which hoverfly-lsp` in a terminal to
@@ -202,11 +202,11 @@ Run through these steps after any change to the server or this integration:
 - [ ] `hoverfly-lsp --version` prints a version string from a terminal
 - [ ] `hoverfly-lsp --stdio` starts without error and waits for LSP input
 - [ ] LSP4IJ plugin is installed (Settings → Plugins → Installed)
-- [ ] Language server entry "Hoverfly LSP" appears in Settings → Tools → Language Servers
-- [ ] Opening `*.hoverfly.json` shows "Hoverfly LSP: Running" in the status bar
+- [ ] Language server entry "Hoverfly" appears in Settings → Tools → Language Servers
+- [ ] Opening `*.hoverfly.json` shows "Hoverfly: Running" in the status bar
 - [ ] A missing `response.status` field produces a red diagnostic underline
 - [ ] Hovering over `schemaVersion` shows a documentation popup
 - [ ] Autocompletion triggers inside `"matcher":` value position
-- [ ] Opening an unrelated `package.json` does **not** trigger Hoverfly LSP
+- [ ] Opening an unrelated `package.json` does **not** trigger Hoverfly
 - [ ] On Windows: server starts with `cmd /C hoverfly-lsp --stdio`
 - [ ] After `npm install -g hoverfly-lsp` (future): binary resolves without `node` prefix

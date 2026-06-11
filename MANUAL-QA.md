@@ -20,7 +20,7 @@ The end-to-end editor behaviour cannot run headlessly (no extension host in CI).
 `code --install-extension editors/vscode/hoverfly-lsp-vscode-0.1.0.vsix`
 (or open `editors/vscode` and press **F5** for an Extension Development Host).
 
-- [ ] Bottom-right language indicator reads **Hoverfly Simulation** when a `*.hoverfly.json` is open.
+- [ ] Bottom-right language indicator reads **Hoverfly** when a `*.hoverfly.json` is open.
 - [ ] `testdata/valid/minimal.hoverfly.json` → **no** diagnostics.
 - [ ] `testdata/valid/rich-stateful-templated.hoverfly.json` → no errors; hover over a matcher
       name (e.g. `"glob"`) shows registry docs.
@@ -45,13 +45,18 @@ The end-to-end editor behaviour cannot run headlessly (no extension host in CI).
 ## Zed (`editors/zed/`)
 
 `cargo check` passes with the available toolchain, but Zed builds the extension for the
-`wasm32-wasip1` target, which requires **rustup** (the build host had Homebrew Rust only, no
+`wasm32-wasip2` target, which requires **rustup** (the build host had Homebrew Rust only, no
 rustup, no wasm target). The wasm build and all in-editor behaviour are manual.
 
-**Setup:** install Rust via rustup and `rustup target add wasm32-wasip1`. Build the server
+**Setup:** install Rust via rustup and `rustup target add wasm32-wasip2`. Build the server
 (`npm run build` at repo root) and put it on `$PATH` (`npm link --workspace packages/server`)
 because `hoverfly-lsp` is not on npm yet — Zed's managed-install path (resolution step 3) cannot
 work until it is published.
+
+> **Toolchain gotchas (cost us time tonight).** Homebrew Rust has no `wasm32-wasip2` std
+> component and will fail the Zed build; `brew uninstall rust` or make `~/.cargo/bin` win on
+> `$PATH` so `which cargo` is rustup's. And a Zed launched from Finder/Dock does not inherit
+> `~/.cargo/bin` — launch it from a terminal (`zed .`) or add `~/.cargo/bin` to the GUI `$PATH`.
 
 > **No zero-setup bundling.** The server file cannot be shipped inside the extension: Zed's wasm
 > sandbox preopens only the extension _work_ dir as cwd (`crates/extension_host/.../wasm_host.rs`),
@@ -59,10 +64,10 @@ work until it is published.
 > only contains `extension.toml`/`extension.wasm`/`languages/`/`grammars/`. Zero-setup arrives only
 > when `hoverfly-lsp` is published to npm (resolution step 3 then auto-installs it).
 
-- [ ] `cargo build --release --target wasm32-wasip1` succeeds (needs rustup + wasm target).
+- [ ] `cargo build --release --target wasm32-wasip2` succeeds (needs rustup + wasm target).
 - [ ] `zed: install dev extension` on `editors/zed` compiles without errors (check
       `~/.local/share/zed/logs/Zed.log`).
-- [ ] Opening `testdata/valid/minimal.hoverfly.json` shows language **Hoverfly Simulation**.
+- [ ] Opening `testdata/valid/minimal.hoverfly.json` shows language **Hoverfly**.
 - [ ] Opening a file named `hoverfly-simulation.json` is detected the same way.
 - [ ] JSON syntax highlighting applies (keys, strings, numbers, `true`/`false`/`null`).
 - [ ] The **Hoverfly LSP** server starts (visible in the language-server logs).
@@ -96,9 +101,9 @@ server binary (dev: `npm link --workspace packages/server`; future: `npm install
       the build host — re-check on the QA machine's PATH).
 - [ ] LSP4IJ installed (Settings → Plugins → Installed).
 - [ ] Import `editors/intellij/template.json` via Settings → Tools → Language Servers → **+** →
-      _Import from template_ → the server **Hoverfly LSP** appears. (If import is absent in your
+      _Import from template_ → the server **Hoverfly** appears. (If import is absent in your
       LSP4IJ version, configure manually per README Step 4.)
-- [ ] Opening `*.hoverfly.json` shows **Hoverfly LSP: Running** in the status bar.
+- [ ] Opening `*.hoverfly.json` shows **Hoverfly: Running** in the status bar.
 - [ ] A missing `response.status` field produces a red diagnostic underline.
 - [ ] Hovering over `schemaVersion` shows a documentation popup.
 - [ ] Completion triggers in `"matcher":` value position.

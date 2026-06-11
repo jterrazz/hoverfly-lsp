@@ -1,7 +1,7 @@
 # hoverfly-lsp — Zed extension
 
 Language support for [Hoverfly](https://docs.hoverfly.io) API simulation files in
-[Zed](https://zed.dev). The extension registers a **Hoverfly Simulation** language
+[Zed](https://zed.dev). The extension registers a **Hoverfly** language
 for `*.hoverfly.json` and `hoverfly-simulation.json`, reuses the JSON grammar for
 syntax highlighting, and wires up the `hoverfly-lsp` language server (diagnostics,
 completion, hover) over stdio.
@@ -69,7 +69,7 @@ To claim additional names without editing the extension, add to your Zed
 ```json
 {
   "file_types": {
-    "Hoverfly Simulation": ["**/hoverfly/**/*.json"]
+    "Hoverfly": ["**/hoverfly/**/*.json"]
   }
 }
 ```
@@ -78,13 +78,25 @@ To claim additional names without editing the extension, add to your Zed
 
 ### Prerequisites
 
-- **Rust via `rustup`** (Zed compiles the extension to `wasm32-wasip1` itself and
-  manages the wasm target through rustup; a Homebrew-only Rust will not work):
+- **Rust via `rustup`** (Zed compiles the extension to `wasm32-wasip2` itself and
+  manages the wasm target through rustup; a Homebrew-only Rust will **not** work):
 
   ```bash
   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-  rustup target add wasm32-wasip1
+  rustup target add wasm32-wasip2
   ```
+
+  > **Homebrew Rust conflicts with rustup.** If `which cargo` points at
+  > `/opt/homebrew/bin/cargo` (or `/usr/local/bin/cargo`), Zed's build picks the
+  > Homebrew toolchain, which has no `wasm32-wasip2` std component and fails.
+  > Either `brew uninstall rust`, or ensure rustup's `~/.cargo/bin` precedes
+  > Homebrew on `$PATH` so `which cargo` resolves to `~/.cargo/bin/cargo`.
+
+  > **GUI launch and `$PATH`.** A Zed launched from Finder/Dock inherits the macOS
+  > GUI environment, which usually does **not** include `~/.cargo/bin` — so the
+  > extension build can't find `cargo`. Launch Zed from a terminal (`zed .`) where
+  > your shell `$PATH` is in effect, or add `~/.cargo/bin` to the GUI `$PATH`
+  > (e.g. via `launchctl setenv PATH` or a login-shell `$PATH` that the GUI reads).
 
 - **Node.js** on `$PATH` (used by resolution steps 1–3 above).
 
@@ -113,7 +125,7 @@ Because `hoverfly-lsp` is not on npm yet, make the server resolvable first.
    installed, Zed auto-uninstalls it while the dev version is loaded.
 
 3. Open a `*.hoverfly.json` file. The status bar language should read
-   **Hoverfly Simulation** and the **Hoverfly LSP** server should start.
+   **Hoverfly** and the **Hoverfly LSP** server should start.
 
 Logs: `~/.local/share/zed/logs/Zed.log`, or launch `zed --foreground` for verbose
 output. Compilation errors for the extension appear here.
@@ -121,7 +133,7 @@ output. Compilation errors for the extension appear here.
 ### Published install (future)
 
 Once published to the Zed extension registry: open the Extensions panel, search
-**Hoverfly Simulation**, click Install. Once `hoverfly-lsp` is on npm, no manual
+**Hoverfly**, click Install. Once `hoverfly-lsp` is on npm, no manual
 server setup is needed — resolution step 3 installs it automatically.
 
 ## Verification
@@ -140,19 +152,20 @@ PY
 cargo check
 
 # 3. Full wasm build (requires rustup + the wasm target)
-rustup target add wasm32-wasip1
-cargo build --release --target wasm32-wasip1
+rustup target add wasm32-wasip2
+cargo build --release --target wasm32-wasip2
 ```
 
-`cargo check` succeeds with the Homebrew toolchain. The `wasm32-wasip1` build
-requires the wasm std component, which only `rustup` provides — see Prerequisites.
+`cargo check` succeeds with the Homebrew toolchain. The `wasm32-wasip2` build
+requires the wasm std component, which only `rustup` provides — see Prerequisites
+(and the Homebrew-Rust / GUI-`$PATH` caveats there).
 
 ### Manual QA checklist (in Zed)
 
 - [ ] `zed: install dev extension` on `editors/zed` compiles without errors
       (check `Zed.log`).
 - [ ] Opening `testdata/valid/minimal.hoverfly.json` shows language
-      **Hoverfly Simulation** in the status bar.
+      **Hoverfly** in the status bar.
 - [ ] Opening `hoverfly-simulation.json` is detected the same way.
 - [ ] JSON syntax highlighting is applied (keys, strings, numbers, `true`/`false`/
       `null`).
@@ -160,7 +173,7 @@ requires the wasm std component, which only `rustup` provides — see Prerequisi
 - [ ] Introduce a deliberate error (e.g. set `meta.schemaVersion` to a bad value)
       and confirm a diagnostic appears.
 - [ ] Open an unrelated JSON file (e.g. `package.json`) and confirm it is NOT
-      detected as Hoverfly Simulation and shows no Hoverfly diagnostics.
+      detected as Hoverfly and shows no Hoverfly diagnostics.
 - [ ] With a project-local `node_modules/.bin/hoverfly-lsp`, confirm it is used in
       preference to a global install.
 

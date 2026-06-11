@@ -1,6 +1,6 @@
 {
   "id": "hoverfly-lsp",
-  "name": "Hoverfly LSP",
+  "name": "Hoverfly",
   "programArgs": {
     "default": "hoverfly-lsp --stdio",
     "windows": "cmd /C hoverfly-lsp --stdio"
@@ -8,7 +8,7 @@
   "fileTypeMappings": [
     {
       "fileType": {
-        "name": "Hoverfly Simulation",
+        "name": "Hoverfly",
         "patterns": ["*.hoverfly.json", "hoverfly-simulation.json"]
       },
       "languageId": "hoverfly-simulation"

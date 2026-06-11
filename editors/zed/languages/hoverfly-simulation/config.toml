@@ -1,4 +1,4 @@
-name = "Hoverfly Simulation"
+name = "Hoverfly"
 grammar = "json"
 
 # Zed matches `path_suffixes` against the suffix of the full filename, so

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "hoverfly-lsp",
-  "description": "Diagnostics and code intelligence for Hoverfly JSON simulation files (*.hoverfly.json, hoverfly-simulation.json) via the Language Server Protocol.",
+  "description": "Hoverfly — diagnostics and code intelligence for Hoverfly simulation files, surfaced to Claude as it edits.",
   "version": "0.1.0",
   "author": {
     "name": "Jean-Baptiste Terrazzoni",

@@ -1,6 +1,6 @@
 {
   "name": "hoverfly-lsp-vscode",
-  "displayName": "Hoverfly Simulation Language Support",
+  "displayName": "Hoverfly",
   "version": "0.1.0",
   "description": "Diagnostics, completion, and hover docs for Hoverfly JSON simulation files (*.hoverfly.json).",
   "categories": [
@@ -41,6 +41,7 @@
       {
         "id": "hoverfly-simulation",
         "aliases": [
+          "Hoverfly",
           "Hoverfly Simulation",
           "hoverfly"
         ],

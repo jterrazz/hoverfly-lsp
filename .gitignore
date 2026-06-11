@@ -9,3 +9,8 @@ coverage/
 
 # VS Code extension: server bundle copied in at build time (see editors/vscode/esbuild.config.mjs).
 editors/vscode/server/
+
+# Zed extension build artifacts (produced by `cargo build` / "zed: install dev extension").
+editors/zed/target/
+editors/zed/grammars/
+editors/zed/*.wasm
