@@ -110,6 +110,54 @@ describe("matcher-name completions — negative contexts", () => {
   });
 });
 
+describe("method/scheme value completions", () => {
+  it("offers the standard HTTP methods on an exact method value", async () => {
+    // Given - a cursor in a method matcher value with an exact matcher
+    const doc = `{"data":{"pairs":[{"request":{"method":[{"matcher":"exact","value":"⟦⟧"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
+    // Then - the IANA core methods are offered, quoted on insert
+    const items = await expectCompletions(doc, "", {
+      contains: ["GET", "POST", "DELETE", "PATCH"],
+    });
+    const get = items.find((i) => i.label === "GET");
+    expect(get?.insertText).toBe('"GET"');
+  });
+
+  it("offers methods when the matcher key is absent (default-exact)", async () => {
+    // Given - a method matcher with no `matcher` key (defaults to exact)
+    const doc = `{"data":{"pairs":[{"request":{"method":[{"value":"⟦⟧"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
+    // Then - methods are still offered (default-exact is enum-shaped)
+    await expectCompletions(doc, "", { contains: ["GET", "OPTIONS"] });
+  });
+
+  it("offers http/https/ws/wss on an exact scheme value", async () => {
+    // Given - a cursor in a scheme matcher value with an exact matcher
+    const doc = `{"data":{"pairs":[{"request":{"scheme":[{"matcher":"exact","value":"⟦⟧"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
+    // Then - the common schemes are offered
+    await expectCompletions(doc, "", { exact: ["http", "https", "ws", "wss"] });
+  });
+
+  it("offers NOTHING on a regex method value (a pattern, not an enum)", async () => {
+    // Given - a method matcher whose matcher is regex
+    const doc = `{"data":{"pairs":[{"request":{"method":[{"matcher":"regex","value":"⟦⟧"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
+    // Then - no method-value completions appear (the values are not offered for a pattern)
+    await expectCompletions(doc, "", { notContains: ["GET", "POST", "DELETE"] });
+  });
+
+  it("offers NOTHING on a glob scheme value", async () => {
+    // Given - a scheme matcher whose matcher is glob
+    const doc = `{"data":{"pairs":[{"request":{"scheme":[{"matcher":"glob","value":"⟦⟧"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
+    // Then - no scheme-value completions appear
+    await expectCompletions(doc, "", { notContains: ["http", "https"] });
+  });
+
+  it("does not offer method values on a free-string field like path", async () => {
+    // Given - a cursor in a path matcher value (path is a free string, not an enum)
+    const doc = `{"data":{"pairs":[{"request":{"path":[{"matcher":"exact","value":"⟦⟧"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
+    // Then - no method/scheme enum values leak onto path
+    await expectCompletions(doc, "", { notContains: ["GET", "http"] });
+  });
+});
+
 describe("schemaVersion completions", () => {
   it("offers v5.3 (preferred) plus v5/v5.1/v5.2", async () => {
     // Given - a cursor in the meta.schemaVersion value

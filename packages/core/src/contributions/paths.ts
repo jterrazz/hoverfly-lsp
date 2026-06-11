@@ -157,6 +157,40 @@ function isTransitionsStateKeyPosition(path: JSONPath): boolean {
   return path[path.length - 1] === "transitionsState" && path[path.length - 2] === "response";
 }
 
+/**
+ * The well-known-value request fields (`method`/`scheme`) whose `exact` matcher value is an enum we
+ * can complete. Mirrors the HF215/HF216 rule gate. `destination`/`path`/`body` are free strings.
+ */
+const VALUE_ENUM_FIELDS: ReadonlySet<string> = new Set(["method", "scheme"]);
+
+/**
+ * Recognise a `value`-completion position inside a `method`/`scheme` matcher object that sits
+ * DIRECTLY under `request` (not a header/query map, not a `doMatch` chain). The completion caller
+ * passes `location` = the matcher OBJECT path and `propertyKey` = `"value"`.
+ *
+ * Returns the field name (`"method"`/`"scheme"`) so the caller can pick the right value set, or
+ * `undefined` when the path is not such a position. The matcher-is-exact gate is NOT checked here
+ * (it needs the sibling `matcher` value); the caller applies it.
+ *
+ * Accepted shape (… = `["data","pairs",<n>,"request"]`): `…, method|scheme, <index>` with
+ * `propertyKey === "value"`.
+ */
+function matchMethodSchemeValuePosition(
+  path: JSONPath,
+  options: { readonly propertyKey?: string } = {},
+): string | undefined {
+  if (options.propertyKey !== "value") {
+    return undefined;
+  }
+  const index = path[path.length - 1];
+  const field = path[path.length - 2];
+  const request = path[path.length - 3];
+  if (isIndex(index) && isString(field) && VALUE_ENUM_FIELDS.has(field) && request === "request") {
+    return field;
+  }
+  return undefined;
+}
+
 /** True when the path identifies a `response.postServeAction` value position. */
 function isPostServeActionPosition(
   path: JSONPath,
@@ -175,4 +209,5 @@ export {
   isSchemaVersionPosition,
   isTransitionsStateKeyPosition,
   matchMatcherNamePosition,
+  matchMethodSchemeValuePosition,
 };

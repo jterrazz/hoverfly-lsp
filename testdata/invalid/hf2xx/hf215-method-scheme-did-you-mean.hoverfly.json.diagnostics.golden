@@ -1,0 +1,32 @@
+[
+  {
+    "code": "HF215",
+    "severity": "hint",
+    "range": {
+      "start": [
+        5,
+        62
+      ],
+      "end": [
+        5,
+        66
+      ]
+    },
+    "message": "Unknown HTTP method \"GT\" — did you mean \"GET\"?"
+  },
+  {
+    "code": "HF216",
+    "severity": "hint",
+    "range": {
+      "start": [
+        6,
+        62
+      ],
+      "end": [
+        6,
+        69
+      ]
+    },
+    "message": "Unknown URI scheme \"htttp\" — did you mean \"http\"?"
+  }
+]

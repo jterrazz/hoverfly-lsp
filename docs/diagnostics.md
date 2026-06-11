@@ -8,7 +8,7 @@ Severity policy (architect decision D4): **Error** = Hoverfly would reject the i
 
 > Generated from `packages/core/src/semantic/catalog.ts` (code, severity, message) plus the trigger/range prose from `research/11-diagnostic-catalog.md`. Regenerate with `npm run docs:diagnostics`.
 
-There are **54 codes** across 6 families.
+There are **56 codes** across 6 families.
 
 ## HF1xx — structure & meta
 
@@ -41,6 +41,8 @@ Matcher names, value types, `config`, the `form` pseudo-matcher, and `doMatch` c
 | [HF212](#hf212) | Warning | Field-matcher with a `matcher` (or empty/default) but no `value` key, or an empty `{}` — except when `matcher` is `negate` (HF207) or `form` (HF208). The value is nil, so it can never match. | the matcher object (or its `matcher` key) | `Matcher has no "value" — it can never match (the value is nil)` |
 | [HF213](#hf213) | Information | `destination` matcher with an `exact`/empty matcher whose value contains `://` (a full URL pasted where a host[:port] is expected). Off by default — high false-positive caution. | value node | `destination matches the request host only (host[:port]); "{v}" includes a scheme or path and will never match` |
 | [HF214](#hf214) | Warning | `literals[].name` or `variables[].name` contains a character outside `[A-Za-z0-9_]`, making it un-referenceable via `{{Literals.x}}` / `{{Vars.x}}`. | the name value node | `Name "{n}" contains a character that breaks "{{Literals.{n}}}" / "{{Vars.{n}}}" templating references` |
+| [HF215](#hf215) | Hint | A `method` value (under an `exact`/default matcher) that is a near-miss (Levenshtein ≤ 1) of a standard IANA HTTP method but is not itself one — i.e. a typo (`GT`→`GET`). Hint-only: the method field is an OPEN set Hoverfly compares verbatim, so a bespoke verb (`PURGE`, `PROPFIND`) far from every standard verb stays silent. | value node | `Unknown HTTP method "{value}" — did you mean "{suggestion}"?` |
+| [HF216](#hf216) | Hint | A `scheme` value (under an `exact`/default matcher) that is a near-miss (Levenshtein ≤ 1) of a common URI scheme (`http`/`https`/`ws`/`wss`) but is not itself one (`htttp`→`http`). Hint-only: scheme is string-compared verbatim, so a custom scheme (`ftp`, …) stays silent. | value node | `Unknown URI scheme "{value}" — did you mean "{suggestion}"?` |
 | [HF230](#hf230) | Error | A `regex` value (or an `xmltemplated` `{{regex:…}}` leaf) is not a valid Go RE2 pattern. Validated with a true RE2 engine (`re2js`), never `new RegExp`. Shared with HF601's urlPattern check. | value node | `Invalid RE2 regex — Hoverfly (Go regexp) silently never matches this` |
 | [HF231](#hf231) | Error | A `json`, `jsonpartial`, or `jwt` value string does not parse as JSON text (e.g. the `jwt` `"$.username"` bug). | value node | `"{name}" value must be JSON text; this is not valid JSON, so the pair never matches` |
 | [HF232](#hf232) | Warning | A `jsonpath`/`jwtjsonpath` value has unbalanced `[]`/`()`/`{}`/quotes (a structural lint only — no full kubectl-JSONPath parser, so heuristic and warning-level). | value node | `JSONPath has unbalanced brackets or quotes` |
@@ -235,6 +237,20 @@ The `codeDescription.href` for each diagnostic resolves to `https://hoverfly-lsp
 - **Trigger:** `literals[].name` or `variables[].name` contains a character outside `[A-Za-z0-9_]`, making it un-referenceable via `{{Literals.x}}` / `{{Vars.x}}`.
 - **Range:** the name value node
 - **Message:** `Name "{n}" contains a character that breaks "{{Literals.{n}}}" / "{{Vars.{n}}}" templating references`
+
+### HF215
+
+- **Severity:** Hint
+- **Trigger:** A `method` value (under an `exact`/default matcher) that is a near-miss (Levenshtein ≤ 1) of a standard IANA HTTP method but is not itself one — i.e. a typo (`GT`→`GET`). Hint-only: the method field is an OPEN set Hoverfly compares verbatim, so a bespoke verb (`PURGE`, `PROPFIND`) far from every standard verb stays silent.
+- **Range:** value node
+- **Message:** `Unknown HTTP method "{value}" — did you mean "{suggestion}"?`
+
+### HF216
+
+- **Severity:** Hint
+- **Trigger:** A `scheme` value (under an `exact`/default matcher) that is a near-miss (Levenshtein ≤ 1) of a common URI scheme (`http`/`https`/`ws`/`wss`) but is not itself one (`htttp`→`http`). Hint-only: scheme is string-compared verbatim, so a custom scheme (`ftp`, …) stays silent.
+- **Range:** value node
+- **Message:** `Unknown URI scheme "{value}" — did you mean "{suggestion}"?`
 
 ### HF230
 

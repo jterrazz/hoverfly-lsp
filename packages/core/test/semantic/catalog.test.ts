@@ -42,6 +42,8 @@ describe("diagnostic catalog", () => {
       HF212: W,
       HF213: I,
       HF214: W,
+      HF215: H,
+      HF216: H,
       HF230: E,
       HF231: E,
       HF232: W,
@@ -89,16 +91,18 @@ describe("diagnostic catalog", () => {
     );
   });
 
-  it("contains all 54 catalog codes including the structural-strictness extension", () => {
+  it("contains all 56 catalog codes including the value-domain extension", () => {
     // Given - the catalog
-    // Then - HF101..HF604 are all present (37 original + 17 additive structural-strictness codes)
+    // Then - HF101..HF604 are all present (37 original + 17 structural + 2 method/scheme value codes)
     const codes = Object.keys(DIAGNOSTIC_CATALOG);
     expect(codes).toContain("HF101");
+    expect(codes).toContain("HF215");
+    expect(codes).toContain("HF216");
     expect(codes).toContain("HF230");
     expect(codes).toContain("HF511");
     expect(codes).toContain("HF603");
     expect(codes).toContain("HF604");
-    expect(codes).toHaveLength(54);
+    expect(codes).toHaveLength(56);
   });
 });
 

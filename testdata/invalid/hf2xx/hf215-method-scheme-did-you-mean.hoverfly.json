@@ -1,0 +1,18 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "method": [{ "matcher": "exact", "value": "GT" }],
+                    "scheme": [{ "matcher": "exact", "value": "htttp" }]
+                },
+                "response": {
+                    "status": 200
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

@@ -49,6 +49,7 @@ import {
   type StructureObjectKind,
 } from "../../registry/index.js";
 import { makeDiagnostic } from "../diagnostics.js";
+import { levenshtein } from "../levenshtein.js";
 import type { RuleContext, SemanticRule } from "../types.js";
 
 /* ----------------------------------- allowed-key lookup ---------------------------------- */
@@ -83,28 +84,6 @@ function arrayItems(node: ObjectASTNode | undefined, key: string): readonly ASTN
 }
 
 /* ----------------------------------- did-you-mean (HF603) -------------------------------- */
-
-/** Case-insensitive Levenshtein distance, capped early once it exceeds {@link DID_YOU_MEAN_MAX_DISTANCE}. */
-function levenshtein(a: string, b: string): number {
-  const s = a.toLowerCase();
-  const t = b.toLowerCase();
-  const rows = s.length + 1;
-  const cols = t.length + 1;
-  let previous = Array.from({ length: cols }, (_, index) => index);
-  for (let i = 1; i < rows; i++) {
-    const current = [i, ...Array.from({ length: cols - 1 }, () => 0)];
-    for (let j = 1; j < cols; j++) {
-      const cost = s[i - 1] === t[j - 1] ? 0 : 1;
-      current[j] = Math.min(
-        (current[j - 1] ?? 0) + 1,
-        (previous[j] ?? 0) + 1,
-        (previous[j - 1] ?? 0) + cost,
-      );
-    }
-    previous = current;
-  }
-  return previous[cols - 1] ?? 0;
-}
 
 /**
  * The pre-formatted ` (did you mean "x"?)` suffix for an unknown key, or `""` when no allowed key

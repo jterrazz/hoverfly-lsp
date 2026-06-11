@@ -39,7 +39,7 @@ import {
   MarkupKind,
 } from "vscode-languageserver-types";
 
-import { MATCHER_SPECS, type MatcherSpec } from "../registry/index.js";
+import { HTTP_METHODS, MATCHER_SPECS, type MatcherSpec, URI_SCHEMES } from "../registry/index.js";
 import { buildSimulationModel } from "../semantic/model.js";
 import type { HoverflyServiceSettings, SimulationModel } from "../semantic/types.js";
 import { matcherDetail, matcherMarkdown } from "./docs.js";
@@ -49,9 +49,20 @@ import {
   isSchemaVersionPosition,
   isTransitionsStateKeyPosition,
   matchMatcherNamePosition,
+  matchMethodSchemeValuePosition,
 } from "./paths.js";
 
 /* ------------------------------------- static data --------------------------------------- */
+
+/**
+ * Well-known-value completions for `method`/`scheme`, keyed by field. Both are OPEN sets Hoverfly
+ * compares verbatim (research/13 §3.1/§3.2), so completion only OFFERS these — it never restricts
+ * the user to them. The data sets (IANA citation) live in `registry/http.ts`.
+ */
+const VALUE_ENUMS: Readonly<Record<string, { values: readonly string[]; detail: string }>> = {
+  method: { values: HTTP_METHODS, detail: "Standard HTTP method (custom verbs are also allowed)" },
+  scheme: { values: URI_SCHEMES, detail: "Common URI scheme (any scheme is allowed)" },
+};
 
 /** SchemaVersion enum values; v5.3 is the current default and is preselected/sorted first. */
 const SCHEMA_VERSIONS: ReadonlyArray<{ value: string; preferred: boolean }> = [
@@ -163,6 +174,11 @@ function createHoverflyContribution(
         }
         return Promise.resolve(undefined);
       }
+      const valueField = matchMethodSchemeValuePosition(location, { propertyKey });
+      if (valueField && matcherIsExactOrDefault(uri, location, resolveDocument)) {
+        collectMethodSchemeValueCompletions(result, valueField);
+        return Promise.resolve(undefined);
+      }
       if (isSchemaVersionPosition(location, { propertyKey })) {
         collectSchemaVersionCompletions(result);
         return Promise.resolve(undefined);
@@ -198,6 +214,28 @@ function collectMatcherNameCompletions(result: CompletionsCollector, isBody: boo
       detail: matcherDetail(spec),
       documentation: { kind: MarkupKind.Markdown, value: matcherMarkdown(spec) },
       insertText: jsonString(spec.name),
+      insertTextFormat: InsertTextFormat.PlainText,
+    });
+  }
+}
+
+/**
+ * Add the well-known method/scheme value completions for `field` (`method`/`scheme`). The values
+ * are offered, never enforced — Hoverfly accepts any string here. The quoted insertText respects
+ * the existing-quote-vs-bare position (the library strips the surrounding quotes when the cursor is
+ * already inside a string literal), matching the matcher-name completion machinery.
+ */
+function collectMethodSchemeValueCompletions(result: CompletionsCollector, field: string): void {
+  const enumeration = VALUE_ENUMS[field];
+  if (!enumeration) {
+    return;
+  }
+  for (const value of enumeration.values) {
+    result.add({
+      label: value,
+      kind: CompletionItemKind.EnumMember,
+      detail: enumeration.detail,
+      insertText: jsonString(value),
       insertTextFormat: InsertTextFormat.PlainText,
     });
   }
@@ -352,6 +390,25 @@ function matcherNameAt(
   }
   // Location ends with "matcher"; the value we want is at that exact path.
   return readStringAtPath(document, location);
+}
+
+/**
+ * Whether the matcher object at `location` is `exact` or has no `matcher` key (default-exact) — the
+ * only shape where method/scheme are an enum. A `glob`/`regex`/etc. value is a pattern; we offer
+ * nothing there. `location` is the matcher OBJECT path; the sibling matcher is at `[…,"matcher"]`.
+ */
+function matcherIsExactOrDefault(
+  uri: string,
+  location: JSONPath,
+  resolveDocument: (uri: string) => TextDocument | undefined,
+): boolean {
+  const document = resolveDocument(uri);
+  if (!document) {
+    return false;
+  }
+  const matcher = readStringAtPath(document, [...location, "matcher"]);
+  // Absent matcher key → readStringAtPath returns undefined → default-exact → offer.
+  return matcher === undefined || matcher === "" || matcher.toLowerCase() === "exact";
 }
 
 /* ---- minimal AST/document helpers (kept local; the contribution owns no model wiring) ---- */

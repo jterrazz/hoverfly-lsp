@@ -125,6 +125,16 @@ const DIAGNOSTIC_PROSE = {
       "`literals[].name` or `variables[].name` contains a character outside `[A-Za-z0-9_]`, making it un-referenceable via `{{Literals.x}}` / `{{Vars.x}}`.",
     range: "the name value node",
   },
+  HF215: {
+    trigger:
+      "A `method` value (under an `exact`/default matcher) that is a near-miss (Levenshtein ≤ 1) of a standard IANA HTTP method but is not itself one — i.e. a typo (`GT`→`GET`). Hint-only: the method field is an OPEN set Hoverfly compares verbatim, so a bespoke verb (`PURGE`, `PROPFIND`) far from every standard verb stays silent.",
+    range: "value node",
+  },
+  HF216: {
+    trigger:
+      "A `scheme` value (under an `exact`/default matcher) that is a near-miss (Levenshtein ≤ 1) of a common URI scheme (`http`/`https`/`ws`/`wss`) but is not itself one (`htttp`→`http`). Hint-only: scheme is string-compared verbatim, so a custom scheme (`ftp`, …) stays silent.",
+    range: "value node",
+  },
   HF230: {
     trigger:
       "A `regex` value (or an `xmltemplated` `{{regex:…}}` leaf) is not a valid Go RE2 pattern. Validated with a true RE2 engine (`re2js`), never `new RegExp`. Shared with HF601's urlPattern check.",

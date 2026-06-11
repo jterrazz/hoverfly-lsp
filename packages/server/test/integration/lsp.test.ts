@@ -419,6 +419,26 @@ describe("hoverfly-lsp — completion & hover", () => {
     expect(labels).toEqual(expect.arrayContaining(["exact", "regex", "jsonpath"]));
   });
 
+  it("completes HTTP method values at an exact method-value position (round-trip)", async () => {
+    // Given - an empty value on an exact request.method matcher (the originally-reported gap)
+    const uri = "file:///complete-method.hoverfly.json";
+    const text = `{"data":{"pairs":[{"request":{"method":[{"matcher":"exact","value":""}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
+    void connection.sendNotification(DidOpenTextDocumentNotification.type, {
+      textDocument: { uri, languageId: "json", version: 1, text },
+    });
+
+    // When - completion inside the empty value quotes
+    const cursor = text.indexOf(`"value":""`) + `"value":"`.length;
+    const completions = (await connection.sendRequest(CompletionRequest.type, {
+      textDocument: { uri },
+      position: { line: 0, character: cursor },
+    })) as CompletionList | null;
+    const labels = (completions?.items ?? []).map((i) => i.label);
+
+    // Then - the standard HTTP methods are offered through the full server
+    expect(labels).toEqual(expect.arrayContaining(["GET", "POST", "DELETE"]));
+  });
+
   it("completes a requiresState KEY cross-referenced from another pair (state-key round-trip)", async () => {
     // Given - a producer sets `authenticated` via transitionsState; a consumer types a new key.
     // This is the real-server path for the originally-reported requiresState cross-ref gap.

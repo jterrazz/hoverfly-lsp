@@ -42,6 +42,8 @@ export type DiagnosticCode =
   | "HF212"
   | "HF213"
   | "HF214"
+  | "HF215"
+  | "HF216"
   | "HF230"
   | "HF231"
   | "HF232"
@@ -217,6 +219,24 @@ export const DIAGNOSTIC_CATALOG: Readonly<Record<DiagnosticCode, CatalogEntry>> 
     href: href("HF214"),
     messageTemplate:
       'Name "{n}" contains a character that breaks "{{Literals.{n}}}" / "{{Vars.{n}}}" templating references',
+  },
+  /*
+   * Method/scheme well-known-value did-you-mean. HINT-only (D4): both fields are OPEN sets that
+   * Hoverfly compares verbatim and never validates (research/13 §3.1/§3.2, T19), so this can ONLY
+   * fire on a near-miss against the standard set (a typo) — a bespoke verb / custom scheme stays
+   * silent. The `{value}`/`{suggestion}` slots are supplied by the rule. See registry/http.ts.
+   */
+  HF215: {
+    code: "HF215",
+    severity: H,
+    href: href("HF215"),
+    messageTemplate: 'Unknown HTTP method "{value}" — did you mean "{suggestion}"?',
+  },
+  HF216: {
+    code: "HF216",
+    severity: H,
+    href: href("HF216"),
+    messageTemplate: 'Unknown URI scheme "{value}" — did you mean "{suggestion}"?',
   },
   HF230: {
     code: "HF230",

@@ -1,0 +1,36 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "method": [{ "matcher": "exact", "value": "GET" }],
+                    "scheme": [{ "matcher": "exact", "value": "https" }]
+                },
+                "response": {
+                    "status": 200
+                }
+            },
+            {
+                "request": {
+                    "method": [{ "matcher": "exact", "value": "PURGE" }],
+                    "scheme": [{ "matcher": "exact", "value": "ftp" }]
+                },
+                "response": {
+                    "status": 200
+                }
+            },
+            {
+                "request": {
+                    "method": [{ "value": "PROPFIND" }],
+                    "scheme": [{ "matcher": "glob", "value": "ht*" }]
+                },
+                "response": {
+                    "status": 200
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

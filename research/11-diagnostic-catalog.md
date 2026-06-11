@@ -109,22 +109,25 @@ node the user must change.
 Binding carve-outs (architect ruling): case-insensitive Go key matching means HF603 fires only
 when NO case-fold match exists (a case-only variant goes to HF604); regex validation ONLY via
 `re2js` (never `new RegExp`); no glob diagnostics; `jsonpath`/`xpath` = balance-lint only; custom
-HTTP methods stay silent.
+HTTP methods and custom schemes stay silent (HF215/HF216 fire ONLY on a near-miss TYPO of a
+standard value, Hint-only — both fields are OPEN sets Hoverfly compares verbatim, T19).
 
 ### HF2xx — request matchers (extension)
 
-| Code  | Sev | Trigger                                                                                                                                                       | Range                                     | Message template                                                                                                |
-| ----- | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| HF212 | W   | Field-matcher with a `matcher` (or empty/default) but no `value` key, OR an empty `{}` — EXCEPT when `matcher` is `negate` (defer to HF207) or `form` (HF208) | the matcher object (or its `matcher` key) | `Matcher has no "value" — it can never match (the value is nil)`                                                |
-| HF213 | I   | `destination` matcher with `exact`/empty matcher whose value contains `://` (full URL pasted where a host[:port] is expected); off by default acceptable      | value node                                | `destination matches the request host only (host[:port]); "{v}" includes a scheme or path and will never match` |
-| HF214 | W   | `literals[].name` or `variables[].name` contains a char outside `[A-Za-z0-9_]` (un-referenceable via `{{Literals.x}}`/`{{Vars.x}}`)                           | the name value node                       | `Name "{n}" contains a character that breaks "{{Literals.{n}}}" / "{{Vars.{n}}}" templating references`         |
-| HF230 | E   | `regex` value (or `xmltemplated` `{{regex:…}}` leaf) is not a valid Go RE2 pattern (RE2 ≠ JS RegExp); validate with `re2js`, reuse for HF601                  | value node                                | `Invalid RE2 regex — Hoverfly (Go regexp) silently never matches this`                                          |
-| HF231 | E   | `json`/`jsonpartial`/`jwt` value string does not parse as JSON text (the `jwt` `"$.username"` bug)                                                            | value node                                | `"{name}" value must be JSON text; this is not valid JSON, so the pair never matches`                           |
-| HF232 | W   | `jsonpath`/`jwtjsonpath` value has unbalanced `[]`/`()`/`{}`/quotes (balance lint only — no full kubectl-JSONPath parser)                                     | value node                                | `JSONPath has unbalanced brackets or quotes`                                                                    |
-| HF233 | W   | `xpath` value has unbalanced `[]`/`()`/quotes (balance lint only — no full XPath engine)                                                                      | value node                                | `XPath has unbalanced brackets or quotes`                                                                       |
-| HF234 | W   | `xml`/`xmltemplated` value is not well-formed XML (after neutralizing `{{ignore}}`/`{{regex:…}}` template tokens); validate with `fast-xml-parser`            | value node                                | `"{name}" value is not well-formed XML; this pair never matches`                                                |
-| HF235 | W   | `jwt` value parses as JSON but has a top-level key outside {`header`,`payload`}                                                                               | the offending key (value node)            | `jwt value should be a partial {"header":…,"payload":…} spec; key "{k}" can never match a JWT`                  |
-| HF236 | W   | `array` value element is not a JSON string (Hoverfly stringifies it to a non-literal)                                                                         | the offending array element               | `array element {i} is not a string; Hoverfly cannot match a non-string element as written`                      |
+| Code  | Sev | Trigger                                                                                                                                                                                                                                 | Range                                     | Message template                                                                                                |
+| ----- | --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| HF212 | W   | Field-matcher with a `matcher` (or empty/default) but no `value` key, OR an empty `{}` — EXCEPT when `matcher` is `negate` (defer to HF207) or `form` (HF208)                                                                           | the matcher object (or its `matcher` key) | `Matcher has no "value" — it can never match (the value is nil)`                                                |
+| HF213 | I   | `destination` matcher with `exact`/empty matcher whose value contains `://` (full URL pasted where a host[:port] is expected); off by default acceptable                                                                                | value node                                | `destination matches the request host only (host[:port]); "{v}" includes a scheme or path and will never match` |
+| HF214 | W   | `literals[].name` or `variables[].name` contains a char outside `[A-Za-z0-9_]` (un-referenceable via `{{Literals.x}}`/`{{Vars.x}}`)                                                                                                     | the name value node                       | `Name "{n}" contains a character that breaks "{{Literals.{n}}}" / "{{Vars.{n}}}" templating references`         |
+| HF215 | H   | `method` value (under `exact`/default matcher) is a near-miss (Levenshtein ≤ 1) of a standard IANA HTTP method but not itself one (`GT`→`GET`); OPEN set compared verbatim, so a bespoke verb far from every standard verb stays silent | value node                                | `Unknown HTTP method "{value}" — did you mean "{suggestion}"?`                                                  |
+| HF216 | H   | `scheme` value (under `exact`/default matcher) is a near-miss (Levenshtein ≤ 1) of a common URI scheme (http/https/ws/wss) but not itself one (`htttp`→`http`); string-compared verbatim, so a custom scheme (`ftp`) stays silent       | value node                                | `Unknown URI scheme "{value}" — did you mean "{suggestion}"?`                                                   |
+| HF230 | E   | `regex` value (or `xmltemplated` `{{regex:…}}` leaf) is not a valid Go RE2 pattern (RE2 ≠ JS RegExp); validate with `re2js`, reuse for HF601                                                                                            | value node                                | `Invalid RE2 regex — Hoverfly (Go regexp) silently never matches this`                                          |
+| HF231 | E   | `json`/`jsonpartial`/`jwt` value string does not parse as JSON text (the `jwt` `"$.username"` bug)                                                                                                                                      | value node                                | `"{name}" value must be JSON text; this is not valid JSON, so the pair never matches`                           |
+| HF232 | W   | `jsonpath`/`jwtjsonpath` value has unbalanced `[]`/`()`/`{}`/quotes (balance lint only — no full kubectl-JSONPath parser)                                                                                                               | value node                                | `JSONPath has unbalanced brackets or quotes`                                                                    |
+| HF233 | W   | `xpath` value has unbalanced `[]`/`()`/quotes (balance lint only — no full XPath engine)                                                                                                                                                | value node                                | `XPath has unbalanced brackets or quotes`                                                                       |
+| HF234 | W   | `xml`/`xmltemplated` value is not well-formed XML (after neutralizing `{{ignore}}`/`{{regex:…}}` template tokens); validate with `fast-xml-parser`                                                                                      | value node                                | `"{name}" value is not well-formed XML; this pair never matches`                                                |
+| HF235 | W   | `jwt` value parses as JSON but has a top-level key outside {`header`,`payload`}                                                                                                                                                         | the offending key (value node)            | `jwt value should be a partial {"header":…,"payload":…} spec; key "{k}" can never match a JWT`                  |
+| HF236 | W   | `array` value element is not a JSON string (Hoverfly stringifies it to a non-literal)                                                                                                                                                   | the offending array element               | `array element {i} is not a string; Hoverfly cannot match a non-string element as written`                      |
 
 ### HF3xx — response (extension)
 
@@ -157,5 +160,19 @@ HTTP methods stay silent.
 "status"?)`) or the empty string. The allowed-key matrix, user-keyed-map skip list, and the
 > did-you-mean Levenshtein threshold live in `packages/core/src/registry/structure.ts`.
 
-This extension brings the catalog to **54 codes** (37 original + 17 additive). The exhaustive
-severity table in `packages/core/test/semantic/catalog.test.ts` pins all 54.
+This extension brings the catalog to **56 codes** (37 original + 17 structural-strictness + 2
+method/scheme well-known-value codes HF215/HF216). The exhaustive severity table in
+`packages/core/test/semantic/catalog.test.ts` pins all 56.
+
+### Method/scheme well-known-value did-you-mean (2026-06-11)
+
+HF215/HF216 add VALUE intelligence (completion + Hint did-you-mean) for `request.method` and
+`request.scheme`. Both fields are OPEN sets Hoverfly compares VERBATIM and never validates at import
+(research/13 §3.1/§3.2; ground-truth: a live v1.12.8 import of `method:"GT"` / `scheme:"htttp"`
+returns HTTP 200 with the values stored verbatim). The zero-false-positive policy is LAW: the Hint
+fires ONLY on a near-miss (Levenshtein ≤ 2) of a standard value (a typo) and never on a plausible
+custom value (`PURGE`, `PROPFIND`, `ftp`). The standard sets (IANA HTTP Method Registry; common URI
+schemes) live in `packages/core/src/registry/http.ts`; the Levenshtein machinery is shared with
+HF603 via `packages/core/src/semantic/levenshtein.ts`. Completion offers the standard values but
+never restricts the field to them. Gate (both completion and Hint): the `method`/`scheme` field
+directly under `request`, with an `exact` (or absent/default-exact) matcher only.
