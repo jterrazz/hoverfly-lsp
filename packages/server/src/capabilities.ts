@@ -1,5 +1,7 @@
+import { SEMANTIC_TOKEN_MODIFIERS, SEMANTIC_TOKEN_TYPES } from "@hoverfly-lsp/core";
 import {
   type ClientCapabilities,
+  type SemanticTokensLegend,
   type ServerCapabilities,
   TextDocumentSyncKind,
 } from "vscode-languageserver/node";
@@ -11,6 +13,17 @@ import {
  * and `(` for helper arguments / sub-expressions).
  */
 const COMPLETION_TRIGGER_CHARACTERS = ['"', "{", ".", "#", "@", "'", "("] as const;
+
+/**
+ * The semantic-tokens legend advertised during `initialize`, sourced VERBATIM and in order from
+ * core's frozen {@link SEMANTIC_TOKEN_TYPES} / {@link SEMANTIC_TOKEN_MODIFIERS}. The wire protocol
+ * carries integer INDICES into these arrays, so the server must advertise the exact arrays the
+ * producer emits indices against — never a hand-retyped copy. Modifiers are empty in v1.
+ */
+const SEMANTIC_TOKENS_LEGEND: SemanticTokensLegend = {
+  tokenTypes: [...SEMANTIC_TOKEN_TYPES],
+  tokenModifiers: [...SEMANTIC_TOKEN_MODIFIERS],
+};
 
 /** Whether the client advertised support for PULL diagnostics (`textDocument/diagnostic`). */
 export function clientSupportsPullDiagnostics(capabilities: ClientCapabilities): boolean {
@@ -28,6 +41,15 @@ export function clientSupportsDidChangeConfiguration(capabilities: ClientCapabil
 }
 
 /**
+ * Whether the client advertised support for semantic tokens (`textDocument/semanticTokens`).
+ * The server only advertises (and only registers a handler for) the semantic-tokens provider when
+ * the client can consume it — a client that never asks for tokens should not see the capability.
+ */
+export function clientSupportsSemanticTokens(capabilities: ClientCapabilities): boolean {
+  return capabilities.textDocument?.semanticTokens !== undefined;
+}
+
+/**
  * Build the server capabilities advertised during `initialize`.
  *
  * Diagnostics are advertised through BOTH channels per decision D1:
@@ -40,9 +62,18 @@ export function clientSupportsDidChangeConfiguration(capabilities: ClientCapabil
  * `interFileDependencies: false` + `workspaceDiagnostics: false`: a Hoverfly simulation is a
  * single self-contained file — diagnostics never depend on other documents, and there is no
  * project-wide diagnostic pass to run.
+ *
+ * `semanticTokensProvider` is advertised ONLY when the client supports semantic tokens (a client
+ * that cannot consume them should not see the capability). We advertise `full: true` (a whole-
+ * document token pass) and deliberately NOT `range`: a Hoverfly simulation is one self-contained
+ * file whose full-document tokenization already reuses the parsed AST/model and is cheap, so a
+ * separate range provider would add code paths for no measurable win. Delta is likewise omitted —
+ * full re-tokenization on each request is inexpensive at simulation-file sizes.
  */
-export function buildServerCapabilities(): ServerCapabilities {
-  return {
+export function buildServerCapabilities(
+  clientCapabilities: ClientCapabilities,
+): ServerCapabilities {
+  const capabilities: ServerCapabilities = {
     textDocumentSync: {
       openClose: true,
       change: TextDocumentSyncKind.Incremental,
@@ -58,4 +89,12 @@ export function buildServerCapabilities(): ServerCapabilities {
       workspaceDiagnostics: false,
     },
   };
+  if (clientSupportsSemanticTokens(clientCapabilities)) {
+    capabilities.semanticTokensProvider = {
+      legend: SEMANTIC_TOKENS_LEGEND,
+      full: true,
+      range: false,
+    };
+  }
+  return capabilities;
 }

@@ -160,6 +160,22 @@ cargo build --release --target wasm32-wasip2
 requires the wasm std component, which only `rustup` provides — see Prerequisites
 (and the Homebrew-Rust / GUI-`$PATH` caveats there).
 
+### Semantic highlighting
+
+The server advertises an LSP **semantic tokens** provider, and Zed consumes LSP semantic tokens
+natively — there is **no per-language opt-in to flip**. As long as the **Hoverfly LSP** server is
+running, Zed requests `textDocument/semanticTokens/full` for open `*.hoverfly.json` files and layers
+the server's tokens on top of the JSON tree-sitter highlighting. This colors the Handlebars template
+syntax inside templated body/header strings (helper names, `{{ }}` delimiters, path roots/segments,
+known faker types, matcher-name enums) that the JSON grammar alone cannot see.
+
+The legend uses only standard LSP token types, which Zed maps to its theme's existing highlight
+categories (`function`, `keyword`, `property`, `variable`, `enum`/`enumMember`, `string`, `number`,
+`operator`). No theme edit is required for the tokens to take color, though a given theme may render
+some standard types more subtly than others. If you see no semantic coloring at all, first confirm
+the language server is actually **running** (semantic tokens are a server feature, not a grammar
+feature) and check `~/.local/share/zed/logs/Zed.log` for `semanticTokens` traffic.
+
 ### Manual QA checklist (in Zed)
 
 - [ ] `zed: install dev extension` on `editors/zed` compiles without errors
@@ -169,6 +185,9 @@ requires the wasm std component, which only `rustup` provides — see Prerequisi
 - [ ] Opening `hoverfly-simulation.json` is detected the same way.
 - [ ] JSON syntax highlighting is applied (keys, strings, numbers, `true`/`false`/
       `null`).
+- [ ] In a templated body (`"templated": true`, `"body": "{{ faker 'Name' }}"`), the template
+      syntax is colored differently from plain string content (helper name as a function, `{{`/`}}`
+      as operators) — i.e. semantic tokens are being applied. A plain `.json` shows no such coloring.
 - [ ] The **Hoverfly LSP** server starts (visible in the language server logs).
 - [ ] Introduce a deliberate error (e.g. set `meta.schemaVersion` to a bad value)
       and confirm a diagnostic appears.

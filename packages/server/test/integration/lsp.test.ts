@@ -20,9 +20,70 @@ import {
   PublishDiagnosticsNotification,
   type PublishDiagnosticsParams,
   ResponseError,
+  type SemanticTokens,
+  SemanticTokensRequest,
   StreamMessageReader,
   StreamMessageWriter,
 } from "vscode-languageserver-protocol/node";
+
+/** The frozen legend the server must advertise verbatim, in order (research/16 §3.1). */
+const EXPECTED_LEGEND_TYPES = [
+  "namespace",
+  "keyword",
+  "function",
+  "variable",
+  "property",
+  "parameter",
+  "enumMember",
+  "string",
+  "number",
+  "operator",
+] as const;
+
+/** Client capabilities that advertise semantic-tokens support (full request). */
+const SEMANTIC_TOKENS_CLIENT_CAPABILITIES = {
+  textDocument: {
+    semanticTokens: {
+      dynamicRegistration: false,
+      requests: { full: true },
+      tokenTypes: [...EXPECTED_LEGEND_TYPES],
+      tokenModifiers: [],
+      formats: ["relative"],
+    },
+  },
+};
+
+/** One absolute semantic token decoded from the LSP 5-int delta array. */
+interface AbsoluteToken {
+  line: number;
+  startChar: number;
+  length: number;
+  tokenType: number;
+}
+
+/**
+ * Decode the flat 5-int delta array (deltaLine, deltaStartChar, length, tokenType, tokenModifiers)
+ * back to absolute tokens — the inverse of `SemanticTokensBuilder`. `deltaStartChar` is relative to
+ * the previous token only when on the SAME line; it resets to absolute on a new line.
+ */
+function decodeSemanticTokens(data: readonly number[]): AbsoluteToken[] {
+  const out: AbsoluteToken[] = [];
+  let line = 0;
+  let char = 0;
+  for (let i = 0; i + 4 < data.length; i += 5) {
+    const deltaLine = data[i] ?? 0;
+    const deltaStart = data[i + 1] ?? 0;
+    line += deltaLine;
+    char = deltaLine === 0 ? char + deltaStart : deltaStart;
+    out.push({
+      line,
+      startChar: char,
+      length: data[i + 2] ?? 0,
+      tokenType: data[i + 3] ?? 0,
+    });
+  }
+  return out;
+}
 
 const binPath = fileURLToPath(new URL("../../bin/hoverfly-lsp.js", import.meta.url));
 const repoRoot = fileURLToPath(new URL("../../../../", import.meta.url));
@@ -519,6 +580,166 @@ describe("hoverfly-lsp — initializationOptions settings", () => {
     // Then - HF602 fires because registeredActions is configured and the action is unknown
     const published = await diagnostics;
     expect(codesOf(published.diagnostics)).toContain("HF602");
+  });
+});
+
+describe("hoverfly-lsp — semantic tokens", () => {
+  it("advertises a semanticTokensProvider with the exact frozen legend (full, no range)", async () => {
+    // Given - a client that advertises semantic-tokens support
+    const { child, connection } = spawnServer();
+    try {
+      const result: InitializeResult = await connection.sendRequest(InitializeRequest.type, {
+        processId: process.pid,
+        rootUri: null,
+        capabilities: SEMANTIC_TOKENS_CLIENT_CAPABILITIES,
+      });
+      const provider = result.capabilities.semanticTokensProvider as
+        | undefined
+        | {
+            full?: boolean | object;
+            legend: { tokenModifiers: string[]; tokenTypes: string[] };
+            range?: boolean;
+          };
+
+      // Then - the provider is advertised with the legend verbatim and in order
+      expect(provider).toBeDefined();
+      expect(provider?.legend.tokenTypes).toEqual([...EXPECTED_LEGEND_TYPES]);
+      expect(provider?.legend.tokenModifiers).toEqual([]);
+      // Then - full pass on, range deliberately off (documented decision)
+      expect(provider?.full).toBe(true);
+      expect(provider?.range).toBe(false);
+    } finally {
+      connection.dispose();
+      child.kill();
+    }
+  });
+
+  it("does NOT advertise the provider to a client without semantic-tokens support", async () => {
+    // Given - a push client with no textDocument.semanticTokens capability
+    const { child, connection } = spawnServer();
+    try {
+      const result: InitializeResult = await connection.sendRequest(InitializeRequest.type, {
+        processId: process.pid,
+        rootUri: null,
+        capabilities: PUSH_CLIENT_CAPABILITIES,
+      });
+      // Then - the provider capability is absent (client cannot consume it)
+      expect(result.capabilities.semanticTokensProvider).toBeUndefined();
+    } finally {
+      connection.dispose();
+      child.kill();
+    }
+  });
+
+  describe("with an initialized semantic-tokens client", () => {
+    let child: ChildProcessWithoutNullStreams;
+    let connection: ProtocolConnection;
+
+    beforeAll(async () => {
+      ({ child, connection } = spawnServer());
+      await connection.sendRequest(InitializeRequest.type, {
+        processId: process.pid,
+        rootUri: null,
+        capabilities: SEMANTIC_TOKENS_CLIENT_CAPABILITIES,
+      });
+      void connection.sendNotification(InitializedNotification.type, {});
+    });
+    afterAll(() => {
+      connection.dispose();
+      child.kill();
+    });
+
+    it("returns a well-formed delta array landing tokens on the template constructs", async () => {
+      // Given - a templated body using a faker helper on a single line
+      const uri = "file:///tokens-body.hoverfly.json";
+      const prefix = `{"data":{"pairs":[{"request":{"path":[]},"response":{"status":200,"templated":true,"body":"`;
+      const body = `{{ faker 'Name' }}`;
+      const text = `${prefix}${body}"}}]},"meta":{"schemaVersion":"v5.3"}}`;
+      void connection.sendNotification(DidOpenTextDocumentNotification.type, {
+        textDocument: { uri, languageId: "json", version: 1, text },
+      });
+
+      // When - the client requests full semantic tokens
+      const tokens = (await connection.sendRequest(SemanticTokensRequest.type, {
+        textDocument: { uri },
+      })) as SemanticTokens;
+
+      // Then - the wire array is non-empty and a clean multiple of 5
+      expect(tokens.data.length).toBeGreaterThan(0);
+      expect(tokens.data.length % 5).toBe(0);
+
+      // Then - decoding back to absolute tokens, the `{{` operator and `faker` function land
+      // On the document characters they color.
+      const decoded = decodeSemanticTokens(tokens.data);
+
+      // The body is on line 0 (single-line doc), so startChar is the absolute column.
+      const bodyStart = text.indexOf(body);
+      const textAt = (t: AbsoluteToken): string => text.slice(t.startChar, t.startChar + t.length);
+
+      const open = decoded.find((t) => t.startChar === bodyStart);
+      expect(open).toBeDefined();
+      expect(textAt(open as AbsoluteToken)).toBe("{{");
+      // `operator` is index 9 in the legend.
+      expect(open?.tokenType).toBe(EXPECTED_LEGEND_TYPES.indexOf("operator"));
+
+      const fakerCol = text.indexOf("faker", bodyStart);
+      const fakerToken = decoded.find((t) => t.startChar === fakerCol);
+      expect(fakerToken).toBeDefined();
+      expect(textAt(fakerToken as AbsoluteToken)).toBe("faker");
+      // `function` is index 2.
+      expect(fakerToken?.tokenType).toBe(EXPECTED_LEGEND_TYPES.indexOf("function"));
+
+      // And the known faker type 'Name' is colored as enumMember (index 6).
+      const nameCol = text.indexOf("'Name'", bodyStart);
+      const nameToken = decoded.find((t) => t.startChar === nameCol);
+      expect(nameToken).toBeDefined();
+      expect(textAt(nameToken as AbsoluteToken)).toBe("'Name'");
+      expect(nameToken?.tokenType).toBe(EXPECTED_LEGEND_TYPES.indexOf("enumMember"));
+    });
+
+    it("returns an empty data array for a non-simulation .json", async () => {
+      // Given - arbitrary JSON in a plainly-named file (D3 gate -> no tokens)
+      const uri = "file:///tokens-config.json";
+      void connection.sendNotification(DidOpenTextDocumentNotification.type, {
+        textDocument: { uri, languageId: "json", version: 1, text: `{ "hello": "world" }` },
+      });
+
+      // When - full tokens are requested
+      const tokens = (await connection.sendRequest(SemanticTokensRequest.type, {
+        textDocument: { uri },
+      })) as SemanticTokens;
+
+      // Then - the data array is empty (gate honored end-to-end)
+      expect(tokens.data).toEqual([]);
+    });
+
+    it("places token startChar at UTF-16 offsets across an astral emoji before the template", async () => {
+      // Given - a templated body where an astral emoji 😊 (2 UTF-16 units) precedes the mustache
+      const uri = "file:///tokens-emoji.hoverfly.json";
+      const prefix = `{"data":{"pairs":[{"request":{"path":[]},"response":{"status":200,"templated":true,"body":"`;
+      const body = `😊{{ faker 'Name' }}`;
+      const text = `${prefix}${body}"}}]},"meta":{"schemaVersion":"v5.3"}}`;
+      void connection.sendNotification(DidOpenTextDocumentNotification.type, {
+        textDocument: { uri, languageId: "json", version: 1, text },
+      });
+
+      // When - full tokens are requested
+      const tokens = (await connection.sendRequest(SemanticTokensRequest.type, {
+        textDocument: { uri },
+      })) as SemanticTokens;
+      const decoded = decodeSemanticTokens(tokens.data);
+
+      // Then - the `{{` operator starts exactly 2 UTF-16 units past the body start (the emoji),
+      // Proving the offset is measured in code units, not codepoints (which would give +1).
+      // `text.indexOf("{{")` uses UTF-16 semantics, matching the protocol's column unit.
+      const openCol = text.indexOf("{{");
+      const open = decoded.find((t) => t.startChar === openCol);
+      expect(open).toBeDefined();
+      expect(text.slice(open!.startChar, open!.startChar + open!.length)).toBe("{{");
+      // The emoji occupies 2 UTF-16 units, so the operator column is bodyStart + 2.
+      const bodyStart = text.indexOf(body);
+      expect(open?.startChar).toBe(bodyStart + 2);
+    });
   });
 });
 

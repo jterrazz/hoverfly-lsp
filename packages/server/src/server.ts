@@ -1,5 +1,6 @@
 import {
   createHoverflyLanguageService,
+  getSemanticTokens,
   type HoverflyLanguageService,
   type HoverflyServiceSettings,
 } from "@hoverfly-lsp/core";
@@ -16,6 +17,8 @@ import {
   type InitializeResult,
   ProposedFeatures,
   ResponseError,
+  type SemanticTokens,
+  SemanticTokensBuilder,
   TextDocuments,
 } from "vscode-languageserver/node";
 
@@ -24,6 +27,7 @@ import {
   clientSupportsConfiguration,
   clientSupportsDidChangeConfiguration,
   clientSupportsPullDiagnostics,
+  clientSupportsSemanticTokens,
 } from "./capabilities.js";
 
 /** Debounce window for the push-diagnostics path, in milliseconds. */
@@ -90,6 +94,7 @@ function createServer(connection: Connection): void {
   let clientCapabilities: ClientCapabilities = {};
   let usePull = false;
   let hasConfigurationCapability = false;
+  let useSemanticTokens = false;
   /*
    * LSP $/lifecycle ordering guard. Set once `initialize` succeeds. Feature requests received
    * before this is set must fail with ServerNotInitialized (-32002); a second `initialize`
@@ -175,6 +180,7 @@ function createServer(connection: Connection): void {
       clientCapabilities = params.capabilities;
       usePull = clientSupportsPullDiagnostics(clientCapabilities);
       hasConfigurationCapability = clientSupportsConfiguration(clientCapabilities);
+      useSemanticTokens = clientSupportsSemanticTokens(clientCapabilities);
 
       /*
        * The initializationOptions object is the fallback settings source for clients that lack
@@ -186,7 +192,7 @@ function createServer(connection: Connection): void {
 
       hasInitialized = true;
       return {
-        capabilities: buildServerCapabilities(),
+        capabilities: buildServerCapabilities(clientCapabilities),
         serverInfo: { name: "hoverfly-lsp" },
       };
     },
@@ -252,6 +258,49 @@ function createServer(connection: Connection): void {
       return null;
     }
     return service.doHover(document, params.position);
+  });
+
+  // ----- Semantic tokens ---------------------------------------------------------------------
+
+  /*
+   * Full-document semantic tokens. Core's `getSemanticTokens` returns absolute, single-line,
+   * (line, startChar)-sorted tokens whose `tokenType` is already an INDEX into the frozen legend
+   * (core owns the name→index mapping via `SEMANTIC_TOKEN_TYPE_INDEX`; the emitted tokens carry
+   * the integer). `SemanticTokensBuilder.push` delta-encodes them into the 5-int wire array
+   * (deltaLine, deltaStartChar, length, tokenType, tokenModifiers).
+   *
+   * The D3 fingerprint gate lives in `getSemanticTokens`: a non-simulation (and non-Hoverfly-named)
+   * document yields `[]`, so the builder produces an empty `data` array.
+   *
+   * The handler is registered unconditionally at setup (the request handler must exist before any
+   * `initialize`), but it stays gated by `useSemanticTokens` — the provider capability is only
+   * advertised to clients that support semantic tokens, and a client that did not advertise support
+   * gets an empty token set rather than an answer it never asked for.
+   */
+  connection.languages.semanticTokens.on((params): ResponseError<void> | SemanticTokens => {
+    if (!hasInitialized) {
+      return notInitialized<void>();
+    }
+    const builder = new SemanticTokensBuilder();
+    if (!useSemanticTokens) {
+      return builder.build();
+    }
+    const document = documents.get(params.textDocument.uri);
+    if (document === undefined) {
+      return builder.build();
+    }
+    // Reuse the service's BOM-normalised, error-recovering parse (offsets stay aligned).
+    const jsonDocument = service.parse(document);
+    for (const token of getSemanticTokens(document, jsonDocument)) {
+      builder.push(
+        token.line,
+        token.startChar,
+        token.length,
+        token.tokenType,
+        token.tokenModifiers,
+      );
+    }
+    return builder.build();
   });
 
   // ----- Document sync -> push diagnostics ---------------------------------------------------

@@ -27,6 +27,16 @@ export {
 // Language service facade backed by vscode-json-languageservice + the bundled schema.
 export { createHoverflyLanguageService, type HoverflyLanguageService } from "./service.js";
 
+// Semantic tokens: the frozen legend (server advertises verbatim) + the pure producer.
+export {
+  getSemanticTokens,
+  SEMANTIC_TOKEN_MODIFIERS,
+  SEMANTIC_TOKEN_TYPE_INDEX,
+  SEMANTIC_TOKEN_TYPES,
+  type SemanticToken,
+  type SemanticTokenTypeName,
+} from "./semantic-tokens/index.js";
+
 // Templating layer (parser + analyzer), exposed for downstream completion (Phase 5).
 export {
   analyze,

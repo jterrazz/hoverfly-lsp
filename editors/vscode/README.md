@@ -96,6 +96,27 @@ npm run package --workspace=hoverfly-lsp-vscode
 ls editors/vscode/*.vsix
 ```
 
+### Semantic highlighting
+
+The server advertises an LSP **semantic tokens** provider, so VS Code colors the Hoverfly-specific
+constructs a plain JSON grammar cannot see — chiefly the Handlebars template syntax inside templated
+response body/header strings (`{{ faker 'Name' }}`, `{{ Request.Path.[1] }}`, `{{#each …}}`) and
+matcher-name enums (`exact`, `regex`, `jwt`, …).
+
+This works **out of the box** with no settings to flip:
+
+- VS Code enables semantic highlighting by default (`editor.semanticHighlighting.enabled` defaults
+  to `"configuredByTheme"`, and every built-in theme opts in). You only need to touch it if you
+  previously set it to `false`.
+- The legend uses only **standard** LSP token types (`function`, `keyword`, `variable`, `property`,
+  `enumMember`, `string`, `number`, `operator`, …), which every shipped theme already colors — so
+  no custom `editor.tokenColorCustomizations` / `editor.semanticTokenColorCustomizations` are
+  required. (You may still add them to taste.)
+
+To confirm tokens are flowing, open a templated `*.hoverfly.json`, run **Developer: Inspect Editor
+Tokens and Scopes** from the command palette, and click inside a `{{ … }}` — the "semantic token
+type" line should read `function` on a helper name, `operator` on the `{{`, etc.
+
 ### Manual QA checklist
 
 The end-to-end editor behavior cannot be exercised headlessly; verify it by hand in a real
@@ -110,10 +131,14 @@ VS Code window:
      `HF401`/`HF402`/`HF403` dangling-state diagnostics.
 3. In a `*.hoverfly.json` file, type a matcher value `{ "matcher": "" }` and trigger completion
    inside the quotes — expect matcher names (`exact`, `regex`, `jsonpath`, …).
-4. Confirm the bottom-right language indicator reads **Hoverfly**.
-5. Open an unrelated `.json` (e.g. `package.json`) — expect **no** Hoverfly diagnostics and the
+4. In a templated body (`"templated": true`, `"body": "{{ faker 'Name' }}"`), confirm the template
+   syntax is colored: the helper name (`faker`) reads as a function, the `{{`/`}}` as operators,
+   and a known faker type (`'Name'`) as an enum member (use **Developer: Inspect Editor Tokens and
+   Scopes** to see the semantic token type). A plain `.json` shows no such coloring.
+5. Confirm the bottom-right language indicator reads **Hoverfly**.
+6. Open an unrelated `.json` (e.g. `package.json`) — expect **no** Hoverfly diagnostics and the
    normal JSON language mode.
-6. Optional: set `"hoverfly.trace.server": "verbose"` and check the **Hoverfly LSP** output
+7. Optional: set `"hoverfly.trace.server": "verbose"` and check the **Hoverfly LSP** output
    channel for the LSP handshake.
 
 To verify the `hoverfly.server.path` override or the workspace-`node_modules` path, point the

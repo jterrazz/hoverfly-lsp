@@ -27,6 +27,12 @@ The end-to-end editor behaviour cannot run headlessly (no extension host in CI).
 - [ ] `testdata/invalid/hf4xx/dangling-states.hoverfly.json` → squiggles for `HF401/HF402/HF403`.
 - [ ] Type a matcher value `{ "matcher": "" }` and trigger completion inside the quotes → matcher
       names appear (`exact`, `regex`, `jsonpath`, …).
+- [ ] **Semantic highlighting:** open a templated body (`"templated": true`,
+      `"body": "{{ faker 'Name' }}"`) → the template syntax is colored (helper `faker` as a function,
+      `{{`/`}}` as operators, faker type `'Name'` as enum member). Confirm via **Developer: Inspect
+      Editor Tokens and Scopes** (the semantic token type line). Default
+      `editor.semanticHighlighting.enabled` (`configuredByTheme`) needs no change; standard themes
+      color the standard token types. A plain `.json` shows no template coloring.
 - [ ] Open an unrelated `.json` (e.g. `package.json`) → **no** Hoverfly diagnostics, normal JSON mode.
 - [ ] Set `"hoverfly.trace.server": "verbose"` → the **Hoverfly LSP** output channel shows the handshake.
 - [ ] `hoverfly.server.path` override: point it at a built `packages/server/bin/hoverfly-lsp.js`
@@ -74,6 +80,10 @@ work until it is published.
 - [ ] Opening `testdata/valid/minimal.hoverfly.json` shows language **Hoverfly**.
 - [ ] Opening a file named `hoverfly-simulation.json` is detected the same way.
 - [ ] JSON syntax highlighting applies (keys, strings, numbers, `true`/`false`/`null`).
+- [ ] **Semantic highlighting:** in a templated body (`"templated": true`,
+      `"body": "{{ faker 'Name' }}"`), the template syntax is colored distinctly from plain string
+      content (helper as function, `{{`/`}}` as operators). Zed consumes LSP semantic tokens natively
+      with no per-language opt-in — they appear once the server is running. A plain `.json` shows none.
 - [ ] The **Hoverfly LSP** server starts (visible in the language-server logs).
 - [ ] Introduce an error (e.g. bad `meta.schemaVersion`) → a diagnostic appears.
 - [ ] Open an unrelated `.json` (e.g. `package.json`) → NOT detected as Hoverfly, no diagnostics.
@@ -110,11 +120,33 @@ server binary (dev: `npm link --workspace packages/server`; future: `npm install
 - [ ] Opening `*.hoverfly.json` shows **Hoverfly: Running** in the status bar.
 - [ ] A missing `response.status` field produces a red diagnostic underline.
 - [ ] Hovering over `schemaVersion` shows a documentation popup.
+- [ ] **Semantic highlighting:** in a templated body (`"templated": true`,
+      `"body": "{{ faker 'Name' }}"`), the template syntax is colored (helper, `{{`/`}}`, faker type).
+      If absent, enable the server's semantic-tokens support in **Settings → Languages & Frameworks →
+      Language Servers → Hoverfly** (some LSP4IJ versions gate it behind a toggle).
 - [ ] Completion triggers in `"matcher":` value position.
 - [ ] Opening an unrelated `package.json` does **not** trigger Hoverfly LSP.
 - [ ] On Windows: server starts with `cmd /C hoverfly-lsp --stdio` (the `programArgs.windows` value).
 - [ ] Optional: paste `initializationOptions.json` (`{ "registeredActions": [] }`) into the
       Configuration tab — server starts and `postServeAction` completion reflects the list.
+
+---
+
+## Neovim / any other LSP client (root README "Any other editor")
+
+No editor dir — the client is configured by hand (`nvim-lspconfig` snippet in the root README).
+
+**Setup:** build + link the server (`npm run build && npm link --workspace packages/server`), point
+`cmd = { "hoverfly-lsp", "--stdio" }`, and `filetypes = { "json", "jsonc" }`.
+
+- [ ] **Semantic highlighting:** open a templated `*.hoverfly.json` body
+      (`"templated": true`, `"body": "{{ faker 'Name' }}"`) → the template syntax is colored.
+      `vim.lsp.semantic_tokens` is on by default on Neovim 0.9+ and the default client capabilities
+      advertise semantic tokens, so no extra setup is needed. Inspect with
+      `:Inspect` on a `{{ … }}` character → an `@lsp.type.*` group (e.g. `@lsp.type.function` on a
+      helper name). A plain `.json` shows no `@lsp.*` template groups.
+- [ ] Diagnostics surface (`:lua vim.diagnostic.open_float()` over a broken simulation) and stay
+      silent on a non-simulation `.json`.
 
 ---
 

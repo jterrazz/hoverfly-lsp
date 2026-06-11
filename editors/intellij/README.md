@@ -195,6 +195,26 @@ When a native plugin is eventually built, it will target `com.intellij.modules.l
 
 ---
 
+## Semantic highlighting
+
+The server advertises an LSP **semantic tokens** provider. LSP4IJ supports semantic tokens and maps
+them onto IntelliJ's `TextAttributesKey` color scheme, so the Handlebars template syntax inside
+templated body/header strings (helper names, `{{ }}` delimiters, path roots/segments, known faker
+types, matcher-name enums) is colored beyond what the JSON file type provides.
+
+Notes specific to LSP4IJ / JetBrains:
+
+- **Enable it if it is off.** Some LSP4IJ versions gate semantic tokens behind a per-server toggle.
+  Open **Settings → Languages & Frameworks → Language Servers → Hoverfly**, and on the server's
+  configuration there ensure semantic-token / "Semantic highlighting" support is enabled (LSP4IJ
+  exposes this as a server feature; recent versions also surface a **Semantic tokens** color mapping
+  page). If you see no template coloring, this toggle is the first thing to check.
+- The legend uses only standard LSP token types; LSP4IJ ships a default mapping from those to the
+  IDE color scheme, so no manual color setup is required for the tokens to take effect. You can
+  refine the colors under **Settings → Editor → Color Scheme** if desired.
+- Semantic tokens are a server feature: they only appear once the **Hoverfly** server shows
+  **Running**.
+
 ## Manual QA checklist
 
 Run through these steps after any change to the server or this integration:
@@ -206,6 +226,9 @@ Run through these steps after any change to the server or this integration:
 - [ ] Opening `*.hoverfly.json` shows "Hoverfly: Running" in the status bar
 - [ ] A missing `response.status` field produces a red diagnostic underline
 - [ ] Hovering over `schemaVersion` shows a documentation popup
+- [ ] In a templated body (`"templated": true`, `"body": "{{ faker 'Name' }}"`), the template syntax
+      is colored (helper name, `{{`/`}}`, faker type) — enable the server's semantic-tokens toggle in
+      the Language Servers settings first if no coloring appears
 - [ ] Autocompletion triggers inside `"matcher":` value position
 - [ ] Opening an unrelated `package.json` does **not** trigger Hoverfly
 - [ ] On Windows: server starts with `cmd /C hoverfly-lsp --stdio`

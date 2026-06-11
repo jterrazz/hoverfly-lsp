@@ -202,6 +202,15 @@ require("lspconfig.configs").hoverfly = {
 require("lspconfig").hoverfly.setup({})
 ```
 
+The server also advertises an LSP **semantic tokens** provider, so Hoverfly template syntax inside
+templated body/header strings (helper names, `{{ }}` delimiters, faker types, matcher-name enums) is
+colored. Neovim's built-in `vim.lsp.semantic_tokens` is **on by default on 0.9+** — no extra setup
+is needed beyond the client advertising the capability, which `vim.lsp.protocol.make_client_capabilities()`
+(used by `nvim-lspconfig`) does automatically. Map the standard token types to highlight groups via
+your colorscheme if you want to tune their appearance (e.g. `@lsp.type.function`, `@lsp.type.operator`,
+`@lsp.type.enumMember`). To disable: `vim.lsp.semantic_tokens.stop(bufnr, client_id)` or clear the
+`semanticTokensProvider` server capability in your `on_attach`.
+
 ### Use with AI coding agents
 
 `hoverfly-lsp` is a standard stdio LSP — **point your agent at `hoverfly-lsp --stdio` for `.json`
