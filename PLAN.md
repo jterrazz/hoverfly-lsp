@@ -74,7 +74,7 @@ reviewers); Fable directs, reviews between phases, and gates progression on gree
 
 ## v0.1.0 — shipped scope
 
-What v0.1.0 delivers (608 tests green):
+What v0.1.0 delivers (616 tests green):
 
 - **Format:** Hoverfly v5.x JSON simulations, fully featured; v1–v4 accepted with an upgrade hint
   (no completion investment), per architect decision D6.

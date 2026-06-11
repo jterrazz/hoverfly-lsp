@@ -17,7 +17,7 @@ The end-to-end editor behaviour cannot run headlessly (no extension host in CI).
 
 **Setup:** from the repo root, `npm install && npm run build`, then
 `npm run package --workspace=hoverfly-lsp-vscode` and
-`code --install-extension editors/vscode/hoverfly-lsp-vscode-0.0.0.vsix`
+`code --install-extension editors/vscode/hoverfly-lsp-vscode-0.1.0.vsix`
 (or open `editors/vscode` and press **F5** for an Extension Development Host).
 
 - [ ] Bottom-right language indicator reads **Hoverfly Simulation** when a `*.hoverfly.json` is open.

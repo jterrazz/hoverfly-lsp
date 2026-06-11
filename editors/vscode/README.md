@@ -27,13 +27,13 @@ The extension is not published to the Marketplace / Open VSX yet. Build a `.vsix
 npm install
 npm run build --workspace=hoverfly-lsp            # builds packages/server -> dist/cli.cjs
 npm run build --workspace=hoverfly-lsp-vscode     # bundles the extension + copies the server in
-npm run package --workspace=hoverfly-lsp-vscode   # -> editors/vscode/hoverfly-lsp-vscode-0.0.0.vsix
+npm run package --workspace=hoverfly-lsp-vscode   # -> editors/vscode/hoverfly-lsp-vscode-0.1.0.vsix
 ```
 
 Then in VS Code: **Extensions** view → `…` menu → **Install from VSIX…**, or:
 
 ```bash
-code --install-extension editors/vscode/hoverfly-lsp-vscode-0.0.0.vsix
+code --install-extension editors/vscode/hoverfly-lsp-vscode-0.1.0.vsix
 ```
 
 ### Dev (run from source, no packaging)
