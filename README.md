@@ -39,7 +39,7 @@ this is the first.
 | **With**    | The editor underlines the exact token and tells you why — before Hoverfly ever runs.    |
 
 > **Status: pre-release.** The analyzer and the stdio LSP server are implemented and tested
-> (616 tests), with editor integrations for VS Code, Zed, IntelliJ, and Claude Code. The
+> (869 tests), with editor integrations for VS Code, Zed, IntelliJ, and Claude Code. The
 > `hoverfly-lsp` npm package, the VS Code Marketplace listing, and the SchemaStore entry are
 > **not published yet**, so every integration below ships a dev/local path alongside the future
 > published one. See [MANUAL-QA.md](./MANUAL-QA.md) for the in-editor checks that cannot run
@@ -124,6 +124,49 @@ what the running server accepts:
 
 Full code reference: **[docs/diagnostics.md](./docs/diagnostics.md)** ·
 template reference: **[docs/template-reference.md](./docs/template-reference.md)**.
+
+**Semantic highlighting that colors your templates.** The `{{ … }}` template syntax in a
+`"templated": true` body — helpers, `Request`/`State`/`Vars` paths, faker types, `{{ }}` delimiters —
+gets distinct colors, plus matcher names render as enums. See **[Syntax highlighting](#syntax-highlighting)**
+below for how this works (and the one Zed setting it needs).
+
+---
+
+## Syntax highlighting
+
+Your editor colors a Hoverfly file with **two independent layers**, and it helps to know which does
+what:
+
+1. **The JSON structure — from a tree-sitter grammar, always on.** We reuse the built-in JSON
+   grammar, so keys, strings, numbers, and `true`/`false`/`null` are colored out of the box in every
+   editor, no setup. This is the same mechanism that colors any `.json`, `.ts`, or `.rs` file.
+
+2. **The Hoverfly-specific parts — from the LSP server's semantic tokens.** A static grammar cannot
+   see inside a string, but Hoverfly's templates live _inside_ JSON string values
+   (`"body": "{\"id\":\"{{ Request.Path.[1] }}\"}"`). The server understands them and emits typed
+   tokens — `{{ }}` as operators, helpers (`now`, `faker`) as functions, `Request`/`State`/`Vars` as
+   variables, path segments as properties, known faker types and matcher names as enums — mapped to
+   the exact characters even through JSON escapes (`\n`, `\uXXXX`, surrogate pairs). The legend uses
+   only **standard** LSP token types, so your theme colors them with no customization.
+
+Because the template coloring comes from the server (not a grammar), it appears wherever the editor
+requests LSP semantic tokens:
+
+| Editor            | Semantic tokens                                                                                |
+| ----------------- | ---------------------------------------------------------------------------------------------- |
+| VS Code           | On by default (`editor.semanticHighlighting.enabled` = `configuredByTheme`).                   |
+| Neovim 0.9+       | On by default (`vim.lsp.semantic_tokens`).                                                     |
+| IntelliJ / LSP4IJ | On; some versions gate it behind a per-server toggle.                                          |
+| **Zed**           | **Off by default** — add `"semantic_tokens": "combined"` to settings, then restart the server. |
+
+> **Note for every editor:** "semantic tokens off" doesn't mean a bland file — the JSON structure
+> (layer 1) is still fully colored by tree-sitter. What you lose without them is only the _extra_
+> Hoverfly layer: the template internals and matcher-name enums. That's why the difference is most
+> visible on Hoverfly files (their distinctive content lives in strings) and barely noticeable on,
+> say, TypeScript (whose tree-sitter grammar already covers most of the structure).
+
+Per-editor enablement details and the QA checklist live in each editor's README (linked below) and
+in [MANUAL-QA.md](./MANUAL-QA.md).
 
 ---
 

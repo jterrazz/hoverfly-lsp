@@ -11,7 +11,7 @@ Requirements: **Node ≥ 20** (see `.nvmrc`), npm. This is an npm-workspaces mon
 ```bash
 npm install            # or: make install (npm ci, pinned)
 npm run build          # tsc build across all workspaces (core, server, editors/vscode)
-npm test               # vitest (616 tests)
+npm test               # vitest (869 tests)
 npm run typecheck      # tsc --build
 npm run lint           # @jterrazz/codestyle: oxlint + oxfmt + tsgo + knip
 npm run lint:fix       # autofix lint/format issues
