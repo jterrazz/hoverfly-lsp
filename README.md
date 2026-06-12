@@ -1,4 +1,4 @@
-# Hoverfly
+# Hoverfly LSP
 
 <!-- Badges: replace the placeholders once CI, the npm package, and the Marketplace listing are live. -->
 
@@ -6,7 +6,7 @@
 [![npm](https://img.shields.io/badge/npm-hoverfly--lsp-cb3837)](https://www.npmjs.com/package/hoverfly-lsp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](#license)
 
-**Stop debugging silent mock failures.** Hoverfly gives your editor full understanding of
+**Stop debugging silent mock failures.** Hoverfly LSP gives your editor full understanding of
 [Hoverfly](https://hoverfly.io) simulation files — errors as you type, autocomplete everywhere,
 docs on hover. It's **the first and only IDE tooling for Hoverfly**.
 
