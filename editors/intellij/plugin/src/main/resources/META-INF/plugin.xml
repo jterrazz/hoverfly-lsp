@@ -1,0 +1,39 @@
+<idea-plugin>
+    <id>com.jterrazz.hoverfly-lsp</id>
+    <name>Hoverfly</name>
+    <vendor email="contact@jterrazz.com" url="https://github.com/jterrazz/hoverfly-lsp">jterrazz</vendor>
+
+    <description><![CDATA[
+        <p>Language support for <a href="https://docs.hoverfly.io/">Hoverfly</a> simulation files.</p>
+        <p>Adds diagnostics, completions, hover documentation, and semantic highlighting for
+        Hoverfly JSON simulation files
+        (<code>*.hoverfly.json</code>, <code>*.hfy</code>, <code>hoverfly-simulation.json</code>)
+        in any JetBrains IDE, including the free Community edition.</p>
+        <p>The Hoverfly language server is bundled with this plugin and started automatically — no
+        manual LSP configuration is required. A <b>Node.js</b> runtime (20+) must be available;
+        it is auto-detected from common locations, or set the <code>HOVERFLY_LSP_NODE</code>
+        environment variable to point at a specific <code>node</code> binary.</p>
+        <p>Powered by <a href="https://github.com/redhat-developer/lsp4ij">LSP4IJ</a>.</p>
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.redhat.devtools.lsp4ij</depends>
+
+    <extensions defaultExtensionNs="com.intellij.platform">
+        <notificationGroup id="Hoverfly LSP" displayType="BALLOON"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="com.redhat.devtools.lsp4ij">
+        <server
+            id="hoverflyLanguageServer"
+            name="Hoverfly"
+            factoryClass="com.jterrazz.hoverfly.HoverflyLanguageServerFactory">
+            <description><![CDATA[Hoverfly simulation language server.]]></description>
+        </server>
+
+        <fileNamePatternMapping
+            patterns="*.hoverfly.json;*.hfy;hoverfly-simulation.json"
+            serverId="hoverflyLanguageServer"
+            languageId="hoverfly-simulation"/>
+    </extensions>
+</idea-plugin>

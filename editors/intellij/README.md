@@ -1,12 +1,82 @@
-# hoverfly-lsp — IntelliJ Integration via LSP4IJ
+# hoverfly-lsp — IntelliJ Integration
 
-Adds diagnostics, completions, and hover documentation for Hoverfly simulation files
-(`*.hoverfly.json`, `hoverfly-simulation.json`) to any JetBrains IDE using
-[LSP4IJ](https://github.com/redhat-developer/lsp4ij) — including the **free Community edition**.
+Adds diagnostics, completions, hover documentation, and semantic highlighting for Hoverfly
+simulation files (`*.hoverfly.json`, `*.hfy`, `hoverfly-simulation.json`) to any JetBrains IDE —
+including the **free Community edition**. Built on
+[LSP4IJ](https://github.com/redhat-developer/lsp4ij).
+
+There are two ways to set this up:
+
+1. **[Install the plugin (recommended)](#install-the-plugin-recommended)** — a one-click `.zip`
+   that bundles the language server and configures LSP4IJ for you. No manual LSP setup.
+2. **[Manual LSP4IJ template (fallback)](#manual-lsp4ij-template-fallback)** — import
+   `template.json` by hand and install the `hoverfly-lsp` binary yourself.
 
 ---
 
-## Contents
+## Install the plugin (recommended)
+
+The plugin lives under [`plugin/`](./plugin) and ships the Hoverfly language server bundled
+inside it — installing the `.zip` is all that is required (plus a Node.js runtime, see below).
+
+### 1. Get the `.zip`
+
+Build it from source (requires JDK 21; the Gradle wrapper is committed):
+
+```bash
+# Ensure the server bundle is current, then build the plugin:
+npm run build                                   # at the repo root — produces packages/server/dist/cli.cjs
+cd editors/intellij/plugin
+JAVA_HOME=/path/to/jdk-21 ./gradlew buildPlugin  # macOS Homebrew: /opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home
+```
+
+The plugin appears at `editors/intellij/plugin/build/distributions/Hoverfly-0.1.0.zip`.
+
+### 2. Install it in the IDE
+
+1. Open **Settings → Plugins**.
+2. Click the **gear icon** (⚙) → **Install Plugin from Disk…**.
+3. Select `Hoverfly-0.1.0.zip`.
+4. IntelliJ prompts to install the required **LSP4IJ** dependency — accept it
+   (or install LSP4IJ first from **Marketplace**; plugin id `com.redhat.devtools.lsp4ij`).
+5. **Restart** the IDE when prompted.
+
+### 3. Node.js requirement
+
+The plugin launches the bundled server with Node.js (20+). A GUI-launched IDE does **not**
+inherit your shell `PATH` (no nvm/fnm/mise), so the plugin auto-detects `node` from, in order:
+
+1. the `HOVERFLY_LSP_NODE` environment variable,
+2. common fixed locations (`/opt/homebrew/bin/node`, `/usr/local/bin/node`, `/usr/bin/node`),
+3. the newest version under `~/.nvm/versions/node/*/bin/node`, plus fnm/mise install dirs,
+4. `node` on `PATH` (usually empty for GUI apps),
+5. Windows `nodejs` install locations.
+
+If you see a "Node.js not found" notification, set `HOVERFLY_LSP_NODE` to the absolute path of a
+`node` binary (e.g. via **launchctl setenv** on macOS, or your shell profile if you launch the IDE
+from a terminal) and restart the IDE:
+
+```bash
+which node                                       # copy this path
+launchctl setenv HOVERFLY_LSP_NODE /absolute/path/to/node   # macOS, applies to GUI apps after relaunch
+```
+
+### 4. Verify
+
+Open any `*.hoverfly.json` file. The **Hoverfly** server should appear as **Running** under
+**Settings → Languages & Frameworks → Language Servers** (or the LSP console:
+**View → Tool Windows → LSP**). Removing a required `response.status` field should surface a red
+diagnostic; hovering `schemaVersion` should show docs. See the
+[Manual QA checklist](#manual-qa-checklist) for the full smoke test.
+
+---
+
+## Manual LSP4IJ template (fallback)
+
+Use this if you prefer not to build/install the plugin, or want to point at a globally installed
+`hoverfly-lsp` binary instead of the bundled server.
+
+### Contents
 
 - [`template.json`](./template.json) — importable LSP4IJ user-defined language server template
 - [`initializationOptions.json`](./initializationOptions.json) — optional init-time settings

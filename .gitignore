@@ -14,3 +14,9 @@ editors/vscode/server/
 editors/zed/target/
 editors/zed/grammars/
 editors/zed/*.wasm
+
+# IntelliJ plugin (Gradle). Commit the wrapper + sources; ignore build output + SDK caches.
+editors/intellij/plugin/build/
+editors/intellij/plugin/.gradle/
+editors/intellij/plugin/.intellijPlatform/
+editors/intellij/plugin/.kotlin/
