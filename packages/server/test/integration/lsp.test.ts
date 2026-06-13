@@ -94,7 +94,12 @@ function readFixture(relativePath: string): string {
 
 /** Spawn the bundled bin over stdio and wrap it in an LSP protocol connection. */
 function spawnServer(): { child: ChildProcessWithoutNullStreams; connection: ProtocolConnection } {
-  const child = spawn(process.execPath, [binPath, "--stdio"], { stdio: "pipe" });
+  // Mirror exactly how vscode-languageclient launches the server: it always appends
+  // `--clientProcessId=<pid>` alongside the transport flag. Passing it here guards against the
+  // CLI rejecting injected args (which silently crashed the server in every real editor).
+  const child = spawn(process.execPath, [binPath, "--stdio", `--clientProcessId=${process.pid}`], {
+    stdio: "pipe",
+  });
   const connection = createProtocolConnection(
     new StreamMessageReader(child.stdout),
     new StreamMessageWriter(child.stdin),

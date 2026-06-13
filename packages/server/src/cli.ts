@@ -37,8 +37,13 @@ Options:
   --help, -h          Print this help and exit
 `;
 
-/** Recognised transport flags; everything else (besides --version/--help) is an error. */
-function isKnownTransportFlag(arg: string): boolean {
+/**
+ * Args we accept and hand off to `vscode-languageserver/node`: the transport flags, plus the
+ * bookkeeping args an LSP client injects when it spawns the server. `vscode-languageclient`
+ * always appends `--clientProcessId=<pid>` (so the server exits if the editor dies); rejecting it
+ * would crash every editor-launched server on startup. Only genuinely unknown flags are an error.
+ */
+function isAcceptedArg(arg: string): boolean {
   return (
     arg === "--stdio" ||
     arg === "--node-ipc" ||
@@ -46,7 +51,9 @@ function isKnownTransportFlag(arg: string): boolean {
     arg === "--pipe" ||
     arg.startsWith("--socket=") ||
     arg.startsWith("--pipe=") ||
-    // The integer that follows a bare `--socket` / `--pipe`.
+    arg === "--clientProcessId" ||
+    arg.startsWith("--clientProcessId=") ||
+    // The integer that follows a bare `--socket` / `--pipe` / `--clientProcessId`.
     /^\d+$/.test(arg)
   );
 }
@@ -69,7 +76,7 @@ export function main(argv: readonly string[] = process.argv.slice(2)): void {
     return;
   }
 
-  const unknown = argv.find((arg) => !isKnownTransportFlag(arg));
+  const unknown = argv.find((arg) => !isAcceptedArg(arg));
   if (unknown !== undefined) {
     process.stderr.write(`hoverfly-lsp: unknown argument "${unknown}"\n\n${HELP}`);
     process.exitCode = 1;
