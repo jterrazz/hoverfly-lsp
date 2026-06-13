@@ -1,0 +1,6 @@
+{
+  "name": "Hoverfly Simulation",
+  "description": "A Hoverfly v5 simulation: request-matcher/response pairs plus global actions and metadata.",
+  "fileMatch": ["*.hoverfly.json", "*.hfy", "hoverfly-simulation.json"],
+  "url": "https://json.schemastore.org/hoverfly-simulation.json"
+}

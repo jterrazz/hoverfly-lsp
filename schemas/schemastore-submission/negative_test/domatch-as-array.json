@@ -1,0 +1,28 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [
+                        {
+                            "matcher": "jsonpath",
+                            "value": "$.id",
+                            "doMatch": [
+                                {
+                                    "matcher": "exact",
+                                    "value": "42"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "response": {
+                    "status": 200
+                }
+            }
+        ]
+    },
+    "meta": {
+        "schemaVersion": "v5.3"
+    }
+}

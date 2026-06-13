@@ -84,44 +84,16 @@ via the `fileMatch` patterns — no manual mapping needed.)
 
 ## Submitting to SchemaStore
 
-We have **not** submitted this yet. To do so, open a PR to
-[github.com/SchemaStore/schemastore](https://github.com/SchemaStore/schemastore) following its
-[CONTRIBUTING guide](https://github.com/SchemaStore/schemastore/blob/master/CONTRIBUTING.md):
+We have **not** submitted this yet. A complete, copy-paste-ready bundle lives at
+[`schemastore-submission/`](./schemastore-submission/) — the schema copy, the exact
+`catalog.json` entry, 5 positive tests, and 3 negative tests, all verified against the schema with
+ajv (draft-07). Follow [`schemastore-submission/SUBMISSION.md`](./schemastore-submission/SUBMISSION.md)
+for the fork → copy → `node ./cli.js check` / `npm test` → open-PR steps and the cited SchemaStore
+paths (`src/schemas/json/`, `src/api/json/catalog.json`, `src/test/hoverfly-simulation/`,
+`src/negative_test/hoverfly-simulation/`).
 
-1. **Schema file** — copy `schemas/hoverfly-simulation.json` to
-   `src/schemas/json/hoverfly-simulation.json` in the schemastore repo. Keep the
-   `"$schema": "http://json-schema.org/draft-07/schema#"` line; set `$id`/keep it pointed at
-   `https://json.schemastore.org/hoverfly-simulation.json`.
-
-2. **Catalog entry** — add to `src/api/json/catalog.json` (alphabetical by `name`):
-
-   ```jsonc
-   {
-     "name": "Hoverfly simulation",
-     "description": "A Hoverfly v5 simulation: request-matcher/response pairs plus global actions and metadata.",
-     "fileMatch": ["*.hoverfly.json", "hoverfly-simulation.json"],
-     "url": "https://json.schemastore.org/hoverfly-simulation.json",
-   }
-   ```
-
-   Note: use the `*.hoverfly.json` / `hoverfly-simulation.json` patterns — **not** a bare
-   `simulation.json` (too generic).
-
-3. **Positive + negative test files** — SchemaStore requires test fixtures that prove the schema
-   accepts valid documents and rejects invalid ones. Create:
-   - `src/test/hoverfly-simulation/` — **positive** tests (must validate). Copy from our corpus:
-     - [`testdata/valid/minimal.hoverfly.json`](../testdata/valid/minimal.hoverfly.json) — the smallest complete simulation.
-     - [`testdata/valid/matchers/exact-default-and-explicit.hoverfly.json`](../testdata/valid/matchers/exact-default-and-explicit.hoverfly.json) — matcher usage.
-   - `src/negative_test/hoverfly-simulation/` — **negative** tests (must NOT validate). Copy from our corpus:
-     - [`testdata/invalid/hf1xx/hf101-not-a-simulation.hoverfly.json`](../testdata/invalid/hf1xx/hf101-not-a-simulation.hoverfly.json) — a non-simulation JSON object (missing required `data`/`meta`, extra top-level keys rejected by `additionalProperties:false`).
-     - [`testdata/invalid/matchers/domatch-array-shape.hoverfly.json`](../testdata/invalid/matchers/domatch-array-shape.hoverfly.json) — an array-shaped `doMatch` (the schema types `field-matchers` as `object`, mirroring Hoverfly's own import rejection).
-
-   All four are verified against `hoverfly-simulation.json`: the two positives produce zero schema
-   errors; the two negatives each produce at least one. (See the validation in this track's
-   notes — re-check with any JSON-Schema draft-07 validator before submitting.)
-
-4. Run the schemastore repo's own `npm test` locally (it validates catalog + test files), then
-   open the PR.
+> The bundle's `schema/hoverfly-simulation.json` is a copy of this directory's
+> `hoverfly-simulation.json` and must be re-copied if the source schema changes.
 
 > Per architect decision D7, after SchemaStore lists the schema, document the `$schema`
 > self-declaration as the primary distribution path for non-LSP users.

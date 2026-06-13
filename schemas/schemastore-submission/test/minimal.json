@@ -1,0 +1,27 @@
+{
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/api/health" }],
+                    "method": [{ "matcher": "exact", "value": "GET" }]
+                },
+                "response": {
+                    "status": 200,
+                    "body": "{\"status\":\"ok\"}",
+                    "headers": {
+                        "Content-Type": ["application/json"]
+                    }
+                }
+            }
+        ],
+        "globalActions": {
+            "delays": []
+        }
+    },
+    "meta": {
+        "schemaVersion": "v5.3",
+        "hoverflyVersion": "v1.10.0",
+        "timeExported": "2026-06-11T00:00:00Z"
+    }
+}

@@ -12,3 +12,9 @@ docs/template-reference.md
 # Verbatim upstream baseline — must stay byte-identical to Hoverfly's official
 # core/handlers/v2/schema.json (tabs and all) so the drift CI diff is meaningful.
 schemas/upstream-baseline.schema.json
+
+# Ready-to-submit SchemaStore bundle: a self-contained copy of the schema + test fixtures
+# copied verbatim from the corpus. They must stay byte-identical to what we validated and to
+# what SchemaStore will run through its own checks (negative tests are intentionally non-canonical),
+# so our formatter must not touch them.
+schemas/schemastore-submission/
