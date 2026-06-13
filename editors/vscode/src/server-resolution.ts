@@ -9,12 +9,12 @@
  *   1. Explicit override   — the `hoverfly.server.path` setting, if set to a non-empty string.
  *   2. Workspace install   — `<workspaceRoot>/node_modules/.bin/hoverfly-lsp` if it exists on disk
  *                            (lets a project pin its own server version via `npm install`).
- *   3. Bundled server      — the copy of the `hoverfly-lsp` bin shipped inside the extension
- *                            (`<extensionRoot>/server/bin/hoverfly-lsp.js`), the zero-install path.
+ *   3. Bundled server      — the CJS server bundle shipped inside the extension
+ *                            (`<extensionRoot>/server/dist/cli.cjs`), the zero-install path.
  *
  * The result is always launched as `node <module> --stdio` so the same logic works whether the
- * resolved path is a `.js` entry (bundled / npm bin shim) or a platform launcher — we never rely
- * on the file's executable bit.
+ * resolved path is the bundled `.cjs`, an npm bin shim, or a platform launcher — we never rely on
+ * the file's executable bit.
  */
 
 /** A resolved server command: run `node` with these args (the launcher module + transport flag). */

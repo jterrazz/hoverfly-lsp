@@ -27,8 +27,14 @@ import { resolveServer } from "./server-resolution.js";
 
 let client: LanguageClient | undefined;
 
-/** Bundled server entry, relative to the extension root (populated by the build's copy step). */
-const BUNDLED_SERVER_MODULE = join("server", "bin", "hoverfly-lsp.js");
+/**
+ * Bundled server entry, relative to the extension root (populated by the build's copy step).
+ * Point at the `.cjs` bundle directly (not the `bin/*.js` ESM launcher): vscode-languageclient
+ * `fork()`s this under the editor's Node runtime, and a `.cjs` is unambiguously CommonJS in any
+ * surrounding package — the `.js` launcher relies on the enclosing `"type": "module"` and can fail
+ * to load when forked by the editor's Electron-based Node.
+ */
+const BUNDLED_SERVER_MODULE = join("server", "dist", "cli.cjs");
 
 export async function activate(context: ExtensionContext): Promise<void> {
   const config = workspace.getConfiguration("hoverfly");
@@ -45,10 +51,12 @@ export async function activate(context: ExtensionContext): Promise<void> {
   const serverOptions: ServerOptions = {
     run: {
       module: resolved.module,
+      args: ["--stdio"],
       transport: TransportKind.stdio,
     },
     debug: {
       module: resolved.module,
+      args: ["--stdio"],
       transport: TransportKind.stdio,
       options: { execArgv: ["--nolazy", "--inspect=6009"] },
     },

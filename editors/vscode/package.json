@@ -94,7 +94,9 @@
       }
     }
   },
-  "activationEvents": [],
+  "activationEvents": [
+    "onLanguage:hoverfly-simulation"
+  ],
   "engines": {
     "vscode": "^1.91.0"
   }
