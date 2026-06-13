@@ -92,6 +92,15 @@
           "description": "Traces the communication between VS Code and the Hoverfly language server."
         }
       }
+    },
+    "configurationDefaults": {
+      "[hoverfly-simulation]": {
+        "editor.quickSuggestions": {
+          "other": true,
+          "comments": false,
+          "strings": true
+        }
+      }
     }
   },
   "activationEvents": [],
