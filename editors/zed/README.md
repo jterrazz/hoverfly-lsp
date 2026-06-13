@@ -14,14 +14,14 @@ this Rust/WASM extension is a thin launcher that locates and starts that binary.
 `language_server_command` tries, in order:
 
 1. **Project-local** — `<worktree>/node_modules/.bin/hoverfly-lsp` (if you ran
-   `npm install hoverfly-lsp` in your project).
-2. **Global `$PATH`** — e.g. after `npm install -g hoverfly-lsp`.
-3. **Zed-managed** — Zed runs `npm install hoverfly-lsp` into the extension's
-   storage and launches `node node_modules/hoverfly-lsp/bin/hoverfly-lsp.js`.
+   `npm install @jterrazz/hoverfly-lsp` in your project).
+2. **Global `$PATH`** — e.g. after `npm install -g @jterrazz/hoverfly-lsp`.
+3. **Zed-managed** — Zed runs `npm install @jterrazz/hoverfly-lsp` into the extension's
+   storage and launches `node node_modules/@jterrazz/hoverfly-lsp/bin/hoverfly-lsp.js`.
 
 In all cases the server is invoked with `--stdio`. If none of the above resolves,
 Zed surfaces an actionable installation error in its log telling you to
-`npm install hoverfly-lsp` (project) or `npm install -g hoverfly-lsp` (global).
+`npm install @jterrazz/hoverfly-lsp` (project) or `npm install -g @jterrazz/hoverfly-lsp` (global).
 
 This is the canonical pattern used by first-party Node-LSP extensions
 (`zed-industries/zed`'s `html`, `zed-extensions/vue`, `zed-extensions/svelte`):

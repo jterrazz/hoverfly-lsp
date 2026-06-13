@@ -11,9 +11,9 @@
  *   1. $HOVERFLY_LSP_PATH      — explicit override. Either the server bundle (dist/cli.cjs)
  *                               directly, or a directory containing it. Lets users point at
  *                               any build (a checkout, a global install, a custom path).
- *   2. node_modules            — a `hoverfly-lsp` package installed next to the project or the
- *                               plugin (the future "npm-installed" path). Resolved via Node's
- *                               own algorithm from both the cwd and this file's directory.
+ *   2. node_modules            — a `@jterrazz/hoverfly-lsp` package installed next to the project
+ *                               or the plugin (the future "npm-installed" path). Resolved via
+ *                               Node's own algorithm from both the cwd and this file's directory.
  *   3. dev fallback            — the repo-relative server bundle at
  *                               ../../../packages/server/dist/cli.cjs, for running straight from
  *                               a hoverfly-lsp checkout before anything is published.
@@ -21,7 +21,7 @@
  * NOTE: a marketplace install COPIES the plugin into Claude Code's cache, so the dev fallback
  * (3) only resolves when the plugin runs in place from the repo (skills-dir auto-load or a
  * local-path marketplace pointing at editors/claude-code). A published plugin must instead
- * bundle the server or npm-depend on `hoverfly-lsp` so that (2) resolves. See README.
+ * bundle the server or npm-depend on `@jterrazz/hoverfly-lsp` so that (2) resolves. See README.
  */
 
 "use strict";
@@ -54,7 +54,7 @@ function resolveBundle(candidate) {
   return undefined;
 }
 
-/** Resolve the `hoverfly-lsp` package's bundle from node_modules, from several base dirs. */
+/** Resolve the `@jterrazz/hoverfly-lsp` package's bundle from node_modules, from several base dirs. */
 function resolveFromNodeModules() {
   const bases = [process.cwd(), __dirname];
   for (const base of bases) {
@@ -62,7 +62,7 @@ function resolveFromNodeModules() {
       const req = createRequire(path.join(base, "noop.js"));
       // The package's "main"/bin both lead to the bundle; resolve the package root via its
       // Package.json so we don't depend on a specific export map.
-      const pkgJson = req.resolve("hoverfly-lsp/package.json");
+      const pkgJson = req.resolve("@jterrazz/hoverfly-lsp/package.json");
       const bundle = path.join(path.dirname(pkgJson), BUNDLE_RELATIVE);
       if (fs.existsSync(bundle)) {
         return bundle;
@@ -111,9 +111,10 @@ const bundle = resolveServerBundle();
 if (!bundle) {
   process.stderr.write(
     "hoverfly-lsp: could not locate the language server bundle.\n" +
-      "Tried $HOVERFLY_LSP_PATH, a node_modules `hoverfly-lsp` install, and the repo-relative\n" +
-      "dev bundle (packages/server/dist/cli.cjs). Install `hoverfly-lsp` (npm i -g hoverfly-lsp\n" +
-      "or as a project dependency), or set HOVERFLY_LSP_PATH to the server's dist/cli.cjs.\n",
+      "Tried $HOVERFLY_LSP_PATH, a node_modules `@jterrazz/hoverfly-lsp` install, and the\n" +
+      "repo-relative dev bundle (packages/server/dist/cli.cjs). Install `@jterrazz/hoverfly-lsp`\n" +
+      "(npm i -g @jterrazz/hoverfly-lsp or as a project dependency), or set HOVERFLY_LSP_PATH to\n" +
+      "the server's dist/cli.cjs.\n",
   );
   process.exit(1);
 }

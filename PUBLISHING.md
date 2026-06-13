@@ -1,8 +1,9 @@
 # Publishing Hoverfly LSP
 
 A short, ordered playbook. Test first (Phase 0), then publish (Phase 1–2). Phase 3 is optional
-and can come later. Everything is already release-ready: `npm publish --dry-run` passes for both
-packages and the `.vsix` builds clean.
+and can come later. Everything is already release-ready: `npm publish --dry-run` passes for the
+single published package (`@jterrazz/hoverfly-lsp`; `@hoverfly-lsp/core` is private and bundled in)
+and the `.vsix` builds clean.
 
 ---
 
@@ -43,15 +44,16 @@ Open `testdata/valid/rich-stateful-templated.hoverfly.json` and confirm (full li
 ## Phase 1 — npm + GitHub Release (the house flow)
 
 Same as the other `@jterrazz` packages: **publish by creating a GitHub Release.** That fires
-`.github/workflows/release.yml`, which validates, publishes both npm packages
-(`@hoverfly-lsp/core`, `hoverfly-lsp`) **tokenlessly via OIDC trusted publishing**
+`.github/workflows/release.yml`, which validates, publishes the single npm package
+(`@jterrazz/hoverfly-lsp`) **tokenlessly via OIDC trusted publishing**
 (`--provenance` + `id-token`, no `NPM_TOKEN`), and attaches the `.vsix` to the release.
+(`@hoverfly-lsp/core` is private — never published — and bundled into the server by esbuild.)
 
-**One-time setup — configure npm trusted publishing** (per package, like your other packages):
+**One-time setup — configure npm trusted publishing** (just the one package):
 
-1. On npmjs.com, for **`@hoverfly-lsp/core`** and **`hoverfly-lsp`**, add a Trusted Publisher
-   pointing at GitHub repo `jterrazz/hoverfly-lsp`, workflow `release.yml`. New package names can
-   be pre-configured before the first publish. (npm docs: _Trusted publishing for npm packages_.)
+1. On npmjs.com, for **`@jterrazz/hoverfly-lsp`**, add a Trusted Publisher pointing at GitHub repo
+   `jterrazz/hoverfly-lsp`, workflow `release.yml`. New package names can be pre-configured before
+   the first publish. (npm docs: _Trusted publishing for npm packages_.)
 
 > Why no token? The workflow mirrors `jterrazz-actions/release-npm.yaml`: `npm publish --provenance`
 > with `id-token: write` and **no `NODE_AUTH_TOKEN`** — npm authenticates the run via OIDC.
@@ -62,11 +64,11 @@ Same as the other `@jterrazz` packages: **publish by creating a GitHub Release.*
 gh release create v0.1.0 --generate-notes      # or via the GitHub UI: Releases → Draft a new release
 ```
 
-Watch it: `gh run watch` (or the Actions tab). When green, `npm view hoverfly-lsp version` returns
-`0.1.0` and the `.vsix` is attached to the release.
+Watch it: `gh run watch` (or the Actions tab). When green, `npm view @jterrazz/hoverfly-lsp version`
+returns `0.1.0` and the `.vsix` is attached to the release.
 
-> Once `hoverfly-lsp` is on npm, **Zed / IntelliJ / Claude Code / Neovim** users get the server
-> automatically — no more `npm link`.
+> Once `@jterrazz/hoverfly-lsp` is on npm, **Zed / IntelliJ / Claude Code / Neovim** users get the
+> server automatically — no more `npm link`.
 
 ---
 
@@ -110,7 +112,7 @@ None of these block a usable release; do them when you want broader reach.
 - **Zed extension registry**: open a PR adding the extension to `zed-industries/extensions`
   (points at `editors/zed`). Users then install it from Zed's Extensions panel.
 - **Claude Code plugin marketplace**: submit/refresh the `editors/claude-code` plugin (it resolves
-  `hoverfly-lsp` from npm). See [editors/claude-code/README.md](./editors/claude-code/README.md).
+  `@jterrazz/hoverfly-lsp` from npm). See [editors/claude-code/README.md](./editors/claude-code/README.md).
 
 ---
 

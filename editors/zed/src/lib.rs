@@ -1,12 +1,12 @@
 //! Zed extension for the Hoverfly simulation language server.
 //!
-//! All intelligence (diagnostics, completion, hover) lives in the `hoverfly-lsp`
-//! npm package. This extension only resolves that binary and tells Zed how to
-//! launch it over stdio. Resolution order:
+//! All intelligence (diagnostics, completion, hover) lives in the
+//! `@jterrazz/hoverfly-lsp` npm package. This extension only resolves that
+//! binary and tells Zed how to launch it over stdio. Resolution order:
 //!
 //!   1. A project-local install: `<worktree>/node_modules/.bin/hoverfly-lsp`.
-//!   2. A global install on `$PATH` (e.g. `npm i -g hoverfly-lsp`).
-//!   3. A Zed-managed npm install of the `hoverfly-lsp` package, run via Node.
+//!   2. A global install on `$PATH` (e.g. `npm i -g @jterrazz/hoverfly-lsp`).
+//!   3. A Zed-managed npm install of the `@jterrazz/hoverfly-lsp` package, run via Node.
 //!   4. Otherwise, an error explaining how to install the server.
 //!
 //! This mirrors the canonical pattern of first-party Node-LSP extensions
@@ -32,12 +32,12 @@ use std::path::Path;
 use zed_extension_api::{self as zed, LanguageServerId, Result};
 
 /// npm package that ships the language server.
-const PACKAGE_NAME: &str = "hoverfly-lsp";
+const PACKAGE_NAME: &str = "@jterrazz/hoverfly-lsp";
 /// `bin` name exposed by that package (`node_modules/.bin/<BINARY_NAME>`).
 const BINARY_NAME: &str = "hoverfly-lsp";
 /// Entry script inside the installed package, run with Node when Zed manages
 /// the install. Mirrors the package's `bin` field (`./bin/hoverfly-lsp.js`).
-const SERVER_SCRIPT_PATH: &str = "node_modules/hoverfly-lsp/bin/hoverfly-lsp.js";
+const SERVER_SCRIPT_PATH: &str = "node_modules/@jterrazz/hoverfly-lsp/bin/hoverfly-lsp.js";
 
 struct HoverflyExtension {
     /// Cached absolute path to the Zed-managed server script, to skip the npm

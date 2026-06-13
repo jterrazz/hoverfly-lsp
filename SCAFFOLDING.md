@@ -85,8 +85,9 @@ decisions in `research/03-lsp-architecture.md` and `research/10-architect-decisi
   `release: created` event. That reusable workflow runs `make build` and a **single**
   root-level `npm publish --access public --provenance` with **no `NODE_AUTH_TOKEN`** — auth
   is tokenless **npm OIDC trusted publishing**.
-- The reusable can't be used as-is: we publish **two** packages (`@hoverfly-lsp/core` then
-  `hoverfly-lsp` — order matters, server depends on core) and attach a VS Code `.vsix`. A root
+- The reusable can't be used as-is: we publish **one** package (`@jterrazz/hoverfly-lsp`;
+  `@hoverfly-lsp/core` is **private** — never published — and inlined into the server bundle by
+  esbuild, so the server has no runtime dep on it) and attach a VS Code `.vsix`. A root
   `npm publish` would try to publish the private monorepo root and ignore the workspaces.
 - So **`.github/workflows/release.yml`** matches the house **conventions** but is monorepo-aware:
   same **`release: created`** trigger, same **OIDC trusted publishing** (`--provenance` +
@@ -94,19 +95,20 @@ decisions in `research/03-lsp-architecture.md` and `research/10-architect-decisi
   1. runs the full gate on the `[20, 22, 24]` node matrix (lint on 24; mirrors `validate.yml`),
   2. verifies `github.event.release.tag_name` equals the version in every manifest (core,
      server, vscode, zed `extension.toml`, claude-code `plugin.json`) before publishing,
-  3. `npm publish`es core then server with `--access public --provenance` (tokenless OIDC),
+  3. `npm publish`es `@jterrazz/hoverfly-lsp` with `--access public --provenance` (tokenless OIDC),
   4. packages the `.vsix` and uploads it onto the just-created release (`gh release upload`).
-- **One-time per package**: configure npm trusted publishing (repo `jterrazz/hoverfly-lsp`,
-  workflow `release.yml`) for `@hoverfly-lsp/core` and `hoverfly-lsp`, exactly as for the other
-  `@jterrazz` packages. No `NPM_TOKEN` secret is needed.
+- **One-time**: configure npm trusted publishing (repo `jterrazz/hoverfly-lsp`, workflow
+  `release.yml`) for `@jterrazz/hoverfly-lsp`, exactly as for the other `@jterrazz` packages. No
+  `NPM_TOKEN` secret is needed. `@hoverfly-lsp/core` is private, so nothing to configure for it.
 - **Manual (no tokens in CI)**, documented in PUBLISHING.md: VS Code Marketplace
   (`vsce publish`), Open VSX (`ovsx publish`), Zed registry PR, Claude Code marketplace
   refresh, SchemaStore submission.
-- **Versioning**: all manifests pinned to **`0.1.0`** (npm name `hoverfly-lsp` verified
-  available — `npm view` 404 — so **no `@jterrazz/` scope fallback was needed**). The vsce
+- **Versioning**: all manifests pinned to **`0.1.0`**. The single published package uses the
+  user's own scope, **`@jterrazz/hoverfly-lsp`** (the bin/command stays `hoverfly-lsp`);
+  `@hoverfly-lsp/core` keeps its name but is `private` and never published. The vsce
   constraint that an extension version cannot be `0.0.0` is satisfied. The server bin's
   `bin` value was de-`./`-prefixed so `npm publish` no longer auto-corrects/strips the bin
-  mapping (`npm publish --dry-run` is clean for both packages). The `editors/vscode`
+  mapping (`npm publish --dry-run` is clean for the published package). The `editors/vscode`
   directory has **no LICENSE file**, so `vsce package` emits a non-blocking LICENSE warning;
   the repo root is MIT.
 

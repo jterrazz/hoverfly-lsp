@@ -99,13 +99,13 @@ Use this if you prefer not to build/install the plugin, or want to point at a gl
 ### Option A — npm global install (recommended once published)
 
 ```bash
-npm install -g hoverfly-lsp
+npm install -g @jterrazz/hoverfly-lsp
 hoverfly-lsp --version   # verify
 ```
 
 ### Option B — npx (no permanent install; server restarts are slower)
 
-You can configure the server command as `npx hoverfly-lsp --stdio` in Step 4 instead.
+You can configure the server command as `npx @jterrazz/hoverfly-lsp --stdio` in Step 4 instead.
 Note: npx adds 1–3 seconds on each server restart; not recommended for daily use.
 
 ### Option C — dev/local install (current, pre-npm-publish)
@@ -302,4 +302,4 @@ Run through these steps after any change to the server or this integration:
 - [ ] Autocompletion triggers inside `"matcher":` value position
 - [ ] Opening an unrelated `package.json` does **not** trigger Hoverfly
 - [ ] On Windows: server starts with `cmd /C hoverfly-lsp --stdio`
-- [ ] After `npm install -g hoverfly-lsp` (future): binary resolves without `node` prefix
+- [ ] After `npm install -g @jterrazz/hoverfly-lsp` (future): binary resolves without `node` prefix

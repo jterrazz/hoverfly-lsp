@@ -7,8 +7,9 @@ name: Release
 # this workflow), exactly as for @jterrazz/logger et al.
 #
 # This is a monorepo, so it can't use the single-package `jterrazz-actions/release-npm.yaml`
-# reusable directly: it publishes BOTH @hoverfly-lsp/core and hoverfly-lsp (core first), and
-# uploads the bundled VS Code `.vsix` to the release. Cut a release with:
+# reusable directly: it publishes ONE npm package (@jterrazz/hoverfly-lsp) — core is private and
+# bundled into the server by esbuild — and uploads the bundled VS Code `.vsix` to the release.
+# Cut a release with:
 #
 #   gh release create v0.1.0 --generate-notes      # or via the GitHub UI
 #
@@ -55,8 +56,9 @@ jobs:
       - name: Test
         run: npm test
 
-  # Publish the two npm packages (core first — server depends on it), then attach the bundled
-  # VS Code extension to the release. Auth is tokenless via OIDC trusted publishing.
+  # Publish the one npm package (@jterrazz/hoverfly-lsp; core is private and bundled in), then
+  # attach the bundled VS Code extension to the release. Auth is tokenless via OIDC trusted
+  # publishing.
   publish:
     name: Publish
     needs: validate
@@ -110,13 +112,12 @@ jobs:
           [ "$CC" = "$TAG" ] && echo "ok: claude-code plugin.json @ $CC" || { echo "::error::claude-code plugin.json $CC != $TAG"; fail=1; }
           exit $fail
 
-      # @hoverfly-lsp/core first: hoverfly-lsp depends on it. --access public is required for the
-      # scoped package; --provenance + id-token authenticates via npm trusted publishing (no token).
-      - name: Publish @hoverfly-lsp/core
-        run: npm publish --workspace @hoverfly-lsp/core --access public --provenance
-
-      - name: Publish hoverfly-lsp
-        run: npm publish --workspace hoverfly-lsp --access public --provenance
+      # The only published package. core stays private (devDependency) and is inlined into the
+      # server bundle by esbuild, so the tarball has no runtime dependency on it. --access public
+      # is required for the scoped package; --provenance + id-token authenticates via npm trusted
+      # publishing (no token).
+      - name: Publish @jterrazz/hoverfly-lsp
+        run: npm publish --workspace @jterrazz/hoverfly-lsp --access public --provenance
 
       # Package the VS Code extension (server bundle is copied in by esbuild during build) and
       # attach it to the release the user just created. Marketplace/Open VSX publish stays manual.

@@ -37,8 +37,8 @@ The end-to-end editor behaviour cannot run headlessly (no extension host in CI).
 - [ ] Set `"hoverfly.trace.server": "verbose"` → the **Hoverfly LSP** output channel shows the handshake.
 - [ ] `hoverfly.server.path` override: point it at a built `packages/server/bin/hoverfly-lsp.js`
       and confirm the server still starts (resolution priority 1).
-- [ ] Workspace install path: `npm install hoverfly-lsp` in the workspace (once published) and
-      confirm `<workspace>/node_modules/.bin/hoverfly-lsp` is preferred over the bundled server.
+- [ ] Workspace install path: `npm install @jterrazz/hoverfly-lsp` in the workspace (once published)
+      and confirm `<workspace>/node_modules/.bin/hoverfly-lsp` is preferred over the bundled server.
 - [ ] **Marketplace publish (future):** `code --install-extension jterrazz.hoverfly-lsp-vscode`
       installs the published extension.
 - [ ] **Open VSX publish (REQUIRED, not optional):** `ovsx publish` the `.vsix` to
@@ -111,7 +111,7 @@ No IntelliJ instance was available, so import and runtime behaviour are manual.
 > `sh -c`.
 
 **Setup:** IntelliJ 2024.2+ (any edition); install **LSP4IJ** from the Marketplace; install the
-server binary (dev: `npm link --workspace packages/server`; future: `npm install -g hoverfly-lsp`).
+server binary (dev: `npm link --workspace packages/server`; future: `npm install -g @jterrazz/hoverfly-lsp`).
 
 - [ ] `hoverfly-lsp --version` and `hoverfly-lsp --stdio` work from a terminal (both verified on
       the build host — re-check on the QA machine's PATH).
@@ -170,8 +170,8 @@ below need a real Claude Code install / a second `.json` plugin and could not be
       `.lsp.json` maps `.json`; confirm that installing a second plugin that also maps `.json`
       does not break either server (both run, or document the limitation). Not testable without a
       second `.json` plugin.
-- [ ] **Fully-published flow** (no `HOVERFLY_LSP_PATH`): once `hoverfly-lsp` is on npm, install it
-      (`npm i -g hoverfly-lsp` or as a project dep) + a remote marketplace, and confirm the
+- [ ] **Fully-published flow** (no `HOVERFLY_LSP_PATH`): once `@jterrazz/hoverfly-lsp` is on npm,
+      install it (`npm i -g @jterrazz/hoverfly-lsp` or as a project dep) + a remote marketplace, and confirm the
       launcher resolves the server via `node_modules` (resolution step 2). Cannot run until the
       package is published.
 - [ ] Headless smoke: `claude -p "edit a broken *.hoverfly.json and report diagnostics"` surfaces

@@ -25,8 +25,8 @@ A `Makefile` wraps the same gates (`make build/test/typecheck/lint`) with an ins
 ### Layout
 
 ```
-packages/core     @hoverfly-lsp/core   — pure analysis library (zero LSP transport deps)
-packages/server   hoverfly-lsp         — stdio LSP server (the published bin)
+packages/core     @hoverfly-lsp/core      — pure analysis library (private; bundled into the server)
+packages/server   @jterrazz/hoverfly-lsp  — stdio LSP server (the published package; bin: hoverfly-lsp)
 editors/          vscode / zed / intellij / claude-code integrations
 testdata/         the reference corpus (valid/ + invalid/ goldens)
 docs/             generated diagnostics + template reference

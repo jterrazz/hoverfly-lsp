@@ -142,5 +142,5 @@ VS Code window:
    channel for the LSP handshake.
 
 To verify the `hoverfly.server.path` override or the workspace-`node_modules` path, point the
-setting at a built `packages/server/bin/hoverfly-lsp.js` (or `npm install hoverfly-lsp` once it is
-published) and confirm the server still starts.
+setting at a built `packages/server/bin/hoverfly-lsp.js` (or `npm install @jterrazz/hoverfly-lsp`
+once it is published) and confirm the server still starts.

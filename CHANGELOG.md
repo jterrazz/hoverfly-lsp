@@ -13,12 +13,14 @@ files (`*.hoverfly.json`, `hoverfly-simulation.json`).
 
 ### Added
 
-- **`hoverfly-lsp` (npm)** — the stdio LSP server bin, a single self-contained esbuild
-  bundle. Editor-agnostic; serves Zed, IntelliJ/LSP4IJ, Claude Code, Neovim and any LSP
-  client. Supports both **push and pull diagnostics** (pull matters for headless agents).
-- **`@hoverfly-lsp/core` (npm)** — the pure analysis library (zero LSP transport deps),
-  built on `vscode-json-languageservice` with Hoverfly-specific intelligence layered on
-  via `JSONWorkerContribution` + AST-walking semantic validators.
+- **`@jterrazz/hoverfly-lsp` (npm)** — the stdio LSP server, the single published package: a
+  self-contained esbuild bundle exposing the `hoverfly-lsp` bin. Editor-agnostic; serves Zed,
+  IntelliJ/LSP4IJ, Claude Code, Neovim and any LSP client. Supports both **push and pull
+  diagnostics** (pull matters for headless agents).
+- **`@hoverfly-lsp/core` (private, internal)** — the pure analysis library (zero LSP transport
+  deps), built on `vscode-json-languageservice` with Hoverfly-specific intelligence layered on
+  via `JSONWorkerContribution` + AST-walking semantic validators. Not published — it is bundled
+  into the server by esbuild.
 - **Content fingerprinting (D3)** — a JSON file is treated as a simulation iff its root has
   an object `data` and a `meta.schemaVersion` starting with `v`. Non-simulations get empty
   results, so broad `.json` activation stays safe; explicitly-named files always get full

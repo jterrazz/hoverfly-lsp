@@ -260,9 +260,10 @@ your colorscheme if you want to tune their appearance (e.g. `@lsp.type.function`
 files** and it gets Hoverfly diagnostics in-context after every edit. The broad `.json` extension
 is safe: the server content-fingerprints each file and stays silent on non-Hoverfly JSON (see
 [File conventions](#file-conventions)). The recipes below show the future npm-installed path
-(`hoverfly-lsp` on `$PATH`); **until the npm package ships**, build the server and link it locally
-first — `npm run build && npm link --workspace packages/server` — or substitute the absolute path
-to `packages/server/dist/cli.cjs`.
+(the `@jterrazz/hoverfly-lsp` package puts the `hoverfly-lsp` bin on `$PATH`); **until the npm
+package ships**, build the server and link it locally first —
+`npm run build && npm link --workspace packages/server` — or substitute the absolute path to
+`packages/server/dist/cli.cjs`.
 
 **Claude Code** — shipped plugin (diagnostics pushed into context right after Claude edits a
 simulation). See [the Claude Code section above](#claude-code).
@@ -378,8 +379,8 @@ semantic validators and a Handlebars-subset template engine layered on top. Depe
 is strictly `editors → server → core`.
 
 ```
-packages/core      @hoverfly-lsp/core   pure analysis library (zero LSP transport deps)
-packages/server    hoverfly-lsp         stdio LSP server (the published bin)
+packages/core      @hoverfly-lsp/core      pure analysis library (private; bundled into the server)
+packages/server    @jterrazz/hoverfly-lsp  stdio LSP server (the published package; bin: hoverfly-lsp)
 editors/           vscode · zed · intellij · claude-code   thin per-editor launchers
 docs/              diagnostics + template reference (generated from core)
 testdata/          the reference corpus (valid/ + invalid/ goldens)
