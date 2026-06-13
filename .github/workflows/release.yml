@@ -1,23 +1,25 @@
 name: Release
 
-# Tag-driven release. Push an annotated tag `vX.Y.Z` (matching the 0.1.0-style version
-# carried by every package/extension manifest) to cut a release:
+# House release flow (same as the other @jterrazz packages): publish by CREATING a GitHub
+# Release. That fires this workflow, which validates, then publishes to npm tokenlessly via
+# OIDC trusted publishing (`--provenance` + `id-token: write`, no NPM_TOKEN). Configure the
+# trusted publisher once per package on npmjs.com (Settings → Trusted Publishing → this repo +
+# this workflow), exactly as for @jterrazz/logger et al.
 #
-#   git tag v0.1.0 && git push origin v0.1.0
+# This is a monorepo, so it can't use the single-package `jterrazz-actions/release-npm.yaml`
+# reusable directly: it publishes BOTH @hoverfly-lsp/core and hoverfly-lsp (core first), and
+# uploads the bundled VS Code `.vsix` to the release. Cut a release with:
 #
-# The workflow runs the full gate matrix, publishes both npm packages with provenance,
-# then creates a GitHub Release carrying the `.vsix` artifact and the editor release notes.
-# Marketplace / Open VSX / Zed registry / Claude Code marketplace submissions stay manual
-# (no tokens are stored in CI) — see SCAFFOLDING.md "Release pipeline".
+#   gh release create v0.1.0 --generate-notes      # or via the GitHub UI
+#
+# Marketplace / Open VSX / Zed registry / Claude Code submissions stay manual — see PUBLISHING.md.
 
 on:
-  push:
-    tags:
-      - "v*"
+  release:
+    types: [created]
 
 jobs:
-  # Full quality gate on the same node matrix as validate.yml. A tag that fails the gate
-  # never reaches publish.
+  # Full quality gate. A release whose commit fails the gate never publishes.
   validate:
     name: Validate (node ${{ matrix.node-version }})
     runs-on: ubuntu-latest
@@ -53,15 +55,15 @@ jobs:
       - name: Test
         run: npm test
 
-  # Publish the two npm packages (core first — server depends on it), package the VS Code
-  # extension, and publish the GitHub Release with the .vsix attached.
+  # Publish the two npm packages (core first — server depends on it), then attach the bundled
+  # VS Code extension to the release. Auth is tokenless via OIDC trusted publishing.
   publish:
     name: Publish
     needs: validate
     runs-on: ubuntu-latest
     permissions:
-      contents: write # create the GitHub Release + upload the .vsix asset
-      id-token: write # npm provenance (OIDC)
+      contents: write # upload the .vsix asset onto the release
+      id-token: write # npm provenance + OIDC trusted publishing (no token needed)
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -69,7 +71,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: "24"
           cache: npm
           registry-url: https://registry.npmjs.org
 
@@ -79,18 +81,20 @@ jobs:
       - name: Build
         run: npm run build
 
-      # Guard: the pushed tag must match the version in every manifest, so a stray tag can
+      # Guard: the release tag must match the version in every manifest, so a stray release can
       # never publish a mismatched version.
-      - name: Verify tag matches package versions
+      - name: Verify release tag matches package versions
+        env:
+          TAG_NAME: ${{ github.event.release.tag_name }}
         run: |
-          TAG="${GITHUB_REF_NAME#v}"
-          echo "Tag version: $TAG"
+          TAG="${TAG_NAME#v}"
+          echo "Release version: $TAG"
           fail=0
           check() {
             local file="$1" actual
             actual="$(node -p "require('./$file').version")"
             if [ "$actual" != "$TAG" ]; then
-              echo "::error file=$file::version $actual != tag $TAG"
+              echo "::error file=$file::version $actual != release $TAG"
               fail=1
             else
               echo "ok: $file @ $actual"
@@ -106,52 +110,21 @@ jobs:
           [ "$CC" = "$TAG" ] && echo "ok: claude-code plugin.json @ $CC" || { echo "::error::claude-code plugin.json $CC != $TAG"; fail=1; }
           exit $fail
 
-      # @hoverfly-lsp/core first: hoverfly-lsp depends on it. --access public is required for
-      # scoped packages; --provenance attaches a signed build attestation (needs id-token).
+      # @hoverfly-lsp/core first: hoverfly-lsp depends on it. --access public is required for the
+      # scoped package; --provenance + id-token authenticates via npm trusted publishing (no token).
       - name: Publish @hoverfly-lsp/core
         run: npm publish --workspace @hoverfly-lsp/core --access public --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish hoverfly-lsp
         run: npm publish --workspace hoverfly-lsp --access public --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      # Package the VS Code extension (server bundle is copied in by esbuild during build).
-      # The .vsix is attached to the Release; Marketplace/Open VSX publish stays manual.
+      # Package the VS Code extension (server bundle is copied in by esbuild during build) and
+      # attach it to the release the user just created. Marketplace/Open VSX publish stays manual.
       - name: Package VS Code extension
         run: npm run package --workspace hoverfly-lsp-vscode
 
-      - name: Locate .vsix
-        id: vsix
-        run: echo "path=$(ls editors/vscode/*.vsix)" >> "$GITHUB_OUTPUT"
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: ${{ steps.vsix.outputs.path }}
-          generate_release_notes: true
-          body: |
-            ## hoverfly-lsp ${{ github.ref_name }}
-
-            Language Server for Hoverfly JSON simulation files (`*.hoverfly.json`,
-            `hoverfly-simulation.json`).
-
-            ### Published automatically
-            - npm `hoverfly-lsp` (the server bin — Zed, IntelliJ/LSP4IJ, Claude Code, Neovim)
-            - npm `@hoverfly-lsp/core` (pure analysis library)
-            - VS Code extension `.vsix` attached to this release (zero-install, bundles the server)
-
-            ### Manual distribution steps (no tokens in CI)
-            - **VS Code Marketplace**: `vsce publish` with the attached `.vsix` (publisher `jterrazz`)
-            - **Open VSX** (**required**): `ovsx publish` with the attached `.vsix` — Cursor,
-              Windsurf, and VSCodium default to Open VSX (they cannot use the MS Marketplace), so
-              this is required for one-click install on the VS Code forks, not just an alternative
-            - **Zed**: bump `editors/zed/extension.toml` and open a PR against `zed-industries/extensions`
-            - **Claude Code**: the `editors/claude-code` plugin resolves `hoverfly-lsp` from npm; submit/refresh the marketplace entry
-            - **SchemaStore**: submit the enhanced schema with `fileMatch: ["*.hoverfly.json", "hoverfly-simulation.json"]`
-
-            See `CHANGELOG.md` for highlights.
+      - name: Attach .vsix to the release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ github.event.release.tag_name }}
+        run: gh release upload "$TAG_NAME" editors/vscode/*.vsix --clobber

@@ -78,33 +78,30 @@ decisions in `research/03-lsp-architecture.md` and `research/10-architect-decisi
 - `packages/server` depends on `@hoverfly-lsp/core` via **`"*"`** (npm-resolved workspace
   symlink), since npm workspaces do **not** support pnpm/yarn's `workspace:*` protocol.
 
-### 6. Release pipeline — plain tag-driven workflow, not the reusable `release-npm.yaml`
+### 6. Release pipeline — house flow (`release: created` + OIDC), monorepo-aware
 
 - House single-package repos call
   `jterrazz/jterrazz-actions/.github/workflows/release-npm.yaml@main` on the GitHub
   `release: created` event. That reusable workflow runs `make build` and a **single**
-  root-level `npm publish --access public --provenance`.
-- It does not fit this monorepo: we publish **two** packages (`@hoverfly-lsp/core` then
-  `hoverfly-lsp` — order matters, server depends on core), additionally package and attach a
-  VS Code `.vsix`, and create the GitHub Release body carrying the Zed / Claude Code /
-  Marketplace manual-distribution notes. A root `npm publish` would try to publish the
-  private monorepo root and ignore the workspaces.
-- We therefore wrote a plain **`.github/workflows/release.yml`**, triggered on **tag `v*`**
-  push (the simplest trigger that matches house "tag a version to release" ergonomics — no
-  release-please/changesets infra added). It:
-  1. runs the full gate on the `[20, 22]` node matrix (mirrors `validate.yml`),
-  2. verifies the pushed tag equals the version in every manifest (core, server, vscode,
-     zed `extension.toml`, claude-code `plugin.json`) before publishing anything,
-  3. `npm publish`es core then server with `--access public --provenance` (OIDC
-     `id-token: write` — keeps the house provenance guarantee),
-  4. packages the `.vsix` and creates the GitHub Release with the `.vsix` attached.
-- **Reused from house style**: the provenance + public-access publish pattern, the OIDC
-  `id-token: write` permission, and the `npm ci → build → publish` shape are taken verbatim
-  from `release-npm.yaml`'s `publish` job. The divergence is only the monorepo fan-out and
-  the release-asset/notes step.
-- **Manual (no tokens in CI)**, documented in the Release body: VS Code Marketplace
+  root-level `npm publish --access public --provenance` with **no `NODE_AUTH_TOKEN`** — auth
+  is tokenless **npm OIDC trusted publishing**.
+- The reusable can't be used as-is: we publish **two** packages (`@hoverfly-lsp/core` then
+  `hoverfly-lsp` — order matters, server depends on core) and attach a VS Code `.vsix`. A root
+  `npm publish` would try to publish the private monorepo root and ignore the workspaces.
+- So **`.github/workflows/release.yml`** matches the house **conventions** but is monorepo-aware:
+  same **`release: created`** trigger, same **OIDC trusted publishing** (`--provenance` +
+  `id-token: write`, **no `NPM_TOKEN`**), node 24. It:
+  1. runs the full gate on the `[20, 22, 24]` node matrix (lint on 24; mirrors `validate.yml`),
+  2. verifies `github.event.release.tag_name` equals the version in every manifest (core,
+     server, vscode, zed `extension.toml`, claude-code `plugin.json`) before publishing,
+  3. `npm publish`es core then server with `--access public --provenance` (tokenless OIDC),
+  4. packages the `.vsix` and uploads it onto the just-created release (`gh release upload`).
+- **One-time per package**: configure npm trusted publishing (repo `jterrazz/hoverfly-lsp`,
+  workflow `release.yml`) for `@hoverfly-lsp/core` and `hoverfly-lsp`, exactly as for the other
+  `@jterrazz` packages. No `NPM_TOKEN` secret is needed.
+- **Manual (no tokens in CI)**, documented in PUBLISHING.md: VS Code Marketplace
   (`vsce publish`), Open VSX (`ovsx publish`), Zed registry PR, Claude Code marketplace
-  refresh, SchemaStore submission. `NPM_TOKEN` is the only secret the workflow needs.
+  refresh, SchemaStore submission.
 - **Versioning**: all manifests pinned to **`0.1.0`** (npm name `hoverfly-lsp` verified
   available — `npm view` 404 — so **no `@jterrazz/` scope fallback was needed**). The vsce
   constraint that an extension version cannot be `0.0.0` is satisfied. The server bin's

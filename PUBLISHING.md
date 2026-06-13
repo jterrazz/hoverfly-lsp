@@ -40,31 +40,30 @@ Open `testdata/valid/rich-stateful-templated.hoverfly.json` and confirm (full li
 
 ---
 
-## Phase 1 — npm + GitHub Release (one tag)
+## Phase 1 — npm + GitHub Release (the house flow)
 
-This publishes both npm packages (`@hoverfly-lsp/core`, `hoverfly-lsp`) with provenance and creates
-a GitHub Release with the `.vsix` attached. It's driven entirely by `.github/workflows/release.yml`.
+Same as the other `@jterrazz` packages: **publish by creating a GitHub Release.** That fires
+`.github/workflows/release.yml`, which validates, publishes both npm packages
+(`@hoverfly-lsp/core`, `hoverfly-lsp`) **tokenlessly via OIDC trusted publishing**
+(`--provenance` + `id-token`, no `NPM_TOKEN`), and attaches the `.vsix` to the release.
 
-**One-time setup — add the npm token as a repo secret:**
+**One-time setup — configure npm trusted publishing** (per package, like your other packages):
 
-1. Create an **Automation** token at <https://www.npmjs.com/settings/jterrazz/tokens> (type:
-   _Automation_, so it bypasses 2FA in CI).
-2. Store it as a secret (paste the token when prompted):
+1. On npmjs.com, for **`@hoverfly-lsp/core`** and **`hoverfly-lsp`**, add a Trusted Publisher
+   pointing at GitHub repo `jterrazz/hoverfly-lsp`, workflow `release.yml`. New package names can
+   be pre-configured before the first publish. (npm docs: _Trusted publishing for npm packages_.)
 
-   ```bash
-   gh secret set NPM_TOKEN
-   ```
+> Why no token? The workflow mirrors `jterrazz-actions/release-npm.yaml`: `npm publish --provenance`
+> with `id-token: write` and **no `NODE_AUTH_TOKEN`** — npm authenticates the run via OIDC.
 
 **Cut the release** — the version is already `0.1.0` in every manifest:
 
 ```bash
-git tag v0.1.0
-git push origin v0.1.0
+gh release create v0.1.0 --generate-notes      # or via the GitHub UI: Releases → Draft a new release
 ```
 
-Watch it: `gh run watch` (or the Actions tab). The workflow runs the full gate, publishes
-`@hoverfly-lsp/core` then `hoverfly-lsp`, and opens a GitHub Release with the `.vsix`. When it's
-green, `npm view hoverfly-lsp version` returns `0.1.0`.
+Watch it: `gh run watch` (or the Actions tab). When green, `npm view hoverfly-lsp version` returns
+`0.1.0` and the `.vsix` is attached to the release.
 
 > Once `hoverfly-lsp` is on npm, **Zed / IntelliJ / Claude Code / Neovim** users get the server
 > automatically — no more `npm link`.
@@ -117,7 +116,8 @@ None of these block a usable release; do them when you want broader reach.
 
 ## Cutting later versions
 
-Bump the version in every manifest (the release workflow verifies they all match the tag), then
-`git tag vX.Y.Z && git push origin vX.Y.Z`. Re-run the Phase 2 publish commands with the new `.vsix`.
-Manifests to bump: `packages/core`, `packages/server`, `editors/vscode`, `editors/zed/extension.toml`,
-`editors/claude-code/.claude-plugin/plugin.json`, plus the root `package.json`.
+Bump the version in every manifest (the release workflow verifies they all match the release tag),
+then `gh release create vX.Y.Z --generate-notes`. Re-run the Phase 2 publish commands with the new
+`.vsix`. Manifests to bump: `packages/core`, `packages/server`, `editors/vscode`,
+`editors/zed/extension.toml`, `editors/claude-code/.claude-plugin/plugin.json`, plus the root
+`package.json`.
