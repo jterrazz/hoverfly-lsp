@@ -48,7 +48,7 @@ a GitHub Release with the `.vsix` attached. It's driven entirely by `.github/wor
 **One-time setup — add the npm token as a repo secret:**
 
 1. Create an **Automation** token at <https://www.npmjs.com/settings/jterrazz/tokens> (type:
-   *Automation*, so it bypasses 2FA in CI).
+   _Automation_, so it bypasses 2FA in CI).
 2. Store it as a secret (paste the token when prompted):
 
    ```bash
