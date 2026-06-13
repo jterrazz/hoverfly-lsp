@@ -115,9 +115,17 @@ jobs:
       # The only published package. core stays private (devDependency) and is inlined into the
       # server bundle by esbuild, so the tarball has no runtime dependency on it. --access public
       # is required for the scoped package; --provenance + id-token authenticates via npm trusted
-      # publishing (no token).
-      - name: Publish @jterrazz/hoverfly-lsp
-        run: npm publish --workspace @jterrazz/hoverfly-lsp --access public --provenance
+      # publishing (no token). Idempotent: if this exact version is already on npm (e.g. the first
+      # release was published manually), skip rather than fail — so cutting the GitHub release still
+      # attaches the .vsix without a duplicate-publish error.
+      - name: Publish @jterrazz/hoverfly-lsp (skip if already on npm)
+        run: |
+          VER="$(node -p "require('./packages/server/package.json').version")"
+          if npm view "@jterrazz/hoverfly-lsp@$VER" version >/dev/null 2>&1; then
+            echo "@jterrazz/hoverfly-lsp@$VER is already published — skipping publish."
+          else
+            npm publish --workspace @jterrazz/hoverfly-lsp --access public --provenance
+          fi
 
       # Package the VS Code extension (server bundle is copied in by esbuild during build) and
       # attach it to the release the user just created. Marketplace/Open VSX publish stays manual.
