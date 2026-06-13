@@ -3,7 +3,7 @@
 <!-- Badges: replace the placeholders once CI, the npm package, and the Marketplace listing are live. -->
 
 [![CI](https://img.shields.io/badge/CI-validate-blue)](./.github/workflows/validate.yml)
-[![npm](https://img.shields.io/badge/npm-hoverfly--lsp-cb3837)](https://www.npmjs.com/package/hoverfly-lsp)
+[![npm](https://img.shields.io/badge/npm-%40jterrazz%2Fhoverfly--lsp-cb3837)](https://www.npmjs.com/package/@jterrazz/hoverfly-lsp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](#license)
 
 **Stop debugging silent mock failures.** Hoverfly LSP gives your editor full understanding of
@@ -40,7 +40,7 @@ this is the first.
 
 > **Status: pre-release.** The analyzer and the stdio LSP server are implemented and tested
 > (869 tests), with editor integrations for VS Code, Zed, IntelliJ, and Claude Code. The
-> `hoverfly-lsp` npm package, the VS Code Marketplace listing, and the SchemaStore entry are
+> `@jterrazz/hoverfly-lsp` npm package, the VS Code Marketplace listing, and the SchemaStore entry are
 > **not published yet**, so every integration below ships a dev/local path alongside the future
 > published one. See [MANUAL-QA.md](./MANUAL-QA.md) for the in-editor checks that cannot run
 > headlessly.
