@@ -24,7 +24,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: ["20", "22"]
+        # Build + test across the engine range (node >=20); lint runs only on 24
+        # (oxlint.config.ts needs native TS loading, node 23.6+) — see validate.yml.
+        node-version: ["20", "22", "24"]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -45,6 +47,7 @@ jobs:
         run: npm run typecheck
 
       - name: Lint
+        if: matrix.node-version == '24'
         run: npm run lint
 
       - name: Test
