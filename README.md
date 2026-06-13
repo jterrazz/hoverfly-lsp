@@ -3,7 +3,7 @@
 <!-- Badges: replace the placeholders once CI, the npm package, and the Marketplace listing are live. -->
 
 [![CI](https://img.shields.io/badge/CI-validate-blue)](./.github/workflows/validate.yml)
-[![npm](https://img.shields.io/badge/npm-%40jterrazz%2Fhoverfly--lsp-cb3837)](https://www.npmjs.com/package/@jterrazz/hoverfly-lsp)
+[![npm](https://img.shields.io/npm/v/@jterrazz/hoverfly-lsp)](https://www.npmjs.com/package/@jterrazz/hoverfly-lsp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](#license)
 
 **Stop debugging silent mock failures.** Hoverfly LSP gives your editor full understanding of
@@ -38,12 +38,12 @@ this is the first.
 | **Without** | Edit the JSON blind → import → `curl` → get a 502 → stare at the logs → guess → repeat. |
 | **With**    | The editor underlines the exact token and tells you why — before Hoverfly ever runs.    |
 
-> **Status: pre-release.** The analyzer and the stdio LSP server are implemented and tested
-> (869 tests), with editor integrations for VS Code, Zed, IntelliJ, and Claude Code. The
-> `@jterrazz/hoverfly-lsp` npm package, the VS Code Marketplace listing, and the SchemaStore entry are
-> **not published yet**, so every integration below ships a dev/local path alongside the future
-> published one. See [MANUAL-QA.md](./MANUAL-QA.md) for the in-editor checks that cannot run
-> headlessly.
+> **Status: v0.1.0 on npm.** The server is published as
+> [`@jterrazz/hoverfly-lsp`](https://www.npmjs.com/package/@jterrazz/hoverfly-lsp) (install with
+> `npm i -g @jterrazz/hoverfly-lsp`), with editor integrations for VS Code, Zed, IntelliJ, and
+> Claude Code (869 tests). The VS Code Marketplace / Open VSX listings and the SchemaStore entry are
+> not up yet — those integrations also ship a dev/local path. See [MANUAL-QA.md](./MANUAL-QA.md) for
+> the in-editor checks that cannot run headlessly.
 
 ---
 
