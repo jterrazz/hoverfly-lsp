@@ -1,9 +1,8 @@
 # Hoverfly LSP
 
-<!-- Badges: replace the placeholders once CI, the npm package, and the Marketplace listing are live. -->
-
-[![CI](https://img.shields.io/badge/CI-validate-blue)](./.github/workflows/validate.yml)
-[![npm](https://img.shields.io/npm/v/@jterrazz/hoverfly-lsp)](https://www.npmjs.com/package/@jterrazz/hoverfly-lsp)
+[![CI](https://github.com/jterrazz/hoverfly-lsp/actions/workflows/validate.yml/badge.svg)](https://github.com/jterrazz/hoverfly-lsp/actions/workflows/validate.yml)
+[![npm](https://img.shields.io/npm/v/@jterrazz/hoverfly-lsp?label=npm)](https://www.npmjs.com/package/@jterrazz/hoverfly-lsp)
+[![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/Terrazzoni.hoverfly-lsp-vscode?label=VS%20Code)](https://marketplace.visualstudio.com/items?itemName=Terrazzoni.hoverfly-lsp-vscode)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](#license)
 
 **Stop debugging silent mock failures.** Hoverfly LSP gives your editor full understanding of
@@ -38,12 +37,13 @@ this is the first.
 | **Without** | Edit the JSON blind → import → `curl` → get a 502 → stare at the logs → guess → repeat. |
 | **With**    | The editor underlines the exact token and tells you why, before Hoverfly ever runs.     |
 
-> **Status: v0.1.0 on npm.** The server is published as
-> [`@jterrazz/hoverfly-lsp`](https://www.npmjs.com/package/@jterrazz/hoverfly-lsp) (install with
-> `npm i -g @jterrazz/hoverfly-lsp`), with editor integrations for VS Code, Zed, IntelliJ, and
-> Claude Code (869 tests). The VS Code Marketplace / Open VSX listings and the SchemaStore entry are
-> not up yet; those integrations also ship a dev/local path. See [MANUAL-QA.md](./MANUAL-QA.md) for
-> the in-editor checks that cannot run headlessly.
+> **Status: published.** The language server is on npm as
+> [`@jterrazz/hoverfly-lsp`](https://www.npmjs.com/package/@jterrazz/hoverfly-lsp), and the VS Code
+> extension is live on the
+> [Marketplace](https://marketplace.visualstudio.com/items?itemName=Terrazzoni.hoverfly-lsp-vscode).
+> The [JetBrains plugin](https://plugins.jetbrains.com/plugin/32283-hoverfly) is in review; the Zed
+> registry entry, Open VSX, and the SchemaStore listing are pending. 869 tests, verified against
+> real Hoverfly v1.12.8.
 
 ---
 
@@ -176,24 +176,32 @@ The server is editor-agnostic: a stdio LSP launched as `hoverfly-lsp --stdio`. P
 
 ### VS Code
 
-`.vsix` now, Marketplace soon.
+Install **Hoverfly** from the
+[Marketplace](https://marketplace.visualstudio.com/items?itemName=Terrazzoni.hoverfly-lsp-vscode)
+(Extensions view, search "Hoverfly"), or:
 
 ```bash
-npm install                                       # repo root
-npm run build --workspace=hoverfly-lsp            # server bundle
-npm run build --workspace=hoverfly-lsp-vscode     # extension + bundled server
-npm run package --workspace=hoverfly-lsp-vscode   # -> editors/vscode/hoverfly-lsp-vscode-0.1.0.vsix
-code --install-extension editors/vscode/hoverfly-lsp-vscode-0.1.0.vsix
+code --install-extension Terrazzoni.hoverfly-lsp-vscode
 ```
 
-Or open `editors/vscode` and press **F5** for an Extension Development Host. Once published:
-`code --install-extension Terrazzoni.hoverfly-lsp-vscode`. Details:
-[editors/vscode/README.md](./editors/vscode/README.md).
+The extension bundles the language server, so there is nothing else to install. Open any
+`*.hoverfly.json` (or `*.hfy`) file and the diagnostics, completion, and hover work immediately.
+
+To build and install from source instead:
+
+```bash
+npm install && npm run build
+npm run package --workspace=hoverfly-lsp-vscode   # builds the .vsix under editors/vscode/
+code --install-extension editors/vscode/hoverfly-lsp-vscode-0.1.1.vsix
+```
+
+Details: [editors/vscode/README.md](./editors/vscode/README.md).
 
 ### Zed
 
-Dev extension now, registry soon. Zed compiles the extension to **`wasm32-wasip2`** itself via
-**rustup**.
+The [registry submission](https://github.com/zed-industries/extensions/pull/6477) is open (install
+from Zed's Extensions panel once merged). To run it now as a dev extension, Zed compiles it to
+**`wasm32-wasip2`** itself via **rustup**:
 
 ```bash
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
@@ -211,10 +219,16 @@ Details: [editors/zed/README.md](./editors/zed/README.md).
 
 ### IntelliJ / JetBrains
 
-Via [LSP4IJ](https://github.com/redhat-developer/lsp4ij) (all editions, including free Community).
-Install LSP4IJ from the Marketplace, then **Settings → Tools → Language Servers → + → Import from
-template** and select [`editors/intellij/template.json`](./editors/intellij/template.json). The
-server appears as **Hoverfly**. Details: [editors/intellij/README.md](./editors/intellij/README.md).
+The **Hoverfly** plugin is on the
+[JetBrains Marketplace](https://plugins.jetbrains.com/plugin/32283-hoverfly) (in review at first
+publish; once approved, install it from the IDE's plugin browser). It works across the JetBrains
+family (IntelliJ IDEA, PyCharm, WebStorm, GoLand, and the rest) and pulls in
+[LSP4IJ](https://github.com/redhat-developer/lsp4ij) automatically.
+
+Before approval, you can install the built plugin from disk
+(`Settings → Plugins → gear → Install Plugin from Disk`) or wire the bundled
+[`editors/intellij/template.json`](./editors/intellij/template.json) into LSP4IJ by hand. Details:
+[editors/intellij/README.md](./editors/intellij/README.md).
 
 ### Claude Code
 
