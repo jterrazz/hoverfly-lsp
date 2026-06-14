@@ -210,6 +210,20 @@ is enabled, the **Hoverfly LSP** server is running, and check `~/.local/share/ze
 - [ ] With a project-local `node_modules/.bin/hoverfly-lsp`, confirm it is used in
       preference to a global install.
 
+## Publishing to the Zed registry
+
+A ready-to-submit bundle lives in [`registry-submission/`](registry-submission/):
+
+- [`SUBMISSION.md`](registry-submission/SUBMISSION.md) — exact fork → add
+  submodule → edit `extensions.toml` → `pnpm sort-extensions` → open PR steps,
+  with cited URLs. The extension is referenced as a subdirectory via
+  `path = "editors/zed"` (supported by the registry), so no root move is needed.
+- [`registry-submission/extensions-toml-entry.toml`](registry-submission/extensions-toml-entry.toml)
+  — the exact block to add to `zed-industries/extensions`' `extensions.toml`.
+
+Submit the `v0.1.0` tag; Zed's CI builds the WASM from source (Rust 1.90,
+`wasm32-wasip2`).
+
 ## Layout
 
 ```
@@ -218,7 +232,10 @@ editors/zed/
 ├── Cargo.toml                              # cdylib crate, zed_extension_api 0.7.0
 ├── Cargo.lock                              # committed for reproducible builds
 ├── src/lib.rs                              # Extension impl: binary resolution + --stdio
-└── languages/hoverfly-simulation/
-    ├── config.toml                         # name, grammar=json, path_suffixes
-    └── highlights.scm                      # JSON highlight queries
+├── languages/hoverfly-simulation/
+│   ├── config.toml                         # name, grammar=json, path_suffixes
+│   └── highlights.scm                      # JSON highlight queries
+└── registry-submission/                    # ready-to-submit Zed registry PR bundle
+    ├── SUBMISSION.md
+    └── extensions-toml-entry.toml
 ```

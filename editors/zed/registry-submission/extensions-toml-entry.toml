@@ -1,0 +1,19 @@
+# Block to add to zed-industries/extensions' top-level `extensions.toml`.
+#
+# Our Zed extension lives in a SUBDIRECTORY of the repo (editors/zed), not the
+# repo root. Zed's registry supports this via the `path` key, which points into
+# the submodule. Precedent: the `agnix` entry uses the exact same layout
+# (submodule + `path = "editors/zed"`).
+#
+# IMPORTANT:
+#   - The TOML table key is the extension `id` from extension.toml: `hoverfly`.
+#   - `version` MUST match `version` in editors/zed/extension.toml at the pinned
+#     submodule commit (currently 0.1.0 at tag v0.1.0).
+#   - Do NOT paste this verbatim at a fixed location: after adding it, run
+#     `pnpm sort-extensions` so the table lands in alphabetical order and
+#     `.gitmodules` is sorted too (CI rejects unsorted files).
+
+[hoverfly]
+submodule = "extensions/hoverfly"
+path = "editors/zed"
+version = "0.1.0"
