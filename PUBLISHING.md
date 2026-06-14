@@ -80,13 +80,13 @@ Marketplace).
 
 ### VS Code Marketplace
 
-1. One-time: create the publisher **`jterrazz`** at <https://marketplace.visualstudio.com/manage>
+1. One-time: create the publisher **`Terrazzoni`** at <https://marketplace.visualstudio.com/manage>
    and a Personal Access Token (Azure DevOps → User Settings → Personal Access Tokens → scope
    **Marketplace: Manage**).
 2. Publish:
 
    ```bash
-   npx @vscode/vsce login jterrazz          # paste the PAT (one-time)
+   npx @vscode/vsce login Terrazzoni          # paste the PAT (one-time)
    npx @vscode/vsce publish --packagePath editors/vscode/hoverfly-lsp-vscode-0.1.0.vsix
    ```
 

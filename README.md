@@ -187,7 +187,7 @@ code --install-extension editors/vscode/hoverfly-lsp-vscode-0.1.0.vsix
 ```
 
 Or open `editors/vscode` and press **F5** for an Extension Development Host. Once published:
-`code --install-extension jterrazz.hoverfly-lsp-vscode`. Details:
+`code --install-extension Terrazzoni.hoverfly-lsp-vscode`. Details:
 [editors/vscode/README.md](./editors/vscode/README.md).
 
 ### Zed

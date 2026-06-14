@@ -39,7 +39,7 @@ The end-to-end editor behaviour cannot run headlessly (no extension host in CI).
       and confirm the server still starts (resolution priority 1).
 - [ ] Workspace install path: `npm install @jterrazz/hoverfly-lsp` in the workspace (once published)
       and confirm `<workspace>/node_modules/.bin/hoverfly-lsp` is preferred over the bundled server.
-- [ ] **Marketplace publish (future):** `code --install-extension jterrazz.hoverfly-lsp-vscode`
+- [ ] **Marketplace publish (future):** `code --install-extension Terrazzoni.hoverfly-lsp-vscode`
       installs the published extension.
 - [ ] **Open VSX publish (REQUIRED, not optional):** `ovsx publish` the `.vsix` to
       [Open VSX](https://open-vsx.org/). Cursor, Windsurf, and VSCodium default to Open VSX and

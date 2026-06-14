@@ -20,7 +20,7 @@
     "url": "https://github.com/jterrazz/hoverfly-lsp",
     "directory": "editors/vscode"
   },
-  "publisher": "jterrazz",
+  "publisher": "Terrazzoni",
   "type": "module",
   "main": "./dist/extension.cjs",
   "scripts": {

@@ -50,7 +50,7 @@ code --install-extension editors/vscode/hoverfly-lsp-vscode-0.1.0.vsix
 Once published, install via the Extensions view (search "Hoverfly") or:
 
 ```bash
-code --install-extension jterrazz.hoverfly-lsp-vscode
+code --install-extension Terrazzoni.hoverfly-lsp-vscode
 ```
 
 ## Server resolution
