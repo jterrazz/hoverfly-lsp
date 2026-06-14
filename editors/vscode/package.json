@@ -104,6 +104,7 @@
     }
   },
   "activationEvents": [],
+  "icon": "icon.png",
   "engines": {
     "vscode": "^1.91.0"
   }
