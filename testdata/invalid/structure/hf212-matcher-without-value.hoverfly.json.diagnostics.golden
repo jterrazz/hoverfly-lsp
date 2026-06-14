@@ -12,7 +12,7 @@
         51
       ]
     },
-    "message": "Matcher has no \"value\" — it can never match (the value is nil)"
+    "message": "Matcher has no \"value\"; it can never match (the value is nil)"
   },
   {
     "code": "HF212",
@@ -27,6 +27,6 @@
         33
       ]
     },
-    "message": "Matcher has no \"value\" — it can never match (the value is nil)"
+    "message": "Matcher has no \"value\"; it can never match (the value is nil)"
   }
 ]

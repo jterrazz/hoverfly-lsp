@@ -12,6 +12,6 @@
         49
       ]
     },
-    "message": "Unknown matcher \"xform\" — Hoverfly panics at match time on unknown matchers"
+    "message": "Unknown matcher \"xform\": Hoverfly panics at match time on unknown matchers"
   }
 ]

@@ -12,6 +12,6 @@
         60
       ]
     },
-    "message": "faker \"Generate\" requires arguments Hoverfly cannot pass — this panics at render time"
+    "message": "faker \"Generate\" requires arguments Hoverfly cannot pass; this panics at render time"
   }
 ]

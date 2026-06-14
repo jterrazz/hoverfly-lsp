@@ -12,6 +12,6 @@
         27
       ]
     },
-    "message": "Unknown key \"methd\" (did you mean \"method\"?) — silently ignored by Hoverfly"
+    "message": "Unknown key \"methd\" (did you mean \"method\"?); silently ignored by Hoverfly"
   }
 ]

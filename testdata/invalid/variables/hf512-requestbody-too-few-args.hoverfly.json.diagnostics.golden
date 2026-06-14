@@ -12,6 +12,6 @@
         91
       ]
     },
-    "message": "\"requestBody\" expects 2 arguments, got 1 — the variable renders empty"
+    "message": "\"requestBody\" expects 2 arguments, got 1; the variable renders empty"
   }
 ]

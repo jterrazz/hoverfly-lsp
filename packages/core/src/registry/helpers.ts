@@ -6,12 +6,12 @@
  * SpectoLabs/raymond fork (`helper.go`). Engine = SpectoLabs/raymond (a Handlebars fork).
  *
  * Two universes:
- *   - 52 Hoverfly helpers registered in `helperMethodMap` (all inline) — see HOVERFLY_HELPERS.
- *   - 8 raymond built-ins (`if/unless/with/each/first/log/lookup/equal`) — see RAYMOND_BUILTINS.
+ *   - 52 Hoverfly helpers registered in `helperMethodMap` (all inline); see HOVERFLY_HELPERS.
+ *   - 8 raymond built-ins (`if/unless/with/each/first/log/lookup/equal`); see RAYMOND_BUILTINS.
  *     `first` and `equal` are SpectoLabs-fork additions a generic Handlebars LS would not know.
  *
  * `data.variables[].function` accepts ONLY the 52 Hoverfly helpers (built-ins are not in
- * `SupportedMethodMap`) — see VARIABLE_FUNCTION_NAMES.
+ * `SupportedMethodMap`); see VARIABLE_FUNCTION_NAMES.
  *
  * Arity notes (report 08 §1): a trailing `*raymond.Options` param is supplied by raymond and
  * is NOT a user-typed argument, so it is excluded from `args` here. raymond does not enforce
@@ -229,7 +229,7 @@ export const HOVERFLY_HELPERS: readonly HelperSpec[] = [
     args: [{ name: "stringToCheck", type: "string", optional: false }],
     block: false,
     builtin: false,
-    docs: `Returns bool — typically wrapped in #if. ${DOCS_TEMPLATING}`,
+    docs: `Returns bool, typically wrapped in #if. ${DOCS_TEMPLATING}`,
     example: "{{#if (isNumeric x)}}…{{/if}}",
   },
   {
@@ -237,7 +237,7 @@ export const HOVERFLY_HELPERS: readonly HelperSpec[] = [
     args: [{ name: "s", type: "string", optional: false }],
     block: false,
     builtin: false,
-    docs: `Returns bool — alphanumeric check. ${DOCS_TEMPLATING}`,
+    docs: `Returns bool: alphanumeric check. ${DOCS_TEMPLATING}`,
     example: "{{isAlphanumeric x}}",
   },
   {
@@ -245,7 +245,7 @@ export const HOVERFLY_HELPERS: readonly HelperSpec[] = [
     args: [{ name: "s", type: "string", optional: false }],
     block: false,
     builtin: false,
-    docs: `Returns bool — boolean-string check. ${DOCS_TEMPLATING}`,
+    docs: `Returns bool: boolean-string check. ${DOCS_TEMPLATING}`,
     example: "{{isBool x}}",
   },
   {
@@ -256,7 +256,7 @@ export const HOVERFLY_HELPERS: readonly HelperSpec[] = [
     ],
     block: false,
     builtin: false,
-    docs: `Returns bool — value1 > value2. (Short form \`isGreater\` does NOT exist.) ${DOCS_TEMPLATING}`,
+    docs: `Returns bool: value1 > value2. (Short form \`isGreater\` does NOT exist.) ${DOCS_TEMPLATING}`,
     example: "{{#if (isGreaterThan a b)}}…{{/if}}",
   },
   {
@@ -267,7 +267,7 @@ export const HOVERFLY_HELPERS: readonly HelperSpec[] = [
     ],
     block: false,
     builtin: false,
-    docs: `Returns bool — value1 >= value2. ${DOCS_TEMPLATING}`,
+    docs: `Returns bool: value1 >= value2. ${DOCS_TEMPLATING}`,
     example: "{{#if (isGreaterThanOrEqual a b)}}…{{/if}}",
   },
   {
@@ -278,7 +278,7 @@ export const HOVERFLY_HELPERS: readonly HelperSpec[] = [
     ],
     block: false,
     builtin: false,
-    docs: `Returns bool — value1 < value2. (Short form \`isLess\` does NOT exist.) ${DOCS_TEMPLATING}`,
+    docs: `Returns bool: value1 < value2. (Short form \`isLess\` does NOT exist.) ${DOCS_TEMPLATING}`,
     example: "{{#if (isLessThan a b)}}…{{/if}}",
   },
   {
@@ -289,7 +289,7 @@ export const HOVERFLY_HELPERS: readonly HelperSpec[] = [
     ],
     block: false,
     builtin: false,
-    docs: `Returns bool — value1 <= value2. ${DOCS_TEMPLATING}`,
+    docs: `Returns bool: value1 <= value2. ${DOCS_TEMPLATING}`,
     example: "{{#if (isLessThanOrEqual a b)}}…{{/if}}",
   },
   {
@@ -301,7 +301,7 @@ export const HOVERFLY_HELPERS: readonly HelperSpec[] = [
     ],
     block: false,
     builtin: false,
-    docs: `Returns bool — min <= value <= max. ${DOCS_TEMPLATING}`,
+    docs: `Returns bool: min <= value <= max. ${DOCS_TEMPLATING}`,
     example: "{{isBetween x '1' '10'}}",
   },
   {
@@ -312,7 +312,7 @@ export const HOVERFLY_HELPERS: readonly HelperSpec[] = [
     ],
     block: false,
     builtin: false,
-    docs: `Returns bool — value matches the regex pattern. ${DOCS_TEMPLATING}`,
+    docs: `Returns bool: value matches the regex pattern. ${DOCS_TEMPLATING}`,
     example: "{{matchesRegex x '^\\d+$'}}",
   },
   {
@@ -356,7 +356,7 @@ export const HOVERFLY_HELPERS: readonly HelperSpec[] = [
     ],
     block: false,
     builtin: false,
-    docs: `Return all matching CSV rows ([]RowMap) — iterate with #each. ${DOCS_TEMPLATING}`,
+    docs: `Return all matching CSV rows ([]RowMap); iterate with #each. ${DOCS_TEMPLATING}`,
     example: "{{#each (csvMatchingRows 'pets' 'category' 'dogs')}}…{{/each}}",
   },
   {
@@ -364,7 +364,7 @@ export const HOVERFLY_HELPERS: readonly HelperSpec[] = [
     args: [{ name: "dataSourceName", type: "string", optional: false }],
     block: false,
     builtin: false,
-    docs: `Return the CSV as [][]string — iterate with #each. ${DOCS_TEMPLATING}`,
+    docs: `Return the CSV as [][]string; iterate with #each. ${DOCS_TEMPLATING}`,
     example: "{{#each (csvAsArray 'pets')}}…{{/each}}",
   },
   {
@@ -372,7 +372,7 @@ export const HOVERFLY_HELPERS: readonly HelperSpec[] = [
     args: [{ name: "dataSourceName", type: "string", optional: false }],
     block: false,
     builtin: false,
-    docs: `Return the CSV as []RowMap — iterate with #each and access this.field. ${DOCS_TEMPLATING}`,
+    docs: `Return the CSV as []RowMap; iterate with #each and access this.field. ${DOCS_TEMPLATING}`,
     example: "{{#each (csvAsMap 'pets')}}{{this.name}}{{/each}}",
   },
   {
@@ -412,7 +412,7 @@ export const HOVERFLY_HELPERS: readonly HelperSpec[] = [
     args: [{ name: "commandString", type: "string", optional: false }],
     block: false,
     builtin: false,
-    docs: `Run a SQL command over CSV data sources; returns []RowMap — iterate with #each. ${DOCS_TEMPLATING}`,
+    docs: `Run a SQL command over CSV data sources; returns []RowMap, iterate with #each. ${DOCS_TEMPLATING}`,
     example: "{{#each (csvSqlCommand \"SELECT * FROM pets WHERE category='dogs'\")}}…{{/each}}",
   },
   {
@@ -437,7 +437,7 @@ export const HOVERFLY_HELPERS: readonly HelperSpec[] = [
     ],
     block: false,
     builtin: false,
-    docs: `Returns bool — whether a journal index has the key. Typically wrapped in #if. ${DOCS_TEMPLATING}`,
+    docs: `Returns bool: whether a journal index has the key. Typically wrapped in #if. ${DOCS_TEMPLATING}`,
     example: "{{#if (hasJournalKey 'orderId' '123')}}…{{/if}}",
   },
   {
@@ -641,7 +641,7 @@ export const RAYMOND_BUILTINS: readonly HelperSpec[] = [
     ],
     block: false,
     builtin: true,
-    docs: `Inline: dynamic property access — lookup obj 'field'. ${DOCS_HANDLEBARS}`,
+    docs: `Inline: dynamic property access, lookup obj 'field'. ${DOCS_HANDLEBARS}`,
     example: "{{lookup obj 'field'}}",
   },
   {
@@ -657,7 +657,7 @@ export const RAYMOND_BUILTINS: readonly HelperSpec[] = [
   },
 ];
 
-/** All recognised helper names — the 52 Hoverfly helpers plus the 8 raymond built-ins. */
+/** All recognised helper names: the 52 Hoverfly helpers plus the 8 raymond built-ins. */
 export const ALL_HELPERS: readonly HelperSpec[] = [...HOVERFLY_HELPERS, ...RAYMOND_BUILTINS];
 
 /**

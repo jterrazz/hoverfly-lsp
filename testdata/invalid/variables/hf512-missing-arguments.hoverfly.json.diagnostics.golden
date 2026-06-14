@@ -12,6 +12,6 @@
         74
       ]
     },
-    "message": "\"randomStringLength\" expects 1 arguments, got 0 — the variable renders empty"
+    "message": "\"randomStringLength\" expects 1 arguments, got 0; the variable renders empty"
   }
 ]

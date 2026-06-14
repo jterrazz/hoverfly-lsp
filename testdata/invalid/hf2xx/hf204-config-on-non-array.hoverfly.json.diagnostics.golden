@@ -12,6 +12,6 @@
         78
       ]
     },
-    "message": "\"config\" is only supported by the \"array\" matcher — Hoverfly panics on this"
+    "message": "\"config\" is only supported by the \"array\" matcher; Hoverfly panics on this"
   }
 ]

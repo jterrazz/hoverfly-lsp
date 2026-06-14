@@ -12,7 +12,7 @@
         14
       ]
     },
-    "message": "Unknown key \"pair\" (did you mean \"pairs\"?) — silently ignored by Hoverfly"
+    "message": "Unknown key \"pair\" (did you mean \"pairs\"?); silently ignored by Hoverfly"
   },
   {
     "code": "HF603",
@@ -27,7 +27,7 @@
         75
       ]
     },
-    "message": "Unknown key \"machter\" (did you mean \"matcher\"?) — silently ignored by Hoverfly"
+    "message": "Unknown key \"machter\" (did you mean \"matcher\"?); silently ignored by Hoverfly"
   },
   {
     "code": "HF603",
@@ -42,7 +42,7 @@
         34
       ]
     },
-    "message": "Unknown key \"requireState\" (did you mean \"requiresState\"?) — silently ignored by Hoverfly"
+    "message": "Unknown key \"requireState\" (did you mean \"requiresState\"?); silently ignored by Hoverfly"
   },
   {
     "code": "HF603",
@@ -57,7 +57,7 @@
         37
       ]
     },
-    "message": "Unknown key \"transitionState\" (did you mean \"transitionsState\"?) — silently ignored by Hoverfly"
+    "message": "Unknown key \"transitionState\" (did you mean \"transitionsState\"?); silently ignored by Hoverfly"
   },
   {
     "code": "HF603",
@@ -72,7 +72,7 @@
         33
       ]
     },
-    "message": "Unknown key \"removeState\" (did you mean \"removesState\"?) — silently ignored by Hoverfly"
+    "message": "Unknown key \"removeState\" (did you mean \"removesState\"?); silently ignored by Hoverfly"
   },
   {
     "code": "HF307",
@@ -102,7 +102,7 @@
         68
       ]
     },
-    "message": "Unknown key \"medain\" (did you mean \"mean\"?) — silently ignored by Hoverfly"
+    "message": "Unknown key \"medain\" (did you mean \"mean\"?); silently ignored by Hoverfly"
   },
   {
     "code": "HF603",
@@ -117,7 +117,7 @@
         49
       ]
     },
-    "message": "Unknown key \"urlPatter\" (did you mean \"urlPattern\"?) — silently ignored by Hoverfly"
+    "message": "Unknown key \"urlPatter\" (did you mean \"urlPattern\"?); silently ignored by Hoverfly"
   },
   {
     "code": "HF603",
@@ -132,7 +132,7 @@
         58
       ]
     },
-    "message": "Unknown key \"values\" (did you mean \"value\"?) — silently ignored by Hoverfly"
+    "message": "Unknown key \"values\" (did you mean \"value\"?); silently ignored by Hoverfly"
   },
   {
     "code": "HF512",
@@ -147,7 +147,7 @@
         70
       ]
     },
-    "message": "\"faker\" expects 1 arguments, got 0 — the variable renders empty"
+    "message": "\"faker\" expects 1 arguments, got 0; the variable renders empty"
   },
   {
     "code": "HF603",
@@ -162,7 +162,7 @@
         64
       ]
     },
-    "message": "Unknown key \"args\" — silently ignored by Hoverfly"
+    "message": "Unknown key \"args\"; silently ignored by Hoverfly"
   },
   {
     "code": "HF603",
@@ -177,6 +177,6 @@
         20
       ]
     },
-    "message": "Unknown key \"exportedAt\" — silently ignored by Hoverfly"
+    "message": "Unknown key \"exportedAt\"; silently ignored by Hoverfly"
   }
 ]

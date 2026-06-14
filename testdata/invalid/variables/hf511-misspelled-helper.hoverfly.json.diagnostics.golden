@@ -12,6 +12,6 @@
         73
       ]
     },
-    "message": "Unknown variable function \"randomStringLenght\" — Hoverfly rejects the import (only the 52 helper functions are valid)"
+    "message": "Unknown variable function \"randomStringLenght\"; Hoverfly rejects the import (only the 52 helper functions are valid)"
   }
 ]

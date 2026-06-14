@@ -1,15 +1,15 @@
 # Publishing Hoverfly LSP
 
-A short, ordered playbook. Test first (Phase 0), then publish (Phase 1–2). Phase 3 is optional
+A short, ordered playbook. Test first (Phase 0), then publish (Phase 1-2). Phase 3 is optional
 and can come later. Everything is already release-ready: `npm publish --dry-run` passes for the
 single published package (`@jterrazz/hoverfly-lsp`; `@hoverfly-lsp/core` is private and bundled in)
 and the `.vsix` builds clean.
 
 ---
 
-## Phase 0 — Test locally first (≈10 min)
+## Phase 0: Test locally first (≈10 min)
 
-Zed is already verified. Do a quick smoke check on **VS Code** and **IntelliJ** before publishing —
+Zed is already verified. Do a quick smoke check on **VS Code** and **IntelliJ** before publishing;
 once a version is on npm it can't be replaced.
 
 ### VS Code
@@ -41,24 +41,24 @@ Open `testdata/valid/rich-stateful-templated.hoverfly.json` and confirm (full li
 
 ---
 
-## Phase 1 — npm + GitHub Release (the house flow)
+## Phase 1: npm + GitHub Release (the house flow)
 
 Same as the other `@jterrazz` packages: **publish by creating a GitHub Release.** That fires
 `.github/workflows/release.yml`, which validates, publishes the single npm package
 (`@jterrazz/hoverfly-lsp`) **tokenlessly via OIDC trusted publishing**
 (`--provenance` + `id-token`, no `NPM_TOKEN`), and attaches the `.vsix` to the release.
-(`@hoverfly-lsp/core` is private — never published — and bundled into the server by esbuild.)
+(`@hoverfly-lsp/core` is private, never published, and bundled into the server by esbuild.)
 
-**One-time setup — configure npm trusted publishing** (just the one package):
+**One-time setup, configure npm trusted publishing** (just the one package):
 
 1. On npmjs.com, for **`@jterrazz/hoverfly-lsp`**, add a Trusted Publisher pointing at GitHub repo
    `jterrazz/hoverfly-lsp`, workflow `release.yml`. New package names can be pre-configured before
    the first publish. (npm docs: _Trusted publishing for npm packages_.)
 
 > Why no token? The workflow mirrors `jterrazz-actions/release-npm.yaml`: `npm publish --provenance`
-> with `id-token: write` and **no `NODE_AUTH_TOKEN`** — npm authenticates the run via OIDC.
+> with `id-token: write` and **no `NODE_AUTH_TOKEN`**: npm authenticates the run via OIDC.
 
-**Cut the release** — the version is already `0.1.0` in every manifest:
+**Cut the release.** The version is already `0.1.0` in every manifest:
 
 ```bash
 gh release create v0.1.0 --generate-notes      # or via the GitHub UI: Releases → Draft a new release
@@ -68,11 +68,11 @@ Watch it: `gh run watch` (or the Actions tab). When green, `npm view @jterrazz/h
 returns `0.1.0` and the `.vsix` is attached to the release.
 
 > Once `@jterrazz/hoverfly-lsp` is on npm, **Zed / IntelliJ / Claude Code / Neovim** users get the
-> server automatically — no more `npm link`.
+> server automatically, with no more `npm link`.
 
 ---
 
-## Phase 2 — VS Code Marketplace + Open VSX (local, ≈15 min one-time)
+## Phase 2: VS Code Marketplace + Open VSX (local, ≈15 min one-time)
 
 The `.vsix` from the Release (or your local build) goes to two registries. **Both matter:** the MS
 Marketplace serves VS Code; Open VSX serves Cursor, Windsurf, and VSCodium (they can't use the MS
@@ -102,7 +102,7 @@ Marketplace).
 
 ---
 
-## Phase 3 — Optional, later
+## Phase 3: Optional, later
 
 None of these block a usable release; do them when you want broader reach.
 

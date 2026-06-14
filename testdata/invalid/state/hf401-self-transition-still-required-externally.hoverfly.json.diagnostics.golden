@@ -12,6 +12,6 @@
         33
       ]
     },
-    "message": "State \"polling\" is required but never set by any transitionsState — this pair can only match if the state is set externally"
+    "message": "State \"polling\" is required but never set by any transitionsState; this pair can only match if the state is set externally"
   }
 ]

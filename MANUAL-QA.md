@@ -1,9 +1,9 @@
-# Manual QA — editor integrations
+# Manual QA: editor integrations
 
 This file collects everything the phase-8 verifier could **not** exercise headlessly in the
 build environment. Each item needs a human running a real editor. Everything else (builds,
 type-checks, JSON/TOML syntax, `vsce package`, `cargo check`, the LSP `initialize` handshake
-over every launcher) was verified automatically — see the "Verified automatically" section at
+over every launcher) was verified automatically; see the "Verified automatically" section at
 the end for what you do **not** need to re-check.
 
 All `testdata/...` paths are relative to the repo root. The canonical simulation filenames are
@@ -48,7 +48,7 @@ The end-to-end editor behaviour cannot run headlessly (no extension host in CI).
 
 > Note: `vsce package` emits a "LICENSE not found" warning because the extension directory has no
 > own LICENSE file (the repo is MIT at root). Add a `LICENSE` under `editors/vscode/` before
-> Marketplace publish to silence it — cosmetic only, does not block packaging.
+> Marketplace publish to silence it (cosmetic only, does not block packaging).
 
 ---
 
@@ -60,13 +60,13 @@ rustup, no wasm target). The wasm build and all in-editor behaviour are manual.
 
 **Setup:** install Rust via rustup and `rustup target add wasm32-wasip2`. Build the server
 (`npm run build` at repo root) and put it on `$PATH` (`npm link --workspace packages/server`)
-because `hoverfly-lsp` is not on npm yet — Zed's managed-install path (resolution step 3) cannot
+because `hoverfly-lsp` is not on npm yet; Zed's managed-install path (resolution step 3) cannot
 work until it is published.
 
 > **Toolchain gotchas (cost us time tonight).** Homebrew Rust has no `wasm32-wasip2` std
 > component and will fail the Zed build; `brew uninstall rust` or make `~/.cargo/bin` win on
 > `$PATH` so `which cargo` is rustup's. And a Zed launched from Finder/Dock does not inherit
-> `~/.cargo/bin` — launch it from a terminal (`zed .`) or add `~/.cargo/bin` to the GUI `$PATH`.
+> `~/.cargo/bin`: launch it from a terminal (`zed .`) or add `~/.cargo/bin` to the GUI `$PATH`.
 
 > **No zero-setup bundling.** The server file cannot be shipped inside the extension: Zed's wasm
 > sandbox preopens only the extension _work_ dir as cwd (`crates/extension_host/.../wasm_host.rs`),
@@ -85,7 +85,7 @@ work until it is published.
       In a templated body (`"templated": true`, `"body": "{{ faker 'Name' }}"`), the template syntax
       is then colored distinctly from plain string content (helper as function, `{{`/`}}` as
       operators). Inspect with `dev: open highlights tree view`. Without the setting, no semantic
-      coloring appears — expected.
+      coloring appears (expected).
 - [ ] The **Hoverfly LSP** server starts (visible in the language-server logs).
 - [ ] Introduce an error (e.g. bad `meta.schemaVersion`) → a diagnostic appears.
 - [ ] Open an unrelated `.json` (e.g. `package.json`) → NOT detected as Hoverfly, no diagnostics.
@@ -114,7 +114,7 @@ No IntelliJ instance was available, so import and runtime behaviour are manual.
 server binary (dev: `npm link --workspace packages/server`; future: `npm install -g @jterrazz/hoverfly-lsp`).
 
 - [ ] `hoverfly-lsp --version` and `hoverfly-lsp --stdio` work from a terminal (both verified on
-      the build host — re-check on the QA machine's PATH).
+      the build host; re-check on the QA machine's PATH).
 - [ ] LSP4IJ installed (Settings → Plugins → Installed).
 - [ ] Import `editors/intellij/template.json` via Settings → Tools → Language Servers → **+** →
       _Import from template_ → the server **Hoverfly** appears. (If import is absent in your
@@ -130,13 +130,13 @@ server binary (dev: `npm link --workspace packages/server`; future: `npm install
 - [ ] Opening an unrelated `package.json` does **not** trigger Hoverfly LSP.
 - [ ] On Windows: server starts with `cmd /C hoverfly-lsp --stdio` (the `programArgs.windows` value).
 - [ ] Optional: paste `initializationOptions.json` (`{ "registeredActions": [] }`) into the
-      Configuration tab — server starts and `postServeAction` completion reflects the list.
+      Configuration tab: server starts and `postServeAction` completion reflects the list.
 
 ---
 
 ## Neovim / any other LSP client (root README "Any other editor")
 
-No editor dir — the client is configured by hand (`nvim-lspconfig` snippet in the root README).
+No editor dir: the client is configured by hand (`nvim-lspconfig` snippet in the root README).
 
 **Setup:** build + link the server (`npm run build && npm link --workspace packages/server`), point
 `cmd = { "hoverfly-lsp", "--stdio" }`, and `filetypes = { "json", "jsonc" }`.
@@ -179,11 +179,11 @@ below need a real Claude Code install / a second `.json` plugin and could not be
 
 ---
 
-## SchemaStore (zero-install, upcoming — all editors)
+## SchemaStore (zero-install, upcoming, all editors)
 
 - [ ] **Not yet submitted.** Submit the enhanced-but-faithful schema to
       [SchemaStore](https://github.com/SchemaStore/schemastore) with
-      `fileMatch: ["*.hoverfly.json", "hoverfly-simulation.json"]` (NOT bare `simulation.json` —
+      `fileMatch: ["*.hoverfly.json", "hoverfly-simulation.json"]` (NOT bare `simulation.json`,
       too generic), per architect decision D7 §6. After merge, verify zero-install validation in a
       clean VS Code / IntelliJ (no extension/plugin) on a `*.hoverfly.json`, and that `"$schema"`
       self-declaration auto-applies the schema.
@@ -193,7 +193,7 @@ below need a real Claude Code install / a second `.json` plugin and could not be
 ## Verified automatically (do not re-check)
 
 - Repo gates at root: `npm run build`, `npm run test` (608 passing), `npm run typecheck`,
-  `npm run lint` (oxlint + oxfmt + tsc + knip) — all green with the editor dirs in place.
+  `npm run lint` (oxlint + oxfmt + tsc + knip): all green with the editor dirs in place.
 - VS Code: `npm run build --workspace=hoverfly-lsp-vscode` bundles `dist/extension.cjs` and copies
   the server into `server/`; `vsce package` produces the `.vsix` (9 files, includes the bundled
   server); the bundled `server/bin/hoverfly-lsp.js` answers `initialize` with

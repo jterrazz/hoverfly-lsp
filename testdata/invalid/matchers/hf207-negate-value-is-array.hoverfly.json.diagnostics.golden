@@ -12,6 +12,6 @@
         90
       ]
     },
-    "message": "\"negate\" with a non-string value always matches (vacuous true) — likely not what you want"
+    "message": "\"negate\" with a non-string value always matches (vacuous true); likely not what you want"
   }
 ]

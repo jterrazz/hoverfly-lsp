@@ -8,7 +8,7 @@ decisions in `research/03-lsp-architecture.md` and `research/10-architect-decisi
 
 ## Divergences from house conventions
 
-### 1. TypeScript config — NodeNext + project references, not the `@jterrazz/typescript` node preset
+### 1. TypeScript config: NodeNext + project references, not the `@jterrazz/typescript` node preset
 
 - House preset (`@jterrazz/typescript/presets/tsconfig/node`) uses
   `moduleResolution: Bundler`, `module: ESNext`, and a single flat package.
@@ -21,7 +21,7 @@ decisions in `research/03-lsp-architecture.md` and `research/10-architect-decisi
   `packages/server` as a real project-reference build (no bundler in the scaffold phase).
   `tsc --build` is the build and typecheck driver.
 
-### 2. Build tool — `tsc --build` for typecheck/tests, **esbuild** for the published bin
+### 2. Build tool: `tsc --build` for typecheck/tests, **esbuild** for the published bin
 
 - House libraries build/bundle via `tsdown` (the `@jterrazz/typescript` CLI).
 - Here `tsc --build` remains the typecheck/test driver (emits `.js` + `.d.ts` to `dist/`,
@@ -40,7 +40,7 @@ decisions in `research/03-lsp-architecture.md` and `research/10-architect-decisi
   package.json at runtime. The bundle is proven by spawning it over stdio in the integration
   tests and by the `--version`/`--help` bin smoke tests.
 
-### 3. Linting — `@jterrazz/codestyle` retained, with monorepo-shaped config
+### 3. Linting: `@jterrazz/codestyle` retained, with monorepo-shaped config
 
 - Kept the house lint stack: `codestyle check` / `codestyle fix` runs **tsgo + oxlint +
   oxfmt + knip** in parallel, exactly as in `package-test`. It works in the workspace
@@ -50,19 +50,19 @@ decisions in `research/03-lsp-architecture.md` and `research/10-architect-decisi
 - Added a root **`knip.json`** declaring per-workspace entry points (core `src/index.ts`;
   server `src/cli.ts` + `bin/hoverfly-lsp.js`; root `oxlint.config.ts` + `vitest.config.ts`)
   and a few `ignoreDependencies`:
-  - `vscode-json-languageservice` in `packages/core` — a real dependency declared now per
+  - `vscode-json-languageservice` in `packages/core`: a real dependency declared now per
     D1/report 03, but **not yet imported** (Phase 2 wires it). Without the ignore, knip
     would flag it as unused.
-  - `oxlint` at root — imported by `oxlint.config.ts` but provided transitively through
+  - `oxlint` at root: imported by `oxlint.config.ts` but provided transitively through
     `@jterrazz/codestyle`, not a direct dependency.
 - Added **`.prettierignore`** (`testdata/`, `dist/`) so `oxfmt` does not try to reformat
   the intentionally-malformed fixture `testdata/invalid/invalid-json.hoverfly.json`.
-- Formatting note: `oxfmt` runs with its **defaults (2-space indent)** — the house
+- Formatting note: `oxfmt` runs with its **defaults (2-space indent)**; the house
   4-space JSON/TS indentation seen in `package-test` comes from oxfmt defaults of an older
   codestyle version; current `@jterrazz/codestyle@3.4.0` + `oxfmt@0.54` default to 2 spaces.
   We accept the tool default rather than fighting it (no `.oxfmtrc`).
 
-### 4. CI — plain workflow with a node 20+22 matrix, not the reusable `validate.yaml`
+### 4. CI: plain workflow with a node 20+22 matrix, not the reusable `validate.yaml`
 
 - House repos call `jterrazz/jterrazz-actions/.github/workflows/validate.yaml@main`, which
   runs `make build/lint/test` on a **single** node version and has **no typecheck step**.
@@ -73,20 +73,20 @@ decisions in `research/03-lsp-architecture.md` and `research/10-architect-decisi
   (`build/lint/test/typecheck/install`) is included so the repo can migrate to the reusable
   workflow later if a matrix variant becomes available.
 
-### 5. Workspace dependency protocol — `*`, not `workspace:*`
+### 5. Workspace dependency protocol: `*`, not `workspace:*`
 
 - `packages/server` depends on `@hoverfly-lsp/core` via **`"*"`** (npm-resolved workspace
   symlink), since npm workspaces do **not** support pnpm/yarn's `workspace:*` protocol.
 
-### 6. Release pipeline — house flow (`release: created` + OIDC), monorepo-aware
+### 6. Release pipeline: house flow (`release: created` + OIDC), monorepo-aware
 
 - House single-package repos call
   `jterrazz/jterrazz-actions/.github/workflows/release-npm.yaml@main` on the GitHub
   `release: created` event. That reusable workflow runs `make build` and a **single**
-  root-level `npm publish --access public --provenance` with **no `NODE_AUTH_TOKEN`** — auth
+  root-level `npm publish --access public --provenance` with **no `NODE_AUTH_TOKEN`**: auth
   is tokenless **npm OIDC trusted publishing**.
 - The reusable can't be used as-is: we publish **one** package (`@jterrazz/hoverfly-lsp`;
-  `@hoverfly-lsp/core` is **private** — never published — and inlined into the server bundle by
+  `@hoverfly-lsp/core` is **private** (never published) and inlined into the server bundle by
   esbuild, so the server has no runtime dep on it) and attach a VS Code `.vsix`. A root
   `npm publish` would try to publish the private monorepo root and ignore the workspaces.
 - So **`.github/workflows/release.yml`** matches the house **conventions** but is monorepo-aware:

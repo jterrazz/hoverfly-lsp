@@ -1,4 +1,4 @@
-# SchemaStore submission bundle — Hoverfly Simulation
+# SchemaStore submission bundle: Hoverfly Simulation
 
 A copy-paste-ready bundle for submitting `hoverfly-simulation.json` to
 [SchemaStore/schemastore](https://github.com/SchemaStore/schemastore). Everything here is
@@ -30,19 +30,19 @@ Sources:
   order: `name`, `description`, `fileMatch` (optional), `url`, `versions` (optional). The catalog
   is **not** strictly alphabetised in practice, but adding near other entries alphabetically by
   `name` is the convention and keeps diffs clean. We have no multiple versions, so no `versions`.
-- **Positive tests** → `src/test/<schemaName>/` — the directory name **must match the schema
+- **Positive tests** → `src/test/<schemaName>/`: the directory name **must match the schema
   filename** (`hoverfly-simulation`). Files are matched to the schema by living in this directory,
   not by filename pattern, so any descriptive `.json` name works. (`.json`, `.toml`, `.yml`,
   `.yaml` are all supported; ours are JSON.)
-- **Negative tests** → `src/negative_test/<schemaName>/` — **supported and recommended** (not
+- **Negative tests** → `src/negative_test/<schemaName>/`: **supported and recommended** (not
   strictly required). Files here must FAIL validation.
-- **`fileMatch` policy** — avoid generic patterns that cause false positives across tools (e.g. a
+- **`fileMatch` policy**: avoid generic patterns that cause false positives across tools (e.g. a
   bare `config.json` / `simulation.json`). Ours are all specific: `*.hoverfly.json` and `*.hfy`
   are project-specific extensions; `hoverfly-simulation.json` is a specific filename. No bare
   `*.json`.
-- **Validation** — `node ./cli.js check` validates all schemas + their test files; scope to one
+- **Validation**: `node ./cli.js check` validates all schemas + their test files; scope to one
   with `node ./cli.js check --schema-name=hoverfly-simulation.json`. `npm run prettier:fix`
-  formats. `node cli.js new-schema` scaffolds (optional helper — manual copy below also works).
+  formats. `node cli.js new-schema` scaffolds (optional helper; manual copy below also works).
 
 ## Step-by-step
 
@@ -64,7 +64,7 @@ Sources:
    Keep the `"$schema": "http://json-schema.org/draft-07/schema#"` and
    `"$id": "https://json.schemastore.org/hoverfly-simulation.json"` lines as-is.
 
-3. **Add the catalog entry** — open `src/api/json/catalog.json`, find the `"schemas": [ ... ]`
+3. **Add the catalog entry**: open `src/api/json/catalog.json`, find the `"schemas": [ ... ]`
    array, and insert the object from `catalog-entry.json` (alphabetical-ish by `name`, i.e. near
    other "H" entries). Exact object to add:
 
@@ -109,7 +109,7 @@ Sources:
 
 ## Test files
 
-### Positive (`test/` → `src/test/hoverfly-simulation/`) — must validate
+### Positive (`test/` → `src/test/hoverfly-simulation/`): must validate
 
 | File                              | Covers                                                              |
 | --------------------------------- | ------------------------------------------------------------------- |
@@ -119,7 +119,7 @@ Sources:
 | `stateful-login-machine.json`     | Multi-pair state machine (login → fetch → update → logout).         |
 | `realworld-oauth2.json`           | Real-world OAuth2 token + userinfo flow.                            |
 
-### Negative (`negative_test/` → `src/negative_test/hoverfly-simulation/`) — must be rejected
+### Negative (`negative_test/` → `src/negative_test/hoverfly-simulation/`): must be rejected
 
 | File                            | Why the schema rejects it                                              |
 | ------------------------------- | ---------------------------------------------------------------------- |
@@ -129,7 +129,7 @@ Sources:
 
 > These were chosen because the **bundled schema itself** rejects them (verified with ajv
 > draft-07). Many of the LSP's other "invalid" fixtures only trip LSP-only semantic rules and
-> still pass the schema — those are deliberately excluded here, since SchemaStore only checks the
+> still pass the schema; those are deliberately excluded here, since SchemaStore only checks the
 > schema.
 
 ## Validation done in this repo

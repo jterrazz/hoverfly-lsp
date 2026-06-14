@@ -12,6 +12,6 @@
         37
       ]
     },
-    "message": "\"exact\" passes the same value through — this chain is an AND of matchers on one value"
+    "message": "\"exact\" passes the same value through; this chain is an AND of matchers on one value"
   }
 ]

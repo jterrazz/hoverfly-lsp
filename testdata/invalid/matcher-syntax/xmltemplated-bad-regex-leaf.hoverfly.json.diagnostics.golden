@@ -12,6 +12,6 @@
         81
       ]
     },
-    "message": "Invalid RE2 regex — Hoverfly (Go regexp) silently never matches this"
+    "message": "Invalid RE2 regex; Hoverfly (Go regexp) silently never matches this"
   }
 ]

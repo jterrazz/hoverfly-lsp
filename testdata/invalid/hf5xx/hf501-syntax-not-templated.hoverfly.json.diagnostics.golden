@@ -12,6 +12,6 @@
         37
       ]
     },
-    "message": "Body contains template syntax but \"templated\" is not true — it will be sent literally"
+    "message": "Body contains template syntax but \"templated\" is not true; it will be sent literally"
   }
 ]

@@ -33,13 +33,13 @@ the artifact and the bundle can never drift apart silently.
 
 ## How to use it today (before SchemaStore lists it)
 
-Name your simulation files `*.hoverfly.json`, `*.hfy`, or `hoverfly-simulation.json` — those are
+Name your simulation files `*.hoverfly.json`, `*.hfy`, or `hoverfly-simulation.json`; those are
 the conventions this schema and the LSP promote. (`.hfy` is the compact extension; the others keep
 the `.json` suffix so generic JSON tooling still applies.)
 
 ### Self-declare with `$schema` (works everywhere)
 
-Add a `$schema` key at the top of the file (this is non-standard for Hoverfly but harmless —
+Add a `$schema` key at the top of the file (this is non-standard for Hoverfly but harmless:
 Hoverfly ignores unknown top-level keys at the JSON layer, and the LSP's content fingerprint
 still recognises the file):
 
@@ -54,7 +54,7 @@ still recognises the file):
 Until the SchemaStore submission lands you can point `$schema` at the raw file in this repo:
 `https://raw.githubusercontent.com/jterrazz/hoverfly-lsp/main/schemas/hoverfly-simulation.json`.
 
-### VS Code — `json.schemas` setting
+### VS Code: `json.schemas` setting
 
 In `.vscode/settings.json` (or user settings):
 
@@ -71,7 +71,7 @@ In `.vscode/settings.json` (or user settings):
 
 (Use a local/raw URL for `url` until SchemaStore lists it.)
 
-### IntelliJ / WebStorm — JSON Schema mapping
+### IntelliJ / WebStorm: JSON Schema mapping
 
 Settings → Languages & Frameworks → Schemas and DTDs → **JSON Schema Mappings** → add a mapping:
 
@@ -80,12 +80,12 @@ Settings → Languages & Frameworks → Schemas and DTDs → **JSON Schema Mappi
 - File path patterns: `*.hoverfly.json` and `hoverfly-simulation.json`
 
 (Once the schema is on SchemaStore, IntelliJ picks up the mapping automatically from the catalog
-via the `fileMatch` patterns — no manual mapping needed.)
+via the `fileMatch` patterns, no manual mapping needed.)
 
 ## Submitting to SchemaStore
 
 We have **not** submitted this yet. A complete, copy-paste-ready bundle lives at
-[`schemastore-submission/`](./schemastore-submission/) — the schema copy, the exact
+[`schemastore-submission/`](./schemastore-submission/): the schema copy, the exact
 `catalog.json` entry, 5 positive tests, and 3 negative tests, all verified against the schema with
 ajv (draft-07). Follow [`schemastore-submission/SUBMISSION.md`](./schemastore-submission/SUBMISSION.md)
 for the fork → copy → `node ./cli.js check` / `npm test` → open-PR steps and the cited SchemaStore

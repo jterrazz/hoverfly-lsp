@@ -1,4 +1,4 @@
-# hoverfly-lsp — Claude Code plugin
+# hoverfly-lsp Claude Code plugin
 
 Gives Claude Code real-time diagnostics and code intelligence for Hoverfly JSON simulation
 files (`*.hoverfly.json`, `hoverfly-simulation.json`, and any content-detected simulation).
@@ -23,11 +23,11 @@ Claude Code to the plugin's install directory and is also exported to the LSP su
 
 The launcher (`launch.cjs`) resolves the server bundle in this order:
 
-1. **`$HOVERFLY_LSP_PATH`** — explicit override. Either the bundle (`dist/cli.cjs`) directly or
+1. **`$HOVERFLY_LSP_PATH`**: explicit override. Either the bundle (`dist/cli.cjs`) directly or
    a directory containing it. Use this for dev or to pin a specific build.
-2. **`node_modules`** — an installed `hoverfly-lsp` package, resolved from both the project cwd
+2. **`node_modules`**: an installed `hoverfly-lsp` package, resolved from both the project cwd
    and the plugin directory. This is the future npm-installed path.
-3. **Repo-relative dev bundle** — `../../../packages/server/dist/cli.cjs`, for running straight
+3. **Repo-relative dev bundle**: `../../../packages/server/dist/cli.cjs`, for running straight
    from a hoverfly-lsp checkout.
 
 `launch.cjs` is `.cjs` on purpose: it must be CommonJS whether it runs from the ESM-typed repo
@@ -35,21 +35,21 @@ The launcher (`launch.cjs`) resolves the server bundle in this order:
 
 > **Note on distribution.** A marketplace install **copies** the plugin into Claude Code's
 > cache, so resolution path 3 (repo-relative) only applies when the plugin runs in place from
-> the repo. The published plugin must make path 1 or 2 succeed — either bundle the server
+> the repo. The published plugin must make path 1 or 2 succeed: either bundle the server
 > alongside `bin/` or declare an npm dependency on `hoverfly-lsp` so `node_modules` resolution
 > works in the cache. Until `hoverfly-lsp` is on npm, install with `HOVERFLY_LSP_PATH` set (see
 > below).
 
 ## Why it's safe to map all of `.json`
 
-Claude Code's `.lsp.json` only supports single-extension keys — there is no `.hoverfly.json`
+Claude Code's `.lsp.json` only supports single-extension keys; there is no `.hoverfly.json`
 or glob key, so the server is mapped to `.json`. That is intentional: the server
 **content-fingerprints** every file it's handed and returns **empty results** for any JSON that
 isn't a Hoverfly simulation (a root object with `data` and a `meta.schemaVersion` starting with
-`"v"`). So `package.json`, `tsconfig.json`, and friends get **zero** diagnostics — only real
+`"v"`). So `package.json`, `tsconfig.json`, and friends get **zero** diagnostics; only real
 simulations light up. This was verified end-to-end (see QA below).
 
-## Install — local / dev (today)
+## Install: local / dev (today)
 
 Until `hoverfly-lsp` is published to npm, install from a local marketplace and point the
 launcher at your built server bundle.
@@ -72,9 +72,9 @@ manifest; this plugin directory qualifies. The first time you open a project, Cl
 LSP servers only after you trust the workspace.
 
 If you have a global server install (`npm i -g @jterrazz/hoverfly-lsp`, once published), step 3 is
-unnecessary — the launcher finds it via `node_modules`.
+unnecessary; the launcher finds it via `node_modules`.
 
-## Install — published marketplace (future)
+## Install: published marketplace (future)
 
 Once the plugin is on a marketplace and `@jterrazz/hoverfly-lsp` is on npm:
 
@@ -99,7 +99,7 @@ claude plugin validate ./editors/claude-code --strict
 
 ### 2. Server-side contract over the launcher (no Claude needed)
 
-Drive the launcher exactly as Claude Code does — `node bin/launch.cjs --stdio` — with an LSP
+Drive the launcher exactly as Claude Code does (`node bin/launch.cjs --stdio`) with an LSP
 `didOpen` for a broken simulation and for a non-simulation `.json`. Expect diagnostics on the
 first, none on the second:
 
@@ -114,7 +114,7 @@ Observed result:
 
 ```
 broken.hoverfly.json → 1 diagnostic: HF201 (severity Error)
-  "Unknown matcher \"xform\" — Hoverfly panics at match time on unknown matchers"
+  "Unknown matcher \"xform\": Hoverfly panics at match time on unknown matchers"
 notes.json           → published, 0 diagnostics (fingerprint declined)
 launcher exit 0
 ```
@@ -134,7 +134,7 @@ After the edit, report any LSP diagnostics Claude Code surfaced, with code and m
 ```
 
 Observed: Claude Code surfaced **HF201** with the verbatim message on the `xform` matcher after
-the edit. The same prompt against `notes.json` surfaced **NONE** — fingerprint confirmed quiet.
+the edit. The same prompt against `notes.json` surfaced **NONE**; fingerprint confirmed quiet.
 
 ## QA checklist
 
@@ -147,11 +147,11 @@ the edit. The same prompt against `notes.json` surfaced **NONE** — fingerprint
 - [x] `HOVERFLY_LSP_PATH` override works as both a file path and a directory path.
 - [x] Headless `claude -p` surfaces the HF diagnostic after an edit to a simulation, and stays
       silent after an edit to a normal `.json`.
-- [ ] **Manual QA — coexistence with another `.json`-mapped LSP plugin.** This environment had
+- [ ] **Manual QA: coexistence with another `.json`-mapped LSP plugin.** This environment had
       `swift-lsp` installed (different extensions), so a true `.json`/`.json` collision was not
       exercised. Before shipping, install a second plugin that also maps `.json` and confirm both
       servers run (or document the limitation). See research/09 §9 and §13 (Compatibility Tests).
-- [ ] **Manual QA — published path.** The `node_modules` resolution (launcher path 2) and the
+- [ ] **Manual QA: published path.** The `node_modules` resolution (launcher path 2) and the
       marketplace-cache copy were reasoned about and the dev fallback's cache limitation
       documented, but the fully-published flow (npm-installed `hoverfly-lsp` + remote
       marketplace, no `HOVERFLY_LSP_PATH`) cannot be exercised until `hoverfly-lsp` is on npm.

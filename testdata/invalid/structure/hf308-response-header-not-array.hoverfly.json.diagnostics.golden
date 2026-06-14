@@ -12,7 +12,7 @@
         58
       ]
     },
-    "message": "Response header values must be an array of strings — wrap it in [ … ]"
+    "message": "Response header values must be an array of strings; wrap it in [ … ]"
   },
   {
     "code": "HF308",
@@ -27,6 +27,6 @@
         43
       ]
     },
-    "message": "Response header values must be an array of strings — wrap it in [ … ]"
+    "message": "Response header values must be an array of strings; wrap it in [ … ]"
   }
 ]

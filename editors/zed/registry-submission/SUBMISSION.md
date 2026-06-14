@@ -5,9 +5,9 @@ Ready-to-submit bundle for adding the **Hoverfly** Zed extension to
 
 The extension source stays in this repo at `editors/zed/`. Zed's registry pulls
 it in as a **git submodule** and references the subdirectory via a `path` key.
-Zed's CI compiles the WebAssembly from source — you do **not** ship a binary.
+Zed's CI compiles the WebAssembly from source; you do **not** ship a binary.
 
-## TL;DR — what gets submitted
+## TL;DR: what gets submitted
 
 | Field                                 | Value                                                 |
 | ------------------------------------- | ----------------------------------------------------- |
@@ -28,7 +28,7 @@ The `extensions.toml` block to add is in
   `extensions.toml`. Source:
   <https://zed.dev/docs/extensions/developing-extensions> ("Publishing your
   extension").
-- **Subdirectory `path` key IS supported** — this is the make-or-break point for
+- **Subdirectory `path` key IS supported**: this is the make-or-break point for
   us, and it works. The docs show the subdir form explicitly:
   ```toml
   [my-extension]
@@ -38,7 +38,7 @@ The `extensions.toml` block to add is in
   ```
   Live precedent with our exact layout: the `agnix` entry uses
   `submodule = "extensions/agnix"` + `path = "editors/zed"`. So **no
-  root move / separate repo is needed** — `editors/zed` works as-is.
+  root move / separate repo is needed**: `editors/zed` works as-is.
 - **`version` must match `extension.toml`** at the pinned submodule commit. Docs:
   "Make sure the `version` matches the one set in `extension.toml` at the
   particular commit." Ours is `0.1.0` in `editors/zed/extension.toml` at `v0.1.0`.
@@ -46,8 +46,8 @@ The `extensions.toml` block to add is in
   (`.github/workflows/ci.yml`) installs Rust **1.90** with target
   **`wasm32-wasip2`** and runs `pnpm package-extensions` (via the
   `zed-extension` CLI) to compile each extension. You do not commit a `.wasm`.
-  (Our `editors/zed/extension.wasm` is a local build artifact and is gitignored —
-  good.)
+  (Our `editors/zed/extension.wasm` is a local build artifact and is gitignored,
+  which is correct.)
 - **CI also enforces sorting and forbids Git LFS.** It runs
   `git diff --exit-code -- extensions.toml .gitmodules` and fails if unsorted,
   telling you to run `pnpm sort-extensions`. It also rejects any submodule using
@@ -58,8 +58,8 @@ The `extensions.toml` block to add is in
 `editors/zed/extension.toml` already has every field the registry needs:
 
 - Required: `id = "hoverfly"`, `name = "Hoverfly"`, `version = "0.1.0"`,
-  `schema_version = 1` — all present.
-- Recommended: `authors`, `repository`, `description` — all present.
+  `schema_version = 1`: all present.
+- Recommended: `authors`, `repository`, `description`: all present.
 
 No changes were required.
 
@@ -83,7 +83,7 @@ git remote add upstream https://github.com/zed-industries/extensions.git
 ### 2. Add the Hoverfly repo as a submodule
 
 The submodule must be pinned to the `v0.1.0` commit (its `editors/zed` is
-current — nothing changed there after the tag).
+current, nothing changed there after the tag).
 
 ```bash
 git submodule add https://github.com/jterrazz/hoverfly-lsp.git extensions/hoverfly
@@ -104,7 +104,7 @@ path = "editors/zed"
 version = "0.1.0"
 ```
 
-### 4. Sort (required — CI rejects unsorted files)
+### 4. Sort (required; CI rejects unsorted files)
 
 ```bash
 pnpm install

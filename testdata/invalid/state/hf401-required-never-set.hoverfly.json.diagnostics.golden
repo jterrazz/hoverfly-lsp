@@ -12,7 +12,7 @@
         35
       ]
     },
-    "message": "State \"adminRole\" is required but never set by any transitionsState — this pair can only match if the state is set externally"
+    "message": "State \"adminRole\" is required but never set by any transitionsState; this pair can only match if the state is set externally"
   },
   {
     "code": "HF401",
@@ -27,6 +27,6 @@
         39
       ]
     },
-    "message": "State \"auditUnlocked\" is required but never set by any transitionsState — this pair can only match if the state is set externally"
+    "message": "State \"auditUnlocked\" is required but never set by any transitionsState; this pair can only match if the state is set externally"
   }
 ]

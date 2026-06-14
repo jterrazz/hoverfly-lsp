@@ -12,7 +12,7 @@
         28
       ]
     },
-    "message": "Prefer canonical \"method\" — \"Method\" works (Go matches case-insensitively) but is non-standard"
+    "message": "Prefer canonical \"method\"; \"Method\" works (Go matches case-insensitively) but is non-standard"
   },
   {
     "code": "HF604",
@@ -27,6 +27,6 @@
         30
       ]
     },
-    "message": "Prefer canonical \"bodyFile\" — \"BodyFile\" works (Go matches case-insensitively) but is non-standard"
+    "message": "Prefer canonical \"bodyFile\"; \"BodyFile\" works (Go matches case-insensitively) but is non-standard"
   }
 ]

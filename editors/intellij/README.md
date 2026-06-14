@@ -1,13 +1,13 @@
-# hoverfly-lsp — IntelliJ Integration
+# hoverfly-lsp: IntelliJ Integration
 
 Adds diagnostics, completions, hover documentation, and semantic highlighting for Hoverfly
-simulation files (`*.hoverfly.json`, `*.hfy`, `hoverfly-simulation.json`) to any JetBrains IDE —
+simulation files (`*.hoverfly.json`, `*.hfy`, `hoverfly-simulation.json`) to any JetBrains IDE,
 including the **free Community edition**. Built on
 [LSP4IJ](https://github.com/redhat-developer/lsp4ij).
 
 ## Compatible IDEs
 
-The plugin works across the **entire JetBrains IDE family** — IntelliJ IDEA, PyCharm, WebStorm,
+The plugin works across the **entire JetBrains IDE family**: IntelliJ IDEA, PyCharm, WebStorm,
 GoLand, PhpStorm, RubyMine, CLion, Rider, DataGrip, and Android Studio (Community and paid
 editions alike). It depends only on the universal platform module (`com.intellij.modules.platform`)
 plus [LSP4IJ](https://github.com/redhat-developer/lsp4ij), so it carries no IDE-specific (Java,
@@ -16,7 +16,7 @@ the plugin is installed.
 
 Compatibility is proven with the JetBrains Plugin Verifier (`./gradlew verifyPlugin`) against a
 representative cross-family set at the since-build floor (2025.2 / build 252) and a recent build
-(2026.1) — all report **Compatible**:
+(2026.1), all report **Compatible**:
 
 | IDE           | Floor (2025.2) | Recent (2026.1) |
 | ------------- | -------------- | --------------- |
@@ -33,9 +33,9 @@ because it only touches the platform module.)
 
 There are two ways to set this up:
 
-1. **[Install the plugin (recommended)](#install-the-plugin-recommended)** — a one-click `.zip`
+1. **[Install the plugin (recommended)](#install-the-plugin-recommended)**: a one-click `.zip`
    that bundles the language server and configures LSP4IJ for you. No manual LSP setup.
-2. **[Manual LSP4IJ template (fallback)](#manual-lsp4ij-template-fallback)** — import
+2. **[Manual LSP4IJ template (fallback)](#manual-lsp4ij-template-fallback)**: import
    `template.json` by hand and install the `hoverfly-lsp` binary yourself.
 
 ---
@@ -43,7 +43,7 @@ There are two ways to set this up:
 ## Install the plugin (recommended)
 
 The plugin lives under [`plugin/`](./plugin) and ships the Hoverfly language server bundled
-inside it — installing the `.zip` is all that is required (plus a Node.js runtime, see below).
+inside it. Installing the `.zip` is all that is required (plus a Node.js runtime, see below).
 
 ### 1. Get the `.zip`
 
@@ -51,7 +51,7 @@ Build it from source (requires JDK 21; the Gradle wrapper is committed):
 
 ```bash
 # Ensure the server bundle is current, then build the plugin:
-npm run build                                   # at the repo root — produces packages/server/dist/cli.cjs
+npm run build                                   # at the repo root, produces packages/server/dist/cli.cjs
 cd editors/intellij/plugin
 JAVA_HOME=/path/to/jdk-21 ./gradlew buildPlugin  # macOS Homebrew: /opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home
 ```
@@ -63,7 +63,7 @@ The plugin appears at `editors/intellij/plugin/build/distributions/Hoverfly-0.1.
 1. Open **Settings → Plugins**.
 2. Click the **gear icon** (⚙) → **Install Plugin from Disk…**.
 3. Select `Hoverfly-0.1.0.zip`.
-4. IntelliJ prompts to install the required **LSP4IJ** dependency — accept it
+4. IntelliJ prompts to install the required **LSP4IJ** dependency; accept it
    (or install LSP4IJ first from **Marketplace**; plugin id `com.redhat.devtools.lsp4ij`).
 5. **Restart** the IDE when prompted.
 
@@ -104,7 +104,7 @@ The built artifact is `editors/intellij/plugin/build/distributions/Hoverfly-0.1.
 Build it first (requires JDK 21; the server bundle must be current):
 
 ```bash
-npm run build                                   # repo root — refreshes packages/server/dist/cli.cjs
+npm run build                                   # repo root, refreshes packages/server/dist/cli.cjs
 cd editors/intellij/plugin
 JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home ./gradlew buildPlugin
 ```
@@ -119,7 +119,7 @@ JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home ./gradl
 
 1. Create a vendor account at <https://plugins.jetbrains.com> and sign in.
 2. Click **Upload plugin**, select `Hoverfly-0.1.0.zip`.
-3. Pick **License: MIT** and **Category: Languages** (or _Editor_ — Hoverfly is a language
+3. Pick **License: MIT** and **Category: Languages** (or _Editor_; Hoverfly is a language
    integration), and confirm the auto-filled name/description from `plugin.xml`.
 4. Submit. **The first plugin from a new vendor requires manual JetBrains approval**
    (typically ~2 business days) before it appears in the Marketplace. Updates after the
@@ -142,7 +142,7 @@ rebuild, then publish with the Gradle task:
 The `publishPlugin` task (configured in `build.gradle.kts` under
 `intellijPlatform { publishing { ... } }`) builds the zip and uploads it to the `default`
 (stable) channel using `JETBRAINS_MARKETPLACE_TOKEN`. Marketplace signing is optional and is
-skipped — the Marketplace signs the plugin on its side.
+skipped: the Marketplace signs the plugin on its side.
 
 ---
 
@@ -153,8 +153,8 @@ Use this if you prefer not to build/install the plugin, or want to point at a gl
 
 ### Contents
 
-- [`template.json`](./template.json) — importable LSP4IJ user-defined language server template
-- [`initializationOptions.json`](./initializationOptions.json) — optional init-time settings
+- [`template.json`](./template.json): importable LSP4IJ user-defined language server template
+- [`initializationOptions.json`](./initializationOptions.json): optional init-time settings
 
 ---
 
@@ -169,21 +169,21 @@ Use this if you prefer not to build/install the plugin, or want to point at a gl
 
 ---
 
-## Step 1 — Install the `hoverfly-lsp` binary
+## Step 1: Install the `hoverfly-lsp` binary
 
-### Option A — npm global install (recommended once published)
+### Option A: npm global install (recommended once published)
 
 ```bash
 npm install -g @jterrazz/hoverfly-lsp
 hoverfly-lsp --version   # verify
 ```
 
-### Option B — npx (no permanent install; server restarts are slower)
+### Option B: npx (no permanent install; server restarts are slower)
 
 You can configure the server command as `npx @jterrazz/hoverfly-lsp --stdio` in Step 4 instead.
-Note: npx adds 1–3 seconds on each server restart; not recommended for daily use.
+Note: npx adds 1-3 seconds on each server restart; not recommended for daily use.
 
-### Option C — dev/local install (current, pre-npm-publish)
+### Option C: dev/local install (current, pre-npm-publish)
 
 ```bash
 # From the hoverfly-lsp repository root:
@@ -195,11 +195,11 @@ hoverfly-lsp --version   # verify
 ```
 
 > Once the package is published to npm, Option A replaces Option C and no re-configuration
-> of LSP4IJ is needed — the binary name `hoverfly-lsp` stays the same.
+> of LSP4IJ is needed; the binary name `hoverfly-lsp` stays the same.
 
 ---
 
-## Step 2 — Install LSP4IJ
+## Step 2: Install LSP4IJ
 
 1. Open **Settings → Plugins → Marketplace**.
 2. Search for **LSP4IJ**.
@@ -209,22 +209,22 @@ Plugin page: https://plugins.jetbrains.com/plugin/23257-lsp4ij
 
 ---
 
-## Step 3 — Import the template (fastest path)
+## Step 3: Import the template (fastest path)
 
 LSP4IJ supports importing a pre-built user-defined language server template.
 
 1. Open **Settings → Tools → Language Servers**.
 2. Click the **+** icon, then **Import from template...** (or **New Language Server → Import**).
 3. Select the file [`editors/intellij/template.json`](./template.json) from this repository.
-4. Click **OK** — the server named **Hoverfly** appears in the list.
+4. Click **OK**; the server named **Hoverfly** appears in the list.
 5. Proceed to Step 5.
 
 > If the **Import from template** option is absent in your LSP4IJ version, use
-> [Step 4 — Manual configuration](#step-4--manual-configuration-alternative) instead.
+> [Step 4: Manual configuration](#step-4--manual-configuration-alternative) instead.
 
 ---
 
-## Step 4 — Manual configuration (alternative to Step 3)
+## Step 4: Manual configuration (alternative to Step 3)
 
 Use this if your LSP4IJ version does not have template import, or if you want to customise
 individual fields.
@@ -262,7 +262,7 @@ Click **+** in the **File name patterns** section and add each row:
 
 The Language ID value is sent to the server as `TextDocumentItem.languageId` on file open.
 
-> Do not map `*.json` or `simulation.json` here — those patterns are too broad and will route
+> Do not map `*.json` or `simulation.json` here; those patterns are too broad and will route
 > all JSON files through the Hoverfly server. The server uses content fingerprinting as a
 > second layer of defence, but the mapping is the primary filter.
 
@@ -279,12 +279,12 @@ Paste the contents of [`initializationOptions.json`](./initializationOptions.jso
 
 `registeredActions` is the only init-time setting the server reads (the names of the
 `postServeAction`s registered with your Hoverfly instance, used to complete and validate
-`response.postServeAction`). Content fingerprinting is always on and needs no configuration —
+`response.postServeAction`). Content fingerprinting is always on and needs no configuration:
 the server returns empty results for non-simulation JSON regardless of this object.
 
 ---
 
-## Step 5 — Verify the integration
+## Step 5: Verify the integration
 
 Open any `*.hoverfly.json` file. In the bottom-right of the IDE status bar you should see
 `Hoverfly` appear with a green indicator once the server starts.
@@ -300,10 +300,10 @@ Trigger a diagnostic:
 }
 ```
 
-2. Remove the required `status` field from `response`: `"response": {}` — you should see a
+2. Remove the required `status` field from `response`: `"response": {}`. You should see a
    diagnostic error highlighting the missing field.
 
-3. Hover over `schemaVersion` — hover documentation should appear.
+3. Hover over `schemaVersion`; hover documentation should appear.
 
 Verify the server is running:
 
@@ -319,7 +319,7 @@ Check the LSP4IJ logs if the server fails to start:
 View → Tool Windows → LSP → Console (select "Hoverfly" in the dropdown)
 ```
 
-Common failure: `hoverfly-lsp: command not found` — run `which hoverfly-lsp` in a terminal to
+Common failure: `hoverfly-lsp: command not found`. Run `which hoverfly-lsp` in a terminal to
 confirm the binary is on PATH. If using a shell-managed PATH (nvm, fnm, mise), launch
 IntelliJ from the same shell or configure the full binary path in the Server tab.
 
@@ -372,7 +372,7 @@ Run through these steps after any change to the server or this integration:
 - [ ] A missing `response.status` field produces a red diagnostic underline
 - [ ] Hovering over `schemaVersion` shows a documentation popup
 - [ ] In a templated body (`"templated": true`, `"body": "{{ faker 'Name' }}"`), the template syntax
-      is colored (helper name, `{{`/`}}`, faker type) — enable the server's semantic-tokens toggle in
+      is colored (helper name, `{{`/`}}`, faker type); enable the server's semantic-tokens toggle in
       the Language Servers settings first if no coloring appears
 - [ ] Autocompletion triggers inside `"matcher":` value position
 - [ ] Opening an unrelated `package.json` does **not** trigger Hoverfly

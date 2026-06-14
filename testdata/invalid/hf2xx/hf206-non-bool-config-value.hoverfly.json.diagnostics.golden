@@ -12,6 +12,6 @@
         61
       ]
     },
-    "message": "Config values must be booleans — Hoverfly panics on a string"
+    "message": "Config values must be booleans; Hoverfly panics on a string"
   }
 ]

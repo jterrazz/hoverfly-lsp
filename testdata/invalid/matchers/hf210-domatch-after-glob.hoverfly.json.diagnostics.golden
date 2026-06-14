@@ -12,6 +12,6 @@
         37
       ]
     },
-    "message": "\"glob\" passes the same value through — this chain is an AND of matchers on one value"
+    "message": "\"glob\" passes the same value through; this chain is an AND of matchers on one value"
   }
 ]

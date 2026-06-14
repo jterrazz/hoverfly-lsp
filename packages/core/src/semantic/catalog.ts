@@ -4,7 +4,7 @@
  * `research/11-diagnostic-catalog.md`; codes are stable API once goldens exist.
  *
  * Rules MUST pull severity/message/href from here via {@link makeDiagnostic}
- * (see `diagnostics.ts`) — never inline a severity or message literal in a rule, so the
+ * (see `diagnostics.ts`); never inline a severity or message literal in a rule, so the
  * golden snapshots stay stable and a code's meaning is defined in exactly one place.
  *
  * Message templates use `{name}`-style placeholders. {@link formatMessage} substitutes
@@ -102,7 +102,7 @@ export const DIAGNOSTIC_SOURCE = "hoverfly";
  * carry a single-slot template the rule fills.
  */
 export const DIAGNOSTIC_CATALOG: Readonly<Record<DiagnosticCode, CatalogEntry>> = {
-  // HF1xx — structure & meta.
+  // HF1xx: structure & meta.
   HF101: {
     code: "HF101",
     severity: W,
@@ -130,12 +130,12 @@ export const DIAGNOSTIC_CATALOG: Readonly<Record<DiagnosticCode, CatalogEntry>> 
     messageTemplate: 'Unrecognized schema version "{v}"',
   },
 
-  // HF2xx — request matchers.
+  // HF2xx: request matchers.
   HF201: {
     code: "HF201",
     severity: E,
     href: href("HF201"),
-    messageTemplate: 'Unknown matcher "{name}" — Hoverfly panics at match time on unknown matchers',
+    messageTemplate: 'Unknown matcher "{name}": Hoverfly panics at match time on unknown matchers',
   },
   HF202: {
     code: "HF202",
@@ -153,7 +153,7 @@ export const DIAGNOSTIC_CATALOG: Readonly<Record<DiagnosticCode, CatalogEntry>> 
     code: "HF204",
     severity: E,
     href: href("HF204"),
-    messageTemplate: '"config" is only supported by the "array" matcher — Hoverfly panics on this',
+    messageTemplate: '"config" is only supported by the "array" matcher; Hoverfly panics on this',
   },
   HF205: {
     code: "HF205",
@@ -165,20 +165,20 @@ export const DIAGNOSTIC_CATALOG: Readonly<Record<DiagnosticCode, CatalogEntry>> 
     code: "HF206",
     severity: E,
     href: href("HF206"),
-    messageTemplate: "Config values must be booleans — Hoverfly panics on {type}",
+    messageTemplate: "Config values must be booleans; Hoverfly panics on {type}",
   },
   HF207: {
     code: "HF207",
     severity: W,
     href: href("HF207"),
     messageTemplate:
-      '"negate" with a non-string value always matches (vacuous true) — likely not what you want',
+      '"negate" with a non-string value always matches (vacuous true); likely not what you want',
   },
   HF208: {
     code: "HF208",
     severity: E,
     href: href("HF208"),
-    messageTemplate: '"form" is only valid on the body field — elsewhere Hoverfly panics',
+    messageTemplate: '"form" is only valid on the body field; elsewhere Hoverfly panics',
   },
   HF209: {
     code: "HF209",
@@ -191,7 +191,7 @@ export const DIAGNOSTIC_CATALOG: Readonly<Record<DiagnosticCode, CatalogEntry>> 
     severity: H,
     href: href("HF210"),
     messageTemplate:
-      '"{name}" passes the same value through — this chain is an AND of matchers on one value',
+      '"{name}" passes the same value through; this chain is an AND of matchers on one value',
   },
   HF211: {
     code: "HF211",
@@ -199,12 +199,12 @@ export const DIAGNOSTIC_CATALOG: Readonly<Record<DiagnosticCode, CatalogEntry>> 
     href: href("HF211"),
     messageTemplate: "Empty {name} value never matches",
   },
-  // Additive — structural strictness (report 13 §6); value-syntax (report 14 §4).
+  // Additive: structural strictness (report 13 §6); value-syntax (report 14 §4).
   HF212: {
     code: "HF212",
     severity: W,
     href: href("HF212"),
-    messageTemplate: 'Matcher has no "value" — it can never match (the value is nil)',
+    messageTemplate: 'Matcher has no "value"; it can never match (the value is nil)',
   },
   HF213: {
     code: "HF213",
@@ -223,26 +223,26 @@ export const DIAGNOSTIC_CATALOG: Readonly<Record<DiagnosticCode, CatalogEntry>> 
   /*
    * Method/scheme well-known-value did-you-mean. HINT-only (D4): both fields are OPEN sets that
    * Hoverfly compares verbatim and never validates (research/13 §3.1/§3.2, T19), so this can ONLY
-   * fire on a near-miss against the standard set (a typo) — a bespoke verb / custom scheme stays
+   * fire on a near-miss against the standard set (a typo); a bespoke verb / custom scheme stays
    * silent. The `{value}`/`{suggestion}` slots are supplied by the rule. See registry/http.ts.
    */
   HF215: {
     code: "HF215",
     severity: H,
     href: href("HF215"),
-    messageTemplate: 'Unknown HTTP method "{value}" — did you mean "{suggestion}"?',
+    messageTemplate: 'Unknown HTTP method "{value}"; did you mean "{suggestion}"?',
   },
   HF216: {
     code: "HF216",
     severity: H,
     href: href("HF216"),
-    messageTemplate: 'Unknown URI scheme "{value}" — did you mean "{suggestion}"?',
+    messageTemplate: 'Unknown URI scheme "{value}"; did you mean "{suggestion}"?',
   },
   HF230: {
     code: "HF230",
     severity: E,
     href: href("HF230"),
-    messageTemplate: "Invalid RE2 regex — Hoverfly (Go regexp) silently never matches this",
+    messageTemplate: "Invalid RE2 regex; Hoverfly (Go regexp) silently never matches this",
   },
   HF231: {
     code: "HF231",
@@ -284,7 +284,7 @@ export const DIAGNOSTIC_CATALOG: Readonly<Record<DiagnosticCode, CatalogEntry>> 
       "array element {i} is not a string; Hoverfly cannot match a non-string element as written",
   },
 
-  // HF3xx — response.
+  // HF3xx: response.
   HF301: {
     code: "HF301",
     severity: W,
@@ -335,16 +335,16 @@ export const DIAGNOSTIC_CATALOG: Readonly<Record<DiagnosticCode, CatalogEntry>> 
     code: "HF308",
     severity: E,
     href: href("HF308"),
-    messageTemplate: "Response header values must be an array of strings — wrap it in [ … ]",
+    messageTemplate: "Response header values must be an array of strings; wrap it in [ … ]",
   },
 
-  // HF4xx — state.
+  // HF4xx: state.
   HF401: {
     code: "HF401",
     severity: W,
     href: href("HF401"),
     messageTemplate:
-      'State "{key}" is required but never set by any transitionsState — this pair can only match if the state is set externally',
+      'State "{key}" is required but never set by any transitionsState; this pair can only match if the state is set externally',
   },
   HF402: {
     code: "HF402",
@@ -362,22 +362,22 @@ export const DIAGNOSTIC_CATALOG: Readonly<Record<DiagnosticCode, CatalogEntry>> 
     code: "HF404",
     severity: E,
     href: href("HF404"),
-    messageTemplate: "State values must be strings — Hoverfly rejects this at import",
+    messageTemplate: "State values must be strings; Hoverfly rejects this at import",
   },
   HF405: {
     code: "HF405",
     severity: E,
     href: href("HF405"),
-    messageTemplate: "removesState entries must be strings — Hoverfly rejects this at import",
+    messageTemplate: "removesState entries must be strings; Hoverfly rejects this at import",
   },
 
-  // HF5xx — templating.
+  // HF5xx: templating.
   HF501: {
     code: "HF501",
     severity: W,
     href: href("HF501"),
     messageTemplate:
-      'Body contains template syntax but "templated" is not true — it will be sent literally',
+      'Body contains template syntax but "templated" is not true; it will be sent literally',
   },
   HF502: {
     code: "HF502",
@@ -420,7 +420,7 @@ export const DIAGNOSTIC_CATALOG: Readonly<Record<DiagnosticCode, CatalogEntry>> 
     severity: W,
     href: href("HF508"),
     messageTemplate:
-      'faker "{t}" requires arguments Hoverfly cannot pass — this panics at render time',
+      'faker "{t}" requires arguments Hoverfly cannot pass; this panics at render time',
   },
   HF509: {
     code: "HF509",
@@ -440,16 +440,16 @@ export const DIAGNOSTIC_CATALOG: Readonly<Record<DiagnosticCode, CatalogEntry>> 
     severity: E,
     href: href("HF511"),
     messageTemplate:
-      'Unknown variable function "{name}" — Hoverfly rejects the import (only the 52 helper functions are valid)',
+      'Unknown variable function "{name}"; Hoverfly rejects the import (only the 52 helper functions are valid)',
   },
   HF512: {
     code: "HF512",
     severity: W,
     href: href("HF512"),
-    messageTemplate: '"{fn}" expects {sig} arguments, got {n} — the variable renders empty',
+    messageTemplate: '"{fn}" expects {sig} arguments, got {n}; the variable renders empty',
   },
 
-  // HF6xx — globalActions & misc.
+  // HF6xx: globalActions & misc.
   HF601: {
     code: "HF601",
     severity: W,
@@ -463,28 +463,28 @@ export const DIAGNOSTIC_CATALOG: Readonly<Record<DiagnosticCode, CatalogEntry>> 
     messageTemplate: 'Action "{a}" is not in your configured registeredActions',
   },
   /*
-   * The unknown-key flagship. Severity is Warning because the doc still imports — it is a silent
-   * feature loss, not a reject (report 13 §6 false-positive guard (d)). The `{didYouMean}` slot is
+   * The unknown-key flagship. Severity is Warning because the doc still imports; it is a silent
+   * feature loss, not a reject (report 13 §6 false-positive guard (d)). The `{didYouMean}` slot is a
    * a pre-formatted suffix the rule supplies (e.g. ` (did you mean "status"?)`) or the empty string.
    */
   HF603: {
     code: "HF603",
     severity: W,
     href: href("HF603"),
-    messageTemplate: 'Unknown key "{key}"{didYouMean} — silently ignored by Hoverfly',
+    messageTemplate: 'Unknown key "{key}"{didYouMean}; silently ignored by Hoverfly',
   },
   HF604: {
     code: "HF604",
     severity: I,
     href: href("HF604"),
     messageTemplate:
-      'Prefer canonical "{canonical}" — "{key}" works (Go matches case-insensitively) but is non-standard',
+      'Prefer canonical "{canonical}"; "{key}" works (Go matches case-insensitively) but is non-standard',
   },
 };
 
 /**
  * Substitute `{placeholder}` slots in a template from `args`. A missing arg leaves the
- * literal `{slot}` in place (defensive — never throws). All values are stringified.
+ * literal `{slot}` in place (defensive; never throws). All values are stringified.
  */
 export function formatMessage(
   template: string,

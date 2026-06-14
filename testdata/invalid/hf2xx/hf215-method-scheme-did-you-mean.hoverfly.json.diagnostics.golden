@@ -12,7 +12,7 @@
         66
       ]
     },
-    "message": "Unknown HTTP method \"GT\" — did you mean \"GET\"?"
+    "message": "Unknown HTTP method \"GT\"; did you mean \"GET\"?"
   },
   {
     "code": "HF216",
@@ -27,6 +27,6 @@
         69
       ]
     },
-    "message": "Unknown URI scheme \"htttp\" — did you mean \"http\"?"
+    "message": "Unknown URI scheme \"htttp\"; did you mean \"http\"?"
   }
 ]

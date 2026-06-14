@@ -12,7 +12,7 @@
         39
       ]
     },
-    "message": "State \"authenticated\" is required but never set by any transitionsState — this pair can only match if the state is set externally"
+    "message": "State \"authenticated\" is required but never set by any transitionsState; this pair can only match if the state is set externally"
   },
   {
     "code": "HF402",

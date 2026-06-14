@@ -35,7 +35,7 @@ const ROOT = resolve(HERE, "..");
 const DOCS_DIR = resolve(ROOT, "docs");
 
 const GENERATED_NOTICE =
-  "<!-- GENERATED FILE — do not edit by hand. Run `npm run docs:diagnostics` to regenerate. -->";
+  "<!-- GENERATED FILE. Do not edit by hand. Run `npm run docs:diagnostics` to regenerate. -->";
 
 // LSP DiagnosticSeverity numeric values (vscode-languageserver-types): the catalog stores these.
 const SEVERITY_LABEL = {
@@ -112,12 +112,12 @@ const DIAGNOSTIC_PROSE = {
   },
   HF212: {
     trigger:
-      "Field-matcher with a `matcher` (or empty/default) but no `value` key, or an empty `{}` — except when `matcher` is `negate` (HF207) or `form` (HF208). The value is nil, so it can never match.",
+      "Field-matcher with a `matcher` (or empty/default) but no `value` key, or an empty `{}` (except when `matcher` is `negate` (HF207) or `form` (HF208)). The value is nil, so it can never match.",
     range: "the matcher object (or its `matcher` key)",
   },
   HF213: {
     trigger:
-      "`destination` matcher with an `exact`/empty matcher whose value contains `://` (a full URL pasted where a host[:port] is expected). Off by default — high false-positive caution.",
+      "`destination` matcher with an `exact`/empty matcher whose value contains `://` (a full URL pasted where a host[:port] is expected). Off by default: high false-positive caution.",
     range: "value node",
   },
   HF214: {
@@ -127,7 +127,7 @@ const DIAGNOSTIC_PROSE = {
   },
   HF215: {
     trigger:
-      "A `method` value (under an `exact`/default matcher) that is a near-miss (Levenshtein ≤ 1) of a standard IANA HTTP method but is not itself one — i.e. a typo (`GT`→`GET`). Hint-only: the method field is an OPEN set Hoverfly compares verbatim, so a bespoke verb (`PURGE`, `PROPFIND`) far from every standard verb stays silent.",
+      "A `method` value (under an `exact`/default matcher) that is a near-miss (Levenshtein ≤ 1) of a standard IANA HTTP method but is not itself one, i.e. a typo (`GT`→`GET`). Hint-only: the method field is an OPEN set Hoverfly compares verbatim, so a bespoke verb (`PURGE`, `PROPFIND`) far from every standard verb stays silent.",
     range: "value node",
   },
   HF216: {
@@ -147,12 +147,12 @@ const DIAGNOSTIC_PROSE = {
   },
   HF232: {
     trigger:
-      "A `jsonpath`/`jwtjsonpath` value has unbalanced `[]`/`()`/`{}`/quotes (a structural lint only — no full kubectl-JSONPath parser, so heuristic and warning-level).",
+      "A `jsonpath`/`jwtjsonpath` value has unbalanced `[]`/`()`/`{}`/quotes (a structural lint only; no full kubectl-JSONPath parser, so heuristic and warning-level).",
     range: "value node",
   },
   HF233: {
     trigger:
-      "An `xpath` value has unbalanced `[]`/`()`/quotes (balance-only lint — no full XPath engine, so heuristic and warning-level).",
+      "An `xpath` value has unbalanced `[]`/`()`/quotes (balance-only lint; no full XPath engine, so heuristic and warning-level).",
     range: "value node",
   },
   HF234: {
@@ -189,7 +189,7 @@ const DIAGNOSTIC_PROSE = {
   },
   HF308: {
     trigger:
-      "A `response.headers` value that is a plain string instead of an array of strings (Hoverfly rejects the import — HTTP 400).",
+      "A `response.headers` value that is a plain string instead of an array of strings (Hoverfly rejects the import with HTTP 400).",
     range: "the value node",
   },
   HF401: {
@@ -204,12 +204,12 @@ const DIAGNOSTIC_PROSE = {
   HF403: { trigger: "`removesState` entry never set anywhere.", range: "the entry" },
   HF404: {
     trigger:
-      "A `requiresState` or `transitionsState` value that is not a string (Hoverfly rejects the import — HTTP 400).",
+      "A `requiresState` or `transitionsState` value that is not a string (Hoverfly rejects the import with HTTP 400).",
     range: "the offending value node",
   },
   HF405: {
     trigger:
-      "A `removesState[]` entry that is not a string (Hoverfly rejects the import — HTTP 400, Go-unmarshal layer).",
+      "A `removesState[]` entry that is not a string (Hoverfly rejects the import with HTTP 400, Go-unmarshal layer).",
     range: "the offending array element",
   },
   HF501: {
@@ -246,7 +246,7 @@ const DIAGNOSTIC_PROSE = {
   },
   HF511: {
     trigger:
-      "`variables[].function` is a string that is NOT one of the 52 Hoverfly helpers and NOT one of the 8 built-ins (HF510 owns the built-in case). Hoverfly rejects the import — HTTP 500.",
+      "`variables[].function` is a string that is NOT one of the 52 Hoverfly helpers and NOT one of the 8 built-ins (HF510 owns the built-in case). Hoverfly rejects the import with HTTP 500.",
     range: "function value node",
   },
   HF512: {
@@ -271,7 +271,7 @@ const DIAGNOSTIC_PROSE = {
   },
   HF604: {
     trigger:
-      "A key that is a case-only variant of an allowed key — Go binds it case-insensitively, but it is non-canonical.",
+      "A key that is a case-only variant of an allowed key. Go binds it case-insensitively, but it is non-canonical.",
     range: "the key",
   },
 };
@@ -279,33 +279,33 @@ const DIAGNOSTIC_PROSE = {
 const FAMILIES = [
   {
     prefix: "HF1",
-    title: "HF1xx — structure & meta",
+    title: "HF1xx: structure & meta",
     blurb: "Document shape, schema validity, and `schemaVersion` handling.",
   },
   {
     prefix: "HF2",
-    title: "HF2xx — request matchers",
+    title: "HF2xx: request matchers",
     blurb: "Matcher names, value types, `config`, the `form` pseudo-matcher, and `doMatch` chains.",
   },
   {
     prefix: "HF3",
-    title: "HF3xx — response",
+    title: "HF3xx: response",
     blurb: "Body/bodyFile, header parity, status range, encoding, and delays.",
   },
   {
     prefix: "HF4",
-    title: "HF4xx — state",
+    title: "HF4xx: state",
     blurb: "State-flow analysis across `requiresState` / `transitionsState` / `removesState`.",
   },
   {
     prefix: "HF5",
-    title: "HF5xx — templating",
+    title: "HF5xx: templating",
     blurb:
       "Active when `templated: true` (HF501 is the exception). Parser errors, helpers, variables, faker, and `now` offsets.",
   },
   {
     prefix: "HF6",
-    title: "HF6xx — globalActions & misc",
+    title: "HF6xx: globalActions & misc",
     blurb: "Delay URL patterns and post-serve actions.",
   },
 ];
@@ -375,7 +375,7 @@ function renderDiagnosticsDoc() {
       const prose = DIAGNOSTIC_PROSE[code];
       const message =
         entry.messageTemplate === "{message}" || entry.messageTemplate === "{explain}"
-          ? "_(passthrough — supplied by the parser/schema)_"
+          ? "_(passthrough: supplied by the parser/schema)_"
           : `\`${entry.messageTemplate}\``;
       lines.push(
         `| [${code}](#${code.toLowerCase()}) | ${SEVERITY_LABEL[entry.severity]} | ` +
@@ -414,7 +414,7 @@ function renderDiagnosticsDoc() {
 function helperRow(spec) {
   const argList =
     spec.args.length === 0
-      ? "—"
+      ? "none"
       : spec.args.map((arg) => `${arg.name}: ${arg.type}${arg.optional ? "?" : ""}`).join(", ") +
         (spec.variadic ? ", …" : "");
   const kind = spec.block ? "block" : "inline";
@@ -451,8 +451,8 @@ function renderTemplateReferenceDoc() {
   lines.push("## Hoverfly helpers");
   lines.push("");
   lines.push(
-    `The ${HOVERFLY_HELPERS.length} helpers registered in Hoverfly's \`helperMethodMap\`. These — and ` +
-      "**only** these — are also valid in `data.variables[].function`.",
+    `The ${HOVERFLY_HELPERS.length} helpers registered in Hoverfly's \`helperMethodMap\`. These, and ` +
+      "**only** these, are also valid in `data.variables[].function`.",
   );
   lines.push("");
   lines.push("| Helper | Kind | Arguments | Example | Notes |");
@@ -491,7 +491,7 @@ function renderTemplateReferenceDoc() {
     `Hoverfly's \`{{faker 'X'}}\` dispatches by reflection over \`*gofakeit.Faker\` (pinned to ` +
       `gofakeit **v${GOFAKEIT_VERSION}**). Only the **${FAKER_NAMES.length} zero-argument** method names ` +
       "below are valid, and they are **case-sensitive**. Parameterized methods (`Number`, " +
-      "`Sentence`, `Password`, `Regex`, …) panic at render time when called with no arguments — " +
+      "`Sentence`, `Password`, `Regex`, …) panic at render time when called with no arguments; " +
       "the LSP flags those (HF508). The authoritative list lives in " +
       "[`packages/core/src/registry/faker.ts`](../packages/core/src/registry/faker.ts).",
   );
@@ -519,7 +519,7 @@ function renderTemplateReferenceDoc() {
     "Hoverfly's JSONPath support uses the **kubectl** dialect " +
       "(`k8s.io/client-go/util/jsonpath`), **not** Jayway or RFC 9535. XPath is evaluated by " +
       "`ChrisTrenkamp/xsel`. Expressions written for Jayway-style JSONPath (filters, recursive " +
-      "descent specifics) may not behave the same — author against the kubectl JSONPath syntax.",
+      "descent specifics) may not behave the same; author against the kubectl JSONPath syntax.",
   );
   lines.push("");
 

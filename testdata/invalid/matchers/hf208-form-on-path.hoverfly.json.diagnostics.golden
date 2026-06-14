@@ -12,6 +12,6 @@
         45
       ]
     },
-    "message": "\"form\" is only valid on the body field — elsewhere Hoverfly panics"
+    "message": "\"form\" is only valid on the body field; elsewhere Hoverfly panics"
   }
 ]

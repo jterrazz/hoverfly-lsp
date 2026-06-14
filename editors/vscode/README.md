@@ -1,24 +1,24 @@
-# Hoverfly — VS Code extension
+# Hoverfly VS Code extension
 
 Language support for [Hoverfly](https://docs.hoverfly.io/) JSON simulation files: diagnostics,
 completion, and hover docs, powered by the `hoverfly-lsp` language server.
 
 The extension registers a dedicated `hoverfly-simulation` language id and activates only on
-Hoverfly files — `*.hoverfly.json` and `hoverfly-simulation.json` — so your other `.json` files
+Hoverfly files (`*.hoverfly.json` and `hoverfly-simulation.json`), so your other `.json` files
 are untouched. (The server also content-fingerprints every document it sees and returns empty
 results for non-simulations, so activation is safe even when the fallback selector is hit.)
 
 ## Features
 
-- **Diagnostics** — schema and semantic checks (unknown matchers, dangling state, templating
+- **Diagnostics**: schema and semantic checks (unknown matchers, dangling state, templating
   errors, …) surfaced as squiggles, both pushed live and available via pull.
-- **Completion** — matcher names, template helpers, faker types, and `postServeAction` names.
-- **Hover** — registry docs for matchers and helpers.
+- **Completion**: matcher names, template helpers, faker types, and `postServeAction` names.
+- **Hover**: registry docs for matchers and helpers.
 - Syntax highlighting reuses VS Code's built-in JSON grammar (`source.json`).
 
 ## Install
 
-### From a packaged `.vsix` (current — not yet on the Marketplace)
+### From a packaged `.vsix` (current, not yet on the Marketplace)
 
 The extension is not published to the Marketplace / Open VSX yet. Build a `.vsix` and install it:
 
@@ -45,7 +45,7 @@ code --install-extension editors/vscode/hoverfly-lsp-vscode-0.1.0.vsix
    point `code --extensionDevelopmentPath=editors/vscode` at a test workspace.
 4. For an incremental loop, run `npm run watch --workspace=hoverfly-lsp-vscode`.
 
-### From the Marketplace (future — once published)
+### From the Marketplace (future, once published)
 
 Once published, install via the Extensions view (search "Hoverfly") or:
 
@@ -57,11 +57,11 @@ code --install-extension Terrazzoni.hoverfly-lsp-vscode
 
 The extension launches `hoverfly-lsp` over stdio. It picks the server in this order:
 
-1. **`hoverfly.server.path`** setting — an explicit absolute path to a server entry (run with
+1. **`hoverfly.server.path`** setting: an explicit absolute path to a server entry (run with
    Node). Highest priority.
-2. **Workspace install** — `<workspaceRoot>/node_modules/.bin/hoverfly-lsp`, if present (lets a
+2. **Workspace install**: `<workspaceRoot>/node_modules/.bin/hoverfly-lsp`, if present (lets a
    project pin its own server version).
-3. **Bundled server** — the copy shipped inside the extension (`server/bin/hoverfly-lsp.js`). This
+3. **Bundled server**: the copy shipped inside the extension (`server/bin/hoverfly-lsp.js`). This
    is the zero-install default and always works.
 
 ## Settings
@@ -70,7 +70,7 @@ The extension launches `hoverfly-lsp` over stdio. It picks the server in this or
 | ---------------------------- | ---------- | --------------------------------------------------------------------------------------------------- |
 | `hoverfly.registeredActions` | `string[]` | Post-serve action names registered with your Hoverfly; used to complete/validate `postServeAction`. |
 | `hoverfly.server.path`       | `string`   | Absolute path to a `hoverfly-lsp` entry to launch (overrides workspace + bundled). Empty = auto.    |
-| `hoverfly.trace.server`      | `enum`     | `off` \| `messages` \| `verbose` — trace the LSP traffic in the "Hoverfly LSP" output channel.      |
+| `hoverfly.trace.server`      | `enum`     | `off` \| `messages` \| `verbose`. Trace the LSP traffic in the "Hoverfly LSP" output channel.       |
 
 `hoverfly.registeredActions` is delivered to the server via `workspace/configuration` (section
 `hoverfly`) and as `initializationOptions` for clients that read config at startup.
@@ -99,7 +99,7 @@ ls editors/vscode/*.vsix
 ### Semantic highlighting
 
 The server advertises an LSP **semantic tokens** provider, so VS Code colors the Hoverfly-specific
-constructs a plain JSON grammar cannot see — chiefly the Handlebars template syntax inside templated
+constructs a plain JSON grammar cannot see, chiefly the Handlebars template syntax inside templated
 response body/header strings (`{{ faker 'Name' }}`, `{{ Request.Path.[1] }}`, `{{#each …}}`) and
 matcher-name enums (`exact`, `regex`, `jwt`, …).
 
@@ -109,12 +109,12 @@ This works **out of the box** with no settings to flip:
   to `"configuredByTheme"`, and every built-in theme opts in). You only need to touch it if you
   previously set it to `false`.
 - The legend uses only **standard** LSP token types (`function`, `keyword`, `variable`, `property`,
-  `enumMember`, `string`, `number`, `operator`, …), which every shipped theme already colors — so
+  `enumMember`, `string`, `number`, `operator`, …), which every shipped theme already colors, so
   no custom `editor.tokenColorCustomizations` / `editor.semanticTokenColorCustomizations` are
   required. (You may still add them to taste.)
 
 To confirm tokens are flowing, open a templated `*.hoverfly.json`, run **Developer: Inspect Editor
-Tokens and Scopes** from the command palette, and click inside a `{{ … }}` — the "semantic token
+Tokens and Scopes** from the command palette, and click inside a `{{ … }}`; the "semantic token
 type" line should read `function` on a helper name, `operator` on the `{{`, etc.
 
 ### Manual QA checklist
@@ -124,19 +124,19 @@ VS Code window:
 
 1. Install the `.vsix` (or launch the Extension Development Host with **F5**).
 2. Open one of the repo fixtures (all paths relative to repo root):
-   - `testdata/valid/minimal.hoverfly.json` — should show **no** diagnostics.
-   - `testdata/valid/rich-stateful-templated.hoverfly.json` — should show no errors; hover over a
+   - `testdata/valid/minimal.hoverfly.json`: should show **no** diagnostics.
+   - `testdata/valid/rich-stateful-templated.hoverfly.json`: should show no errors; hover over a
      matcher name (e.g. `"glob"`) to see registry docs.
-   - `testdata/invalid/hf4xx/dangling-states.hoverfly.json` — should show **squiggles** for
+   - `testdata/invalid/hf4xx/dangling-states.hoverfly.json`: should show **squiggles** for
      `HF401`/`HF402`/`HF403` dangling-state diagnostics.
 3. In a `*.hoverfly.json` file, type a matcher value `{ "matcher": "" }` and trigger completion
-   inside the quotes — expect matcher names (`exact`, `regex`, `jsonpath`, …).
+   inside the quotes; expect matcher names (`exact`, `regex`, `jsonpath`, …).
 4. In a templated body (`"templated": true`, `"body": "{{ faker 'Name' }}"`), confirm the template
    syntax is colored: the helper name (`faker`) reads as a function, the `{{`/`}}` as operators,
    and a known faker type (`'Name'`) as an enum member (use **Developer: Inspect Editor Tokens and
    Scopes** to see the semantic token type). A plain `.json` shows no such coloring.
 5. Confirm the bottom-right language indicator reads **Hoverfly**.
-6. Open an unrelated `.json` (e.g. `package.json`) — expect **no** Hoverfly diagnostics and the
+6. Open an unrelated `.json` (e.g. `package.json`); expect **no** Hoverfly diagnostics and the
    normal JSON language mode.
 7. Optional: set `"hoverfly.trace.server": "verbose"` and check the **Hoverfly LSP** output
    channel for the LSP handshake.

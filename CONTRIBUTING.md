@@ -25,8 +25,8 @@ A `Makefile` wraps the same gates (`make build/test/typecheck/lint`) with an ins
 ### Layout
 
 ```
-packages/core     @hoverfly-lsp/core      — pure analysis library (private; bundled into the server)
-packages/server   @jterrazz/hoverfly-lsp  — stdio LSP server (the published package; bin: hoverfly-lsp)
+packages/core     @hoverfly-lsp/core      pure analysis library (private; bundled into the server)
+packages/server   @jterrazz/hoverfly-lsp  stdio LSP server (the published package; bin: hoverfly-lsp)
 editors/          vscode / zed / intellij / claude-code integrations
 testdata/         the reference corpus (valid/ + invalid/ goldens)
 docs/             generated diagnostics + template reference
@@ -35,7 +35,7 @@ research/         research reports + architect decisions
 ```
 
 Dependency direction is strict: `editors → server → core`. `packages/core` must never gain LSP
-transport dependencies — it depends only on `vscode-json-languageservice`,
+transport dependencies; it depends only on `vscode-json-languageservice`,
 `vscode-languageserver-types`, and `vscode-languageserver-textdocument` (architect decision D1).
 
 ## Reference-corpus conventions
@@ -45,11 +45,11 @@ transport dependencies — it depends only on `vscode-json-languageservice`,
 
 - Fixtures are named `*.hoverfly.json` and grouped by domain or code family.
 - A `valid/` fixture must produce **zero** diagnostics through the full pipeline (parse → schema →
-  template → HFxxx). Any diagnostic is either a fixture bug or a validator false-positive — fix the
+  template → HFxxx). Any diagnostic is either a fixture bug or a validator false-positive: fix the
   fixture or report the bug; never delete the check.
 - An `invalid/` fixture must trigger **exactly** its one intended `HFxxx` code (no incidental
   extras), with its expected diagnostics frozen in a sibling `<name>.hoverfly.json.diagnostics.golden`.
-- Fixtures should be realistic API-mocking scenarios — real-looking paths/payloads, small but
+- Fixtures should be realistic API-mocking scenarios: real-looking paths/payloads, small but
   complete.
 - `doMatch` is a single recursive **object**, not an array (real Hoverfly rejects the array shape;
   see D9).
@@ -67,12 +67,12 @@ env UPDATE_GOLDENS=1 npx vitest --run packages/core/test/semantic/golden.test.ts
 
 Always **review** each regenerated golden by hand: it must contain only the codes the fixture is
 designed to trigger. An unexpected extra code means the fixture has a side problem (fix the
-fixture); a missing code means a validator gap (report it — do not paper over it).
+fixture); a missing code means a validator gap (report it, do not paper over it).
 
 ## Regenerating docs
 
 `docs/diagnostics.md` and `docs/template-reference.md` are **generated** from the built core
-package (`packages/core/dist`) by `scripts/generate-diagnostic-docs.mjs` — never hand-edit them.
+package (`packages/core/dist`) by `scripts/generate-diagnostic-docs.mjs`; never hand-edit them.
 The diagnostic table merges the runtime catalog (`packages/core/src/semantic/catalog.ts`: code,
 severity, message) with the trigger/range prose carried in the generator from
 `research/11-diagnostic-catalog.md`. The template reference is generated from
@@ -85,7 +85,7 @@ npm run docs:diagnostics # writes docs/diagnostics.md + docs/template-reference.
 
 CI fails if the committed docs are stale (`npm run docs:diagnostics` then `git diff --quiet -- docs/`),
 so commit the regenerated files alongside any catalog/registry change. If you add a new diagnostic
-code without trigger/range prose, the generator aborts loudly — add a `DIAGNOSTIC_PROSE` entry in
+code without trigger/range prose, the generator aborts loudly; add a `DIAGNOSTIC_PROSE` entry in
 the script.
 
 ## The `research/` provenance story
@@ -94,24 +94,24 @@ This server was not reverse-engineered from the Hoverfly docs (which are wrong i
 it was built against the Hoverfly **Go source** over two multi-agent research rounds and then
 ground-truth-verified against a real Hoverfly instance:
 
-- `research/01–05` — format, source truth, LSP architecture, IDE integration, prior art.
-- `research/06` — the gaps/contradictions surfaced by round one.
-- `research/07–09` — round-two source verification: matcher value types, the templating spec,
+- `research/01-05`: format, source truth, LSP architecture, IDE integration, prior art.
+- `research/06`: the gaps/contradictions surfaced by round one.
+- `research/07-09`: round-two source verification: matcher value types, the templating spec,
   the Claude Code LSP plugin shape.
-- `research/10-architect-decisions.md` — **the authoritative tie-breaker.** When a report
+- `research/10-architect-decisions.md`: **the authoritative tie-breaker.** When a report
   disagrees with this file, this file wins; and the Go-source report outranks docs-derived reports.
-- `research/11-diagnostic-catalog.md` — the frozen `HFxxx` catalog spec (codes are stable API).
-- `research/12-ground-truth-results.md` — results of importing every valid fixture into real
+- `research/11-diagnostic-catalog.md`: the frozen `HFxxx` catalog spec (codes are stable API).
+- `research/12-ground-truth-results.md`: results of importing every valid fixture into real
   Hoverfly v1.12.8 (drove the D9 corrections).
 
 The registries in `packages/core/src/registry/` and the bundled schema are transcribed from
 specific Go source paths and **pinned** to a `HOVERFLY_COMMIT` (see `schema/provenance.ts`); a
 weekly CI job diffs upstream for drift. When in doubt about a behaviour, cite the relevant research
-report (and ideally the Go source path) in your PR — keep the provenance chain intact.
+report (and ideally the Go source path) in your PR to keep the provenance chain intact.
 
 ## Pull requests
 
 - Branch off `main`; keep all gates green; regenerate goldens and docs where applicable.
-- Reference the architect decision (`D1`–`D9`) or research report that motivates a behavioural
+- Reference the architect decision (`D1`-`D9`) or research report that motivates a behavioural
   change.
 - Diagnostic codes are append-only: never reuse or repurpose a code.

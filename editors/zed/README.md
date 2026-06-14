@@ -1,4 +1,4 @@
-# hoverfly-lsp — Zed extension
+# hoverfly-lsp Zed extension
 
 Language support for [Hoverfly](https://docs.hoverfly.io) API simulation files in
 [Zed](https://zed.dev). The extension registers a **Hoverfly** language
@@ -13,10 +13,10 @@ this Rust/WASM extension is a thin launcher that locates and starts that binary.
 
 `language_server_command` tries, in order:
 
-1. **Project-local** — `<worktree>/node_modules/.bin/hoverfly-lsp` (if you ran
+1. **Project-local**: `<worktree>/node_modules/.bin/hoverfly-lsp` (if you ran
    `npm install @jterrazz/hoverfly-lsp` in your project).
-2. **Global `$PATH`** — e.g. after `npm install -g @jterrazz/hoverfly-lsp`.
-3. **Zed-managed** — Zed runs `npm install @jterrazz/hoverfly-lsp` into the extension's
+2. **Global `$PATH`**: e.g. after `npm install -g @jterrazz/hoverfly-lsp`.
+3. **Zed-managed**: Zed runs `npm install @jterrazz/hoverfly-lsp` into the extension's
    storage and launches `node node_modules/@jterrazz/hoverfly-lsp/bin/hoverfly-lsp.js`.
 
 In all cases the server is invoked with `--stdio`. If none of the above resolves,
@@ -27,12 +27,12 @@ This is the canonical pattern used by first-party Node-LSP extensions
 (`zed-industries/zed`'s `html`, `zed-extensions/vue`, `zed-extensions/svelte`):
 they `npm_install_package` the server into the extension's work dir, compare
 `npm_package_installed_version` against `npm_package_latest_version`, reinstall on
-update, and launch via Zed's managed Node. Steps 1–2 are an extra project-local /
+update, and launch via Zed's managed Node. Steps 1-2 are an extra project-local /
 `$PATH` override (vue and svelte do the project-local lookup too), useful for a
 locally-built server.
 
 > The `hoverfly-lsp` npm package is not yet published. Until it is, **step 3 will
-> fail** (npm can't find the package) — use step 1 or 2 with a local build of the
+> fail** (npm can't find the package); use step 1 or 2 with a local build of the
 > server. See [Dev install](#dev-install).
 
 ### Why not ship the server inside the extension (zero-setup)?
@@ -43,7 +43,7 @@ It is not possible. A Zed extension runs as WebAssembly in a WASI sandbox that
 Zed's _installed_ directory, which the wasm cannot read. On top of that, the
 published extension archive only contains `extension.toml`, `extension.wasm`,
 `languages/`, and `grammars/` (per Zed's
-[packaging](https://zed.dev/blog/zed-decoded-extensions)) — an arbitrary `server/`
+[packaging](https://zed.dev/blog/zed-decoded-extensions)): an arbitrary `server/`
 directory would never even be included. So a bundled `dist/cli.cjs` asset is
 unreachable at runtime for both dev _and_ registry installs. The only viable
 zero-setup path is publishing `hoverfly-lsp` to npm, after which resolution step 3
@@ -93,14 +93,14 @@ To claim additional names without editing the extension, add to your Zed
   > Homebrew on `$PATH` so `which cargo` resolves to `~/.cargo/bin/cargo`.
 
   > **GUI launch and `$PATH`.** A Zed launched from Finder/Dock inherits the macOS
-  > GUI environment, which usually does **not** include `~/.cargo/bin` — so the
+  > GUI environment, which usually does **not** include `~/.cargo/bin`, so the
   > extension build can't find `cargo`. Launch Zed from a terminal (`zed .`) where
   > your shell `$PATH` is in effect, or add `~/.cargo/bin` to the GUI `$PATH`
   > (e.g. via `launchctl setenv PATH` or a login-shell `$PATH` that the GUI reads).
 
-- **Node.js** on `$PATH` (used by resolution steps 1–3 above).
+- **Node.js** on `$PATH` (used by resolution steps 1-3 above).
 
-### Dev install (current — package not yet published)
+### Dev install (current, package not yet published)
 
 Because `hoverfly-lsp` is not on npm yet, make the server resolvable first.
 
@@ -134,7 +134,7 @@ output. Compilation errors for the extension appear here.
 
 Once published to the Zed extension registry: open the Extensions panel, search
 **Hoverfly**, click Install. Once `hoverfly-lsp` is on npm, no manual
-server setup is needed — resolution step 3 installs it automatically.
+server setup is needed; resolution step 3 installs it automatically.
 
 ## Verification
 
@@ -157,7 +157,7 @@ cargo build --release --target wasm32-wasip2
 ```
 
 `cargo check` succeeds with the Homebrew toolchain. The `wasm32-wasip2` build
-requires the wasm std component, which only `rustup` provides — see Prerequisites
+requires the wasm std component, which only `rustup` provides; see Prerequisites
 (and the Homebrew-Rust / GUI-`$PATH` caveats there).
 
 ### Semantic highlighting
@@ -166,7 +166,7 @@ The server advertises an LSP **semantic tokens** provider that colors the Handle
 syntax inside templated body/header strings (helper names, `{{ }}` delimiters, path roots/segments,
 known faker types, matcher-name enums) that the JSON grammar alone cannot see.
 
-> **Zed requires you to opt in — semantic tokens are OFF by default** (`semantic_tokens: "off"`).
+> **Zed requires you to opt in; semantic tokens are OFF by default** (`semantic_tokens: "off"`).
 > Until you enable them, Zed never sends `textDocument/semanticTokens/full`, so the templates stay
 > the plain string color. Add to your Zed `settings.json` (`cmd-,`):
 >
@@ -185,7 +185,7 @@ known faker types, matcher-name enums) that the JSON grammar alone cannot see.
 The legend uses only standard LSP token types, which Zed maps to its theme's existing highlight
 categories (`function`, `keyword`, `property`, `variable`, `enumMember`, `string`, `number`,
 `operator`); a given theme may render some types more subtly than others. To debug what is actually
-applied, run **`dev: open highlights tree view`** from the command palette — it lists every token
+applied, run **`dev: open highlights tree view`** from the command palette; it lists every token
 (including LSP semantic tokens) for the current buffer. If you see nothing, confirm `semantic_tokens`
 is enabled, the **Hoverfly LSP** server is running, and check `~/.local/share/zed/logs/Zed.log`.
 
@@ -214,12 +214,12 @@ is enabled, the **Hoverfly LSP** server is running, and check `~/.local/share/ze
 
 A ready-to-submit bundle lives in [`registry-submission/`](registry-submission/):
 
-- [`SUBMISSION.md`](registry-submission/SUBMISSION.md) — exact fork → add
+- [`SUBMISSION.md`](registry-submission/SUBMISSION.md): exact fork → add
   submodule → edit `extensions.toml` → `pnpm sort-extensions` → open PR steps,
   with cited URLs. The extension is referenced as a subdirectory via
   `path = "editors/zed"` (supported by the registry), so no root move is needed.
 - [`registry-submission/extensions-toml-entry.toml`](registry-submission/extensions-toml-entry.toml)
-  — the exact block to add to `zed-industries/extensions`' `extensions.toml`.
+  the exact block to add to `zed-industries/extensions`' `extensions.toml`.
 
 Submit the `v0.1.0` tag; Zed's CI builds the WASM from source (Rust 1.90,
 `wasm32-wasip2`).

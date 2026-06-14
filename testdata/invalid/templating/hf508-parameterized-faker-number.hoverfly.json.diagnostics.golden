@@ -12,6 +12,6 @@
         58
       ]
     },
-    "message": "faker \"Number\" requires arguments Hoverfly cannot pass — this panics at render time"
+    "message": "faker \"Number\" requires arguments Hoverfly cannot pass; this panics at render time"
   }
 ]
