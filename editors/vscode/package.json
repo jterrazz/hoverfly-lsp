@@ -1,7 +1,7 @@
 {
   "name": "hoverfly-lsp-vscode",
   "displayName": "Hoverfly",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Diagnostics, completion, and hover docs for Hoverfly JSON simulation files (*.hoverfly.json).",
   "categories": [
     "Linters",

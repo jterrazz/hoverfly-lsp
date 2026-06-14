@@ -85,9 +85,11 @@ jobs:
       - name: Build
         run: npm run build
 
-      # Guard: the release tag must match the version in every manifest, so a stray release can
-      # never publish a mismatched version.
-      - name: Verify release tag matches package versions
+      # Guard: the release tag must match the npm package versions (core + server) — those are what
+      # this workflow publishes to npm. Editor artifacts (VS Code / Zed / Claude Code) live on their
+      # own registries with IMMUTABLE versions, so they version INDEPENDENTLY (e.g. a Marketplace-only
+      # icon fix bumps the extension without an npm release). They are not checked here.
+      - name: Verify release tag matches the npm package versions
         env:
           TAG_NAME: ${{ github.event.release.tag_name }}
         run: |
@@ -106,12 +108,6 @@ jobs:
           }
           check packages/core/package.json
           check packages/server/package.json
-          check editors/vscode/package.json
-          # Zed (TOML) + Claude Code (JSON) manifests.
-          ZED="$(node -p "require('fs').readFileSync('editors/zed/extension.toml','utf8').match(/^version = \"(.*)\"/m)[1]")"
-          [ "$ZED" = "$TAG" ] && echo "ok: editors/zed/extension.toml @ $ZED" || { echo "::error::zed extension.toml $ZED != $TAG"; fail=1; }
-          CC="$(node -p "require('./editors/claude-code/.claude-plugin/plugin.json').version")"
-          [ "$CC" = "$TAG" ] && echo "ok: claude-code plugin.json @ $CC" || { echo "::error::claude-code plugin.json $CC != $TAG"; fail=1; }
           exit $fail
 
       # The only published package. core stays private (devDependency) and is inlined into the
