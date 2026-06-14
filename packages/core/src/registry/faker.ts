@@ -7,7 +7,7 @@
  * only zero-arg method names are valid; the names are CASE-SENSITIVE and must match exactly.
  *
  * Parameterized gofakeit methods (`Number`, `Sentence`, `Password`, `Regex`, …) PANIC when
- * called with no arguments — they are NOT valid faker types and must not be offered. See
+ * called with no arguments, they are NOT valid faker types and must not be offered. See
  * FAKER_PARAMETERIZED_PANICS. An unknown name renders to empty (information-only diagnostic).
  *
  * This module is pure data; the template/completion phases consume it. Regenerate against a

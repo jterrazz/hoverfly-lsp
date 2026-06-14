@@ -24,9 +24,9 @@ export type MatcherValueType = "array" | "object" | "string";
 /**
  * The runtime behaviour when a matcher receives a `value` of the wrong JSON type.
  *
- * - `no-match` — the matcher gracefully returns false (the pair can never match).
- * - `panic`    — Hoverfly crashes at request-matching time (nil func type assertion, etc.).
- * - `vacuous-true` — the matcher silently always matches (logic inversion); only `negate`.
+ * - `no-match`, the matcher gracefully returns false (the pair can never match).
+ * - `panic`   , Hoverfly crashes at request-matching time (nil func type assertion, etc.).
+ * - `vacuous-true`, the matcher silently always matches (logic inversion); only `negate`.
  */
 export type WrongTypeBehavior = "no-match" | "panic" | "vacuous-true";
 
@@ -34,7 +34,7 @@ export type WrongTypeBehavior = "no-match" | "panic" | "vacuous-true";
 export type ArrayConfigKey = "ignoreOccurrences" | "ignoreOrder" | "ignoreUnknown";
 
 export type MatcherSpec = {
-  /** Registry key — the exact, case-sensitive canonical spelling Hoverfly stores. */
+  /** Registry key, the exact, case-sensitive canonical spelling Hoverfly stores. */
   name: string;
   /** JSON value types the matcher's `value` field accepts. */
   valueTypes: MatcherValueType[];
@@ -44,7 +44,7 @@ export type MatcherSpec = {
   configKeys?: ArrayConfigKey[];
   /**
    * Whether this matcher's `MatchValueGenerator` is a non-identity (transforming)
-   * generator — i.e. `doMatch` after it extracts/transforms a value for the next link
+   * generator, i.e. `doMatch` after it extracts/transforms a value for the next link
    * rather than re-testing the same input. True only for jsonpath/xpath/jwt/jwtjsonpath.
    */
   doMatchTransforms: boolean;
@@ -80,7 +80,7 @@ export const MATCHER_SPECS: readonly MatcherSpec[] = [
     doMatchTransforms: false,
     wrongTypeBehavior: "no-match",
     caseSensitiveLookup: false,
-    docs: `Default matcher (empty string) — behaves as \`exact\`. Non-string value never matches. ${DOCS_BASE}`,
+    docs: `Default matcher (empty string), behaves as \`exact\`. Non-string value never matches. ${DOCS_BASE}`,
   },
   {
     name: "exact",
@@ -99,7 +99,7 @@ export const MATCHER_SPECS: readonly MatcherSpec[] = [
     // A non-string value makes NegationMatch return true unconditionally (report 07 §3).
     wrongTypeBehavior: "vacuous-true",
     caseSensitiveLookup: false,
-    docs: `Matches when the value is NOT equal to the request value. A non-string value matches vacuously (always true) — almost always a mistake. Registry key is \`negate\` (NOT \`negation\`). ${DOCS_BASE}`,
+    docs: `Matches when the value is NOT equal to the request value. A non-string value matches vacuously (always true), almost always a mistake. Registry key is \`negate\` (NOT \`negation\`). ${DOCS_BASE}`,
   },
   {
     name: "glob",
@@ -154,7 +154,7 @@ export const MATCHER_SPECS: readonly MatcherSpec[] = [
     doMatchTransforms: false,
     wrongTypeBehavior: "no-match",
     caseSensitiveLookup: false,
-    docs: `Deep JSON equality — value is a STRING containing JSON text (not a JSON object literal). Non-string or invalid-JSON never matches. ${DOCS_BASE}`,
+    docs: `Deep JSON equality, value is a STRING containing JSON text (not a JSON object literal). Non-string or invalid-JSON never matches. ${DOCS_BASE}`,
   },
   {
     name: "jsonpartial",
@@ -163,7 +163,7 @@ export const MATCHER_SPECS: readonly MatcherSpec[] = [
     doMatchTransforms: false,
     wrongTypeBehavior: "no-match",
     caseSensitiveLookup: false,
-    docs: `Partial JSON containment — value is a STRING of JSON text representing the expected subset. Registry key is single-token lowercase \`jsonpartial\`. ${DOCS_BASE}`,
+    docs: `Partial JSON containment, value is a STRING of JSON text representing the expected subset. Registry key is single-token lowercase \`jsonpartial\`. ${DOCS_BASE}`,
   },
   {
     name: "jsonpath",
@@ -183,7 +183,7 @@ export const MATCHER_SPECS: readonly MatcherSpec[] = [
     doMatchTransforms: true,
     wrongTypeBehavior: "no-match",
     caseSensitiveLookup: false,
-    docs: `JWT match — value is a STRING of JSON text describing the expected {"header":..,"payload":..} subset (same rules as jsonpartial). doMatch chains the decoded composite. ${DOCS_BASE}`,
+    docs: `JWT match, value is a STRING of JSON text describing the expected {"header":..,"payload":..} subset (same rules as jsonpartial). doMatch chains the decoded composite. ${DOCS_BASE}`,
   },
   {
     name: "jwtjsonpath",
@@ -204,7 +204,7 @@ export const MATCHER_SPECS: readonly MatcherSpec[] = [
     // GetStringArray rejects non-slices -> no match; a non-bool config value PANICs.
     wrongTypeBehavior: "no-match",
     caseSensitiveLookup: false,
-    docs: `Array match — value MUST be a JSON array (a plain string is rejected; the ';'-split applies to the incoming request value, NOT the matcher value). The ONLY matcher that accepts \`config\` (booleans \`ignoreUnknown\`/\`ignoreOrder\`/\`ignoreOccurrences\`). ${DOCS_BASE}`,
+    docs: `Array match, value MUST be a JSON array (a plain string is rejected; the ';'-split applies to the incoming request value, NOT the matcher value). The ONLY matcher that accepts \`config\` (booleans \`ignoreUnknown\`/\`ignoreOrder\`/\`ignoreOccurrences\`). ${DOCS_BASE}`,
   },
   {
     name: "form",
@@ -236,7 +236,7 @@ export const TRANSFORMING_MATCHER_NAMES: readonly string[] = MATCHER_SPECS.filte
 
 /**
  * Known runtime PANIC paths (architect decision D8, report 07 §2c/§2d/§3). The HF2xx
- * validators surface each of these as an error-level diagnostic — these are hard crashes,
+ * validators surface each of these as an error-level diagnostic, these are hard crashes,
  * not graceful no-matches.
  */
 export const MATCHER_PANIC_NOTES = {

@@ -9,7 +9,7 @@
  *
  * The two enforcement facts that make this matrix the LSP's biggest value-add (report 13 §0):
  *
- *   1. `additionalProperties:false` exists ONLY at the ROOT object — so a typo inside any
+ *   1. `additionalProperties:false` exists ONLY at the ROOT object, so a typo inside any
  *      sub-object is NOT caught by the schema. The Go layer silently DROPS any key that does
  *      not match a struct field, and the user's data vanishes (the silent-feature-loss class).
  *   2. Go's `encoding/json` matches struct field names CASE-INSENSITIVELY. So `STATUS`,
@@ -71,7 +71,7 @@ export const STRUCTURE_ALLOWED_KEYS: Readonly<Record<StructureObjectKind, readon
 
   /**
    * `RequestMatcherViewV5` (report 13 §1.4). The `method` key is in the Go struct but ABSENT
-   * from the official schema's `request` def (D5) — it imports clean and MUST NOT be flagged, so
+   * from the official schema's `request` def (D5), it imports clean and MUST NOT be flagged, so
    * it is listed here and HF603 never treats it as unknown. The `query` key must be an OBJECT (a
    * legacy string query is a 400). High-risk typos: `header`, `queries`, `requireState`.
    */
@@ -106,7 +106,7 @@ export const STRUCTURE_ALLOWED_KEYS: Readonly<Record<StructureObjectKind, readon
 
   /**
    * `LogNormalDelayOptions` at the response level (report 13 §1.11). Unlike the globalActions
-   * `delaysLogNormal[]` items, this def has NO `httpMethod`/`urlPattern` — these four int fields
+   * `delaysLogNormal[]` items, this def has NO `httpMethod`/`urlPattern`, these four int fields
    * are the entire allowed set. Typos: `medain`, `average`.
    */
   logNormalDelay: ["min", "max", "mean", "median"],
@@ -125,7 +125,7 @@ export const STRUCTURE_ALLOWED_KEYS: Readonly<Record<StructureObjectKind, readon
 
   /**
    * `ResponseDelayLogNormalView` (report 13 §1.14). The four int fields PLUS the method/url
-   * filter — distinct from the response-level `logNormalDelay`.
+   * filter, distinct from the response-level `logNormalDelay`.
    */
   delaysLogNormalItem: ["min", "max", "mean", "median", "httpMethod", "urlPattern"],
 
@@ -150,13 +150,13 @@ export const STRUCTURE_ALLOWED_KEYS: Readonly<Record<StructureObjectKind, readon
 
 /**
  * Documentation pointers (NOT used for unknown-key checking) for the OPEN string-keyed maps
- * whose keys are user data — HF603/HF604 MUST skip these entirely (report 13 §6 guard a):
+ * whose keys are user data, HF603/HF604 MUST skip these entirely (report 13 §6 guard a):
  *
- *   - `request.headers`     — `map[string][]MatcherViewV5`   (any header name)
- *   - `request.query`       — `QueryMatcherViewV5`           (any query-param name)
- *   - `response.headers`    — `map[string][]string`          (any header name)
- *   - `requiresState`       — `map[string]string`            (user state names)
- *   - `transitionsState`    — `map[string]string`            (user state names)
+ *   - `request.headers`    , `map[string][]MatcherViewV5`   (any header name)
+ *   - `request.query`      , `QueryMatcherViewV5`           (any query-param name)
+ *   - `response.headers`   , `map[string][]string`          (any header name)
+ *   - `requiresState`      , `map[string]string`            (user state names)
+ *   - `transitionsState`   , `map[string]string`            (user state names)
  *
  * The ROOT object is also skipped (already HF102 via `additionalProperties:false`).
  */
@@ -180,7 +180,7 @@ export const SCHEMA_ABSENT_LEGAL_KEYS: Readonly<Record<string, readonly string[]
 /**
  * The "did you mean" suggestion threshold for HF603 (report 13 §6): a candidate is offered only
  * when the case-insensitive Levenshtein distance to an allowed key is ≤ this. A key that
- * case-FOLDS exactly to an allowed key is NOT an HF603 candidate (distance 0 but it BINDS) —
+ * case-FOLDS exactly to an allowed key is NOT an HF603 candidate (distance 0 but it BINDS):
  * it is an HF604 case-variant instead.
  */
 export const DID_YOU_MEAN_MAX_DISTANCE = 2;
