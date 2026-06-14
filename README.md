@@ -5,248 +5,133 @@
 [![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/Terrazzoni.hoverfly-lsp-vscode?label=VS%20Code)](https://marketplace.visualstudio.com/items?itemName=Terrazzoni.hoverfly-lsp-vscode)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](#license)
 
-**Stop debugging silent mock failures.** Hoverfly LSP gives your editor full understanding of
-[Hoverfly](https://hoverfly.io) simulation files: errors as you type, autocomplete everywhere,
-docs on hover. It's **the first and only IDE tooling for Hoverfly**.
-
-- **Catches the mistakes Hoverfly never tells you about.** A typo'd key, a wrong matcher casing, a
-  malformed template: Hoverfly imports them fine, and then your mock silently never matches. This
-  flags them as you type, before you ever run a request.
-- **Autocomplete for everything.** Every field, all 14 matchers (with docs), 60 template helpers
-  with argument snippets, 210 faker types, and even your own state keys, variables, and literals.
-- **Hover any field, matcher, or helper for instant docs.** No more tab-switching to
-  docs.hoverfly.io to remember what a matcher expects or what a helper returns.
-- **Works everywhere.** VS Code, Zed, IntelliJ, Neovim, Claude Code agents: any editor that
-  speaks the standard editor protocol.
-- **Trustworthy by design.** Every check is verified against a real Hoverfly instance (not just
-  the docs) under a zero-false-positive policy: if it underlines something, Hoverfly really does
-  treat it as wrong.
-
-### New to language servers?
-
-It's the same technology behind TypeScript's red squiggles and the autocomplete you already use in
-your editor. One server implements the smarts once; a shared standard, the Language Server
-Protocol, lets every editor plug into it without each one reinventing the wheel. This project is
-exactly that, built for Hoverfly simulation JSON. No prior tooling for Hoverfly has ever existed:
-this is the first.
-
-### Without it vs. with it
-
-|             | The loop                                                                                |
-| ----------- | --------------------------------------------------------------------------------------- |
-| **Without** | Edit the JSON blind → import → `curl` → get a 502 → stare at the logs → guess → repeat. |
-| **With**    | The editor underlines the exact token and tells you why, before Hoverfly ever runs.     |
-
-> **Status: published.** The language server is on npm as
-> [`@jterrazz/hoverfly-lsp`](https://www.npmjs.com/package/@jterrazz/hoverfly-lsp), and the VS Code
-> extension is live on the
-> [Marketplace](https://marketplace.visualstudio.com/items?itemName=Terrazzoni.hoverfly-lsp-vscode).
-> The [JetBrains plugin](https://plugins.jetbrains.com/plugin/32283-hoverfly) is in review; the Zed
-> registry entry, Open VSX, and the SchemaStore listing are pending. 869 tests, verified against
-> real Hoverfly v1.12.8.
-
----
-
-## Why it matters
+A language server for [Hoverfly](https://hoverfly.io) simulation files: errors as you type,
+autocomplete everywhere, and docs on hover, in any editor. It is the first and only IDE tooling
+for Hoverfly.
 
 Hoverfly fails silently. Its import schema is permissive, so the mistakes that actually break a
 mock (a mis-cased matcher, a wrong value type, a template variable that never resolves, a dead
-state transition) don't error at import; they just produce pairs that never match (or, for an
-unknown matcher, **panic the running instance** at match time). This server catches them at edit
-time, with severities and messages ground-truth-verified against real **Hoverfly v1.12.8**.
+state transition) pass import without error and just produce pairs that never match. An unknown
+matcher is worse: it panics the running instance at match time. Hoverfly LSP catches all of this
+at edit time, so you stop the edit-import-`curl`-502-guess loop.
 
----
+> New to language servers? It is the technology behind TypeScript's red squiggles and editor
+> autocomplete. One server implements the smarts once, and the Language Server Protocol lets every
+> editor reuse it. This is that, for Hoverfly simulation JSON.
 
-## What you get
+## Features
 
-**Diagnostics that mirror real Hoverfly behaviour.** A stable catalog of `HFxxx` codes spanning
-structure, matchers, response fields, state flow, templating, and global actions, with severities
-graded the way Hoverfly actually treats each case.
+- **Diagnostics for the mistakes Hoverfly never reports.** Typo'd keys, mis-cased or unknown
+  matchers, wrong value types, malformed templates, unresolved variables, dead state transitions:
+  flagged as you type, with severities graded the way Hoverfly actually treats each case.
+- **Autocomplete for everything.** Every field, all 14 matchers, 60 template helpers (with argument
+  snippets), 210 faker types, and your own state keys, variables, and literals.
+- **Hover docs** on every field, matcher, and helper, so you stop tab-switching to docs.hoverfly.io.
+- **Template-aware highlighting** that colors the `{{ ... }}` syntax living inside body strings.
+- **Works everywhere.** VS Code, Zed, IntelliJ and the JetBrains family, Neovim, Claude Code and
+  other AI agents: any client that speaks LSP, all from one server.
+- **Trustworthy by design.** Every check is verified against a real Hoverfly instance, not just the
+  docs, under a zero-false-positive policy: if it underlines something, Hoverfly treats it as wrong.
 
-An unknown matcher does not fail Hoverfly's import; it **panics the instance at match time**. The
-server flags it as an error before you ever run it:
+## In action
+
+An unknown matcher imports fine but panics Hoverfly at match time. The server flags it as an error
+before you ever run a request:
 
 ```jsonc
 {
   "request": {
-    // ❌ HF201 (error): Unknown matcher "contains": Hoverfly panics at match time on unknown matchers
+    // HF201 (error): Unknown matcher "contains"; Hoverfly panics at match time on unknown matchers
     "path": [{ "matcher": "contains", "value": "/api/v1/orders" }],
   },
   "response": { "status": 200 },
 }
 ```
 
-Chained matchers use `doMatch`, and Hoverfly's v5 schema requires it to be a single **object**,
-not an array (real Hoverfly v1.12.8 rejects the array form with HTTP 400):
+Chained matchers use `doMatch`, which Hoverfly's v5 schema requires to be a single object, not an
+array (real Hoverfly rejects the array form with HTTP 400):
 
 ```jsonc
 {
   "matcher": "jsonpath",
   "value": "$.id",
-  // ❌ HF102 (error): Incorrect type. Expected "object".
+  // HF102 (error): Incorrect type. Expected "object".
   "doMatch": [{ "matcher": "exact", "value": "42" }],
 }
 ```
 
-Inside a `"templated": true` body, faker types are checked against the pinned gofakeit registry;
-a near-miss is surfaced (here as info, because Hoverfly renders an empty string rather than
-failing):
+Inside a `"templated": true` body, `{{ Vars.x }}` and `{{ Literals.x }}` are resolved against the
+file's own definitions, and faker types are checked against the pinned gofakeit registry:
 
 ```jsonc
-// ❌ HF507 (info): Unknown faker type "Uuid" for gofakeit 6.28.0   →   did you mean `uuid`?
-"body": "{\"id\":\"{{ faker 'Uuid' }}\"}"
-```
-
-A response carrying both `body` and `bodyFile` gets Hoverfly's own wording, verbatim:
-
-```jsonc
-// ⚠️ HF301 (warning): Response contains both body and bodyFile; please remove one of them,
-//                     otherwise body is used if non-empty
-"response": { "status": 200, "body": "{}", "bodyFile": "catalog.json" }
-```
-
-And `{{ Vars.x }}` / `{{ Literals.x }}` references are resolved against the file's definitions:
-
-```jsonc
-// ❌ HF505 (error): Variable "missing" is not defined in data.variables
+// HF505 (error): Variable "missing" is not defined in data.variables
 "body": "{\"token\":\"{{ Vars.missing }}\"}"
 ```
 
-**Completion & hover, registry-backed.** Generated from Hoverfly's own Go source, so they match
-what the running server accepts:
+## Install
 
-- **14 matchers** with their value-type rules and array-config keys.
-- **60 template helpers** (52 Hoverfly helpers + 8 raymond built-ins), each with arity and a
-  ready-to-insert snippet.
-- **210 faker types** (gofakeit 6.28.0), completed inside `{{ faker '…' }}`.
-- **Cross-referenced state keys** and `Vars`/`Literals`/`postServeAction` names pulled from the
-  document itself.
-
-Full code reference: **[docs/diagnostics.md](./docs/diagnostics.md)** ·
-template reference: **[docs/template-reference.md](./docs/template-reference.md)**.
-
-**Semantic highlighting that colors your templates.** The `{{ … }}` template syntax in a
-`"templated": true` body (helpers, `Request`/`State`/`Vars` paths, faker types, `{{ }}` delimiters)
-gets distinct colors, plus matcher names render as enums. See **[Syntax highlighting](#syntax-highlighting)**
-below for how this works (and the one Zed setting it needs).
-
----
-
-## Syntax highlighting
-
-Your editor colors a Hoverfly file with **two independent layers**, and it helps to know which does
-what:
-
-1. **The JSON structure, from a tree-sitter grammar, always on.** We reuse the built-in JSON
-   grammar, so keys, strings, numbers, and `true`/`false`/`null` are colored out of the box in every
-   editor, no setup. This is the same mechanism that colors any `.json`, `.ts`, or `.rs` file.
-
-2. **The Hoverfly-specific parts, from the LSP server's semantic tokens.** A static grammar cannot
-   see inside a string, but Hoverfly's templates live _inside_ JSON string values
-   (`"body": "{\"id\":\"{{ Request.Path.[1] }}\"}"`). The server understands them and emits typed
-   tokens: `{{ }}` as operators, helpers (`now`, `faker`) as functions, `Request`/`State`/`Vars` as
-   variables, path segments as properties, known faker types and matcher names as enums, mapped to
-   the exact characters even through JSON escapes (`\n`, `\uXXXX`, surrogate pairs). The legend uses
-   only **standard** LSP token types, so your theme colors them with no customization.
-
-Because the template coloring comes from the server (not a grammar), it appears wherever the editor
-requests LSP semantic tokens:
-
-| Editor            | Semantic tokens                                                                               |
-| ----------------- | --------------------------------------------------------------------------------------------- |
-| VS Code           | On by default (`editor.semanticHighlighting.enabled` = `configuredByTheme`).                  |
-| Neovim 0.9+       | On by default (`vim.lsp.semantic_tokens`).                                                    |
-| IntelliJ / LSP4IJ | On; some versions gate it behind a per-server toggle.                                         |
-| **Zed**           | **Off by default.** Add `"semantic_tokens": "combined"` to settings, then restart the server. |
-
-> **Note for every editor:** "semantic tokens off" doesn't mean a bland file. The JSON structure
-> (layer 1) is still fully colored by tree-sitter. What you lose without them is only the _extra_
-> Hoverfly layer: the template internals and matcher-name enums. That's why the difference is most
-> visible on Hoverfly files (their distinctive content lives in strings) and barely noticeable on,
-> say, TypeScript (whose tree-sitter grammar already covers most of the structure).
-
-Per-editor enablement details and the QA checklist live in each editor's README (linked below) and
-in [MANUAL-QA.md](./MANUAL-QA.md).
-
----
-
-## Install & use
-
-The server is editor-agnostic: a stdio LSP launched as `hoverfly-lsp --stdio`. Pick your editor.
+The server is editor-agnostic: a stdio LSP launched as `hoverfly-lsp --stdio`, published on npm as
+[`@jterrazz/hoverfly-lsp`](https://www.npmjs.com/package/@jterrazz/hoverfly-lsp). Most editors below
+install or bundle it for you.
 
 ### VS Code
 
 Install **Hoverfly** from the
 [Marketplace](https://marketplace.visualstudio.com/items?itemName=Terrazzoni.hoverfly-lsp-vscode)
-(Extensions view, search "Hoverfly"), or:
+(search "Hoverfly" in the Extensions view) or run:
 
 ```bash
 code --install-extension Terrazzoni.hoverfly-lsp-vscode
 ```
 
-The extension bundles the language server, so there is nothing else to install. Open any
-`*.hoverfly.json` (or `*.hfy`) file and the diagnostics, completion, and hover work immediately.
-
-To build and install from source instead:
-
-```bash
-npm install && npm run build
-npm run package --workspace=hoverfly-lsp-vscode   # builds the .vsix under editors/vscode/
-code --install-extension editors/vscode/hoverfly-lsp-vscode-0.1.1.vsix
-```
-
+The extension bundles the server, so there is nothing else to set up. Open any `*.hoverfly.json` or
+`*.hfy` file and diagnostics, completion, and hover work immediately.
 Details: [editors/vscode/README.md](./editors/vscode/README.md).
 
 ### Zed
 
-The [registry submission](https://github.com/zed-industries/extensions/pull/6477) is open (install
-from Zed's Extensions panel once merged). To run it now as a dev extension, Zed compiles it to
-**`wasm32-wasip2`** itself via **rustup**:
+The [registry submission](https://github.com/zed-industries/extensions/pull/6477) is open; once it
+merges, install **Hoverfly** from Zed's Extensions panel. To run it now as a dev extension (Zed
+compiles it to `wasm32-wasip2` itself via rustup, and auto-installs the server from npm):
 
 ```bash
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 rustup target add wasm32-wasip2
-npm run build && npm link --workspace packages/server   # put hoverfly-lsp on $PATH (npm pkg unpublished)
-# Zed: command palette → "zed: install dev extension" → select editors/zed
+# Zed: command palette -> "zed: install dev extension" -> select editors/zed
 ```
 
-> **Homebrew Rust will not work and conflicts.** It has no `wasm32-wasip2` std component. Either
-> `brew uninstall rust`, or make `~/.cargo/bin` win on `$PATH` so `which cargo` is rustup's.
-> **GUI launch gotcha:** a Zed started from Finder/Dock won't have `~/.cargo/bin` on `$PATH`, so
-> launch it from a terminal (`zed .`), or add `~/.cargo/bin` to the GUI environment.
+Zed needs the rustup toolchain (a Homebrew-only Rust has no `wasm32-wasip2` target), and a
+GUI-launched Zed may not see `~/.cargo/bin` on `$PATH`. Both caveats and the fixes are in
+[editors/zed/README.md](./editors/zed/README.md).
 
-Details: [editors/zed/README.md](./editors/zed/README.md).
-
-### IntelliJ / JetBrains
+### IntelliJ and the JetBrains family
 
 The **Hoverfly** plugin is on the
 [JetBrains Marketplace](https://plugins.jetbrains.com/plugin/32283-hoverfly) (in review at first
-publish; once approved, install it from the IDE's plugin browser). It works across the JetBrains
-family (IntelliJ IDEA, PyCharm, WebStorm, GoLand, and the rest) and pulls in
+publish; install it from the IDE's plugin browser once approved). It works across IntelliJ IDEA,
+PyCharm, WebStorm, GoLand, and the rest, and pulls in
 [LSP4IJ](https://github.com/redhat-developer/lsp4ij) automatically.
-
-Before approval, you can install the built plugin from disk
-(`Settings → Plugins → gear → Install Plugin from Disk`) or wire the bundled
-[`editors/intellij/template.json`](./editors/intellij/template.json) into LSP4IJ by hand. Details:
-[editors/intellij/README.md](./editors/intellij/README.md).
+Details: [editors/intellij/README.md](./editors/intellij/README.md).
 
 ### Claude Code
 
 A plugin that pushes the server's diagnostics into Claude's context right after it edits a
-simulation, so it sees and fixes Hoverfly errors in the same turn.
+simulation, so it sees and fixes Hoverfly errors in the same turn:
 
 ```bash
-npm run build
+npm install -g @jterrazz/hoverfly-lsp
 claude plugin marketplace add /ABS/PATH/TO/hoverfly-lsp/editors/claude-code
 claude plugin install hoverfly-lsp --scope user
-export HOVERFLY_LSP_PATH=/ABS/PATH/TO/hoverfly-lsp/packages/server/dist/cli.cjs   # until npm-published
 ```
 
 Details: [editors/claude-code/README.md](./editors/claude-code/README.md).
 
-### Any other editor
+### Neovim and any other LSP editor
 
-Point any LSP client at `hoverfly-lsp --stdio`. Neovim with `nvim-lspconfig`:
+```bash
+npm install -g @jterrazz/hoverfly-lsp
+```
+
+Then point any LSP client at `hoverfly-lsp --stdio`. With `nvim-lspconfig`:
 
 ```lua
 require("lspconfig.configs").hoverfly = {
@@ -259,216 +144,124 @@ require("lspconfig.configs").hoverfly = {
 require("lspconfig").hoverfly.setup({})
 ```
 
-The server also advertises an LSP **semantic tokens** provider, so Hoverfly template syntax inside
-templated body/header strings (helper names, `{{ }}` delimiters, faker types, matcher-name enums) is
-colored. Neovim's built-in `vim.lsp.semantic_tokens` is **on by default on 0.9+**, no extra setup
-is needed beyond the client advertising the capability, which `vim.lsp.protocol.make_client_capabilities()`
-(used by `nvim-lspconfig`) does automatically. Map the standard token types to highlight groups via
-your colorscheme if you want to tune their appearance (e.g. `@lsp.type.function`, `@lsp.type.operator`,
-`@lsp.type.enumMember`). To disable: `vim.lsp.semantic_tokens.stop(bufnr, client_id)` or clear the
-`semanticTokensProvider` server capability in your `on_attach`.
+Semantic-token highlighting is on by default in Neovim 0.9+ once the client advertises the
+capability (`nvim-lspconfig` does).
 
-### Use with AI coding agents
+### AI coding agents
 
-`hoverfly-lsp` is a standard stdio LSP: **point your agent at `hoverfly-lsp --stdio` for `.json`
-files** and it gets Hoverfly diagnostics in-context after every edit. The broad `.json` extension
-is safe: the server content-fingerprints each file and stays silent on non-Hoverfly JSON (see
-[File conventions](#file-conventions)). The recipes below show the future npm-installed path
-(the `@jterrazz/hoverfly-lsp` package puts the `hoverfly-lsp` bin on `$PATH`); **until the npm
-package ships**, build the server and link it locally first with
-`npm run build && npm link --workspace packages/server`, or substitute the absolute path to
-`packages/server/dist/cli.cjs`.
+`hoverfly-lsp` is a standard stdio LSP, so point any agent at `hoverfly-lsp --stdio` for `.json`
+files and it gets Hoverfly diagnostics in-context after every edit. Pointing it at all `.json` is
+safe: the server fingerprints each file and stays silent on non-Hoverfly JSON. After
+`npm install -g @jterrazz/hoverfly-lsp`:
 
-**Claude Code**: shipped plugin (diagnostics pushed into context right after Claude edits a
-simulation). See [the Claude Code section above](#claude-code).
+- **GitHub Copilot CLI**, `~/.copilot/lsp-config.json` or `.github/lsp.json`:
 
-**GitHub Copilot CLI**: `~/.copilot/lsp-config.json` (user) or `.github/lsp.json` (repo):
-
-```json
-{
-  "lspServers": {
-    "hoverfly": {
-      "command": "hoverfly-lsp",
-      "args": ["--stdio"],
-      "fileExtensions": { ".json": "json" }
+  ```json
+  {
+    "lspServers": {
+      "hoverfly": {
+        "command": "hoverfly-lsp",
+        "args": ["--stdio"],
+        "fileExtensions": { ".json": "json" }
+      }
     }
   }
-}
-```
+  ```
 
-**OpenCode**: `opencode.json`:
+- **OpenCode** (`opencode.json`) and **Qwen Code** use the same shape: a `hoverfly` server with
+  `command` `["hoverfly-lsp", "--stdio"]` over `.json`.
+- **Codex CLI**: via the [`codex-lsp`](https://github.com/code-yeongyu/codex-lsp) plugin (Codex has
+  no native LSP yet), same server entry.
+- **Any MCP-only agent (e.g. Gemini CLI)**: reach the server through a generic LSP-to-MCP bridge
+  such as [`mcp-language-server`](https://github.com/isaacphi/mcp-language-server), with its LSP set
+  to `hoverfly-lsp --stdio`. No Hoverfly-specific artifact needed.
 
-```json
-{
-  "$schema": "https://opencode.ai/config.json",
-  "lsp": {
-    "hoverfly": {
-      "command": ["hoverfly-lsp", "--stdio"],
-      "extensions": [".json"]
-    }
-  }
-}
-```
+Cursor, Windsurf, and VSCodium run the VS Code extension; install it from
+[Open VSX](https://open-vsx.org/) and their agent modes read the diagnostics from it.
 
-**Codex CLI**: via the [`code-yeongyu/codex-lsp`](https://github.com/code-yeongyu/codex-lsp)
-plugin (Codex has no native LSP yet); `.codex/lsp-client.json` (project) or
-`~/.codex/lsp-client.json`:
+### Zero-install JSON Schema
 
-```json
-{
-  "lsp": {
-    "hoverfly": {
-      "command": ["hoverfly-lsp", "--stdio"],
-      "extensions": [".json"]
-    }
-  }
-}
-```
+A JSON Schema gives basic validation and completion in any editor that consumes the
+[SchemaStore](https://www.schemastore.org/) catalog. It is not submitted yet; until then, point
+`$schema` (or VS Code's `json.schemas`) at [`schemas/hoverfly-simulation.json`](./schemas/README.md).
 
-**Qwen Code**: native [LSP config](https://qwenlm.github.io/qwen-code-docs/en/users/features/lsp/),
-same shape: a `hoverfly` server with `command` `["hoverfly-lsp", "--stdio"]` over `.json`.
-
-**Any MCP-capable agent (e.g. Gemini CLI)**: agents that speak MCP but not LSP reach the server
-through a generic LSP→MCP bridge such as
-[`isaacphi/mcp-language-server`](https://github.com/isaacphi/mcp-language-server). Register an MCP
-server whose command launches the bridge against the workspace with the LSP set to
-`hoverfly-lsp --stdio` (flags vary per bridge); it exposes `diagnostics`/`definition`/`references`
-to the agent. No Hoverfly-specific artifact needed.
-
-> **Cursor / Windsurf / VSCodium** run standard VS Code extensions: install the
-> [VS Code extension](#vs-code) from **[Open VSX](https://open-vsx.org/)** (the fork default) for
-> one-click setup; their agent modes then read Hoverfly diagnostics from the running extension.
-
-### Zero-install: JSON Schema fallback
-
-A JSON Schema gives basic validation and completion in **any** editor that consumes the
-[SchemaStore](https://www.schemastore.org/) catalog (no install), and a `"$schema"` line in a
-simulation auto-applies it. The schema is **not submitted yet** (planned
-`fileMatch: ["*.hoverfly.json", "hoverfly-simulation.json"]`). Until then, in VS Code you can wire
-the bundled schema by hand via `json.schemas` in your settings.
-
----
-
-## File conventions
+## Configuration
 
 Name simulations **`*.hoverfly.json`** (canonical), **`*.hfy`** (compact), or
-**`hoverfly-simulation.json`**. Explicitly named files always get full treatment, including a
-"this doesn't look like a simulation" diagnostic when the shape is wrong. `*.hoverfly.json` keeps
-the `.json` suffix so generic JSON tooling still applies; `*.hfy` is the shortest option and is the
-cleanest fit for editors that key off a single file extension (e.g. Claude Code).
+**`hoverfly-simulation.json`**. These always get full treatment, including a "this does not look
+like a simulation" diagnostic when the shape is wrong. Any other `.json` is content-fingerprinted (a
+root `data` object plus a `meta.schemaVersion` starting with `v`); non-simulations get zero
+diagnostics, so pointing the server at all JSON is safe.
 
-For any other `.json`, the server **content-fingerprints** it: a root `data` object plus a
-`meta.schemaVersion` starting with `v`. Files that aren't simulations get **zero** diagnostics, so
-pointing the server at all JSON (e.g. via Claude Code's `.json` mapping) is always safe.
+| Setting                      | Type       | What it does                                                                                                                                 |
+| ---------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `hoverfly.registeredActions` | `string[]` | Post-serve actions registered with your Hoverfly, used to complete and validate `response.postServeAction` (unknowable from the file alone). |
 
-## Settings
-
-| Setting                      | Type       | What it does                                                                                                                                                      |
-| ---------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `hoverfly.registeredActions` | `string[]` | Names of `postServeAction`s registered with your Hoverfly, used to complete and validate `response.postServeAction`, which can't be verified from the file alone. |
-
-It flows per editor: VS Code reads it from settings (`workspace/configuration` + init options);
-IntelliJ and Claude Code accept it as `initializationOptions` (`{ "registeredActions": [...] }`).
+VS Code reads it from settings; IntelliJ and Claude Code take it as `initializationOptions`.
 
 ## Diagnostics
 
-Every diagnostic carries a stable `HFxxx` code, `source: "hoverfly"`, and a link back to the
-catalog. **Codes are a stable API**: once frozen, a code's meaning never changes (new codes may be
-added; deprecated ones are never reused). Severity policy: **error** = Hoverfly would reject the
-import or the pair could silently never match (or panic); **warning** = legal but almost certainly
-a mistake; **information**/**hint** = style and upgrade nudges.
+Every diagnostic carries a stable `HFxxx` code, `source: "hoverfly"`, and a link to the catalog.
+**Codes are a stable API**: a code's meaning never changes once frozen (new codes may be added;
+deprecated ones are never reused). Severity follows what Hoverfly does: **error** = it would reject
+the import, or the pair could silently never match or panic; **warning** = legal but almost
+certainly a mistake; **information** and **hint** = style and upgrade nudges.
 
-There are **50+ codes across 6 families** (`HF1xx` structure · `HF2xx` matchers · `HF3xx` response ·
-`HF4xx` state · `HF5xx` templating · `HF6xx` global actions). Full reference:
-**[docs/diagnostics.md](./docs/diagnostics.md)**.
+50+ codes span 6 families: `HF1xx` structure, `HF2xx` matchers, `HF3xx` response, `HF4xx` state,
+`HF5xx` templating, `HF6xx` global actions. Full reference: **[docs/diagnostics.md](./docs/diagnostics.md)**;
+template helpers and faker types: **[docs/template-reference.md](./docs/template-reference.md)**.
 
----
+## Highlighting
 
-## Architecture
+An editor colors a Hoverfly file in two layers. The JSON structure (keys, strings, numbers) comes
+from the built-in tree-sitter grammar and is always on. The Hoverfly-specific parts come from the
+server's LSP semantic tokens: the `{{ ... }}` template internals (helpers, `Request`/`State`/`Vars`
+paths, faker types) and matcher-name enums, which a static grammar cannot see inside a string. Both
+use standard token types, so any theme colors them with no setup.
+
+Semantic tokens are on by default in VS Code, Neovim, and IntelliJ. **Zed has them off by default**:
+add `"semantic_tokens": "combined"` to your settings to light up the template coloring.
+
+## How it works
 
 A single TypeScript stdio server wraps a pure analysis library, built on
-[`vscode-json-languageservice`](https://github.com/microsoft/vscode-json-languageservice)
-(error-recovering JSON parser, schema-driven diagnostics/completion/hover) with Hoverfly-specific
-semantic validators and a Handlebars-subset template engine layered on top. Dependency direction
-is strictly `editors → server → core`.
+[`vscode-json-languageservice`](https://github.com/microsoft/vscode-json-languageservice) (the
+error-recovering JSON engine VS Code itself uses) with Hoverfly-specific validators and a
+Handlebars-subset template engine on top. Dependency direction is strictly `editors -> server -> core`.
 
 ```
 packages/core      @hoverfly-lsp/core      pure analysis library (private; bundled into the server)
 packages/server    @jterrazz/hoverfly-lsp  stdio LSP server (the published package; bin: hoverfly-lsp)
-editors/           vscode · zed · intellij · claude-code   thin per-editor launchers
+editors/           vscode, zed, intellij, claude-code   thin per-editor launchers
 docs/              diagnostics + template reference (generated from core)
 testdata/          the reference corpus (valid/ + invalid/ goldens)
 research/          binding research + the architect decision log
 schemas/           bundled Hoverfly schema + upstream provenance
 ```
 
-The matcher, helper, and faker registries are **generated from a pinned Hoverfly source**
-(`master` commit `aeff9058`, see `packages/core/src/schema/provenance.ts`), and a **weekly drift
-CI** job (`.github/workflows/schema-drift.yml`) diffs the bundled schema against that upstream and
-flags when Hoverfly moves.
-
-Testing is a pyramid on top of a **162-fixture golden corpus**
-([testdata/](./testdata/README.md)): every `invalid/` fixture must emit exactly its frozen
-`HFxxx` diagnostic, every `valid/` fixture must emit none, and every valid fixture was
-**imported into a real Hoverfly v1.12.8** to confirm the corpus is ground truth, not just
-self-consistent (see [research/12-ground-truth-results.md](./research/12-ground-truth-results.md)).
-The full decision log lives in
+The matcher, helper, and faker registries are generated from a pinned Hoverfly source (`master`
+commit `aeff9058`), and a weekly drift-CI job flags when upstream Hoverfly moves. Testing sits on a
+162-fixture golden corpus where every `valid/` fixture was imported into a real **Hoverfly v1.12.8**
+to confirm the corpus is ground truth, not just self-consistent. The decision log is in
 [research/10-architect-decisions.md](./research/10-architect-decisions.md).
 
----
+## Contributing
 
-## Developing
-
-Prerequisites: **Node ≥ 20** (see `.nvmrc`), npm. This is an npm-workspaces monorepo.
+Node >= 20, npm-workspaces monorepo.
 
 ```bash
 npm install
-npm run build          # tsc build across workspaces (core, server, editors/vscode)
-npm test               # vitest
-npm run typecheck      # tsc --build
-npm run lint           # @jterrazz/codestyle: oxlint + oxfmt + tsgo + knip
-npm run lint:fix       # autofix lint/format
-npm run docs:diagnostics  # regenerate docs/ from the built core
+npm run build          # tsc across workspaces
+npm test               # vitest (869 tests)
+npm run lint           # oxlint + oxfmt + tsgo + knip
 ```
 
-**Corpus & goldens.** Fixtures live in `testdata/{valid,invalid}/<domain>/`; each `invalid/`
-fixture pairs with a frozen `*.diagnostics.golden`. Regenerate goldens after an intentional
-change:
-
-```bash
-env UPDATE_GOLDENS=1 npx vitest --run packages/core/test/semantic/golden.test.ts
-```
-
-**Adding a diagnostic rule:** (1) add the code + message + severity to
-`packages/core/src/semantic/catalog.ts`; (2) emit it from the relevant validator under
-`packages/core/src/semantic/`; (3) add a focused `invalid/` fixture (one code per fixture) and
-regenerate its golden; (4) run `npm run docs:diagnostics`; (5) `npm test && npm run lint`.
-
-See [CONTRIBUTING.md](./CONTRIBUTING.md) and [testdata/README.md](./testdata/README.md).
-
-## Releasing
-
-A tag-driven pipeline (`.github/workflows/release.yml`) builds and publishes the npm package and
-editor artifacts on a version tag. Before tagging, walk the in-editor checks that can't run
-headlessly: **[MANUAL-QA.md](./MANUAL-QA.md)**.
-
-## Troubleshooting
-
-- **Zed: "wasm target not found" / build fails.** You're on Homebrew Rust, which has no
-  `wasm32-wasip2` std. `brew uninstall rust` or make `~/.cargo/bin` win on `$PATH`
-  (`which cargo` should be `~/.cargo/bin/cargo`), then `rustup target add wasm32-wasip2`. If the
-  build only fails when Zed is launched from Finder/Dock, it's the GUI `$PATH` missing
-  `~/.cargo/bin`: launch Zed from a terminal (`zed .`).
-- **No diagnostics on my file.** The file must be recognized as a simulation: name it
-  `*.hoverfly.json` / `hoverfly-simulation.json`, or ensure its root has `data` and a
-  `meta.schemaVersion` starting with `v` (the content fingerprint). A non-simulation `.json` is
-  intentionally silent.
-- **"Server not found" / "command not found".** `hoverfly-lsp` isn't on npm yet, so put it on
-  `$PATH` first: `npm run build && npm link --workspace packages/server`, then `hoverfly-lsp
---version`. For VS Code use the bundled `.vsix`; for Claude Code set `HOVERFLY_LSP_PATH`. If
-  your editor was launched from a GUI but Node lives under a shell-managed version manager
-  (nvm/fnm/mise), launch the editor from a shell or set an absolute server path.
+To add a diagnostic: register the code in `packages/core/src/semantic/catalog.ts`, emit it from a
+validator under `packages/core/src/semantic/`, add an `invalid/` fixture and regenerate its golden
+(`env UPDATE_GOLDENS=1 npx vitest --run packages/core/test/semantic/golden.test.ts`), then
+`npm run docs:diagnostics`. See [CONTRIBUTING.md](./CONTRIBUTING.md) and
+[testdata/README.md](./testdata/README.md). In-editor release checks: [MANUAL-QA.md](./MANUAL-QA.md).
 
 ## License
 
-MIT. All dependencies are MIT/Apache (verified, no copyleft).
+MIT. All dependencies are MIT or Apache, with no copyleft.
