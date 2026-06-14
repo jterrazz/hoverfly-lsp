@@ -55,6 +55,16 @@ intellijPlatform {
             recommended()
         }
     }
+
+    // Automated Marketplace updates AFTER the first manual web upload.
+    // Generate a permanent token at https://plugins.jetbrains.com/author/me/tokens and
+    // `export JETBRAINS_MARKETPLACE_TOKEN=...` before running `./gradlew publishPlugin`.
+    // Marketplace signing is optional and skipped; the Marketplace re-signs on upload.
+    publishing {
+        token = providers.environmentVariable("JETBRAINS_MARKETPLACE_TOKEN")
+        // "default" channel = the stable, publicly listed release stream.
+        channels = listOf("default")
+    }
 }
 
 // Copy the freshly built LSP server bundle into the plugin resources so it is

@@ -1,19 +1,18 @@
 package com.jterrazz.hoverfly
 
 import com.intellij.execution.configurations.GeneralCommandLine
-import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
-import com.intellij.openapi.extensions.PluginId
 import com.redhat.devtools.lsp4ij.server.OSProcessStreamConnectionProvider
 import java.io.File
 
 /**
- * Launches the bundled Hoverfly LSP server via `node <plugin>/server/cli.cjs --stdio`.
+ * Launches the bundled Hoverfly LSP server via `node <cli.cjs> --stdio`.
  *
- * The server bundle (`cli.cjs`) is packaged inside the plugin under `server/` and
- * unpacked into the plugin installation directory's `lib/` classes. We resolve it
- * relative to the plugin path so it works regardless of install location.
+ * The server bundle (`cli.cjs`) is packaged inside the plugin jar under `server/`.
+ * We extract it from the plugin classpath to a stable temp location and launch it
+ * from there, which works regardless of the plugin install path and uses only
+ * public IntelliJ Platform APIs.
  */
 class HoverflyServerConnectionProvider : OSProcessStreamConnectionProvider() {
 
@@ -49,26 +48,12 @@ class HoverflyServerConnectionProvider : OSProcessStreamConnectionProvider() {
     }
 
     /**
-     * Finds `server/cli.cjs`. The plugin is delivered as a zip whose `lib/` dir
-     * contains the plugin jar; bundled resources placed under `server/` in the jar
-     * are also copied to the plugin root by the IntelliJ Platform Gradle plugin's
-     * distribution layout. We probe the plugin path and the jar's resource as fallbacks.
+     * Extracts the bundled `server/cli.cjs` resource to a stable temp file and returns it.
+     * The bundle is always packaged inside the plugin jar, so a classpath read is the most
+     * reliable resolver and avoids any internal plugin-path APIs. The file is re-extracted
+     * on every launch so an updated plugin always runs its own server version.
      */
     private fun resolveServerScript(): File? {
-        val pluginPath = PluginManagerCore.getPlugin(PluginId.getId(PLUGIN_ID))?.pluginPath?.toFile()
-            ?: return extractFromClasspath()
-
-        val candidates = listOf(
-            File(pluginPath, "server/cli.cjs"),
-            File(pluginPath, "lib/server/cli.cjs"),
-        )
-        candidates.firstOrNull { it.isFile }?.let { return it }
-
-        // Resource is bundled inside the plugin jar -> extract to a temp file.
-        return extractFromClasspath()
-    }
-
-    private fun extractFromClasspath(): File? {
         val stream = javaClass.classLoader.getResourceAsStream("server/cli.cjs") ?: return null
         return stream.use { input ->
             val tempDir = File(System.getProperty("java.io.tmpdir"), "hoverfly-lsp-server")
@@ -84,9 +69,5 @@ class HoverflyServerConnectionProvider : OSProcessStreamConnectionProvider() {
             .getNotificationGroup("Hoverfly LSP")
             .createNotification(title, content, NotificationType.ERROR)
             .notify(null)
-    }
-
-    companion object {
-        private const val PLUGIN_ID = "com.jterrazz.hoverfly-lsp"
     }
 }

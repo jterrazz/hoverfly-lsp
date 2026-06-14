@@ -20,3 +20,6 @@ editors/intellij/plugin/build/
 editors/intellij/plugin/.gradle/
 editors/intellij/plugin/.intellijPlatform/
 editors/intellij/plugin/.kotlin/
+
+# IntelliJ IDE project files
+.idea/

@@ -71,6 +71,55 @@ diagnostic; hovering `schemaVersion` should show docs. See the
 
 ---
 
+## Publishing to JetBrains Marketplace
+
+The built artifact is `editors/intellij/plugin/build/distributions/Hoverfly-0.1.0.zip`.
+
+Build it first (requires JDK 21; the server bundle must be current):
+
+```bash
+npm run build                                   # repo root — refreshes packages/server/dist/cli.cjs
+cd editors/intellij/plugin
+JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home ./gradlew buildPlugin
+```
+
+Optionally validate before uploading (downloads verifier IDEs, ~2 GB the first time):
+
+```bash
+JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home ./gradlew verifyPlugin
+```
+
+### First time (manual web upload)
+
+1. Create a vendor account at <https://plugins.jetbrains.com> and sign in.
+2. Click **Upload plugin**, select `Hoverfly-0.1.0.zip`.
+3. Pick **License: MIT** and **Category: Languages** (or _Editor_ — Hoverfly is a language
+   integration), and confirm the auto-filled name/description from `plugin.xml`.
+4. Submit. **The first plugin from a new vendor requires manual JetBrains approval**
+   (typically ~2 business days) before it appears in the Marketplace. Updates after the
+   first approval are published instantly.
+
+### Updates (automated)
+
+Once the plugin exists on the Marketplace, bump `pluginVersion` in `gradle.properties`,
+rebuild, then publish with the Gradle task:
+
+1. Generate a **permanent** token at <https://plugins.jetbrains.com/author/me/tokens>.
+2. Export it and publish:
+
+   ```bash
+   export JETBRAINS_MARKETPLACE_TOKEN=...
+   cd editors/intellij/plugin
+   JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home ./gradlew publishPlugin
+   ```
+
+The `publishPlugin` task (configured in `build.gradle.kts` under
+`intellijPlatform { publishing { ... } }`) builds the zip and uploads it to the `default`
+(stable) channel using `JETBRAINS_MARKETPLACE_TOKEN`. Marketplace signing is optional and is
+skipped — the Marketplace signs the plugin on its side.
+
+---
+
 ## Manual LSP4IJ template (fallback)
 
 Use this if you prefer not to build/install the plugin, or want to point at a globally installed
@@ -87,7 +136,7 @@ Use this if you prefer not to build/install the plugin, or want to point at a gl
 
 | Requirement             | Details                                               |
 | ----------------------- | ----------------------------------------------------- |
-| **IDE version**         | IntelliJ IDEA 2024.2 or later (Community or Ultimate) |
+| **IDE version**         | IntelliJ IDEA 2025.2 or later (Community or Ultimate) |
 | **LSP4IJ plugin**       | Version 0.7.0 or later                                |
 | **Node.js**             | 20 or later                                           |
 | **hoverfly-lsp binary** | See install options below                             |

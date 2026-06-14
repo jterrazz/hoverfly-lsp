@@ -13,8 +13,20 @@
         manual LSP configuration is required. A <b>Node.js</b> runtime (20+) must be available;
         it is auto-detected from common locations, or set the <code>HOVERFLY_LSP_NODE</code>
         environment variable to point at a specific <code>node</code> binary.</p>
-        <p>Powered by <a href="https://github.com/redhat-developer/lsp4ij">LSP4IJ</a>.</p>
+        <p>Powered by the <code>@jterrazz/hoverfly-lsp</code> language server and
+        <a href="https://github.com/redhat-developer/lsp4ij">LSP4IJ</a> (auto-installed).</p>
+        <ul>
+            <li>Diagnostics for invalid simulation structure and fields</li>
+            <li>Completion for matchers, fields, and known enums</li>
+            <li>Hover documentation</li>
+            <li>Semantic-token highlighting (including Handlebars templates)</li>
+        </ul>
     ]]></description>
+
+    <change-notes><![CDATA[
+        <p><b>0.1.0</b> — First release: diagnostics, completion, hover, and semantic
+        highlighting for Hoverfly simulation files.</p>
+    ]]></change-notes>
 
     <depends>com.intellij.modules.platform</depends>
     <depends>com.redhat.devtools.lsp4ij</depends>
