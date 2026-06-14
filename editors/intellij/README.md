@@ -5,6 +5,32 @@ simulation files (`*.hoverfly.json`, `*.hfy`, `hoverfly-simulation.json`) to any
 including the **free Community edition**. Built on
 [LSP4IJ](https://github.com/redhat-developer/lsp4ij).
 
+## Compatible IDEs
+
+The plugin works across the **entire JetBrains IDE family** — IntelliJ IDEA, PyCharm, WebStorm,
+GoLand, PhpStorm, RubyMine, CLion, Rider, DataGrip, and Android Studio (Community and paid
+editions alike). It depends only on the universal platform module (`com.intellij.modules.platform`)
+plus [LSP4IJ](https://github.com/redhat-developer/lsp4ij), so it carries no IDE-specific (Java,
+Python, Go, JS…) requirement. Users only need LSP4IJ, which the IDE offers to auto-install when
+the plugin is installed.
+
+Compatibility is proven with the JetBrains Plugin Verifier (`./gradlew verifyPlugin`) against a
+representative cross-family set at the since-build floor (2025.2 / build 252) and a recent build
+(2026.1) — all report **Compatible**:
+
+| IDE           | Floor (2025.2) | Recent (2026.1) |
+| ------------- | -------------- | --------------- |
+| IntelliJ IDEA | ✅ Community   | ✅ (unified)    |
+| PyCharm       | ✅ Community   | ✅ (unified)    |
+| WebStorm      | ✅             | ✅              |
+| GoLand        | ✅             | ✅              |
+
+(The Community distributions of IDEA and PyCharm are no longer published from 2025.3 onwards, so
+the 2026.1 IDEA/PyCharm checks use the unified distributions; the plugin stays Community-compatible
+because it only touches the platform module.)
+
+---
+
 There are two ways to set this up:
 
 1. **[Install the plugin (recommended)](#install-the-plugin-recommended)** — a one-click `.zip`

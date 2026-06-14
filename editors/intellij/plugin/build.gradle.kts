@@ -52,7 +52,24 @@ intellijPlatform {
 
     pluginVerification {
         ides {
-            recommended()
+            // Cross-IDE verification: prove the plugin loads across the JetBrains IDE
+            // family (not just IDEA). The plugin depends only on the universal
+            // com.intellij.modules.platform module + LSP4IJ, so any IDE in the family
+            // is compatible. We verify a representative set at the since-build floor
+            // (2025.2 = build 252) and a recent build (2026.1), covering Python/JS/Go.
+            //
+            // Note: the Community-edition distributions (IntellijIdeaCommunity / PyCharmCommunity)
+            // are no longer published since 2025.3 (build 253), so the 2026.1 IDEA/PyCharm
+            // checks use the unified distributions (IntellijIdea -> ideaIU, PyCharm -> pycharmPY).
+            // The plugin stays Community-compatible because it only touches the platform module.
+            create(IntelliJPlatformType.IntellijIdeaCommunity, "2025.2")
+            create(IntelliJPlatformType.IntellijIdea, "2026.1")
+            create(IntelliJPlatformType.PyCharmCommunity, "2025.2")
+            create(IntelliJPlatformType.PyCharm, "2026.1")
+            create(IntelliJPlatformType.WebStorm, "2025.2")
+            create(IntelliJPlatformType.WebStorm, "2026.1")
+            create(IntelliJPlatformType.GoLand, "2025.2")
+            create(IntelliJPlatformType.GoLand, "2026.1")
         }
     }
 

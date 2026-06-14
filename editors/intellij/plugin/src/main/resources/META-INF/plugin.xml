@@ -24,6 +24,8 @@
     ]]></description>
 
     <change-notes><![CDATA[
+        <p><b>0.1.2</b> — verified compatibility across the JetBrains IDE family
+        (IntelliJ IDEA, PyCharm, WebStorm, GoLand, …).</p>
         <p><b>0.1.1</b> — Packaging fix: remove internal API usage (server resolved via
         classpath resource) and raise compatibility floor to 2025.2.</p>
         <p><b>0.1.0</b> — First release: diagnostics, completion, hover, and semantic
