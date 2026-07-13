@@ -13,7 +13,7 @@ npm install            # or: make install (npm ci, pinned)
 npm run build          # tsc build across all workspaces (core, server, editors/vscode)
 npm test               # vitest (869 tests)
 npm run typecheck      # tsc --build
-npm run lint           # @jterrazz/codestyle: oxlint + oxfmt + tsgo + knip
+npm run lint           # @jterrazz/typescript: oxlint + oxfmt + tsgo + knip
 npm run lint:fix       # autofix lint/format issues
 ```
 

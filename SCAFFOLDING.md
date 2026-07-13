@@ -2,7 +2,7 @@
 
 Records where this monorepo diverges from standard `@jterrazz` single-package house
 conventions, and why. House style (`package-typescript`, `package-test`,
-`@jterrazz/codestyle`, `jterrazz/jterrazz-actions`) was followed wherever it fit; the
+`@jterrazz/typescript`, `jterrazz/jterrazz-actions`) was followed wherever it fit; the
 divergences below are driven by the npm-workspaces monorepo shape and by binding
 decisions in `research/03-lsp-architecture.md` and `research/10-architect-decisions.md`.
 
@@ -40,11 +40,11 @@ decisions in `research/03-lsp-architecture.md` and `research/10-architect-decisi
   package.json at runtime. The bundle is proven by spawning it over stdio in the integration
   tests and by the `--version`/`--help` bin smoke tests.
 
-### 3. Linting: `@jterrazz/codestyle` retained, with monorepo-shaped config
+### 3. Linting: `@jterrazz/typescript` retained, with monorepo-shaped config
 
-- Kept the house lint stack: `codestyle check` / `codestyle fix` runs **tsgo + oxlint +
+- Kept the house lint stack: `typescript check` / `typescript fix` runs **tsgo + oxlint +
   oxfmt + knip** in parallel, exactly as in `package-test`. It works in the workspace
-  setup because `@jterrazz/codestyle` resolves tool bins from the hoisted root
+  setup because `@jterrazz/typescript` resolves tool bins from the hoisted root
   `node_modules/.bin`.
 - `oxlint.config.ts` extends `oxlint.node` and ignores `**/dist/**` + `testdata/**`.
 - Added a root **`knip.json`** declaring per-workspace entry points (core `src/index.ts`;
@@ -54,12 +54,12 @@ decisions in `research/03-lsp-architecture.md` and `research/10-architect-decisi
     D1/report 03, but **not yet imported** (Phase 2 wires it). Without the ignore, knip
     would flag it as unused.
   - `oxlint` at root: imported by `oxlint.config.ts` but provided transitively through
-    `@jterrazz/codestyle`, not a direct dependency.
+    `@jterrazz/typescript`, not a direct dependency.
 - Added **`.prettierignore`** (`testdata/`, `dist/`) so `oxfmt` does not try to reformat
   the intentionally-malformed fixture `testdata/invalid/invalid-json.hoverfly.json`.
 - Formatting note: `oxfmt` runs with its **defaults (2-space indent)**; the house
   4-space JSON/TS indentation seen in `package-test` comes from oxfmt defaults of an older
-  codestyle version; current `@jterrazz/codestyle@3.4.0` + `oxfmt@0.54` default to 2 spaces.
+  codestyle version; current `@jterrazz/typescript@6` + `oxfmt` default to 2 spaces.
   We accept the tool default rather than fighting it (no `.oxfmtrc`).
 
 ### 4. CI: plain workflow with a node 20+22 matrix, not the reusable `validate.yaml`
@@ -115,7 +115,7 @@ decisions in `research/03-lsp-architecture.md` and `research/10-architect-decisi
 ## Non-divergences (house style followed)
 
 - `type: module` everywhere; MIT license; author `Jean-Baptiste Terrazzoni`.
-- `@jterrazz/codestyle` as the single quality gate; `npm run lint` == `codestyle check`.
+- `@jterrazz/typescript` as the single quality gate; `npm run lint` == `typescript check`.
 - Vitest as the test runner (`vitest --run`), `// Given -` / `// Then -` test comments.
 - `Makefile` with `node_modules/.install` sentinel target, matching house repos.
 - 4-space indentation in hand-authored JSON fixtures and configs where oxfmt does not

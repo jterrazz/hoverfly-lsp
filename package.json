@@ -19,11 +19,11 @@
     "docs:diagnostics": "node scripts/generate-diagnostic-docs.mjs",
     "test": "vitest --run",
     "typecheck": "tsc --build",
-    "lint": "codestyle check",
-    "lint:fix": "codestyle fix"
+    "lint": "typescript check",
+    "lint:fix": "typescript fix"
   },
   "devDependencies": {
-    "@jterrazz/codestyle": "^3.4.0",
+    "@jterrazz/typescript": "^6.0.0",
     "@types/node": "^25.5.0",
     "glob": "^13.0.6",
     "typescript": "~5.9.3",
