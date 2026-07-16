@@ -23,7 +23,7 @@
     "lint:fix": "typescript fix"
   },
   "devDependencies": {
-    "@jterrazz/typescript": "^6.0.0",
+    "@jterrazz/typescript": "^6.0.4",
     "@types/node": "^25.5.0",
     "glob": "^13.0.6",
     "typescript": "~5.9.3",
