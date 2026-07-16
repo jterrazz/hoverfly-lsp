@@ -47,7 +47,8 @@ describe("HF103/HF104 — schemaVersion rule", () => {
   it("does not flag a current v5.x version", () => {
     // Given - the current default version
     // Then - no HF103/HF104
-    expect(hf1xxSchemaVersionRule.run(contextOf(sim("v5.3")))).toEqual([]);
+    const diags = hf1xxSchemaVersionRule.run(contextOf(sim("v5.3")));
+    expect(diags).toEqual([]);
   });
 
   it("flags an unrecognised version syntax as HF104 error", () => {
@@ -62,7 +63,8 @@ describe("HF103/HF104 — schemaVersion rule", () => {
   it("accepts a bare major like v5 (C4 pattern allows optional minor)", () => {
     // Given - v5 with no minor
     // Then - neither HF103 nor HF104 fires
-    expect(hf1xxSchemaVersionRule.run(contextOf(sim("v5")))).toEqual([]);
+    const diags = hf1xxSchemaVersionRule.run(contextOf(sim("v5")));
+    expect(diags).toEqual([]);
   });
 
   it("stays silent when schemaVersion is absent or non-string (a schema concern)", () => {

@@ -91,7 +91,8 @@ describe("HF603 — unknown key (silent drop) with did-you-mean", () => {
     });
     const doc = TextDocument.create("file:///s.hoverfly.json", "json", 1, text);
     // Then - the structure rule emits nothing for the root typo (HF102 owns it)
-    expect(structureRule.run(createRuleContext(doc, ls.parseJSONDocument(doc)))).toEqual([]);
+    const diags = structureRule.run(createRuleContext(doc, ls.parseJSONDocument(doc)));
+    expect(diags).toEqual([]);
   });
 });
 

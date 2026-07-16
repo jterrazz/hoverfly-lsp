@@ -64,17 +64,15 @@ import { TextDocument } from "vscode-languageserver-textdocument";
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
 
-connection.onInitialize(
-  (_params): InitializeResult => ({
-    capabilities: {
-      textDocumentSync: TextDocumentSyncKind.Incremental,
-      completionProvider: { resolveProvider: true, triggerCharacters: ['"', ":"] },
-      hoverProvider: true,
-      documentSymbolProvider: true,
-      // diagnostics are pushed via connection.sendDiagnostics OR pulled via diagnosticProvider
-    },
-  }),
-);
+connection.onInitialize((_params): InitializeResult => ({
+  capabilities: {
+    textDocumentSync: TextDocumentSyncKind.Incremental,
+    completionProvider: { resolveProvider: true, triggerCharacters: ['"', ":"] },
+    hoverProvider: true,
+    documentSymbolProvider: true,
+    // diagnostics are pushed via connection.sendDiagnostics OR pulled via diagnosticProvider
+  },
+}));
 
 documents.onDidChangeContent(async ({ document }) => {
   const diagnostics = await analyze(document); // <- delegates to packages/core

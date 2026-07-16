@@ -56,17 +56,20 @@ describe("HF601 — invalid globalActions delay urlPattern", () => {
 
   it("accepts a valid regex pattern", () => {
     // Given - a well-formed regex
-    expect(
-      hf601DelayPatternRule.run(contextOf(withDelays([{ urlPattern: "^/api/.*$", delay: 100 }]))),
-    ).toEqual([]);
+    const diags = hf601DelayPatternRule.run(
+      contextOf(withDelays([{ urlPattern: "^/api/.*$", delay: 100 }])),
+    );
+    expect(diags).toEqual([]);
   });
 
   it("is silent when urlPattern is absent or non-string", () => {
     // Given - a delay with no urlPattern, then a non-string one
-    expect(hf601DelayPatternRule.run(contextOf(withDelays([{ delay: 100 }])))).toEqual([]);
-    expect(
-      hf601DelayPatternRule.run(contextOf(withDelays([{ urlPattern: 42, delay: 100 }]))),
-    ).toEqual([]);
+    const noPattern = hf601DelayPatternRule.run(contextOf(withDelays([{ delay: 100 }])));
+    expect(noPattern).toEqual([]);
+    const nonString = hf601DelayPatternRule.run(
+      contextOf(withDelays([{ urlPattern: 42, delay: 100 }])),
+    );
+    expect(nonString).toEqual([]);
   });
 
   it("also scans delaysLogNormal[] (both arrays flagged)", () => {
@@ -82,7 +85,8 @@ describe("HF601 — invalid globalActions delay urlPattern", () => {
       meta: { schemaVersion: "v5.3" },
     });
     // Then - two HF601 warnings, one per array
-    expect(codes(hf601DelayPatternRule.run(contextOf(text)))).toEqual(["HF601", "HF601"]);
+    const diags = hf601DelayPatternRule.run(contextOf(text));
+    expect(codes(diags)).toEqual(["HF601", "HF601"]);
   });
 
   it("flags a malformed regex in delaysLogNormal alone", () => {
@@ -95,21 +99,24 @@ describe("HF601 — invalid globalActions delay urlPattern", () => {
       meta: { schemaVersion: "v5.3" },
     });
     // Then - HF601 fires on the log-normal pattern
-    expect(codes(hf601DelayPatternRule.run(contextOf(text)))).toEqual(["HF601"]);
+    const diags = hf601DelayPatternRule.run(contextOf(text));
+    expect(codes(diags)).toEqual(["HF601"]);
   });
 });
 
 describe("HF602 — postServeAction not in registeredActions allowlist", () => {
   it("is silent when no allowlist is configured (default)", () => {
     // Given - a postServeAction but no settings
-    expect(hf602PostServeActionRule.run(contextOf(withAction("webhook")))).toEqual([]);
+    const diags = hf602PostServeActionRule.run(contextOf(withAction("webhook")));
+    expect(diags).toEqual([]);
   });
 
   it("is silent when the allowlist is empty", () => {
     // Given - an explicitly empty allowlist
-    expect(
-      hf602PostServeActionRule.run(contextOf(withAction("webhook"), { registeredActions: [] })),
-    ).toEqual([]);
+    const diags = hf602PostServeActionRule.run(
+      contextOf(withAction("webhook"), { registeredActions: [] }),
+    );
+    expect(diags).toEqual([]);
   });
 
   it("flags an action not in a non-empty allowlist", () => {
@@ -125,10 +132,9 @@ describe("HF602 — postServeAction not in registeredActions allowlist", () => {
 
   it("accepts an action present in the allowlist", () => {
     // Given - the action is allowlisted
-    expect(
-      hf602PostServeActionRule.run(
-        contextOf(withAction("webhook"), { registeredActions: ["webhook"] }),
-      ),
-    ).toEqual([]);
+    const diags = hf602PostServeActionRule.run(
+      contextOf(withAction("webhook"), { registeredActions: ["webhook"] }),
+    );
+    expect(diags).toEqual([]);
   });
 });
