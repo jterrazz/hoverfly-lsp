@@ -154,7 +154,7 @@ maxRestarts/diagnostics` (diagnostics default true, auto-injected after edits). 
 
 ## D9 — Ground-truth corrections (2026-06-11)
 
-Phase 6 imported every valid fixture into real Hoverfly v1.12.8. Three corrections fell out, all now implemented (see core changelog "ground-truth fixes"):
+Phase 6 imported every valid fixture into real Hoverfly v1.12.8. Three corrections fell out, all now implemented (recorded in the v0.1.0 GitHub Release notes):
 
 1. **`doMatch` is a single chained matcher OBJECT, not an array.** Hoverfly's embedded schema types `field-matchers` as `object`, and `doMatch` self-`$ref`s it; an array-shaped `doMatch` is rejected at import (HTTP 400, `Invalid type. Expected: object, given: array`). Phase 2 had dropped the `type: object` constraint to accommodate a (then wrongly array-shaped) rich fixture. The constraint is now RESTORED in `hoverfly.schema.json` (faithful to official, not stricter), so an array-shaped `doMatch` surfaces as an **HF102** schema error (`Incorrect type. Expected "object".`), mirroring Hoverfly's own import error. New marker fixture: `testdata/invalid/matchers/domatch-array-shape.hoverfly.json`.
 
