@@ -3,7 +3,7 @@
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "dist",
-    "tsBuildInfoFile": "dist/.tsbuildinfo-vscode",
+    "tsBuildInfoFile": ".artifacts/tsc/tsconfig.tsbuildinfo",
     "noEmit": true,
     "types": ["node", "vscode"],
     "lib": ["ES2022"]

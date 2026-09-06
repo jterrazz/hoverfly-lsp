@@ -16,7 +16,7 @@ once a version is on npm it can't be replaced.
 
 ```bash
 npm run build && npm run package --workspace hoverfly-lsp-vscode
-code --install-extension editors/vscode/hoverfly-lsp-vscode-0.1.0.vsix
+code --install-extension editors/vscode/.artifacts/vsce/hoverfly-lsp-vscode-0.1.0.vsix
 ```
 
 Open `testdata/valid/rich-stateful-templated.hoverfly.json` and confirm (full list in
@@ -87,7 +87,7 @@ Marketplace).
 
    ```bash
    npx @vscode/vsce login Terrazzoni          # paste the PAT (one-time)
-   npx @vscode/vsce publish --packagePath editors/vscode/hoverfly-lsp-vscode-0.1.0.vsix
+   npx @vscode/vsce publish --packagePath editors/vscode/.artifacts/vsce/hoverfly-lsp-vscode-0.1.0.vsix
    ```
 
 ### Open VSX
@@ -97,7 +97,7 @@ Marketplace).
 2. Publish:
 
    ```bash
-   npx ovsx publish editors/vscode/hoverfly-lsp-vscode-0.1.0.vsix -p <OVSX_TOKEN>
+   npx ovsx publish editors/vscode/.artifacts/vsce/hoverfly-lsp-vscode-0.1.0.vsix -p <OVSX_TOKEN>
    ```
 
 ---
