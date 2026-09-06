@@ -7,22 +7,22 @@
  * `packages/core`; wiring into the service is owned downstream.
  */
 
-export { analyze, type AnalyzerContext } from "./analyzer.js";
+export { analyze, type AnalyzerContext } from './analyzer.js';
 export type {
-  BlockNode,
-  BooleanLiteral,
-  ContentNode,
-  Expression,
-  MustacheNode,
-  NumberLiteral,
-  PathExpression,
-  Program,
-  Span,
-  Statement,
-  StringLiteral,
-  SubExpression,
-  TemplateNode,
-} from "./ast.js";
-export { hasTemplateSyntax } from "./detect.js";
-export { parse, type ParseResult, type TemplateParseError } from "./parser.js";
-export { createStringSourceMap, type StringSourceMap } from "./source-map.js";
+    BlockNode,
+    BooleanLiteral,
+    ContentNode,
+    Expression,
+    MustacheNode,
+    NumberLiteral,
+    PathExpression,
+    Program,
+    Span,
+    Statement,
+    StringLiteral,
+    SubExpression,
+    TemplateNode,
+} from './ast.js';
+export { hasTemplateSyntax } from './detect.js';
+export { parse, type ParseResult, type TemplateParseError } from './parser.js';
+export { createStringSourceMap, type StringSourceMap } from './source-map.js';

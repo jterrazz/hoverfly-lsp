@@ -5,9 +5,9 @@
  */
 
 export {
-  SEMANTIC_TOKEN_MODIFIERS,
-  SEMANTIC_TOKEN_TYPE_INDEX,
-  SEMANTIC_TOKEN_TYPES,
-  type SemanticTokenTypeName,
-} from "./legend.js";
-export { getSemanticTokens, type SemanticToken } from "./producer.js";
+    SEMANTIC_TOKEN_MODIFIERS,
+    SEMANTIC_TOKEN_TYPE_INDEX,
+    SEMANTIC_TOKEN_TYPES,
+    type SemanticTokenTypeName,
+} from './legend.js';
+export { getSemanticTokens, type SemanticToken } from './producer.js';

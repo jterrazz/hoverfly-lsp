@@ -292,12 +292,12 @@ never match (report 07 §3 `xmltemplated`).
   that returns structured errors; pure JS, no native deps) or `@xmldom/xmldom`'s error-collecting
   parse. Prefer `fast-xml-parser`'s validator (purpose-built for "is this well-formed?", returns
   `true` or an error object). **Low false-positive risk** — XML well-formedness is well-defined.
-  - **For `xmltemplated`:** strip/neutralize the `{{ ignore }}` and `{{ regex: … }}` tokens **before**
-    validating (replace them with a placeholder text node), because `{{` `}}` and unescaped regex
-    chars (`<`, `&`) inside `{{ regex: … }}` could otherwise trip a strict XML validator. Validate
-    the _XML skeleton_, not the template tokens. Then **additionally** RE2-validate each
-    `{{ regex: PATTERN }}` PATTERN with the §3.1 `re2js` validator (reuse) → if PATTERN is invalid
-    RE2, that leaf never matches → **HF230** (same code as regex; it _is_ a regex).
+    - **For `xmltemplated`:** strip/neutralize the `{{ ignore }}` and `{{ regex: … }}` tokens **before**
+      validating (replace them with a placeholder text node), because `{{` `}}` and unescaped regex
+      chars (`<`, `&`) inside `{{ regex: … }}` could otherwise trip a strict XML validator. Validate
+      the _XML skeleton_, not the template tokens. Then **additionally** RE2-validate each
+      `{{ regex: PATTERN }}` PATTERN with the §3.1 `re2js` validator (reuse) → if PATTERN is invalid
+      RE2, that leaf never matches → **HF230** (same code as regex; it _is_ a regex).
 - Watch beevik/etree vs strict-XML edge cases: etree is fairly permissive. To avoid false positives,
   configure the validator to be **lenient** (don't enforce a single root if Hoverfly doesn't —
   verify; etree's `ReadFromString` does expect a document). Recommend shipping XML well-formedness as

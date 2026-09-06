@@ -4,4 +4,4 @@
  * the bundle's `main()` side effect: validate CLI flags, then start the language server over
  * the selected transport.
  */
-import "../dist/cli.cjs";
+import '../dist/cli.cjs';

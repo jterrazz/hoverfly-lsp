@@ -45,9 +45,9 @@ still recognises the file):
 
 ```jsonc
 {
-  "$schema": "https://json.schemastore.org/hoverfly-simulation.json",
-  "data": { "pairs": [] },
-  "meta": { "schemaVersion": "v5.3" },
+    "$schema": "https://json.schemastore.org/hoverfly-simulation.json",
+    "data": { "pairs": [] },
+    "meta": { "schemaVersion": "v5.3" },
 }
 ```
 
@@ -60,12 +60,12 @@ In `.vscode/settings.json` (or user settings):
 
 ```jsonc
 {
-  "json.schemas": [
-    {
-      "fileMatch": ["*.hoverfly.json", "*.hfy", "hoverfly-simulation.json"],
-      "url": "https://json.schemastore.org/hoverfly-simulation.json",
-    },
-  ],
+    "json.schemas": [
+        {
+            "fileMatch": ["*.hoverfly.json", "*.hfy", "hoverfly-simulation.json"],
+            "url": "https://json.schemastore.org/hoverfly-simulation.json",
+        },
+    ],
 }
 ```
 

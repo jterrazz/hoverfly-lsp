@@ -40,11 +40,11 @@ before you ever run a request:
 
 ```jsonc
 {
-  "request": {
-    // HF201 (error): Unknown matcher "contains"; Hoverfly panics at match time on unknown matchers
-    "path": [{ "matcher": "contains", "value": "/api/v1/orders" }],
-  },
-  "response": { "status": 200 },
+    "request": {
+        // HF201 (error): Unknown matcher "contains"; Hoverfly panics at match time on unknown matchers
+        "path": [{ "matcher": "contains", "value": "/api/v1/orders" }],
+    },
+    "response": { "status": 200 },
 }
 ```
 
@@ -53,10 +53,10 @@ array (real Hoverfly rejects the array form with HTTP 400):
 
 ```jsonc
 {
-  "matcher": "jsonpath",
-  "value": "$.id",
-  // HF102 (error): Incorrect type. Expected "object".
-  "doMatch": [{ "matcher": "exact", "value": "42" }],
+    "matcher": "jsonpath",
+    "value": "$.id",
+    // HF102 (error): Incorrect type. Expected "object".
+    "doMatch": [{ "matcher": "exact", "value": "42" }],
 }
 ```
 
@@ -156,17 +156,17 @@ safe: the server fingerprints each file and stays silent on non-Hoverfly JSON. A
 
 - **GitHub Copilot CLI**, `~/.copilot/lsp-config.json` or `.github/lsp.json`:
 
-  ```json
-  {
-    "lspServers": {
-      "hoverfly": {
-        "command": "hoverfly-lsp",
-        "args": ["--stdio"],
-        "fileExtensions": { ".json": "json" }
-      }
+    ```json
+    {
+        "lspServers": {
+            "hoverfly": {
+                "command": "hoverfly-lsp",
+                "args": ["--stdio"],
+                "fileExtensions": { ".json": "json" }
+            }
+        }
     }
-  }
-  ```
+    ```
 
 - **OpenCode** (`opencode.json`) and **Qwen Code** use the same shape: a `hoverfly` server with
   `command` `["hoverfly-lsp", "--stdio"]` over `.json`.

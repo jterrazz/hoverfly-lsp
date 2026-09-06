@@ -164,162 +164,168 @@ Hoverfly Cloud is a SaaS built on top of open-source Hoverfly. It uses the same 
 
 ```json
 {
-  "additionalProperties": false,
-  "description": "Hoverfly simulation schema",
-  "required": ["data", "meta"],
-  "type": "object",
-  "properties": {
-    "data": {
-      "type": "object",
-      "properties": {
-        "globalActions": {
-          "type": "object",
-          "properties": {
-            "delays": { "type": "array", "items": { "$ref": "#/definitions/delay" } },
-            "delaysLogNormal": {
-              "type": "array",
-              "items": { "$ref": "#/definitions/delay-log-normal" }
+    "additionalProperties": false,
+    "description": "Hoverfly simulation schema",
+    "required": ["data", "meta"],
+    "type": "object",
+    "properties": {
+        "data": {
+            "type": "object",
+            "properties": {
+                "globalActions": {
+                    "type": "object",
+                    "properties": {
+                        "delays": { "type": "array", "items": { "$ref": "#/definitions/delay" } },
+                        "delaysLogNormal": {
+                            "type": "array",
+                            "items": { "$ref": "#/definitions/delay-log-normal" }
+                        }
+                    }
+                },
+                "literals": { "type": "array", "items": { "$ref": "#/definitions/literals" } },
+                "pairs": {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/request-response-pair" }
+                },
+                "variables": { "type": "array", "items": { "$ref": "#/definitions/variables" } }
             }
-          }
         },
-        "literals": { "type": "array", "items": { "$ref": "#/definitions/literals" } },
-        "pairs": { "type": "array", "items": { "$ref": "#/definitions/request-response-pair" } },
-        "variables": { "type": "array", "items": { "$ref": "#/definitions/variables" } }
-      }
+        "meta": { "$ref": "#/definitions/meta" }
     },
-    "meta": { "$ref": "#/definitions/meta" }
-  },
-  "definitions": {
-    "delay": {
-      "type": "object",
-      "properties": {
-        "delay": { "type": "integer" },
-        "httpMethod": { "type": "string" },
-        "urlPattern": { "type": "string" }
-      }
-    },
-    "delay-log-normal": {
-      "type": "object",
-      "properties": {
-        "httpMethod": { "type": "string" },
-        "max": { "type": "integer" },
-        "mean": { "type": "integer" },
-        "median": { "type": "integer" },
-        "min": { "type": "integer" },
-        "urlPattern": { "type": "string" }
-      }
-    },
-    "field-matchers": {
-      "type": "object",
-      "properties": {
-        "matcher": { "type": "string" },
-        "value": {},
-        "config": {
-          "type": "object",
-          "properties": {
-            "ignoreUnknown": { "type": "boolean" },
-            "ignoreOrder": { "type": "boolean" },
-            "ignoreOccurrences": { "type": "boolean" }
-          }
+    "definitions": {
+        "delay": {
+            "type": "object",
+            "properties": {
+                "delay": { "type": "integer" },
+                "httpMethod": { "type": "string" },
+                "urlPattern": { "type": "string" }
+            }
         },
-        "doMatch": { "$ref": "#/definitions/field-matchers" }
-      }
-    },
-    "headers": {
-      "type": "object",
-      "additionalProperties": { "type": "array", "items": { "type": "string" } }
-    },
-    "literals": {
-      "type": "object",
-      "required": ["name", "value"],
-      "properties": {
-        "name": { "type": "string" },
-        "value": {}
-      }
-    },
-    "meta": {
-      "type": "object",
-      "required": ["schemaVersion"],
-      "properties": {
-        "hoverflyVersion": { "type": "string" },
-        "schemaVersion": { "type": "string" },
-        "timeExported": { "type": "string" }
-      }
-    },
-    "request": {
-      "type": "object",
-      "properties": {
-        "body": { "type": "array", "items": { "$ref": "#/definitions/field-matchers" } },
-        "destination": { "type": "array", "items": { "$ref": "#/definitions/field-matchers" } },
-        "headers": { "$ref": "#/definitions/request-headers" },
-        "path": { "type": "array", "items": { "$ref": "#/definitions/field-matchers" } },
-        "query": { "$ref": "#/definitions/request-queries" },
-        "requiresState": {
-          "type": "object",
-          "patternProperties": { ".{1,}": { "type": "string" } }
+        "delay-log-normal": {
+            "type": "object",
+            "properties": {
+                "httpMethod": { "type": "string" },
+                "max": { "type": "integer" },
+                "mean": { "type": "integer" },
+                "median": { "type": "integer" },
+                "min": { "type": "integer" },
+                "urlPattern": { "type": "string" }
+            }
         },
-        "scheme": { "type": "array", "items": { "$ref": "#/definitions/field-matchers" } }
-      }
-    },
-    "request-headers": {
-      "type": "object",
-      "additionalProperties": {
-        "type": "array",
-        "items": { "$ref": "#/definitions/field-matchers" }
-      }
-    },
-    "request-queries": {
-      "type": "object",
-      "additionalProperties": {
-        "type": "array",
-        "items": { "$ref": "#/definitions/field-matchers" }
-      }
-    },
-    "request-response-pair": {
-      "type": "object",
-      "required": ["request", "response"],
-      "properties": {
-        "labels": { "type": "array", "items": { "type": "string" } },
-        "request": { "$ref": "#/definitions/request" },
-        "response": { "$ref": "#/definitions/response" }
-      }
-    },
-    "response": {
-      "type": "object",
-      "properties": {
-        "body": { "type": "string" },
-        "bodyFile": { "type": "string" },
-        "encodedBody": { "type": "boolean" },
-        "fixedDelay": { "type": "integer" },
-        "headers": { "$ref": "#/definitions/headers" },
-        "logNormalDelay": {
-          "properties": {
-            "max": { "type": "integer" },
-            "mean": { "type": "integer" },
-            "median": { "type": "integer" },
-            "min": { "type": "integer" }
-          }
+        "field-matchers": {
+            "type": "object",
+            "properties": {
+                "matcher": { "type": "string" },
+                "value": {},
+                "config": {
+                    "type": "object",
+                    "properties": {
+                        "ignoreUnknown": { "type": "boolean" },
+                        "ignoreOrder": { "type": "boolean" },
+                        "ignoreOccurrences": { "type": "boolean" }
+                    }
+                },
+                "doMatch": { "$ref": "#/definitions/field-matchers" }
+            }
         },
-        "postServeAction": { "type": "string" },
-        "removesState": { "type": "array" },
-        "status": { "type": "integer" },
-        "templated": { "type": "boolean" },
-        "transitionsState": {
-          "type": "object",
-          "patternProperties": { ".{1,}": { "type": "string" } }
+        "headers": {
+            "type": "object",
+            "additionalProperties": { "type": "array", "items": { "type": "string" } }
+        },
+        "literals": {
+            "type": "object",
+            "required": ["name", "value"],
+            "properties": {
+                "name": { "type": "string" },
+                "value": {}
+            }
+        },
+        "meta": {
+            "type": "object",
+            "required": ["schemaVersion"],
+            "properties": {
+                "hoverflyVersion": { "type": "string" },
+                "schemaVersion": { "type": "string" },
+                "timeExported": { "type": "string" }
+            }
+        },
+        "request": {
+            "type": "object",
+            "properties": {
+                "body": { "type": "array", "items": { "$ref": "#/definitions/field-matchers" } },
+                "destination": {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/field-matchers" }
+                },
+                "headers": { "$ref": "#/definitions/request-headers" },
+                "path": { "type": "array", "items": { "$ref": "#/definitions/field-matchers" } },
+                "query": { "$ref": "#/definitions/request-queries" },
+                "requiresState": {
+                    "type": "object",
+                    "patternProperties": { ".{1,}": { "type": "string" } }
+                },
+                "scheme": { "type": "array", "items": { "$ref": "#/definitions/field-matchers" } }
+            }
+        },
+        "request-headers": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "array",
+                "items": { "$ref": "#/definitions/field-matchers" }
+            }
+        },
+        "request-queries": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "array",
+                "items": { "$ref": "#/definitions/field-matchers" }
+            }
+        },
+        "request-response-pair": {
+            "type": "object",
+            "required": ["request", "response"],
+            "properties": {
+                "labels": { "type": "array", "items": { "type": "string" } },
+                "request": { "$ref": "#/definitions/request" },
+                "response": { "$ref": "#/definitions/response" }
+            }
+        },
+        "response": {
+            "type": "object",
+            "properties": {
+                "body": { "type": "string" },
+                "bodyFile": { "type": "string" },
+                "encodedBody": { "type": "boolean" },
+                "fixedDelay": { "type": "integer" },
+                "headers": { "$ref": "#/definitions/headers" },
+                "logNormalDelay": {
+                    "properties": {
+                        "max": { "type": "integer" },
+                        "mean": { "type": "integer" },
+                        "median": { "type": "integer" },
+                        "min": { "type": "integer" }
+                    }
+                },
+                "postServeAction": { "type": "string" },
+                "removesState": { "type": "array" },
+                "status": { "type": "integer" },
+                "templated": { "type": "boolean" },
+                "transitionsState": {
+                    "type": "object",
+                    "patternProperties": { ".{1,}": { "type": "string" } }
+                }
+            }
+        },
+        "variables": {
+            "type": "object",
+            "required": ["name", "function"],
+            "properties": {
+                "name": { "type": "string" },
+                "function": { "type": "string" },
+                "arguments": { "type": "array" }
+            }
         }
-      }
-    },
-    "variables": {
-      "type": "object",
-      "required": ["name", "function"],
-      "properties": {
-        "name": { "type": "string" },
-        "function": { "type": "string" },
-        "arguments": { "type": "array" }
-      }
     }
-  }
 }
 ```
 

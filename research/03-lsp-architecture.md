@@ -53,30 +53,30 @@ Folder layout in the repo: `client/`, `server/`, `protocol/`, `jsonrpc/`, `types
 
 ```ts
 import {
-  createConnection,
-  TextDocuments,
-  ProposedFeatures,
-  InitializeResult,
-  TextDocumentSyncKind,
-} from "vscode-languageserver/node";
-import { TextDocument } from "vscode-languageserver-textdocument";
+    createConnection,
+    TextDocuments,
+    ProposedFeatures,
+    InitializeResult,
+    TextDocumentSyncKind,
+} from 'vscode-languageserver/node';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
 
 connection.onInitialize((_params): InitializeResult => ({
-  capabilities: {
-    textDocumentSync: TextDocumentSyncKind.Incremental,
-    completionProvider: { resolveProvider: true, triggerCharacters: ['"', ":"] },
-    hoverProvider: true,
-    documentSymbolProvider: true,
-    // diagnostics are pushed via connection.sendDiagnostics OR pulled via diagnosticProvider
-  },
+    capabilities: {
+        textDocumentSync: TextDocumentSyncKind.Incremental,
+        completionProvider: { resolveProvider: true, triggerCharacters: ['"', ':'] },
+        hoverProvider: true,
+        documentSymbolProvider: true,
+        // diagnostics are pushed via connection.sendDiagnostics OR pulled via diagnosticProvider
+    },
 }));
 
 documents.onDidChangeContent(async ({ document }) => {
-  const diagnostics = await analyze(document); // <- delegates to packages/core
-  connection.sendDiagnostics({ uri: document.uri, diagnostics });
+    const diagnostics = await analyze(document); // <- delegates to packages/core
+    connection.sendDiagnostics({ uri: document.uri, diagnostics });
 });
 
 connection.onCompletion((params) => complete(params)); // <- delegates to packages/core
@@ -108,51 +108,59 @@ Code itself; **current version 5.7.x** (Feb 2026), TypeScript, ESM+CJS. It provi
 export function getLanguageService(params: LanguageServiceParams): LanguageService;
 
 export interface LanguageService {
-  configure(settings: LanguageSettings): void;
-  doValidation(
-    document: TextDocument,
-    jsonDocument: JSONDocument,
-    documentSettings?: DocumentLanguageSettings,
-    schema?: JSONSchema,
-  ): PromiseLike<Diagnostic[]>;
-  parseJSONDocument(document: TextDocument): JSONDocument;
-  newJSONDocument(
-    rootNode: ASTNode | undefined,
-    syntaxDiagnostics?: Diagnostic[],
-    comments?: Range[],
-  ): JSONDocument;
-  resetSchema(uri: string): boolean;
-  getMatchingSchemas(
-    document: TextDocument,
-    jsonDocument: JSONDocument,
-    schema?: JSONSchema,
-  ): PromiseLike<MatchingSchema[]>;
-  getLanguageStatus(document: TextDocument, jsonDocument: JSONDocument): JSONLanguageStatus;
-  doResolve(item: CompletionItem): PromiseLike<CompletionItem>;
-  doComplete(
-    document: TextDocument,
-    position: Position,
-    doc: JSONDocument,
-  ): PromiseLike<CompletionList | null>;
-  findDocumentSymbols(
-    document: TextDocument,
-    doc: JSONDocument,
-    context?: DocumentSymbolsContext,
-  ): SymbolInformation[];
-  findDocumentSymbols2(
-    document: TextDocument,
-    doc: JSONDocument,
-    context?: DocumentSymbolsContext,
-  ): DocumentSymbol[];
-  findDocumentColors(document, doc, context?): PromiseLike<ColorInformation[]>;
-  getColorPresentations(document, doc, color, range): ColorPresentation[];
-  doHover(document: TextDocument, position: Position, doc: JSONDocument): PromiseLike<Hover | null>;
-  getFoldingRanges(document: TextDocument, context?: FoldingRangesContext): FoldingRange[];
-  getSelectionRanges(document, positions, doc): SelectionRange[];
-  findDefinition(document, position, doc): PromiseLike<DefinitionLink[]>;
-  findLinks(document, doc): PromiseLike<DocumentLink[]>;
-  format(document: TextDocument, range: Range | undefined, options: FormattingOptions): TextEdit[];
-  sort(document: TextDocument, options: SortOptions): TextEdit[];
+    configure(settings: LanguageSettings): void;
+    doValidation(
+        document: TextDocument,
+        jsonDocument: JSONDocument,
+        documentSettings?: DocumentLanguageSettings,
+        schema?: JSONSchema,
+    ): PromiseLike<Diagnostic[]>;
+    parseJSONDocument(document: TextDocument): JSONDocument;
+    newJSONDocument(
+        rootNode: ASTNode | undefined,
+        syntaxDiagnostics?: Diagnostic[],
+        comments?: Range[],
+    ): JSONDocument;
+    resetSchema(uri: string): boolean;
+    getMatchingSchemas(
+        document: TextDocument,
+        jsonDocument: JSONDocument,
+        schema?: JSONSchema,
+    ): PromiseLike<MatchingSchema[]>;
+    getLanguageStatus(document: TextDocument, jsonDocument: JSONDocument): JSONLanguageStatus;
+    doResolve(item: CompletionItem): PromiseLike<CompletionItem>;
+    doComplete(
+        document: TextDocument,
+        position: Position,
+        doc: JSONDocument,
+    ): PromiseLike<CompletionList | null>;
+    findDocumentSymbols(
+        document: TextDocument,
+        doc: JSONDocument,
+        context?: DocumentSymbolsContext,
+    ): SymbolInformation[];
+    findDocumentSymbols2(
+        document: TextDocument,
+        doc: JSONDocument,
+        context?: DocumentSymbolsContext,
+    ): DocumentSymbol[];
+    findDocumentColors(document, doc, context?): PromiseLike<ColorInformation[]>;
+    getColorPresentations(document, doc, color, range): ColorPresentation[];
+    doHover(
+        document: TextDocument,
+        position: Position,
+        doc: JSONDocument,
+    ): PromiseLike<Hover | null>;
+    getFoldingRanges(document: TextDocument, context?: FoldingRangesContext): FoldingRange[];
+    getSelectionRanges(document, positions, doc): SelectionRange[];
+    findDefinition(document, position, doc): PromiseLike<DefinitionLink[]>;
+    findLinks(document, doc): PromiseLike<DocumentLink[]>;
+    format(
+        document: TextDocument,
+        range: Range | undefined,
+        options: FormattingOptions,
+    ): TextEdit[];
+    sort(document: TextDocument, options: SortOptions): TextEdit[];
 }
 ```
 
@@ -160,40 +168,40 @@ export interface LanguageService {
 
 ```ts
 export interface LanguageServiceParams {
-  schemaRequestService?: SchemaRequestService; // resolve schema URIs -> schema text
-  workspaceContext?: WorkspaceContextService; // resolve relative $ref paths
-  contributions?: JSONWorkerContribution[]; // <-- CUSTOM completion/hover injection
-  promiseConstructor?: PromiseConstructor;
-  clientCapabilities?: ClientCapabilities;
+    schemaRequestService?: SchemaRequestService; // resolve schema URIs -> schema text
+    workspaceContext?: WorkspaceContextService; // resolve relative $ref paths
+    contributions?: JSONWorkerContribution[]; // <-- CUSTOM completion/hover injection
+    promiseConstructor?: PromiseConstructor;
+    clientCapabilities?: ClientCapabilities;
 }
 
 export interface SchemaRequestService {
-  (uri: string): PromiseLike<string>;
+    (uri: string): PromiseLike<string>;
 }
 
 export interface WorkspaceContextService {
-  resolveRelativePath(relativePath: string, resource: string): string;
+    resolveRelativePath(relativePath: string, resource: string): string;
 }
 
 export interface LanguageSettings {
-  validate?: boolean;
-  allowComments?: boolean;
-  schemas?: SchemaConfiguration[];
+    validate?: boolean;
+    allowComments?: boolean;
+    schemas?: SchemaConfiguration[];
 }
 
 export interface SchemaConfiguration {
-  uri: string;
-  fileMatch?: string[]; // glob/file patterns -> which docs this schema applies to
-  schema?: JSONSchema; // inline schema object (we'll inline the Hoverfly schema here)
-  folderUri?: string;
+    uri: string;
+    fileMatch?: string[]; // glob/file patterns -> which docs this schema applies to
+    schema?: JSONSchema; // inline schema object (we'll inline the Hoverfly schema here)
+    folderUri?: string;
 }
 
 export interface DocumentLanguageSettings {
-  comments?: SeverityLevel; // 'error' | 'warning' | 'ignore'
-  trailingCommas?: SeverityLevel;
-  schemaValidation?: SeverityLevel;
-  schemaRequest?: SeverityLevel;
-  schemaDraft?: SchemaDraft;
+    comments?: SeverityLevel; // 'error' | 'warning' | 'ignore'
+    trailingCommas?: SeverityLevel;
+    schemaValidation?: SeverityLevel;
+    schemaRequest?: SeverityLevel;
+    schemaDraft?: SchemaDraft;
 }
 ```
 
@@ -204,30 +212,30 @@ that are _AST-location aware_, without touching the schema:
 
 ```ts
 export interface JSONWorkerContribution {
-  getInfoContribution(uri: string, location: JSONPath): PromiseLike<MarkedString[]>;
-  collectPropertyCompletions(
-    uri: string,
-    location: JSONPath,
-    currentWord: string,
-    addValue: boolean,
-    isLast: boolean,
-    result: CompletionsCollector,
-  ): PromiseLike<any>;
-  collectValueCompletions(
-    uri: string,
-    location: JSONPath,
-    propertyKey: string,
-    result: CompletionsCollector,
-  ): PromiseLike<any>;
-  collectDefaultCompletions(uri: string, result: CompletionsCollector): PromiseLike<any>;
-  resolveCompletion?(item: CompletionItem): PromiseLike<CompletionItem>;
+    getInfoContribution(uri: string, location: JSONPath): PromiseLike<MarkedString[]>;
+    collectPropertyCompletions(
+        uri: string,
+        location: JSONPath,
+        currentWord: string,
+        addValue: boolean,
+        isLast: boolean,
+        result: CompletionsCollector,
+    ): PromiseLike<any>;
+    collectValueCompletions(
+        uri: string,
+        location: JSONPath,
+        propertyKey: string,
+        result: CompletionsCollector,
+    ): PromiseLike<any>;
+    collectDefaultCompletions(uri: string, result: CompletionsCollector): PromiseLike<any>;
+    resolveCompletion?(item: CompletionItem): PromiseLike<CompletionItem>;
 }
 
 export interface CompletionsCollector {
-  add(suggestion: JSONCompletionItem & { insertText: string }): void;
-  error(message: string): void;
-  setAsIncomplete(): void;
-  getNumberOfProposals(): number;
+    add(suggestion: JSONCompletionItem & { insertText: string }): void;
+    error(message: string): void;
+    setAsIncomplete(): void;
+    getNumberOfProposals(): number;
 }
 ```
 
@@ -243,44 +251,44 @@ nodes (`ASTNode` with `.offset`, `.length`, `.type`, `.children`) let you produc
 ### 2.4 Wiring sketch (the heart of `packages/core`)
 
 ```ts
-import { getLanguageService, LanguageService, JSONDocument } from "vscode-json-languageservice";
-import { TextDocument } from "vscode-languageserver-textdocument";
-import { Diagnostic } from "vscode-languageserver-types";
-import { hoverflySchema } from "./schema/hoverfly.schema.js"; // inlined JSON Schema (draft-07)
-import { hoverflyContribution } from "./contributions/index.js"; // JSONWorkerContribution
-import { semanticValidators } from "./semantic/index.js"; // our custom passes
+import { getLanguageService, LanguageService, JSONDocument } from 'vscode-json-languageservice';
+import { TextDocument } from 'vscode-languageserver-textdocument';
+import { Diagnostic } from 'vscode-languageserver-types';
+import { hoverflySchema } from './schema/hoverfly.schema.js'; // inlined JSON Schema (draft-07)
+import { hoverflyContribution } from './contributions/index.js'; // JSONWorkerContribution
+import { semanticValidators } from './semantic/index.js'; // our custom passes
 
-const HOVERFLY_SCHEMA_URI = "hoverfly://schemas/simulation.json";
+const HOVERFLY_SCHEMA_URI = 'hoverfly://schemas/simulation.json';
 
 export function createHoverflyService(): HoverflyAnalysis {
-  const json: LanguageService = getLanguageService({
-    // serve our bundled schema in-memory; never hits the network
-    schemaRequestService: (uri) =>
-      uri === HOVERFLY_SCHEMA_URI
-        ? Promise.resolve(JSON.stringify(hoverflySchema))
-        : Promise.reject(new Error(`unknown schema ${uri}`)),
-    contributions: [hoverflyContribution],
-    clientCapabilities: ClientCapabilities.LATEST,
-  });
+    const json: LanguageService = getLanguageService({
+        // serve our bundled schema in-memory; never hits the network
+        schemaRequestService: (uri) =>
+            uri === HOVERFLY_SCHEMA_URI
+                ? Promise.resolve(JSON.stringify(hoverflySchema))
+                : Promise.reject(new Error(`unknown schema ${uri}`)),
+        contributions: [hoverflyContribution],
+        clientCapabilities: ClientCapabilities.LATEST,
+    });
 
-  json.configure({
-    validate: true,
-    allowComments: false, // Hoverfly sims are strict JSON
-    schemas: [{ uri: HOVERFLY_SCHEMA_URI, fileMatch: ["*"], schema: hoverflySchema }],
-  });
+    json.configure({
+        validate: true,
+        allowComments: false, // Hoverfly sims are strict JSON
+        schemas: [{ uri: HOVERFLY_SCHEMA_URI, fileMatch: ['*'], schema: hoverflySchema }],
+    });
 
-  return {
-    async diagnostics(doc: TextDocument): Promise<Diagnostic[]> {
-      const parsed: JSONDocument = json.parseJSONDocument(doc);
-      const schemaDiags = await json.doValidation(doc, parsed, { schemaValidation: "error" });
-      const matches = await json.getMatchingSchemas(doc, parsed);
-      const semanticDiags = semanticValidators.flatMap((v) => v(doc, parsed, matches));
-      return [...schemaDiags, ...semanticDiags];
-    },
-    complete: (doc, pos) => json.doComplete(doc, pos, json.parseJSONDocument(doc)),
-    hover: (doc, pos) => json.doHover(doc, pos, json.parseJSONDocument(doc)),
-    symbols: (doc) => json.findDocumentSymbols2(doc, json.parseJSONDocument(doc)),
-  };
+    return {
+        async diagnostics(doc: TextDocument): Promise<Diagnostic[]> {
+            const parsed: JSONDocument = json.parseJSONDocument(doc);
+            const schemaDiags = await json.doValidation(doc, parsed, { schemaValidation: 'error' });
+            const matches = await json.getMatchingSchemas(doc, parsed);
+            const semanticDiags = semanticValidators.flatMap((v) => v(doc, parsed, matches));
+            return [...schemaDiags, ...semanticDiags];
+        },
+        complete: (doc, pos) => json.doComplete(doc, pos, json.parseJSONDocument(doc)),
+        hover: (doc, pos) => json.doHover(doc, pos, json.parseJSONDocument(doc)),
+        symbols: (doc) => json.findDocumentSymbols2(doc, json.parseJSONDocument(doc)),
+    };
 }
 ```
 
@@ -311,14 +319,14 @@ a clearer diagnostic, optionally suppressing the schema's union noise via `docum
   `yaml@2.8.x` (eemeli/yaml parser), `ajv@^8`, `jsonc-parser`, `prettier`, `request-light` (schema fetch).
 - Source layout: `src/languageservice/` (the reusable service) and `src/languageserver/` (the LSP wrapper).
 - Under `src/languageservice/`:
-  - `yamlLanguageService.ts` — **orchestrator** (the analogue of our `createHoverflyService`).
-  - `parser/` — YAML→AST, producing a JSON-document-shaped structure.
-  - `services/` — one file per LSP feature:
-    `yamlValidation.ts`, `yamlCompletion.ts`, `yamlHover.ts`, `yamlSchemaService.ts`, `yamlDefinition.ts`,
-    `yamlLinks.ts`, `documentSymbols.ts`, `yamlFolding.ts`, `yamlFormatter.ts`, `yamlCodeActions.ts`,
-    `yamlCodeLens.ts`, `yamlOnTypeFormatting.ts`, `yamlRename.ts`, `yamlSelectionRanges.ts`.
-  - `utils/` — `modelineUtil.ts` (parses `# yaml-language-server: $schema=...` directives),
-    `k8sSchemaUtil.ts` (Kubernetes group/version/kind → schema), etc.
+    - `yamlLanguageService.ts` — **orchestrator** (the analogue of our `createHoverflyService`).
+    - `parser/` — YAML→AST, producing a JSON-document-shaped structure.
+    - `services/` — one file per LSP feature:
+      `yamlValidation.ts`, `yamlCompletion.ts`, `yamlHover.ts`, `yamlSchemaService.ts`, `yamlDefinition.ts`,
+      `yamlLinks.ts`, `documentSymbols.ts`, `yamlFolding.ts`, `yamlFormatter.ts`, `yamlCodeActions.ts`,
+      `yamlCodeLens.ts`, `yamlOnTypeFormatting.ts`, `yamlRename.ts`, `yamlSelectionRanges.ts`.
+    - `utils/` — `modelineUtil.ts` (parses `# yaml-language-server: $schema=...` directives),
+      `k8sSchemaUtil.ts` (Kubernetes group/version/kind → schema), etc.
 - **Semantics beyond schema**: schema priority resolution
   (`Modeline > CustomSchemaProvider API > yaml.schemas > Schema Store`), custom-tag handling
   (`yaml.customTags`), K8s-specific schema selection — i.e. logic that _chooses and augments_ the schema and
@@ -358,12 +366,12 @@ a clearer diagnostic, optionally suppressing the schema's union noise via `docum
 
 - `cmd/tsgo` — binary entry point.
 - `internal/` — everything, including:
-  - `internal/ls` — **the pure language service / analysis layer** (completions, hover, find-references built
-    on the compiler) — _editor-agnostic, no protocol_.
-  - `internal/lsp` — **the LSP protocol layer** (decodes JSON-RPC, maps to `ls` calls, encodes responses).
-  - `internal/jsonrpc` — transport.
-  - plus `parser`, `scanner`, `binder`, `checker`, `ast`, `compiler`, `vfs`, `project`, `fourslash`
-    (their cursor-marker test framework), `testrunner`, `testutil`, `format`, `json`.
+    - `internal/ls` — **the pure language service / analysis layer** (completions, hover, find-references built
+      on the compiler) — _editor-agnostic, no protocol_.
+    - `internal/lsp` — **the LSP protocol layer** (decodes JSON-RPC, maps to `ls` calls, encodes responses).
+    - `internal/jsonrpc` — transport.
+    - plus `parser`, `scanner`, `binder`, `checker`, `ast`, `compiler`, `vfs`, `project`, `fourslash`
+      (their cursor-marker test framework), `testrunner`, `testutil`, `format`, `json`.
 - `_extension/` — VS Code extension; `_packages/native-preview` — preview npm package; `testdata/` —
   fixtures + baselines; `_submodules/` — the upstream TypeScript test suite as a git submodule.
 - **Boundary lesson**: `internal/ls` (analysis) vs `internal/lsp` (protocol) is the canonical split. tsgo even
@@ -494,28 +502,28 @@ testdata/
 
 ```ts
 // packages/core/test/diagnostics.golden.test.ts
-import { readFileSync } from "node:fs";
-import { glob } from "glob";
-import { test, expect } from "vitest";
-import { createHoverflyService } from "../src/index.js";
-import { TextDocument } from "vscode-languageserver-textdocument";
+import { readFileSync } from 'node:fs';
+import { glob } from 'glob';
+import { test, expect } from 'vitest';
+import { createHoverflyService } from '../src/index.js';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 
 const svc = createHoverflyService();
 
-for (const file of await glob("testdata/invalid/*.json")) {
-  test(`diagnostics: ${file}`, async () => {
-    const doc = TextDocument.create(`file://${file}`, "json", 1, readFileSync(file, "utf8"));
-    const diags = await svc.diagnostics(doc);
-    // normalize to {line,char,severity,code,message}; compare to the .golden file
-    await expect(serialize(diags)).toMatchFileSnapshot(file.replace(/\.json$/, ".golden"));
-  });
+for (const file of await glob('testdata/invalid/*.json')) {
+    test(`diagnostics: ${file}`, async () => {
+        const doc = TextDocument.create(`file://${file}`, 'json', 1, readFileSync(file, 'utf8'));
+        const diags = await svc.diagnostics(doc);
+        // normalize to {line,char,severity,code,message}; compare to the .golden file
+        await expect(serialize(diags)).toMatchFileSnapshot(file.replace(/\.json$/, '.golden'));
+    });
 }
 
-for (const file of await glob("testdata/valid/*.json")) {
-  test(`no diagnostics: ${file}`, async () => {
-    const doc = TextDocument.create(`file://${file}`, "json", 1, readFileSync(file, "utf8"));
-    expect(await svc.diagnostics(doc)).toEqual([]);
-  });
+for (const file of await glob('testdata/valid/*.json')) {
+    test(`no diagnostics: ${file}`, async () => {
+        const doc = TextDocument.create(`file://${file}`, 'json', 1, readFileSync(file, 'utf8'));
+        expect(await svc.diagnostics(doc)).toEqual([]);
+    });
 }
 ```
 
@@ -531,26 +539,26 @@ as a fixture-only sentinel). The harness:
 ```ts
 // strip the marker, record its offset, run doComplete at that Position
 function withCursor(src: string): { text: string; pos: Position } {
-  /* find '$0', splice it out */
+    /* find '$0', splice it out */
 }
 
-test("completes matcher kinds", async () => {
-  const file = readFileSync("testdata/completion/matcher-kind.json", "utf8");
-  const { text, pos } = withCursor(file);
-  const doc = TextDocument.create("file://t.json", "json", 1, text);
-  const list = await svc.complete(doc, pos);
-  const labels = list!.items.map((i) => i.label).sort();
-  expect(labels).toEqual([
-    "exact",
-    "form",
-    "glob",
-    "json",
-    "jsonpartial",
-    "jsonpath",
-    "regex",
-    "xml",
-    "xpath",
-  ]);
+test('completes matcher kinds', async () => {
+    const file = readFileSync('testdata/completion/matcher-kind.json', 'utf8');
+    const { text, pos } = withCursor(file);
+    const doc = TextDocument.create('file://t.json', 'json', 1, text);
+    const list = await svc.complete(doc, pos);
+    const labels = list!.items.map((i) => i.label).sort();
+    expect(labels).toEqual([
+        'exact',
+        'form',
+        'glob',
+        'json',
+        'jsonpartial',
+        'jsonpath',
+        'regex',
+        'xml',
+        'xpath',
+    ]);
 });
 ```
 
@@ -565,13 +573,13 @@ assert real `initialize`, `textDocument/didOpen` → `publishDiagnostics`, `text
 
 ```ts
 // packages/server/test/integration/stdio.test.ts
-const child = spawn(process.execPath, ["bin/hoverfly-lsp.js", "--stdio"]);
+const child = spawn(process.execPath, ['bin/hoverfly-lsp.js', '--stdio']);
 const conn = createMessageConnection(
-  new StreamMessageReader(child.stdout),
-  new StreamMessageWriter(child.stdin),
+    new StreamMessageReader(child.stdout),
+    new StreamMessageWriter(child.stdin),
 );
 conn.listen();
-await conn.sendRequest("initialize", { capabilities: {}, rootUri: null, processId: process.pid });
+await conn.sendRequest('initialize', { capabilities: {}, rootUri: null, processId: process.pid });
 // didOpen an invalid sim, await a publishDiagnostics notification, assert codes...
 ```
 
@@ -587,20 +595,20 @@ await conn.sendRequest("initialize", { capabilities: {}, rootUri: null, processI
 ### 7.1 npm — the server (primary artifact, headless-friendly for Claude Code)
 
 - Publish **`@hoverfly-lsp/server`** (or unscoped `hoverfly-lsp`) with:
-  ```jsonc
-  {
-    "name": "hoverfly-lsp",
-    "type": "module",
-    "bin": { "hoverfly-lsp": "./bin/hoverfly-lsp.js" },
-    "engines": { "node": ">=18" },
-    "files": ["bin", "dist"],
-    "dependencies": {
-      "@hoverfly-lsp/core": "workspace:*",
-      "vscode-languageserver": "^10",
-      "vscode-languageserver-textdocument": "^1",
-    },
-  }
-  ```
+    ```jsonc
+    {
+        "name": "hoverfly-lsp",
+        "type": "module",
+        "bin": { "hoverfly-lsp": "./bin/hoverfly-lsp.js" },
+        "engines": { "node": ">=18" },
+        "files": ["bin", "dist"],
+        "dependencies": {
+            "@hoverfly-lsp/core": "workspace:*",
+            "vscode-languageserver": "^10",
+            "vscode-languageserver-textdocument": "^1",
+        },
+    }
+    ```
 - `bin/hoverfly-lsp.js` is a tiny ESM shim with `#!/usr/bin/env node` that imports the built `dist/cli.js`.
 - Default transport **stdio** (`--stdio`), also support `--node-ipc` and `--socket=<port>` like
   yaml-language-server. Claude Code agents and any editor can then run `npx hoverfly-lsp --stdio`.
@@ -664,7 +672,7 @@ hoverflyVersion,timeExported}`. Encode matcher entries as a discriminated array 
   (`vscode-languageserver`@10, `vscode-jsonrpc`@9, `vscode-languageserver-protocol`@3.18,
   `vscode-languageserver-types`@3.17, `vscode-languageserver-textdocument`@1)
 - JSON language service: https://github.com/microsoft/vscode-json-languageservice (npm `vscode-json-languageservice`@5.7.x)
-  - API: `src/jsonLanguageService.ts`, `src/jsonLanguageTypes.ts`, `src/jsonContributions.ts`, `src/example/sample.ts`
+    - API: `src/jsonLanguageService.ts`, `src/jsonLanguageTypes.ts`, `src/jsonContributions.ts`, `src/example/sample.ts`
 - yaml-language-server: https://github.com/redhat-developer/yaml-language-server
   (`src/languageservice/` + `src/languageserver/`; deps include `vscode-json-languageservice@4.1.8`)
 - azure-pipelines-language-server: https://github.com/microsoft/azure-pipelines-language-server

@@ -1,10 +1,10 @@
-import { SEMANTIC_TOKEN_MODIFIERS, SEMANTIC_TOKEN_TYPES } from "@hoverfly-lsp/core";
+import { SEMANTIC_TOKEN_MODIFIERS, SEMANTIC_TOKEN_TYPES } from '@hoverfly-lsp/core';
 import {
-  type ClientCapabilities,
-  type SemanticTokensLegend,
-  type ServerCapabilities,
-  TextDocumentSyncKind,
-} from "vscode-languageserver/node";
+    type ClientCapabilities,
+    type SemanticTokensLegend,
+    type ServerCapabilities,
+    TextDocumentSyncKind,
+} from 'vscode-languageserver/node';
 
 /**
  * Trigger characters that should re-open the completion dropdown. These cover both the JSON
@@ -12,7 +12,7 @@ import {
  * (`{` for `{{`, `.` for path continuation, `#`/`/` for block scopes, `@` for each-vars, `'`
  * and `(` for helper arguments / sub-expressions).
  */
-const COMPLETION_TRIGGER_CHARACTERS = ['"', "{", ".", "#", "@", "'", "("] as const;
+const COMPLETION_TRIGGER_CHARACTERS = ['"', '{', '.', '#', '@', "'", '('] as const;
 
 /**
  * The semantic-tokens legend advertised during `initialize`, sourced VERBATIM and in order from
@@ -21,23 +21,23 @@ const COMPLETION_TRIGGER_CHARACTERS = ['"', "{", ".", "#", "@", "'", "("] as con
  * producer emits indices against — never a hand-retyped copy. Modifiers are empty in v1.
  */
 const SEMANTIC_TOKENS_LEGEND: SemanticTokensLegend = {
-  tokenTypes: [...SEMANTIC_TOKEN_TYPES],
-  tokenModifiers: [...SEMANTIC_TOKEN_MODIFIERS],
+    tokenTypes: [...SEMANTIC_TOKEN_TYPES],
+    tokenModifiers: [...SEMANTIC_TOKEN_MODIFIERS],
 };
 
 /** Whether the client advertised support for PULL diagnostics (`textDocument/diagnostic`). */
 export function clientSupportsPullDiagnostics(capabilities: ClientCapabilities): boolean {
-  return capabilities.textDocument?.diagnostic !== undefined;
+    return capabilities.textDocument?.diagnostic !== undefined;
 }
 
 /** Whether the client can fetch settings via `workspace/configuration`. */
 export function clientSupportsConfiguration(capabilities: ClientCapabilities): boolean {
-  return capabilities.workspace?.configuration === true;
+    return capabilities.workspace?.configuration === true;
 }
 
 /** Whether the client can register for `workspace/didChangeConfiguration` dynamically. */
 export function clientSupportsDidChangeConfiguration(capabilities: ClientCapabilities): boolean {
-  return capabilities.workspace?.didChangeConfiguration?.dynamicRegistration === true;
+    return capabilities.workspace?.didChangeConfiguration?.dynamicRegistration === true;
 }
 
 /**
@@ -46,7 +46,7 @@ export function clientSupportsDidChangeConfiguration(capabilities: ClientCapabil
  * the client can consume it — a client that never asks for tokens should not see the capability.
  */
 export function clientSupportsSemanticTokens(capabilities: ClientCapabilities): boolean {
-  return capabilities.textDocument?.semanticTokens !== undefined;
+    return capabilities.textDocument?.semanticTokens !== undefined;
 }
 
 /**
@@ -71,30 +71,30 @@ export function clientSupportsSemanticTokens(capabilities: ClientCapabilities): 
  * full re-tokenization on each request is inexpensive at simulation-file sizes.
  */
 export function buildServerCapabilities(
-  clientCapabilities: ClientCapabilities,
+    clientCapabilities: ClientCapabilities,
 ): ServerCapabilities {
-  const capabilities: ServerCapabilities = {
-    textDocumentSync: {
-      openClose: true,
-      change: TextDocumentSyncKind.Incremental,
-    },
-    completionProvider: {
-      triggerCharacters: [...COMPLETION_TRIGGER_CHARACTERS],
-      resolveProvider: false,
-    },
-    hoverProvider: true,
-    diagnosticProvider: {
-      identifier: "hoverfly",
-      interFileDependencies: false,
-      workspaceDiagnostics: false,
-    },
-  };
-  if (clientSupportsSemanticTokens(clientCapabilities)) {
-    capabilities.semanticTokensProvider = {
-      legend: SEMANTIC_TOKENS_LEGEND,
-      full: true,
-      range: false,
+    const capabilities: ServerCapabilities = {
+        textDocumentSync: {
+            openClose: true,
+            change: TextDocumentSyncKind.Incremental,
+        },
+        completionProvider: {
+            triggerCharacters: [...COMPLETION_TRIGGER_CHARACTERS],
+            resolveProvider: false,
+        },
+        hoverProvider: true,
+        diagnosticProvider: {
+            identifier: 'hoverfly',
+            interFileDependencies: false,
+            workspaceDiagnostics: false,
+        },
     };
-  }
-  return capabilities;
+    if (clientSupportsSemanticTokens(clientCapabilities)) {
+        capabilities.semanticTokensProvider = {
+            legend: SEMANTIC_TOKENS_LEGEND,
+            full: true,
+            range: false,
+        };
+    }
+    return capabilities;
 }

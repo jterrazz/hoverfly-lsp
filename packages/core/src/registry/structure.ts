@@ -36,18 +36,18 @@
  * diagnostic (report 13 §6).
  */
 export type StructureObjectKind =
-  | "data"
-  | "delaysItem"
-  | "delaysLogNormalItem"
-  | "fieldMatcher"
-  | "globalActions"
-  | "literalsItem"
-  | "logNormalDelay"
-  | "meta"
-  | "pair"
-  | "request"
-  | "response"
-  | "variablesItem";
+    | 'data'
+    | 'delaysItem'
+    | 'delaysLogNormalItem'
+    | 'fieldMatcher'
+    | 'globalActions'
+    | 'literalsItem'
+    | 'logNormalDelay'
+    | 'meta'
+    | 'pair'
+    | 'request'
+    | 'response'
+    | 'variablesItem';
 
 /**
  * Object kind → the EXACT allowed canonical keys (Go json tag), per report 13 §1. The HF603
@@ -57,95 +57,104 @@ export type StructureObjectKind =
  * Each entry cites its backing Go struct so the matrix can be re-verified on Hoverfly drift.
  */
 export const STRUCTURE_ALLOWED_KEYS: Readonly<Record<StructureObjectKind, readonly string[]>> = {
-  /**
-   * `DataViewV5` (report 13 §1.2). Unknown key silently dropped (no additionalProperties:false).
-   * High-risk typos: `pair`, `globalAction`, `literal`, `variable`.
-   */
-  data: ["pairs", "globalActions", "literals", "variables"],
+    /**
+     * `DataViewV5` (report 13 §1.2). Unknown key silently dropped (no additionalProperties:false).
+     * High-risk typos: `pair`, `globalAction`, `literal`, `variable`.
+     */
+    data: ['pairs', 'globalActions', 'literals', 'variables'],
 
-  /**
-   * `RequestMatcherResponsePairViewV5` (report 13 §1.3). The `request`/`response` keys are
-   * schema-required (missing → 400). High-risk typos: `requests`, `responses`, `req`, `res`, `label`.
-   */
-  pair: ["request", "response", "labels"],
+    /**
+     * `RequestMatcherResponsePairViewV5` (report 13 §1.3). The `request`/`response` keys are
+     * schema-required (missing → 400). High-risk typos: `requests`, `responses`, `req`, `res`, `label`.
+     */
+    pair: ['request', 'response', 'labels'],
 
-  /**
-   * `RequestMatcherViewV5` (report 13 §1.4). The `method` key is in the Go struct but ABSENT
-   * from the official schema's `request` def (D5), it imports clean and MUST NOT be flagged, so
-   * it is listed here and HF603 never treats it as unknown. The `query` key must be an OBJECT (a
-   * legacy string query is a 400). High-risk typos: `header`, `queries`, `requireState`.
-   */
-  request: ["path", "method", "destination", "scheme", "body", "headers", "query", "requiresState"],
+    /**
+     * `RequestMatcherViewV5` (report 13 §1.4). The `method` key is in the Go struct but ABSENT
+     * from the official schema's `request` def (D5), it imports clean and MUST NOT be flagged, so
+     * it is listed here and HF603 never treats it as unknown. The `query` key must be an OBJECT (a
+     * legacy string query is a 400). High-risk typos: `header`, `queries`, `requireState`.
+     */
+    request: [
+        'path',
+        'method',
+        'destination',
+        'scheme',
+        'body',
+        'headers',
+        'query',
+        'requiresState',
+    ],
 
-  /**
-   * `MatcherViewV5` field-matcher (report 13 §1.5). All four optional. The `doMatch` key must be
-   * an OBJECT (array → HF102 / 400). High-risk typos: `matchers`/`match`/`machter`/`mathcer`,
-   * `values`/`val`, `configs`/`conf`. Case variants (`Matcher`/`MATCHER`/`domatch`/`Config`) BIND
-   * via Go → HF604, never HF603.
-   */
-  fieldMatcher: ["matcher", "value", "config", "doMatch"],
+    /**
+     * `MatcherViewV5` field-matcher (report 13 §1.5). All four optional. The `doMatch` key must be
+     * an OBJECT (array → HF102 / 400). High-risk typos: `matchers`/`match`/`machter`/`mathcer`,
+     * `values`/`val`, `configs`/`conf`. Case variants (`Matcher`/`MATCHER`/`domatch`/`Config`) BIND
+     * via Go → HF604, never HF603.
+     */
+    fieldMatcher: ['matcher', 'value', 'config', 'doMatch'],
 
-  /**
-   * `ResponseDetailsViewV5` (report 13 §1.9). Highest-impact silent-drop typos: `transitionState`
-   * (missing s), `removeState` (missing s), `statusCode`, `encodeBody`, `postServerAction`,
-   * `header` (singular). Case variants (`bodyfile`, `lognormalDelay`) BIND → HF604.
-   */
-  response: [
-    "status",
-    "body",
-    "bodyFile",
-    "encodedBody",
-    "headers",
-    "templated",
-    "transitionsState",
-    "removesState",
-    "fixedDelay",
-    "logNormalDelay",
-    "postServeAction",
-  ],
+    /**
+     * `ResponseDetailsViewV5` (report 13 §1.9). Highest-impact silent-drop typos: `transitionState`
+     * (missing s), `removeState` (missing s), `statusCode`, `encodeBody`, `postServerAction`,
+     * `header` (singular). Case variants (`bodyfile`, `lognormalDelay`) BIND → HF604.
+     */
+    response: [
+        'status',
+        'body',
+        'bodyFile',
+        'encodedBody',
+        'headers',
+        'templated',
+        'transitionsState',
+        'removesState',
+        'fixedDelay',
+        'logNormalDelay',
+        'postServeAction',
+    ],
 
-  /**
-   * `LogNormalDelayOptions` at the response level (report 13 §1.11). Unlike the globalActions
-   * `delaysLogNormal[]` items, this def has NO `httpMethod`/`urlPattern`, these four int fields
-   * are the entire allowed set. Typos: `medain`, `average`.
-   */
-  logNormalDelay: ["min", "max", "mean", "median"],
+    /**
+     * `LogNormalDelayOptions` at the response level (report 13 §1.11). Unlike the globalActions
+     * `delaysLogNormal[]` items, this def has NO `httpMethod`/`urlPattern`, these four int fields
+     * are the entire allowed set. Typos: `medain`, `average`.
+     */
+    logNormalDelay: ['min', 'max', 'mean', 'median'],
 
-  /**
-   * `GlobalActionsView` (report 13 §1.12). Typos: `delay`, `globalDelays`. The `delaysLognormal`
-   * spelling is a case variant → HF604.
-   */
-  globalActions: ["delays", "delaysLogNormal"],
+    /**
+     * `GlobalActionsView` (report 13 §1.12). Typos: `delay`, `globalDelays`. The `delaysLognormal`
+     * spelling is a case variant → HF604.
+     */
+    globalActions: ['delays', 'delaysLogNormal'],
 
-  /**
-   * `ResponseDelayView` (report 13 §1.13). The `httpMethod` values are NOT validated (stay
-   * permissive). Typos: `delayMs`, `method`, `pattern`, `urlPatter`.
-   */
-  delaysItem: ["delay", "httpMethod", "urlPattern"],
+    /**
+     * `ResponseDelayView` (report 13 §1.13). The `httpMethod` values are NOT validated (stay
+     * permissive). Typos: `delayMs`, `method`, `pattern`, `urlPatter`.
+     */
+    delaysItem: ['delay', 'httpMethod', 'urlPattern'],
 
-  /**
-   * `ResponseDelayLogNormalView` (report 13 §1.14). The four int fields PLUS the method/url
-   * filter, distinct from the response-level `logNormalDelay`.
-   */
-  delaysLogNormalItem: ["min", "max", "mean", "median", "httpMethod", "urlPattern"],
+    /**
+     * `ResponseDelayLogNormalView` (report 13 §1.14). The four int fields PLUS the method/url
+     * filter, distinct from the response-level `logNormalDelay`.
+     */
+    delaysLogNormalItem: ['min', 'max', 'mean', 'median', 'httpMethod', 'urlPattern'],
 
-  /**
-   * `GlobalLiteralViewV5` (report 13 §1.15). Schema `required:[name,value]`. Unknown key dropped
-   * (accepted 200). Typo target: `values`.
-   */
-  literalsItem: ["name", "value"],
+    /**
+     * `GlobalLiteralViewV5` (report 13 §1.15). Schema `required:[name,value]`. Unknown key dropped
+     * (accepted 200). Typo target: `values`.
+     */
+    literalsItem: ['name', 'value'],
 
-  /**
-   * `GlobalVariableViewV5` (report 13 §1.16). Schema `required:[name,function]`. Typos:
-   * `functions`, `args`/`argument`.
-   */
-  variablesItem: ["name", "function", "arguments"],
+    /**
+     * `GlobalVariableViewV5` (report 13 §1.16). Schema `required:[name,function]`. Typos:
+     * `functions`, `args`/`argument`.
+     */
+    variablesItem: ['name', 'function', 'arguments'],
 
-  /**
-   * `MetaView` (report 13 §1.17). The `hoverflyVersion`/`timeExported` contents are NOT
-   * format-validated (leave un-flagged); only an unknown KEY here is droppable.
-   */
-  meta: ["schemaVersion", "hoverflyVersion", "timeExported"],
+    /**
+     * `MetaView` (report 13 §1.17). The `hoverflyVersion`/`timeExported` contents are NOT
+     * format-validated (leave un-flagged); only an unknown KEY here is droppable.
+     */
+    meta: ['schemaVersion', 'hoverflyVersion', 'timeExported'],
 };
 
 /**
@@ -161,11 +170,11 @@ export const STRUCTURE_ALLOWED_KEYS: Readonly<Record<StructureObjectKind, readon
  * The ROOT object is also skipped (already HF102 via `additionalProperties:false`).
  */
 export const USER_KEYED_MAP_PATHS: readonly string[] = [
-  "request.headers",
-  "request.query",
-  "response.headers",
-  "requiresState",
-  "transitionsState",
+    'request.headers',
+    'request.query',
+    'response.headers',
+    'requiresState',
+    'transitionsState',
 ];
 
 /**
@@ -174,7 +183,7 @@ export const USER_KEYED_MAP_PATHS: readonly string[] = [
  * `request`, but is also named here so the unknown-key rule can assert it is never flagged.
  */
 export const SCHEMA_ABSENT_LEGAL_KEYS: Readonly<Record<string, readonly string[]>> = {
-  request: ["method"],
+    request: ['method'],
 };
 
 /**

@@ -124,11 +124,11 @@ VS Code window:
 
 1. Install the `.vsix` (or launch the Extension Development Host with **F5**).
 2. Open one of the repo fixtures (all paths relative to repo root):
-   - `testdata/valid/minimal.hoverfly.json`: should show **no** diagnostics.
-   - `testdata/valid/rich-stateful-templated.hoverfly.json`: should show no errors; hover over a
-     matcher name (e.g. `"glob"`) to see registry docs.
-   - `testdata/invalid/hf4xx/dangling-states.hoverfly.json`: should show **squiggles** for
-     `HF401`/`HF402`/`HF403` dangling-state diagnostics.
+    - `testdata/valid/minimal.hoverfly.json`: should show **no** diagnostics.
+    - `testdata/valid/rich-stateful-templated.hoverfly.json`: should show no errors; hover over a
+      matcher name (e.g. `"glob"`) to see registry docs.
+    - `testdata/invalid/hf4xx/dangling-states.hoverfly.json`: should show **squiggles** for
+      `HF401`/`HF402`/`HF403` dangling-state diagnostics.
 3. In a `*.hoverfly.json` file, type a matcher value `{ "matcher": "" }` and trigger completion
    inside the quotes; expect matcher names (`exact`, `regex`, `jsonpath`, …).
 4. In a templated body (`"templated": true`, `"body": "{{ faker 'Name' }}"`), confirm the template

@@ -28,11 +28,11 @@
  *            family report as a catalog-vs-reality deviation for the integrator to weigh.
  */
 
-import type { ASTNode, ObjectASTNode } from "vscode-json-languageservice";
-import type { Diagnostic } from "vscode-languageserver-types";
+import type { ASTNode, ObjectASTNode } from 'vscode-json-languageservice';
+import type { Diagnostic } from 'vscode-languageserver-types';
 
-import { makeDiagnostic } from "../diagnostics.js";
-import type { ResponseModel, RuleContext, SemanticRule } from "../types.js";
+import { makeDiagnostic } from '../diagnostics.js';
+import type { ResponseModel, RuleContext, SemanticRule } from '../types.js';
 
 /** Lowest / highest HTTP status codes Hoverfly treats as in-range (inclusive). */
 const MIN_HTTP_STATUS = 100;
@@ -42,164 +42,165 @@ const MAX_HTTP_STATUS = 599;
 const BASE64_STD_PATTERN = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
 
 /** Header names whose simultaneous presence (HF302) is an invalid combination. */
-const CONTENT_LENGTH = "content-length";
-const TRANSFER_ENCODING = "transfer-encoding";
+const CONTENT_LENGTH = 'content-length';
+const TRANSFER_ENCODING = 'transfer-encoding';
 
 /* ----------------------------------- local AST helpers ----------------------------------- */
 
 /** Whether a boolean-valued response field is present and `true`. */
 function isTrue(node: ASTNode | undefined): boolean {
-  return node?.type === "boolean" && node.value === true;
+    return node?.type === 'boolean' && node.value === true;
 }
 
 /** The numeric value of a node when it is a JSON number, else undefined. */
 function numberValue(node: ASTNode | undefined): number | undefined {
-  return node?.type === "number" ? node.value : undefined;
+    return node?.type === 'number' ? node.value : undefined;
 }
 
 /** UTF-8 byte length of a string (HF303 must compare bytes, not code units). */
 const UTF8 = new TextEncoder();
 function byteLength(text: string): number {
-  return UTF8.encode(text).length;
+    return UTF8.encode(text).length;
 }
 
 /* --------------------------------------- HF301 ------------------------------------------- */
 
 /** `body` AND `bodyFile` both present — body wins, bodyFile silently ignored. */
 function hf301(response: ResponseModel, context: RuleContext): Diagnostic[] {
-  const { body, bodyFile } = response;
-  if (body.propertyNode && bodyFile.propertyNode && bodyFile.keyNode) {
-    return [makeDiagnostic(context.textDocument, "HF301", bodyFile.keyNode)];
-  }
-  return [];
+    const { body, bodyFile } = response;
+    if (body.propertyNode && bodyFile.propertyNode && bodyFile.keyNode) {
+        return [makeDiagnostic(context.textDocument, 'HF301', bodyFile.keyNode)];
+    }
+    return [];
 }
 
 /* --------------------------------------- HF302 ------------------------------------------- */
 
 /** `Content-Length` AND `Transfer-Encoding` headers both set (case-insensitive names). */
 function hf302(response: ResponseModel, context: RuleContext): Diagnostic[] {
-  let contentLength: ASTNode | undefined;
-  let transferEncoding: ASTNode | undefined;
-  for (const header of response.headers) {
-    const name = header.name.toLowerCase();
-    if (name === CONTENT_LENGTH) {
-      contentLength ??= header.keyNode;
-    } else if (name === TRANSFER_ENCODING) {
-      transferEncoding ??= header.keyNode;
+    let contentLength: ASTNode | undefined;
+    let transferEncoding: ASTNode | undefined;
+    for (const header of response.headers) {
+        const name = header.name.toLowerCase();
+        if (name === CONTENT_LENGTH) {
+            contentLength ??= header.keyNode;
+        } else if (name === TRANSFER_ENCODING) {
+            transferEncoding ??= header.keyNode;
+        }
     }
-  }
-  if (!contentLength || !transferEncoding) {
-    return [];
-  }
-  // Range = the SECOND header key (the later one in document order) per the catalog.
-  const second = contentLength.offset > transferEncoding.offset ? contentLength : transferEncoding;
-  return [makeDiagnostic(context.textDocument, "HF302", second)];
+    if (!contentLength || !transferEncoding) {
+        return [];
+    }
+    // Range = the SECOND header key (the later one in document order) per the catalog.
+    const second =
+        contentLength.offset > transferEncoding.offset ? contentLength : transferEncoding;
+    return [makeDiagnostic(context.textDocument, 'HF302', second)];
 }
 
 /* --------------------------------------- HF303 ------------------------------------------- */
 
 /** First value-string of a header (`name: ["v"]` or `name: "v"`), with its node. */
 function firstHeaderString(valueNode: ASTNode | undefined): ASTNode | undefined {
-  if (valueNode?.type === "string") {
-    return valueNode;
-  }
-  if (valueNode?.type === "array") {
-    const first = valueNode.items[0];
-    return first?.type === "string" ? first : undefined;
-  }
-  return undefined;
+    if (valueNode?.type === 'string') {
+        return valueNode;
+    }
+    if (valueNode?.type === 'array') {
+        const first = valueNode.items[0];
+        return first?.type === 'string' ? first : undefined;
+    }
+    return undefined;
 }
 
 /** `Content-Length` header value disagrees with the actual UTF-8 body length. */
 function hf303(response: ResponseModel, context: RuleContext): Diagnostic[] {
-  // Skip when the body is not a literal we can measure.
-  if (
-    isTrue(response.templated.valueNode) ||
-    isTrue(response.encodedBody.valueNode) ||
-    response.bodyFile.propertyNode
-  ) {
-    return [];
-  }
-  const bodyNode = response.body.valueNode;
-  if (bodyNode?.type !== "string") {
-    return [];
-  }
+    // Skip when the body is not a literal we can measure.
+    if (
+        isTrue(response.templated.valueNode) ||
+        isTrue(response.encodedBody.valueNode) ||
+        response.bodyFile.propertyNode
+    ) {
+        return [];
+    }
+    const bodyNode = response.body.valueNode;
+    if (bodyNode?.type !== 'string') {
+        return [];
+    }
 
-  const header = response.headers.find((h) => h.name.toLowerCase() === CONTENT_LENGTH);
-  const valueNode = firstHeaderString(header?.valueNode);
-  if (!valueNode || valueNode.type !== "string") {
-    return [];
-  }
-  // Only act on a well-formed integer Content-Length; anything else is a schema/other concern.
-  if (!/^\d+$/.test(valueNode.value)) {
-    return [];
-  }
+    const header = response.headers.find((h) => h.name.toLowerCase() === CONTENT_LENGTH);
+    const valueNode = firstHeaderString(header?.valueNode);
+    if (!valueNode || valueNode.type !== 'string') {
+        return [];
+    }
+    // Only act on a well-formed integer Content-Length; anything else is a schema/other concern.
+    if (!/^\d+$/.test(valueNode.value)) {
+        return [];
+    }
 
-  const declared = Number(valueNode.value);
-  const actual = byteLength(bodyNode.value);
-  if (declared === actual) {
-    return [];
-  }
-  return [makeDiagnostic(context.textDocument, "HF303", valueNode, { n: declared, m: actual })];
+    const declared = Number(valueNode.value);
+    const actual = byteLength(bodyNode.value);
+    if (declared === actual) {
+        return [];
+    }
+    return [makeDiagnostic(context.textDocument, 'HF303', valueNode, { n: declared, m: actual })];
 }
 
 /* --------------------------------------- HF304 ------------------------------------------- */
 
 /** `status` outside the 100–599 HTTP range. */
 function hf304(response: ResponseModel, context: RuleContext): Diagnostic[] {
-  const valueNode = response.status.valueNode;
-  const status = numberValue(valueNode);
-  if (valueNode === undefined || status === undefined) {
-    return [];
-  }
-  if (status >= MIN_HTTP_STATUS && status <= MAX_HTTP_STATUS) {
-    return [];
-  }
-  return [makeDiagnostic(context.textDocument, "HF304", valueNode, { n: status })];
+    const valueNode = response.status.valueNode;
+    const status = numberValue(valueNode);
+    if (valueNode === undefined || status === undefined) {
+        return [];
+    }
+    if (status >= MIN_HTTP_STATUS && status <= MAX_HTTP_STATUS) {
+        return [];
+    }
+    return [makeDiagnostic(context.textDocument, 'HF304', valueNode, { n: status })];
 }
 
 /* --------------------------------------- HF305 ------------------------------------------- */
 
 /** `encodedBody: true` but `body` is not valid standard (padded) base64. */
 function hf305(response: ResponseModel, context: RuleContext): Diagnostic[] {
-  if (!isTrue(response.encodedBody.valueNode)) {
-    return [];
-  }
-  const bodyNode = response.body.valueNode;
-  if (bodyNode?.type !== "string") {
-    // No string body to validate (e.g. bodyFile-based or absent) — not our concern.
-    return [];
-  }
-  const body = bodyNode.value;
-  // The empty string is valid base64 (decodes to empty); only flag non-empty invalid values.
-  if (body.length === 0 || BASE64_STD_PATTERN.test(body)) {
-    return [];
-  }
-  return [makeDiagnostic(context.textDocument, "HF305", bodyNode)];
+    if (!isTrue(response.encodedBody.valueNode)) {
+        return [];
+    }
+    const bodyNode = response.body.valueNode;
+    if (bodyNode?.type !== 'string') {
+        // No string body to validate (e.g. bodyFile-based or absent) — not our concern.
+        return [];
+    }
+    const body = bodyNode.value;
+    // The empty string is valid base64 (decodes to empty); only flag non-empty invalid values.
+    if (body.length === 0 || BASE64_STD_PATTERN.test(body)) {
+        return [];
+    }
+    return [makeDiagnostic(context.textDocument, 'HF305', bodyNode)];
 }
 
 /* --------------------------------------- HF306 ------------------------------------------- */
 
 /** Negative `fixedDelay` — silently ignored by Hoverfly (`if FixedDelay > 0`). */
 function hf306(response: ResponseModel, context: RuleContext): Diagnostic[] {
-  const valueNode = response.fixedDelay.valueNode;
-  const delay = numberValue(valueNode);
-  if (valueNode === undefined || delay === undefined || delay >= 0) {
-    return [];
-  }
-  return [makeDiagnostic(context.textDocument, "HF306", valueNode)];
+    const valueNode = response.fixedDelay.valueNode;
+    const delay = numberValue(valueNode);
+    if (valueNode === undefined || delay === undefined || delay >= 0) {
+        return [];
+    }
+    return [makeDiagnostic(context.textDocument, 'HF306', valueNode)];
 }
 
 /* --------------------------------------- HF307 ------------------------------------------- */
 
 /** A `logNormalDelay` field plus its numeric value (NaN/undefined when absent or non-number). */
 interface LogNormalFields {
-  readonly object: ObjectASTNode;
-  readonly min: number | undefined;
-  readonly max: number | undefined;
-  readonly mean: number | undefined;
-  readonly median: number | undefined;
-  readonly node: (key: string) => ASTNode | undefined;
+    readonly object: ObjectASTNode;
+    readonly min: number | undefined;
+    readonly max: number | undefined;
+    readonly mean: number | undefined;
+    readonly median: number | undefined;
+    readonly node: (key: string) => ASTNode | undefined;
 }
 
 /**
@@ -223,112 +224,114 @@ interface LogNormalFields {
  * matching Go (a missing mean is the int zero-value and `mean <= 0` fires).
  */
 function logNormalDelayViolation(
-  fields: LogNormalFields,
+    fields: LogNormalFields,
 ): undefined | { node: ASTNode; explain: string } {
-  const min = fields.min ?? 0;
-  const max = fields.max ?? 0;
-  const mean = fields.mean ?? 0;
-  const median = fields.median ?? 0;
+    const min = fields.min ?? 0;
+    const max = fields.max ?? 0;
+    const mean = fields.mean ?? 0;
+    const median = fields.median ?? 0;
 
-  const at = (key: string, explain: string): { node: ASTNode; explain: string } => ({
-    node: fields.node(key) ?? fields.object,
-    explain,
-  });
+    const at = (key: string, explain: string): { node: ASTNode; explain: string } => ({
+        node: fields.node(key) ?? fields.object,
+        explain,
+    });
 
-  if (max < 0) {
-    return at("max", "logNormalDelay min and max cannot be less than 0");
-  }
-  if (min < 0) {
-    return at("min", "logNormalDelay min and max cannot be less than 0");
-  }
-  if (mean <= 0) {
-    return at("mean", "logNormalDelay mean and median cannot be less than or equal to 0");
-  }
-  if (median <= 0) {
-    return at("median", "logNormalDelay mean and median cannot be less than or equal to 0");
-  }
-  if (max !== 0) {
-    if (max < min) {
-      return at("max", "logNormalDelay min must be less than max");
+    if (max < 0) {
+        return at('max', 'logNormalDelay min and max cannot be less than 0');
     }
-    if (mean > max) {
-      return at("mean", "logNormalDelay mean cannot be greater than max");
+    if (min < 0) {
+        return at('min', 'logNormalDelay min and max cannot be less than 0');
     }
-    if (median > max) {
-      return at("median", "logNormalDelay median cannot be greater than max");
+    if (mean <= 0) {
+        return at('mean', 'logNormalDelay mean and median cannot be less than or equal to 0');
     }
-  }
-  if (min !== 0) {
-    if (mean < min) {
-      return at("mean", "logNormalDelay mean cannot be less than min");
+    if (median <= 0) {
+        return at('median', 'logNormalDelay mean and median cannot be less than or equal to 0');
     }
-    if (median < min) {
-      return at("median", "logNormalDelay median cannot be less than min");
+    if (max !== 0) {
+        if (max < min) {
+            return at('max', 'logNormalDelay min must be less than max');
+        }
+        if (mean > max) {
+            return at('mean', 'logNormalDelay mean cannot be greater than max');
+        }
+        if (median > max) {
+            return at('median', 'logNormalDelay median cannot be greater than max');
+        }
     }
-  }
-  if (median > mean) {
-    return at("median", "logNormalDelay mean cannot be less than median");
-  }
-  return undefined;
+    if (min !== 0) {
+        if (mean < min) {
+            return at('mean', 'logNormalDelay mean cannot be less than min');
+        }
+        if (median < min) {
+            return at('median', 'logNormalDelay median cannot be less than min');
+        }
+    }
+    if (median > mean) {
+        return at('median', 'logNormalDelay mean cannot be less than median');
+    }
+    return undefined;
 }
 
 /** Read the logNormalDelay object (if present) into a {@link LogNormalFields} view. */
 function readLogNormal(response: ResponseModel): LogNormalFields | undefined {
-  const node = response.logNormalDelay.valueNode;
-  if (node?.type !== "object") {
-    return undefined;
-  }
-  const value = (key: string): ASTNode | undefined =>
-    node.properties.find((p) => p.keyNode.value === key)?.valueNode;
-  return {
-    object: node,
-    min: numberValue(value("min")),
-    max: numberValue(value("max")),
-    mean: numberValue(value("mean")),
-    median: numberValue(value("median")),
-    node: value,
-  };
+    const node = response.logNormalDelay.valueNode;
+    if (node?.type !== 'object') {
+        return undefined;
+    }
+    const value = (key: string): ASTNode | undefined =>
+        node.properties.find((p) => p.keyNode.value === key)?.valueNode;
+    return {
+        object: node,
+        min: numberValue(value('min')),
+        max: numberValue(value('max')),
+        mean: numberValue(value('mean')),
+        median: numberValue(value('median')),
+        node: value,
+    };
 }
 
 /** `logNormalDelay` violates Hoverfly's validation (which hard-fails import — see header). */
 function hf307(response: ResponseModel, context: RuleContext): Diagnostic[] {
-  const fields = readLogNormal(response);
-  if (!fields) {
-    return [];
-  }
-  const violation = logNormalDelayViolation(fields);
-  if (!violation) {
-    return [];
-  }
-  return [
-    makeDiagnostic(context.textDocument, "HF307", violation.node, { explain: violation.explain }),
-  ];
+    const fields = readLogNormal(response);
+    if (!fields) {
+        return [];
+    }
+    const violation = logNormalDelayViolation(fields);
+    if (!violation) {
+        return [];
+    }
+    return [
+        makeDiagnostic(context.textDocument, 'HF307', violation.node, {
+            explain: violation.explain,
+        }),
+    ];
 }
 
 /* ----------------------------------------- rule ------------------------------------------ */
 
 /** The single HF3xx rule: one pass over every pair's response. */
 export const hf3xxResponseRule: SemanticRule = {
-  codes: ["HF301", "HF302", "HF303", "HF304", "HF305", "HF306", "HF307"],
-  run(context): Diagnostic[] {
-    const out: Diagnostic[] = [];
-    for (const pair of context.model.pairs) {
-      const { response } = pair;
-      if (!response.node) {
-        continue;
-      }
-      out.push(
-        ...hf301(response, context),
-        ...hf302(response, context),
-        ...hf303(response, context),
-        ...hf304(response, context),
-        ...hf305(response, context),
-        ...hf306(response, context),
-        ...hf307(response, context),
-      );
-    }
-    return out;
-  },
+    codes: ['HF301', 'HF302', 'HF303', 'HF304', 'HF305', 'HF306', 'HF307'],
+    run(context): Diagnostic[] {
+        const out: Diagnostic[] = [];
+        for (const pair of context.model.pairs) {
+            const { response } = pair;
+            if (!response.node) {
+                continue;
+            }
+            out.push(
+                ...hf301(response, context),
+                ...hf302(response, context),
+                ...hf303(response, context),
+                ...hf304(response, context),
+                ...hf305(response, context),
+                ...hf306(response, context),
+                ...hf307(response, context),
+            );
+        }
+        return out;
+    },
 };
 
 /** All HF3xx rules. The integrator spreads this into `rules/index.ts#ALL_RULES`. */

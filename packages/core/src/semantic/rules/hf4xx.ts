@@ -16,22 +16,22 @@
  * user mistake we should flag.
  */
 
-import { type Diagnostic } from "vscode-languageserver-types";
+import { type Diagnostic } from 'vscode-languageserver-types';
 
-import { makeDiagnostic } from "../diagnostics.js";
+import { makeDiagnostic } from '../diagnostics.js';
 import type {
-  RemovesStateEntry,
-  RuleContext,
-  SemanticRule,
-  SimulationModel,
-  StateEntry,
-} from "../types.js";
+    RemovesStateEntry,
+    RuleContext,
+    SemanticRule,
+    SimulationModel,
+    StateEntry,
+} from '../types.js';
 
 /** Prefix marking Hoverfly's built-in sequencing keys, which are auto-managed. */
-const SEQUENCE_PREFIX = "sequence:";
+const SEQUENCE_PREFIX = 'sequence:';
 
 function isSequenceKey(key: string): boolean {
-  return key.startsWith(SEQUENCE_PREFIX);
+    return key.startsWith(SEQUENCE_PREFIX);
 }
 
 /* ----------------------------------------------------------------------------------------- *
@@ -42,8 +42,8 @@ function isSequenceKey(key: string): boolean {
 
 /** A state-flow occurrence tagged with the index of the pair it was found in. */
 interface PairScopedEntry<T> {
-  readonly pairIndex: number;
-  readonly entry: T;
+    readonly pairIndex: number;
+    readonly entry: T;
 }
 
 /**
@@ -52,48 +52,48 @@ interface PairScopedEntry<T> {
  * each offending node and reason about same-pair vs cross-pair satisfaction.
  */
 interface StateFlowIndex {
-  /** Keys named by any `requiresState` across all pairs. */
-  readonly requiredKeys: ReadonlySet<string>;
-  /** Keys named by any `transitionsState` across all pairs (the only way a state is "set"). */
-  readonly setKeys: ReadonlySet<string>;
-  /** For each set key, the indices of pairs whose `transitionsState` set it. */
-  readonly setByPairIndices: ReadonlyMap<string, ReadonlySet<number>>;
-  /** Every `requiresState` entry, with its pair index, across all pairs. */
-  readonly requires: readonly PairScopedEntry<StateEntry>[];
-  /** Every `transitionsState` entry, with its key node, across all pairs. */
-  readonly transitions: readonly StateEntry[];
-  /** Every `removesState` entry, with its string node, across all pairs. */
-  readonly removes: readonly RemovesStateEntry[];
+    /** Keys named by any `requiresState` across all pairs. */
+    readonly requiredKeys: ReadonlySet<string>;
+    /** Keys named by any `transitionsState` across all pairs (the only way a state is "set"). */
+    readonly setKeys: ReadonlySet<string>;
+    /** For each set key, the indices of pairs whose `transitionsState` set it. */
+    readonly setByPairIndices: ReadonlyMap<string, ReadonlySet<number>>;
+    /** Every `requiresState` entry, with its pair index, across all pairs. */
+    readonly requires: readonly PairScopedEntry<StateEntry>[];
+    /** Every `transitionsState` entry, with its key node, across all pairs. */
+    readonly transitions: readonly StateEntry[];
+    /** Every `removesState` entry, with its string node, across all pairs. */
+    readonly removes: readonly RemovesStateEntry[];
 }
 
 /** Build the document-global state-flow index from the model (one pass over all pairs). */
 function buildStateFlowIndex(model: SimulationModel): StateFlowIndex {
-  const requires: PairScopedEntry<StateEntry>[] = [];
-  const transitions: StateEntry[] = [];
-  const removes: RemovesStateEntry[] = [];
-  const setByPairIndices = new Map<string, Set<number>>();
+    const requires: PairScopedEntry<StateEntry>[] = [];
+    const transitions: StateEntry[] = [];
+    const removes: RemovesStateEntry[] = [];
+    const setByPairIndices = new Map<string, Set<number>>();
 
-  model.pairs.forEach((pair, pairIndex) => {
-    for (const entry of pair.requiresState) {
-      requires.push({ pairIndex, entry });
-    }
-    for (const entry of pair.transitionsState) {
-      transitions.push(entry);
-      const indices = setByPairIndices.get(entry.key) ?? new Set<number>();
-      indices.add(pairIndex);
-      setByPairIndices.set(entry.key, indices);
-    }
-    removes.push(...pair.removesState);
-  });
+    model.pairs.forEach((pair, pairIndex) => {
+        for (const entry of pair.requiresState) {
+            requires.push({ pairIndex, entry });
+        }
+        for (const entry of pair.transitionsState) {
+            transitions.push(entry);
+            const indices = setByPairIndices.get(entry.key) ?? new Set<number>();
+            indices.add(pairIndex);
+            setByPairIndices.set(entry.key, indices);
+        }
+        removes.push(...pair.removesState);
+    });
 
-  return {
-    requiredKeys: new Set(requires.map((scoped) => scoped.entry.key)),
-    setKeys: new Set(transitions.map((entry) => entry.key)),
-    setByPairIndices,
-    requires,
-    transitions,
-    removes,
-  };
+    return {
+        requiredKeys: new Set(requires.map((scoped) => scoped.entry.key)),
+        setKeys: new Set(transitions.map((entry) => entry.key)),
+        setByPairIndices,
+        requires,
+        transitions,
+        removes,
+    };
 }
 
 /**
@@ -106,29 +106,31 @@ function buildStateFlowIndex(model: SimulationModel): StateFlowIndex {
  * the state is still unset. The message already hedges ("set externally").
  */
 export const hf401RequiresNeverSet: SemanticRule = {
-  codes: ["HF401"],
-  run(context: RuleContext): Diagnostic[] {
-    const index = buildStateFlowIndex(context.model);
-    const diagnostics: Diagnostic[] = [];
+    codes: ['HF401'],
+    run(context: RuleContext): Diagnostic[] {
+        const index = buildStateFlowIndex(context.model);
+        const diagnostics: Diagnostic[] = [];
 
-    for (const { pairIndex, entry } of index.requires) {
-      if (isSequenceKey(entry.key) || !entry.keyNode) {
-        continue;
-      }
-      // Satisfied only by a DIFFERENT pair (a same-pair transitionsState fires after the match).
-      const setBy = index.setByPairIndices.get(entry.key);
-      const satisfiedByOtherPair = setBy
-        ? [...setBy].some((otherIndex) => otherIndex !== pairIndex)
-        : false;
-      if (!satisfiedByOtherPair) {
-        diagnostics.push(
-          makeDiagnostic(context.textDocument, "HF401", entry.keyNode, { key: entry.key }),
-        );
-      }
-    }
+        for (const { pairIndex, entry } of index.requires) {
+            if (isSequenceKey(entry.key) || !entry.keyNode) {
+                continue;
+            }
+            // Satisfied only by a DIFFERENT pair (a same-pair transitionsState fires after the match).
+            const setBy = index.setByPairIndices.get(entry.key);
+            const satisfiedByOtherPair = setBy
+                ? [...setBy].some((otherIndex) => otherIndex !== pairIndex)
+                : false;
+            if (!satisfiedByOtherPair) {
+                diagnostics.push(
+                    makeDiagnostic(context.textDocument, 'HF401', entry.keyNode, {
+                        key: entry.key,
+                    }),
+                );
+            }
+        }
 
-    return diagnostics;
-  },
+        return diagnostics;
+    },
 };
 
 /**
@@ -136,24 +138,26 @@ export const hf401RequiresNeverSet: SemanticRule = {
  * Information-level, one per offending `transitionsState` occurrence, on the key node.
  */
 export const hf402TransitionsNeverRequired: SemanticRule = {
-  codes: ["HF402"],
-  run(context: RuleContext): Diagnostic[] {
-    const index = buildStateFlowIndex(context.model);
-    const diagnostics: Diagnostic[] = [];
+    codes: ['HF402'],
+    run(context: RuleContext): Diagnostic[] {
+        const index = buildStateFlowIndex(context.model);
+        const diagnostics: Diagnostic[] = [];
 
-    for (const entry of index.transitions) {
-      if (isSequenceKey(entry.key) || !entry.keyNode) {
-        continue;
-      }
-      if (!index.requiredKeys.has(entry.key)) {
-        diagnostics.push(
-          makeDiagnostic(context.textDocument, "HF402", entry.keyNode, { key: entry.key }),
-        );
-      }
-    }
+        for (const entry of index.transitions) {
+            if (isSequenceKey(entry.key) || !entry.keyNode) {
+                continue;
+            }
+            if (!index.requiredKeys.has(entry.key)) {
+                diagnostics.push(
+                    makeDiagnostic(context.textDocument, 'HF402', entry.keyNode, {
+                        key: entry.key,
+                    }),
+                );
+            }
+        }
 
-    return diagnostics;
-  },
+        return diagnostics;
+    },
 };
 
 /**
@@ -162,29 +166,29 @@ export const hf402TransitionsNeverRequired: SemanticRule = {
  * exempt (they are auto-managed, never set by a transitionsState).
  */
 export const hf403RemovesNeverSet: SemanticRule = {
-  codes: ["HF403"],
-  run(context: RuleContext): Diagnostic[] {
-    const index = buildStateFlowIndex(context.model);
-    const diagnostics: Diagnostic[] = [];
+    codes: ['HF403'],
+    run(context: RuleContext): Diagnostic[] {
+        const index = buildStateFlowIndex(context.model);
+        const diagnostics: Diagnostic[] = [];
 
-    for (const entry of index.removes) {
-      if (isSequenceKey(entry.key) || !entry.node) {
-        continue;
-      }
-      if (!index.setKeys.has(entry.key)) {
-        diagnostics.push(
-          makeDiagnostic(context.textDocument, "HF403", entry.node, { key: entry.key }),
-        );
-      }
-    }
+        for (const entry of index.removes) {
+            if (isSequenceKey(entry.key) || !entry.node) {
+                continue;
+            }
+            if (!index.setKeys.has(entry.key)) {
+                diagnostics.push(
+                    makeDiagnostic(context.textDocument, 'HF403', entry.node, { key: entry.key }),
+                );
+            }
+        }
 
-    return diagnostics;
-  },
+        return diagnostics;
+    },
 };
 
 /** All HF4xx state-flow rules. The integrator spreads this into `ALL_RULES`. */
 export const HF4XX_RULES: readonly SemanticRule[] = [
-  hf401RequiresNeverSet,
-  hf402TransitionsNeverRequired,
-  hf403RemovesNeverSet,
+    hf401RequiresNeverSet,
+    hf402TransitionsNeverRequired,
+    hf403RemovesNeverSet,
 ];

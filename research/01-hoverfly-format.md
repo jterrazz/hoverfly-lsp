@@ -88,13 +88,13 @@ The authoritative schema (`core/handlers/v2/schema.json`) for the root:
 
 ```json
 {
-  "type": "object",
-  "required": ["request", "response"],
-  "properties": {
-    "labels": { "type": "array", "items": { "type": "string" } },
-    "request": { "$ref": "#/definitions/request" },
-    "response": { "$ref": "#/definitions/response" }
-  }
+    "type": "object",
+    "required": ["request", "response"],
+    "properties": {
+        "labels": { "type": "array", "items": { "type": "string" } },
+        "request": { "$ref": "#/definitions/request" },
+        "response": { "$ref": "#/definitions/response" }
+    }
 }
 ```
 
@@ -204,13 +204,13 @@ Every matcher's `value` is interpreted differently. Confirmed matcher names (exa
 
 ```json
 {
-  "matcher": "array",
-  "config": {
-    "ignoreUnknown": "<true/false>",
-    "ignoreOrder": "<true/false>",
-    "ignoreOccurrences": "<true/false>"
-  },
-  "value": ["access:vod", "order:latest", "profile:vd"]
+    "matcher": "array",
+    "config": {
+        "ignoreUnknown": "<true/false>",
+        "ignoreOrder": "<true/false>",
+        "ignoreOccurrences": "<true/false>"
+    },
+    "value": ["access:vod", "order:latest", "profile:vd"]
 }
 ```
 
@@ -226,8 +226,8 @@ Every matcher's `value` is interpreted differently. Confirmed matcher names (exa
 
 ```json
 {
-  "matcher": "jwt",
-  "value": "{\"header\":{\"alg\":\"HS256\"},\"payload\":{\"sub\":\"1234567890\",\"name\":\"John Doe\"}}"
+    "matcher": "jwt",
+    "value": "{\"header\":{\"alg\":\"HS256\"},\"payload\":{\"sub\":\"1234567890\",\"name\":\"John Doe\"}}"
 }
 ```
 
@@ -235,16 +235,16 @@ Every matcher's `value` is interpreted differently. Confirmed matcher names (exa
 
 ```json
 {
-  "matcher": "form",
-  "value": {
-    "grant_type": [{ "matcher": "exact", "value": "authorization_code" }],
-    "client_assertion": [
-      {
-        "matcher": "jwt",
-        "value": "{\"header\":{\"alg\":\"HS256\"},\"payload\":{\"sub\":\"1234567890\",\"name\":\"John Doe\"}}"
-      }
-    ]
-  }
+    "matcher": "form",
+    "value": {
+        "grant_type": [{ "matcher": "exact", "value": "authorization_code" }],
+        "client_assertion": [
+            {
+                "matcher": "jwt",
+                "value": "{\"header\":{\"alg\":\"HS256\"},\"payload\":{\"sub\":\"1234567890\",\"name\":\"John Doe\"}}"
+            }
+        ]
+    }
 }
 ```
 
@@ -258,9 +258,9 @@ Every matcher's `value` is interpreted differently. Confirmed matcher names (exa
 
 ```json
 {
-  "matcher": "jsonpath",
-  "value": "$.user.id",
-  "doMatch": { "matcher": "exact", "value": "1" }
+    "matcher": "jsonpath",
+    "value": "$.user.id",
+    "doMatch": { "matcher": "exact", "value": "1" }
 }
 ```
 
@@ -371,11 +371,11 @@ Hoverfly maintains "a map of keys and values which it uses to store its internal
 
 ```json
 {
-  "request": {
-    "path": [{ "matcher": "exact", "value": "/basket" }],
-    "requiresState": { "eggs": "present", "bacon": "large" }
-  },
-  "response": { "status": 200, "body": "eggs and large bacon" }
+    "request": {
+        "path": [{ "matcher": "exact", "value": "/basket" }],
+        "requiresState": { "eggs": "present", "bacon": "large" }
+    },
+    "response": { "status": 200, "body": "eggs and large bacon" }
 }
 ```
 
@@ -383,13 +383,13 @@ Hoverfly maintains "a map of keys and values which it uses to store its internal
 
 ```json
 {
-  "request": { "path": [{ "matcher": "exact", "value": "/pay" }] },
-  "response": {
-    "status": 200,
-    "body": "eggs and large bacon",
-    "transitionsState": { "payment-flow": "complete" },
-    "removesState": ["basket"]
-  }
+    "request": { "path": [{ "matcher": "exact", "value": "/pay" }] },
+    "response": {
+        "status": 200,
+        "body": "eggs and large bacon",
+        "transitionsState": { "payment-flow": "complete" },
+        "removesState": ["basket"]
+    }
 }
 ```
 
@@ -405,23 +405,23 @@ Sequences let identical requests return _different_ responses in order. Conventi
 
 ```json
 {
-  "data": {
-    "pairs": [
-      {
-        "request": { "requiresState": { "sequence:1": "1" } },
-        "response": {
-          "status": 200,
-          "body": "First response",
-          "transitionsState": { "sequence:1": "2" }
-        }
-      },
-      {
-        "request": { "requiresState": { "sequence:1": "2" } },
-        "response": { "status": 200, "body": "Second response" }
-      }
-    ]
-  },
-  "meta": { "schemaVersion": "v5.2" }
+    "data": {
+        "pairs": [
+            {
+                "request": { "requiresState": { "sequence:1": "1" } },
+                "response": {
+                    "status": 200,
+                    "body": "First response",
+                    "transitionsState": { "sequence:1": "2" }
+                }
+            },
+            {
+                "request": { "requiresState": { "sequence:1": "2" } },
+                "response": { "status": 200, "body": "Second response" }
+            }
+        ]
+    },
+    "meta": { "schemaVersion": "v5.2" }
 }
 ```
 
@@ -594,7 +594,7 @@ Empty arrays are common in exports:
 ### 10.6 Journal helpers
 
 - `{{ journal '<index-name>' '<lookup-key>' '<request|response>' '<xpath|jsonpath>' '<query>' }}`
-  - e.g. `{{ journal 'Request.QueryParam.id' '1' 'response' 'jsonpath' '$.name' }}`
+    - e.g. `{{ journal 'Request.QueryParam.id' '1' 'response' 'jsonpath' '$.name' }}`
 - `{{ hasJournalKey '<index-name>' '<key-name>' }}` → boolean
 
 ### 10.7 Key-value store / array helpers (per-request scope, cleared after render)
@@ -666,34 +666,34 @@ The loader validates ALL v5.x against ONE schema, so versions are documentation/
 
 ```json
 {
-  "data": {
-    "pairs": [
-      {
-        "request": {
-          "path": [{ "matcher": "exact", "value": "/" }],
-          "method": [{ "matcher": "exact", "value": "GET" }],
-          "destination": [{ "matcher": "exact", "value": "myhost.io" }],
-          "scheme": [{ "matcher": "exact", "value": "https" }],
-          "body": [{ "matcher": "exact", "value": "" }],
-          "headers": {},
-          "query": {}
-        },
-        "response": {
-          "status": 200,
-          "body": "<h1>Matched on recording</h1>",
-          "encodedBody": false,
-          "headers": { "Content-Type": ["text/html; charset=utf-8"] },
-          "templated": false
-        }
-      }
-    ],
-    "globalActions": { "delays": [], "delaysLogNormal": [] }
-  },
-  "meta": {
-    "schemaVersion": "v5",
-    "hoverflyVersion": "v1.0.0",
-    "timeExported": "2019-05-30T22:14:24+01:00"
-  }
+    "data": {
+        "pairs": [
+            {
+                "request": {
+                    "path": [{ "matcher": "exact", "value": "/" }],
+                    "method": [{ "matcher": "exact", "value": "GET" }],
+                    "destination": [{ "matcher": "exact", "value": "myhost.io" }],
+                    "scheme": [{ "matcher": "exact", "value": "https" }],
+                    "body": [{ "matcher": "exact", "value": "" }],
+                    "headers": {},
+                    "query": {}
+                },
+                "response": {
+                    "status": 200,
+                    "body": "<h1>Matched on recording</h1>",
+                    "encodedBody": false,
+                    "headers": { "Content-Type": ["text/html; charset=utf-8"] },
+                    "templated": false
+                }
+            }
+        ],
+        "globalActions": { "delays": [], "delaysLogNormal": [] }
+    },
+    "meta": {
+        "schemaVersion": "v5",
+        "hoverflyVersion": "v1.0.0",
+        "timeExported": "2019-05-30T22:14:24+01:00"
+    }
 }
 ```
 

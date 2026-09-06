@@ -1,6 +1,6 @@
-import { createRequire } from "node:module";
+import { createRequire } from 'node:module';
 
-import { startServer } from "./server.js";
+import { startServer } from './server.js';
 
 /**
  * The package version. In the esbuild bundle this is replaced at build time via `define`
@@ -10,16 +10,16 @@ import { startServer } from "./server.js";
 declare const HOVERFLY_LSP_VERSION: string | undefined;
 
 function readVersion(): string {
-  if (typeof HOVERFLY_LSP_VERSION === "string") {
-    return HOVERFLY_LSP_VERSION;
-  }
-  try {
-    const require = createRequire(import.meta.url);
-    const pkg = require("../package.json") as { version?: string };
-    return pkg.version ?? "0.0.0";
-  } catch {
-    return "0.0.0";
-  }
+    if (typeof HOVERFLY_LSP_VERSION === 'string') {
+        return HOVERFLY_LSP_VERSION;
+    }
+    try {
+        const require = createRequire(import.meta.url);
+        const pkg = require('../package.json') as { version?: string };
+        return pkg.version ?? '0.0.0';
+    } catch {
+        return '0.0.0';
+    }
 }
 
 const HELP = `hoverfly-lsp — Language Server for Hoverfly JSON simulation files
@@ -44,18 +44,18 @@ Options:
  * would crash every editor-launched server on startup. Only genuinely unknown flags are an error.
  */
 function isAcceptedArg(arg: string): boolean {
-  return (
-    arg === "--stdio" ||
-    arg === "--node-ipc" ||
-    arg === "--socket" ||
-    arg === "--pipe" ||
-    arg.startsWith("--socket=") ||
-    arg.startsWith("--pipe=") ||
-    arg === "--clientProcessId" ||
-    arg.startsWith("--clientProcessId=") ||
-    // The integer that follows a bare `--socket` / `--pipe` / `--clientProcessId`.
-    /^\d+$/.test(arg)
-  );
+    return (
+        arg === '--stdio' ||
+        arg === '--node-ipc' ||
+        arg === '--socket' ||
+        arg === '--pipe' ||
+        arg.startsWith('--socket=') ||
+        arg.startsWith('--pipe=') ||
+        arg === '--clientProcessId' ||
+        arg.startsWith('--clientProcessId=') ||
+        // The integer that follows a bare `--socket` / `--pipe` / `--clientProcessId`.
+        /^\d+$/.test(arg)
+    );
 }
 
 /**
@@ -67,21 +67,21 @@ function isAcceptedArg(arg: string): boolean {
  * An unrecognised flag prints help to stderr and exits 1.
  */
 export function main(argv: readonly string[] = process.argv.slice(2)): void {
-  if (argv.includes("--version") || argv.includes("-v")) {
-    process.stdout.write(`${readVersion()}\n`);
-    return;
-  }
-  if (argv.includes("--help") || argv.includes("-h")) {
-    process.stdout.write(HELP);
-    return;
-  }
+    if (argv.includes('--version') || argv.includes('-v')) {
+        process.stdout.write(`${readVersion()}\n`);
+        return;
+    }
+    if (argv.includes('--help') || argv.includes('-h')) {
+        process.stdout.write(HELP);
+        return;
+    }
 
-  const unknown = argv.find((arg) => !isAcceptedArg(arg));
-  if (unknown !== undefined) {
-    process.stderr.write(`hoverfly-lsp: unknown argument "${unknown}"\n\n${HELP}`);
-    process.exitCode = 1;
-    return;
-  }
+    const unknown = argv.find((arg) => !isAcceptedArg(arg));
+    if (unknown !== undefined) {
+        process.stderr.write(`hoverfly-lsp: unknown argument "${unknown}"\n\n${HELP}`);
+        process.exitCode = 1;
+        return;
+    }
 
-  startServer();
+    startServer();
 }

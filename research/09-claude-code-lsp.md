@@ -60,13 +60,13 @@ From official docs (plugins-reference.md):
 
 ```json
 {
-  "go": {
-    "command": "gopls",
-    "args": ["serve"],
-    "extensionToLanguage": {
-      ".go": "go"
+    "go": {
+        "command": "gopls",
+        "args": ["serve"],
+        "extensionToLanguage": {
+            ".go": "go"
+        }
     }
-  }
 }
 ```
 
@@ -123,9 +123,9 @@ When `"diagnostics": true` (the default):
 **Source citation:**
 
 - discover-plugins.md, "What Claude gains from code intelligence plugins" section:
-  > "Automatic diagnostics: after every file edit Claude makes, the language server analyzes the changes and reports errors and warnings back automatically. Claude sees type errors, missing imports, and syntax issues without needing to run a compiler or linter. If Claude introduces an error, it notices and fixes the issue in the same turn. This requires no configuration beyond installing the plugin."
+    > "Automatic diagnostics: after every file edit Claude makes, the language server analyzes the changes and reports errors and warnings back automatically. Claude sees type errors, missing imports, and syntax issues without needing to run a compiler or linter. If Claude introduces an error, it notices and fixes the issue in the same turn. This requires no configuration beyond installing the plugin."
 - plugins-reference.md, LSP servers, `"diagnostics"` optional field:
-  > "Whether to push diagnostics into Claude's context after edits (default `true`). Set to `false` to keep code navigation but suppress automatic diagnostic injection."
+    > "Whether to push diagnostics into Claude's context after edits (default `true`). Set to `false` to keep code navigation but suppress automatic diagnostic injection."
 
 ### Suppression
 
@@ -150,7 +150,7 @@ Beyond diagnostics, Claude Code uses LSP for **code navigation**:
 **Source citation:**
 
 - discover-plugins.md, "What Claude gains from code intelligence plugins":
-  > "Code navigation: Claude can use the language server to jump to definitions, find references, get type info on hover, list symbols, find implementations, and trace call hierarchies. These operations give Claude more precise navigation than grep-based search, though availability may vary by language and environment."
+    > "Code navigation: Claude can use the language server to jump to definitions, find references, get type info on hover, list symbols, find implementations, and trace call hierarchies. These operations give Claude more precise navigation than grep-based search, though availability may vary by language and environment."
 
 **Note**: Completion, snippet insertion, and formatting are **not mentioned** in the official documentation as features Claude Code consumes from LSP. The focus is on **diagnostics and navigation**.
 
@@ -196,12 +196,12 @@ hoverfly-lsp-plugin/
 
 ```json
 {
-  "name": "hoverfly-lsp",
-  "description": "Language Server for Hoverfly simulation files (*.hoverfly.json)",
-  "version": "1.0.0",
-  "author": {
-    "name": "Your Team"
-  }
+    "name": "hoverfly-lsp",
+    "description": "Language Server for Hoverfly simulation files (*.hoverfly.json)",
+    "version": "1.0.0",
+    "author": {
+        "name": "Your Team"
+    }
 }
 ```
 
@@ -209,13 +209,13 @@ hoverfly-lsp-plugin/
 
 ```json
 {
-  "hoverfly": {
-    "command": "hoverfly-lsp",
-    "args": ["--stdio"],
-    "extensionToLanguage": {
-      ".json": "hoverfly"
+    "hoverfly": {
+        "command": "hoverfly-lsp",
+        "args": ["--stdio"],
+        "extensionToLanguage": {
+            ".json": "hoverfly"
+        }
     }
-  }
 }
 ```
 
@@ -262,16 +262,16 @@ Root JSON object contains:
 ```typescript
 // In hoverfly-lsp server initialization
 const isHoverfly = (json: any) => {
-  return (
-    json &&
-    typeof json === "object" &&
-    json.data &&
-    typeof json.data === "object" &&
-    json.meta &&
-    typeof json.meta === "object" &&
-    typeof json.meta.schemaVersion === "string" &&
-    json.meta.schemaVersion.startsWith("v")
-  );
+    return (
+        json &&
+        typeof json === 'object' &&
+        json.data &&
+        typeof json.data === 'object' &&
+        json.meta &&
+        typeof json.meta === 'object' &&
+        typeof json.meta.schemaVersion === 'string' &&
+        json.meta.schemaVersion.startsWith('v')
+    );
 };
 ```
 
@@ -289,24 +289,24 @@ const isHoverfly = (json: any) => {
 
 1. **User runs:**
 
-   ```bash
-   /plugin install hoverfly-lsp@claude-plugins-official
-   ```
+    ```bash
+    /plugin install hoverfly-lsp@claude-plugins-official
+    ```
 
-   (or from marketplace URL)
+    (or from marketplace URL)
 
 2. **Claude Code:**
-   - Downloads the plugin zip
-   - Extracts `.lsp.json`, `bin/`, and `plugin.json`
-   - Adds `bin/` contents to `$PATH` for the session
-   - Registers the LSP server configuration
+    - Downloads the plugin zip
+    - Extracts `.lsp.json`, `bin/`, and `plugin.json`
+    - Adds `bin/` contents to `$PATH` for the session
+    - Registers the LSP server configuration
 
 3. **On first `.json` file edit:**
-   - Claude Code spawns `hoverfly-lsp --stdio`
-   - Server receives LSP `initialize` request with language ID `"hoverfly"`
-   - Server fingerprints the file content
-   - If it matches Hoverfly signature, diagnostics/navigation are active
-   - Otherwise, the server declines (does not open file)
+    - Claude Code spawns `hoverfly-lsp --stdio`
+    - Server receives LSP `initialize` request with language ID `"hoverfly"`
+    - Server fingerprints the file content
+    - If it matches Hoverfly signature, diagnostics/navigation are active
+    - Otherwise, the server declines (does not open file)
 
 ### No Manual Configuration Needed
 
@@ -321,7 +321,7 @@ The plugin handles all of it.
 **Source citation:**
 
 - discover-plugins.md, "Code intelligence" section:
-  > "These plugins require the language server binary to be installed on your system. If you already have a language server installed, Claude may prompt you to install the corresponding plugin when you open a project."
+    > "These plugins require the language server binary to be installed on your system. If you already have a language server installed, Claude may prompt you to install the corresponding plugin when you open a project."
 - plugins-reference.md, "You must install the language server binary separately" warning explains that the plugin is configuration only; but for hoverfly-lsp, we bundle the server, so users get zero-install experience.
 
 ---
@@ -332,12 +332,12 @@ If Hoverfly files might also use `.json` as the sole extension (not `.hoverfly.j
 
 ```json
 {
-  "hoverfly": {
-    "command": "hoverfly-lsp",
-    "extensionToLanguage": {
-      ".json": "hoverfly"
+    "hoverfly": {
+        "command": "hoverfly-lsp",
+        "extensionToLanguage": {
+            ".json": "hoverfly"
+        }
     }
-  }
 }
 ```
 
@@ -360,12 +360,12 @@ Modify `.lsp.json` to activate on a non-standard extension:
 
 ```json
 {
-  "hoverfly": {
-    "command": "hoverfly-lsp",
-    "extensionToLanguage": {
-      ".hoverfly": "hoverfly"
+    "hoverfly": {
+        "command": "hoverfly-lsp",
+        "extensionToLanguage": {
+            ".hoverfly": "hoverfly"
+        }
     }
-  }
 }
 ```
 
@@ -390,23 +390,23 @@ Then **rename files locally**:
 
 1. **Create plugin GitHub repo:**
 
-   ```
-   github.com/<org>/hoverfly-lsp
-   ├── .claude-plugin/plugin.json
-   ├── .lsp.json
-   ├── bin/hoverfly-lsp
-   └── README.md
-   ```
+    ```
+    github.com/<org>/hoverfly-lsp
+    ├── .claude-plugin/plugin.json
+    ├── .lsp.json
+    ├── bin/hoverfly-lsp
+    └── README.md
+    ```
 
 2. **Add to marketplace:**
-   - **Official marketplace** (`claude-plugins-official`): Submit via https://platform.claude.com/plugins/submit; Anthropic reviews and decides inclusion
-   - **Community marketplace** (`anthropics/claude-plugins-community`): Submit via same form; automated CI approval process after passing safety/validation checks
+    - **Official marketplace** (`claude-plugins-official`): Submit via https://platform.claude.com/plugins/submit; Anthropic reviews and decides inclusion
+    - **Community marketplace** (`anthropics/claude-plugins-community`): Submit via same form; automated CI approval process after passing safety/validation checks
 
 3. **Users install:**
-   ```bash
-   /plugin install hoverfly-lsp@claude-plugins-official
-   # (or @claude-community if submitted there)
-   ```
+    ```bash
+    /plugin install hoverfly-lsp@claude-plugins-official
+    # (or @claude-community if submitted there)
+    ```
 
 **Source citation:**
 
@@ -469,12 +469,12 @@ hoverfly-lsp/ (plugin root)
 
 ```json
 {
-  "name": "hoverfly-lsp",
-  "description": "Language Server for Hoverfly HTTP simulation files",
-  "version": "1.0.0",
-  "author": {
-    "name": "Your Team"
-  }
+    "name": "hoverfly-lsp",
+    "description": "Language Server for Hoverfly HTTP simulation files",
+    "version": "1.0.0",
+    "author": {
+        "name": "Your Team"
+    }
 }
 ```
 
@@ -482,14 +482,14 @@ hoverfly-lsp/ (plugin root)
 
 ```json
 {
-  "hoverfly": {
-    "command": "hoverfly-lsp",
-    "args": ["--stdio"],
-    "extensionToLanguage": {
-      ".json": "hoverfly"
-    },
-    "diagnostics": true
-  }
+    "hoverfly": {
+        "command": "hoverfly-lsp",
+        "args": ["--stdio"],
+        "extensionToLanguage": {
+            ".json": "hoverfly"
+        },
+        "diagnostics": true
+    }
 }
 ```
 
@@ -497,7 +497,7 @@ hoverfly-lsp/ (plugin root)
 
 ```typescript
 const isHoverfly = (json: any) =>
-  json?.data && json?.meta?.schemaVersion?.toString().startsWith("v");
+    json?.data && json?.meta?.schemaVersion?.toString().startsWith('v');
 ```
 
 **Installation:**
@@ -543,25 +543,25 @@ Claude Code (2026) LSP plugin mechanism is **fully documented, standardized, and
 
 ```json
 {
-  "serverId": {
-    "command": "binary-name", // REQUIRED: executable in PATH
-    "extensionToLanguage": {
-      // REQUIRED: extension mapping
-      ".ext": "languageId" // Single ext only; no globs
-    },
-    "args": ["--arg1", "--arg2"], // Optional: CLI args
-    "transport": "stdio", // Optional: "stdio" or "socket"
-    "env": {
-      // Optional: environment vars
-      "KEY": "value"
-    },
-    "initializationOptions": {}, // Optional: init-time config
-    "settings": {}, // Optional: workspace settings
-    "workspaceFolder": "/path", // Optional: workspace path
-    "startupTimeout": 30000, // Optional: startup max time (ms)
-    "maxRestarts": 5, // Optional: restart limit
-    "diagnostics": true // Optional: auto-inject (default true)
-  }
+    "serverId": {
+        "command": "binary-name", // REQUIRED: executable in PATH
+        "extensionToLanguage": {
+            // REQUIRED: extension mapping
+            ".ext": "languageId" // Single ext only; no globs
+        },
+        "args": ["--arg1", "--arg2"], // Optional: CLI args
+        "transport": "stdio", // Optional: "stdio" or "socket"
+        "env": {
+            // Optional: environment vars
+            "KEY": "value"
+        },
+        "initializationOptions": {}, // Optional: init-time config
+        "settings": {}, // Optional: workspace settings
+        "workspaceFolder": "/path", // Optional: workspace path
+        "startupTimeout": 30000, // Optional: startup max time (ms)
+        "maxRestarts": 5, // Optional: restart limit
+        "diagnostics": true // Optional: auto-inject (default true)
+    }
 }
 ```
 
@@ -571,15 +571,15 @@ Claude Code (2026) LSP plugin mechanism is **fully documented, standardized, and
 
 ```json
 {
-  "hoverfly": {
-    "command": "hoverfly-lsp",
-    "args": ["--stdio"],
-    "extensionToLanguage": {
-      ".json": "hoverfly"
-    },
-    "diagnostics": true,
-    "maxRestarts": 3
-  }
+    "hoverfly": {
+        "command": "hoverfly-lsp",
+        "args": ["--stdio"],
+        "extensionToLanguage": {
+            ".json": "hoverfly"
+        },
+        "diagnostics": true,
+        "maxRestarts": 3
+    }
 }
 ```
 
@@ -587,12 +587,12 @@ Claude Code (2026) LSP plugin mechanism is **fully documented, standardized, and
 
 ```json
 {
-  "name": "hoverfly-lsp",
-  "description": "Language Server Protocol for Hoverfly HTTP simulation files",
-  "version": "1.0.0",
-  "author": {
-    "name": "Team"
-  }
+    "name": "hoverfly-lsp",
+    "description": "Language Server Protocol for Hoverfly HTTP simulation files",
+    "version": "1.0.0",
+    "author": {
+        "name": "Team"
+    }
 }
 ```
 
@@ -600,16 +600,16 @@ Claude Code (2026) LSP plugin mechanism is **fully documented, standardized, and
 
 ```typescript
 function isHoverfly(json: any): boolean {
-  return (
-    json &&
-    typeof json === "object" &&
-    json.data &&
-    typeof json.data === "object" &&
-    json.meta &&
-    typeof json.meta === "object" &&
-    typeof json.meta.schemaVersion === "string" &&
-    json.meta.schemaVersion.startsWith("v")
-  );
+    return (
+        json &&
+        typeof json === 'object' &&
+        json.data &&
+        typeof json.data === 'object' &&
+        json.meta &&
+        typeof json.meta === 'object' &&
+        typeof json.meta.schemaVersion === 'string' &&
+        json.meta.schemaVersion.startsWith('v')
+    );
 }
 ```
 
@@ -670,7 +670,7 @@ Before shipping hoverfly-lsp plugin:
 ### Compatibility Tests
 
 1. ⚠️ **Multi-LSP for .json**: Test whether Claude Code can run hoverfly-lsp + existing JSON LSP concurrently
-   - If conflict: fall back to server-side detection only (no `.json` in extensionToLanguage)
+    - If conflict: fall back to server-side detection only (no `.json` in extensionToLanguage)
 2. ⚠️ **Extension name negotiation**: Confirm whether `.hoverfly.json` can collapse to `.hoverfly` or must be `.json`
 
 ### Documentation Tests

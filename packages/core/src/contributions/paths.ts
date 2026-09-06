@@ -18,26 +18,26 @@
  * treating the final `"matcher"` segment as optional.
  */
 
-import type { JSONPath, Segment } from "vscode-json-languageservice";
+import type { JSONPath, Segment } from 'vscode-json-languageservice';
 
 /** Top-level request fields whose value is a matcher array (the only places matchers live). */
 const DIRECT_MATCHER_FIELDS: ReadonlySet<string> = new Set([
-  "body",
-  "destination",
-  "method",
-  "path",
-  "scheme",
+    'body',
+    'destination',
+    'method',
+    'path',
+    'scheme',
 ]);
 
 /** Request sub-objects that hold `{ key: [matchers] }` maps (header / query name → matchers). */
-const NESTED_MATCHER_MAPS: ReadonlySet<string> = new Set(["headers", "query"]);
+const NESTED_MATCHER_MAPS: ReadonlySet<string> = new Set(['headers', 'query']);
 
 function isIndex(segment: Segment | undefined): segment is number {
-  return typeof segment === "number";
+    return typeof segment === 'number';
 }
 
 function isString(segment: Segment | undefined): segment is string {
-  return typeof segment === "string";
+    return typeof segment === 'string';
 }
 
 /**
@@ -46,10 +46,10 @@ function isString(segment: Segment | undefined): segment is string {
  * itself (a value-completion site) vs the `matcher` key's value.
  */
 interface MatcherPosition {
-  /** The owning request field name (`path`, `body`, a header key, …). */
-  readonly field: string;
-  /** Whether the owning field is the request `body` (the only place `form` is legal). */
-  readonly isBody: boolean;
+    /** The owning request field name (`path`, `body`, a header key, …). */
+    readonly field: string;
+    /** Whether the owning field is the request `body` (the only place `form` is legal). */
+    readonly isBody: boolean;
 }
 
 /**
@@ -66,45 +66,45 @@ interface MatcherPosition {
  * present (used by hover, where the value node path always ends at the key).
  */
 function matchMatcherNamePosition(
-  path: JSONPath,
-  options: { readonly requireMatcherKey: boolean },
+    path: JSONPath,
+    options: { readonly requireMatcherKey: boolean },
 ): MatcherPosition | undefined {
-  let segments = path;
-  let endsWithMatcherKey = false;
-  if (isString(segments[segments.length - 1]) && segments[segments.length - 1] === "matcher") {
-    segments = segments.slice(0, -1);
-    endsWithMatcherKey = true;
-  }
-  if (options.requireMatcherKey && !endsWithMatcherKey) {
-    return undefined;
-  }
-
-  /*
-   * After stripping the optional "matcher" key, the path must end at a matcher OBJECT — either a
-   * matcher-array index or a "doMatch" chain link. Peel any trailing "doMatch" links first.
-   */
-  let trimmed = [...segments];
-  while (trimmed[trimmed.length - 1] === "doMatch") {
-    trimmed = trimmed.slice(0, -1);
-  }
-
-  /*
-   * Now the tail must be `<field>, <index>` for a direct field, or
-   * `headers|query, <name>, <index>` for a nested map — preceded by `request`.
-   */
-  const last = trimmed[trimmed.length - 1];
-  if (!isIndex(last)) {
-    /*
-     * A doMatch link lands directly on a matcher object (no array index); accept it when the
-     * segment before the doMatch chain identifies a matcher field under `request`.
-     */
-    if (endsWithMatcherKey || segments[segments.length - 1] === "doMatch") {
-      return classifyByField(trimmed);
+    let segments = path;
+    let endsWithMatcherKey = false;
+    if (isString(segments[segments.length - 1]) && segments[segments.length - 1] === 'matcher') {
+        segments = segments.slice(0, -1);
+        endsWithMatcherKey = true;
     }
-    return undefined;
-  }
+    if (options.requireMatcherKey && !endsWithMatcherKey) {
+        return undefined;
+    }
 
-  return classifyByField(trimmed.slice(0, -1));
+    /*
+     * After stripping the optional "matcher" key, the path must end at a matcher OBJECT — either a
+     * matcher-array index or a "doMatch" chain link. Peel any trailing "doMatch" links first.
+     */
+    let trimmed = [...segments];
+    while (trimmed[trimmed.length - 1] === 'doMatch') {
+        trimmed = trimmed.slice(0, -1);
+    }
+
+    /*
+     * Now the tail must be `<field>, <index>` for a direct field, or
+     * `headers|query, <name>, <index>` for a nested map — preceded by `request`.
+     */
+    const last = trimmed[trimmed.length - 1];
+    if (!isIndex(last)) {
+        /*
+         * A doMatch link lands directly on a matcher object (no array index); accept it when the
+         * segment before the doMatch chain identifies a matcher field under `request`.
+         */
+        if (endsWithMatcherKey || segments[segments.length - 1] === 'doMatch') {
+            return classifyByField(trimmed);
+        }
+        return undefined;
+    }
+
+    return classifyByField(trimmed.slice(0, -1));
 }
 
 /**
@@ -112,34 +112,34 @@ function matchMatcherNamePosition(
  * request matcher field and whether that field is `body`.
  */
 function classifyByField(beforeIndex: JSONPath): MatcherPosition | undefined {
-  const last = beforeIndex[beforeIndex.length - 1];
-  const prev = beforeIndex[beforeIndex.length - 2];
+    const last = beforeIndex[beforeIndex.length - 1];
+    const prev = beforeIndex[beforeIndex.length - 2];
 
-  // Direct field: …, "request", <field>
-  if (isString(last) && DIRECT_MATCHER_FIELDS.has(last) && prev === "request") {
-    return { field: last, isBody: last === "body" };
-  }
+    // Direct field: …, "request", <field>
+    if (isString(last) && DIRECT_MATCHER_FIELDS.has(last) && prev === 'request') {
+        return { field: last, isBody: last === 'body' };
+    }
 
-  // Header/query map: …, "request", headers|query, <name>
-  const grand = beforeIndex[beforeIndex.length - 3];
-  if (isString(last) && isString(prev) && NESTED_MATCHER_MAPS.has(prev) && grand === "request") {
-    return { field: last, isBody: false };
-  }
+    // Header/query map: …, "request", headers|query, <name>
+    const grand = beforeIndex[beforeIndex.length - 3];
+    if (isString(last) && isString(prev) && NESTED_MATCHER_MAPS.has(prev) && grand === 'request') {
+        return { field: last, isBody: false };
+    }
 
-  return undefined;
+    return undefined;
 }
 
 /** True when the path identifies the `meta.schemaVersion` value (hover or value completion). */
 function isSchemaVersionPosition(
-  path: JSONPath,
-  options: { readonly propertyKey?: string } = {},
+    path: JSONPath,
+    options: { readonly propertyKey?: string } = {},
 ): boolean {
-  // Hover: path ends `["meta","schemaVersion"]`. Value completion: path is `["meta"]`, key passed.
-  const last = path[path.length - 1];
-  if (last === "schemaVersion" && path[path.length - 2] === "meta") {
-    return true;
-  }
-  return options.propertyKey === "schemaVersion" && last === "meta";
+    // Hover: path ends `["meta","schemaVersion"]`. Value completion: path is `["meta"]`, key passed.
+    const last = path[path.length - 1];
+    if (last === 'schemaVersion' && path[path.length - 2] === 'meta') {
+        return true;
+    }
+    return options.propertyKey === 'schemaVersion' && last === 'meta';
 }
 
 /**
@@ -147,21 +147,21 @@ function isSchemaVersionPosition(
  * Property-completion only: `location` is the requiresState object's path.
  */
 function isRequiresStateKeyPosition(path: JSONPath): boolean {
-  return path[path.length - 1] === "requiresState" && path[path.length - 2] === "request";
+    return path[path.length - 1] === 'requiresState' && path[path.length - 2] === 'request';
 }
 
 /**
  * True when `propertyKey` is a NEW key being typed inside a `response.transitionsState` object.
  */
 function isTransitionsStateKeyPosition(path: JSONPath): boolean {
-  return path[path.length - 1] === "transitionsState" && path[path.length - 2] === "response";
+    return path[path.length - 1] === 'transitionsState' && path[path.length - 2] === 'response';
 }
 
 /**
  * The well-known-value request fields (`method`/`scheme`) whose `exact` matcher value is an enum we
  * can complete. Mirrors the HF215/HF216 rule gate. `destination`/`path`/`body` are free strings.
  */
-const VALUE_ENUM_FIELDS: ReadonlySet<string> = new Set(["method", "scheme"]);
+const VALUE_ENUM_FIELDS: ReadonlySet<string> = new Set(['method', 'scheme']);
 
 /**
  * Recognise a `value`-completion position inside a `method`/`scheme` matcher object that sits
@@ -176,38 +176,43 @@ const VALUE_ENUM_FIELDS: ReadonlySet<string> = new Set(["method", "scheme"]);
  * `propertyKey === "value"`.
  */
 function matchMethodSchemeValuePosition(
-  path: JSONPath,
-  options: { readonly propertyKey?: string } = {},
+    path: JSONPath,
+    options: { readonly propertyKey?: string } = {},
 ): string | undefined {
-  if (options.propertyKey !== "value") {
+    if (options.propertyKey !== 'value') {
+        return undefined;
+    }
+    const index = path[path.length - 1];
+    const field = path[path.length - 2];
+    const request = path[path.length - 3];
+    if (
+        isIndex(index) &&
+        isString(field) &&
+        VALUE_ENUM_FIELDS.has(field) &&
+        request === 'request'
+    ) {
+        return field;
+    }
     return undefined;
-  }
-  const index = path[path.length - 1];
-  const field = path[path.length - 2];
-  const request = path[path.length - 3];
-  if (isIndex(index) && isString(field) && VALUE_ENUM_FIELDS.has(field) && request === "request") {
-    return field;
-  }
-  return undefined;
 }
 
 /** True when the path identifies a `response.postServeAction` value position. */
 function isPostServeActionPosition(
-  path: JSONPath,
-  options: { readonly propertyKey?: string } = {},
+    path: JSONPath,
+    options: { readonly propertyKey?: string } = {},
 ): boolean {
-  const last = path[path.length - 1];
-  if (last === "postServeAction" && path[path.length - 2] === "response") {
-    return true;
-  }
-  return options.propertyKey === "postServeAction" && last === "response";
+    const last = path[path.length - 1];
+    if (last === 'postServeAction' && path[path.length - 2] === 'response') {
+        return true;
+    }
+    return options.propertyKey === 'postServeAction' && last === 'response';
 }
 
 export {
-  isPostServeActionPosition,
-  isRequiresStateKeyPosition,
-  isSchemaVersionPosition,
-  isTransitionsStateKeyPosition,
-  matchMatcherNamePosition,
-  matchMethodSchemeValuePosition,
+    isPostServeActionPosition,
+    isRequiresStateKeyPosition,
+    isSchemaVersionPosition,
+    isTransitionsStateKeyPosition,
+    matchMatcherNamePosition,
+    matchMethodSchemeValuePosition,
 };

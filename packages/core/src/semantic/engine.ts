@@ -12,31 +12,31 @@
  *      {@link VALUE_SHAPE_SUPPRESSORS}).
  */
 
-import type { JSONDocument } from "vscode-json-languageservice";
-import type { TextDocument } from "vscode-languageserver-textdocument";
-import { type Diagnostic, type Range } from "vscode-languageserver-types";
+import type { JSONDocument } from 'vscode-json-languageservice';
+import type { TextDocument } from 'vscode-languageserver-textdocument';
+import { type Diagnostic, type Range } from 'vscode-languageserver-types';
 
-import { DIAGNOSTIC_CATALOG, DIAGNOSTIC_SOURCE } from "./catalog.js";
-import { buildSimulationModel } from "./model.js";
+import { DIAGNOSTIC_CATALOG, DIAGNOSTIC_SOURCE } from './catalog.js';
+import { buildSimulationModel } from './model.js';
 import type {
-  HoverflyServiceSettings,
-  RuleContext,
-  SemanticRule,
-  SimulationModel,
-} from "./types.js";
+    HoverflyServiceSettings,
+    RuleContext,
+    SemanticRule,
+    SimulationModel,
+} from './types.js';
 
 const HF102_HREF = DIAGNOSTIC_CATALOG.HF102.href;
 
 function isBefore(
-  a: { line: number; character: number },
-  b: { line: number; character: number },
+    a: { line: number; character: number },
+    b: { line: number; character: number },
 ): boolean {
-  return a.line < b.line || (a.line === b.line && a.character < b.character);
+    return a.line < b.line || (a.line === b.line && a.character < b.character);
 }
 
 /** Two ranges overlap when neither ends strictly before the other starts. */
 function rangesOverlap(a: Range, b: Range): boolean {
-  return !(isBefore(a.end, b.start) || isBefore(b.end, a.start));
+    return !(isBefore(a.end, b.start) || isBefore(b.end, a.start));
 }
 
 /**
@@ -50,53 +50,55 @@ function rangesOverlap(a: Range, b: Range): boolean {
  *     non-string-state-value, non-string-removesState entry; reports 13 §3.5/§3.13/§3.14). These
  *     replace the noisy passthrough rather than double-reporting it.
  */
-const VALUE_SHAPE_SUPPRESSORS: ReadonlySet<string> = new Set(["HF308", "HF404", "HF405"]);
+const VALUE_SHAPE_SUPPRESSORS: ReadonlySet<string> = new Set(['HF308', 'HF404', 'HF405']);
 
-function suppressesSchema(code: Diagnostic["code"]): boolean {
-  return typeof code === "string" && (/^HF2\d\d$/.test(code) || VALUE_SHAPE_SUPPRESSORS.has(code));
+function suppressesSchema(code: Diagnostic['code']): boolean {
+    return (
+        typeof code === 'string' && (/^HF2\d\d$/.test(code) || VALUE_SHAPE_SUPPRESSORS.has(code))
+    );
 }
 
 /** Re-tag one raw schema diagnostic as HF102, preserving its message/range/severity. */
 function retagAsHF102(schema: Diagnostic): Diagnostic {
-  return {
-    code: "HF102",
-    source: DIAGNOSTIC_SOURCE,
-    severity: schema.severity,
-    range: schema.range,
-    message: schema.message,
-    codeDescription: { href: HF102_HREF },
-  };
+    return {
+        code: 'HF102',
+        source: DIAGNOSTIC_SOURCE,
+        severity: schema.severity,
+        range: schema.range,
+        message: schema.message,
+        codeDescription: { href: HF102_HREF },
+    };
 }
 
 /** Build a {@link RuleContext} with a lazily-built, memoised {@link SimulationModel}. */
 export function createRuleContext(
-  textDocument: TextDocument,
-  jsonDocument: JSONDocument,
-  settings: HoverflyServiceSettings = {},
+    textDocument: TextDocument,
+    jsonDocument: JSONDocument,
+    settings: HoverflyServiceSettings = {},
 ): RuleContext {
-  let cached: SimulationModel | undefined;
-  return {
-    textDocument,
-    jsonDocument,
-    settings,
-    get model(): SimulationModel {
-      cached ??= buildSimulationModel(jsonDocument);
-      return cached;
-    },
-  };
+    let cached: SimulationModel | undefined;
+    return {
+        textDocument,
+        jsonDocument,
+        settings,
+        get model(): SimulationModel {
+            cached ??= buildSimulationModel(jsonDocument);
+            return cached;
+        },
+    };
 }
 
 /** Run every rule, swallowing per-rule failures so one buggy rule cannot blank the pass. */
 export function runRules(rules: readonly SemanticRule[], context: RuleContext): Diagnostic[] {
-  const out: Diagnostic[] = [];
-  for (const rule of rules) {
-    try {
-      out.push(...rule.run(context));
-    } catch {
-      // A rule must never throw; if one does, drop its output rather than fail validation.
+    const out: Diagnostic[] = [];
+    for (const rule of rules) {
+        try {
+            out.push(...rule.run(context));
+        } catch {
+            // A rule must never throw; if one does, drop its output rather than fail validation.
+        }
     }
-  }
-  return out;
+    return out;
 }
 
 /**
@@ -106,30 +108,30 @@ export function runRules(rules: readonly SemanticRule[], context: RuleContext): 
  * @param semanticDiagnostics the HFxxx diagnostics from {@link runRules}.
  */
 export function applyHF102Layer(
-  schemaDiagnostics: readonly Diagnostic[],
-  semanticDiagnostics: readonly Diagnostic[],
+    schemaDiagnostics: readonly Diagnostic[],
+    semanticDiagnostics: readonly Diagnostic[],
 ): Diagnostic[] {
-  const suppressorRanges = semanticDiagnostics
-    .filter((d) => suppressesSchema(d.code))
-    .map((d) => d.range);
+    const suppressorRanges = semanticDiagnostics
+        .filter((d) => suppressesSchema(d.code))
+        .map((d) => d.range);
 
-  return schemaDiagnostics
-    .filter((schema) => !suppressorRanges.some((range) => rangesOverlap(range, schema.range)))
-    .map(retagAsHF102);
+    return schemaDiagnostics
+        .filter((schema) => !suppressorRanges.some((range) => rangesOverlap(range, schema.range)))
+        .map(retagAsHF102);
 }
 
 /** Sort diagnostics by range (start line, then character, then end) for stable output. */
 export function sortByRange(diagnostics: Diagnostic[]): Diagnostic[] {
-  return [...diagnostics].sort((a, b) => {
-    if (a.range.start.line !== b.range.start.line) {
-      return a.range.start.line - b.range.start.line;
-    }
-    if (a.range.start.character !== b.range.start.character) {
-      return a.range.start.character - b.range.start.character;
-    }
-    if (a.range.end.line !== b.range.end.line) {
-      return a.range.end.line - b.range.end.line;
-    }
-    return a.range.end.character - b.range.end.character;
-  });
+    return [...diagnostics].sort((a, b) => {
+        if (a.range.start.line !== b.range.start.line) {
+            return a.range.start.line - b.range.start.line;
+        }
+        if (a.range.start.character !== b.range.start.character) {
+            return a.range.start.character - b.range.start.character;
+        }
+        if (a.range.end.line !== b.range.end.line) {
+            return a.range.end.line - b.range.end.line;
+        }
+        return a.range.end.character - b.range.end.character;
+    });
 }

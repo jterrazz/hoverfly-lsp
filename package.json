@@ -1,36 +1,36 @@
 {
-  "name": "hoverfly-lsp-monorepo",
-  "version": "0.1.0",
-  "private": true,
-  "description": "Language Server for Hoverfly JSON simulation files",
-  "license": "MIT",
-  "author": "Jean-Baptiste Terrazzoni <contact@jterrazz.com>",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/jterrazz/hoverfly-lsp"
-  },
-  "workspaces": [
-    "packages/*",
-    "editors/vscode"
-  ],
-  "type": "module",
-  "scripts": {
-    "build": "npm run build --workspaces --if-present",
-    "docs:diagnostics": "node scripts/generate-diagnostic-docs.mjs",
-    "test": "vitest --run",
-    "typecheck": "tsc --build",
-    "lint": "typescript check",
-    "lint:fix": "typescript fix"
-  },
-  "devDependencies": {
-    "@jterrazz/typescript": "^6.1.0",
-    "@types/node": "^25.5.0",
-    "glob": "^13.0.6",
-    "typescript": "~5.9.3",
-    "vitest": "^4.1.8",
-    "vscode-languageserver-protocol": "^3.18.0"
-  },
-  "engines": {
-    "node": ">=20"
-  }
+    "name": "hoverfly-lsp-monorepo",
+    "version": "0.1.0",
+    "private": true,
+    "description": "Language Server for Hoverfly JSON simulation files",
+    "license": "MIT",
+    "author": "Jean-Baptiste Terrazzoni <contact@jterrazz.com>",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/jterrazz/hoverfly-lsp"
+    },
+    "workspaces": [
+        "packages/*",
+        "editors/vscode"
+    ],
+    "type": "module",
+    "scripts": {
+        "build": "npm run build --workspaces --if-present",
+        "docs:diagnostics": "node scripts/generate-diagnostic-docs.mjs",
+        "test": "vitest --run",
+        "typecheck": "tsc --build",
+        "lint": "typescript check",
+        "lint:fix": "typescript fix"
+    },
+    "devDependencies": {
+        "@jterrazz/typescript": "^6.1.0",
+        "@types/node": "^25.5.0",
+        "glob": "^13.0.6",
+        "typescript": "~5.9.3",
+        "vitest": "^4.1.8",
+        "vscode-languageserver-protocol": "^3.18.0"
+    },
+    "engines": {
+        "node": ">=20"
+    }
 }

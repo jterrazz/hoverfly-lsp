@@ -19,31 +19,31 @@
  */
 
 import type {
-  ASTNode,
-  JSONDocument,
-  ObjectASTNode,
-  StringASTNode,
-} from "vscode-json-languageservice";
-import type { TextDocument } from "vscode-languageserver-textdocument";
+    ASTNode,
+    JSONDocument,
+    ObjectASTNode,
+    StringASTNode,
+} from 'vscode-json-languageservice';
+import type { TextDocument } from 'vscode-languageserver-textdocument';
 
 import {
-  createStringSourceMap,
-  hasTemplateSyntax,
-  type StringSourceMap,
-} from "../template/index.js";
+    createStringSourceMap,
+    hasTemplateSyntax,
+    type StringSourceMap,
+} from '../template/index.js';
 
 /** A located templatable string + the cursor mapped into its decoded content. */
 interface TemplateLocation {
-  /** The decoded template text (escapes resolved, no surrounding quotes). */
-  readonly decoded: string;
-  /** The cursor as a decoded-string offset. */
-  readonly decodedCursor: number;
-  /** Document↔decoded offset bridge for this string token. */
-  readonly sourceMap: StringSourceMap;
-  /** The string AST node the cursor sits in. */
-  readonly node: StringASTNode;
-  /** Whether `templated: true` was set on the enclosing response (drives diagnostics, not us). */
-  readonly templatedEnabled: boolean;
+    /** The decoded template text (escapes resolved, no surrounding quotes). */
+    readonly decoded: string;
+    /** The cursor as a decoded-string offset. */
+    readonly decodedCursor: number;
+    /** Document↔decoded offset bridge for this string token. */
+    readonly sourceMap: StringSourceMap;
+    /** The string AST node the cursor sits in. */
+    readonly node: StringASTNode;
+    /** Whether `templated: true` was set on the enclosing response (drives diagnostics, not us). */
+    readonly templatedEnabled: boolean;
 }
 
 /**
@@ -51,57 +51,57 @@ interface TemplateLocation {
  * {@link TemplateLocation}; otherwise `undefined`. Never throws.
  */
 function findTemplateLocation(
-  document: TextDocument,
-  jsonDocument: JSONDocument,
-  offset: number,
+    document: TextDocument,
+    jsonDocument: JSONDocument,
+    offset: number,
 ): TemplateLocation | undefined {
-  const root = asObject(jsonDocument.root);
-  const dataNode = asObject(propValue(root, "data"));
-  const pairs = arrayItems(dataNode, "pairs");
+    const root = asObject(jsonDocument.root);
+    const dataNode = asObject(propValue(root, 'data'));
+    const pairs = arrayItems(dataNode, 'pairs');
 
-  for (const pairNode of pairs) {
-    const pair = asObject(pairNode);
-    const response = asObject(propValue(pair, "response"));
-    if (!response) {
-      continue;
+    for (const pairNode of pairs) {
+        const pair = asObject(pairNode);
+        const response = asObject(propValue(pair, 'response'));
+        if (!response) {
+            continue;
+        }
+        const located = locateInResponse(document, response, offset);
+        if (located) {
+            return located;
+        }
     }
-    const located = locateInResponse(document, response, offset);
-    if (located) {
-      return located;
-    }
-  }
-  return undefined;
+    return undefined;
 }
 
 /** Search a single response object for a templatable string containing `offset`. */
 function locateInResponse(
-  document: TextDocument,
-  response: ObjectASTNode,
-  offset: number,
+    document: TextDocument,
+    response: ObjectASTNode,
+    offset: number,
 ): TemplateLocation | undefined {
-  const templatedEnabled = boolValue(propValue(response, "templated")) === true;
+    const templatedEnabled = boolValue(propValue(response, 'templated')) === true;
 
-  // Body: a single string.
-  const bodyNode = propValue(response, "body");
-  if (isStringNode(bodyNode) && containsOffset(bodyNode, offset)) {
-    return buildLocation(document, bodyNode, templatedEnabled, offset);
-  }
-
-  // Header values: response.headers.<name> is an array of strings.
-  const headers = asObject(propValue(response, "headers"));
-  if (headers) {
-    for (const property of headers.properties) {
-      const value = property.valueNode;
-      if (value?.type === "array") {
-        for (const item of value.items) {
-          if (isStringNode(item) && containsOffset(item, offset)) {
-            return buildLocation(document, item, templatedEnabled, offset);
-          }
-        }
-      }
+    // Body: a single string.
+    const bodyNode = propValue(response, 'body');
+    if (isStringNode(bodyNode) && containsOffset(bodyNode, offset)) {
+        return buildLocation(document, bodyNode, templatedEnabled, offset);
     }
-  }
-  return undefined;
+
+    // Header values: response.headers.<name> is an array of strings.
+    const headers = asObject(propValue(response, 'headers'));
+    if (headers) {
+        for (const property of headers.properties) {
+            const value = property.valueNode;
+            if (value?.type === 'array') {
+                for (const item of value.items) {
+                    if (isStringNode(item) && containsOffset(item, offset)) {
+                        return buildLocation(document, item, templatedEnabled, offset);
+                    }
+                }
+            }
+        }
+    }
+    return undefined;
 }
 
 /**
@@ -110,50 +110,50 @@ function locateInResponse(
  * otherwise so a plain non-templated body gets NO template completions/hover.
  */
 function buildLocation(
-  document: TextDocument,
-  node: StringASTNode,
-  templatedEnabled: boolean,
-  offset: number,
+    document: TextDocument,
+    node: StringASTNode,
+    templatedEnabled: boolean,
+    offset: number,
 ): TemplateLocation | undefined {
-  const rawToken = document.getText().slice(node.offset, node.offset + node.length);
-  const sourceMap = createStringSourceMap(rawToken, node.offset);
+    const rawToken = document.getText().slice(node.offset, node.offset + node.length);
+    const sourceMap = createStringSourceMap(rawToken, node.offset);
 
-  if (!templatedEnabled && !hasTemplateSyntax(sourceMap.decoded)) {
-    return undefined;
-  }
+    if (!templatedEnabled && !hasTemplateSyntax(sourceMap.decoded)) {
+        return undefined;
+    }
 
-  // `offset` was validated by containsOffset; map it into the decoded content.
-  const decodedCursor = sourceMap.toDecodedOffset(offset);
-  return {
-    decoded: sourceMap.decoded,
-    decodedCursor,
-    sourceMap,
-    node,
-    templatedEnabled,
-  };
+    // `offset` was validated by containsOffset; map it into the decoded content.
+    const decodedCursor = sourceMap.toDecodedOffset(offset);
+    return {
+        decoded: sourceMap.decoded,
+        decodedCursor,
+        sourceMap,
+        node,
+        templatedEnabled,
+    };
 }
 
 /* --------------------------------------- AST helpers ------------------------------------- */
 
 function asObject(node: ASTNode | undefined): ObjectASTNode | undefined {
-  return node?.type === "object" ? node : undefined;
+    return node?.type === 'object' ? node : undefined;
 }
 
 function propValue(node: ObjectASTNode | undefined, key: string): ASTNode | undefined {
-  return node?.properties.find((p) => p.keyNode.value === key)?.valueNode;
+    return node?.properties.find((p) => p.keyNode.value === key)?.valueNode;
 }
 
 function arrayItems(node: ObjectASTNode | undefined, key: string): readonly ASTNode[] {
-  const value = propValue(node, key);
-  return value?.type === "array" ? value.items : [];
+    const value = propValue(node, key);
+    return value?.type === 'array' ? value.items : [];
 }
 
 function boolValue(node: ASTNode | undefined): boolean | undefined {
-  return node?.type === "boolean" ? node.value : undefined;
+    return node?.type === 'boolean' ? node.value : undefined;
 }
 
 function isStringNode(node: ASTNode | undefined): node is StringASTNode {
-  return node?.type === "string";
+    return node?.type === 'string';
 }
 
 /**
@@ -162,9 +162,9 @@ function isStringNode(node: ASTNode | undefined): node is StringASTNode {
  * closing quote both count). The node's `offset`/`length` cover the quotes.
  */
 function containsOffset(node: StringASTNode, offset: number): boolean {
-  const start = node.offset + 1; // Just after opening quote
-  const end = node.offset + node.length - 1; // The closing quote
-  return offset >= start && offset <= end;
+    const start = node.offset + 1; // Just after opening quote
+    const end = node.offset + node.length - 1; // The closing quote
+    return offset >= start && offset <= end;
 }
 
 export { findTemplateLocation, type TemplateLocation };

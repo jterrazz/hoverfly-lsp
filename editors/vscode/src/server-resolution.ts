@@ -19,35 +19,35 @@
 
 /** A resolved server command: run `node` with these args (the launcher module + transport flag). */
 interface ResolvedServer {
-  /** Absolute path to the Node entry module to execute (`bin/hoverfly-lsp.js` or `.bin` shim). */
-  readonly module: string;
-  /** How the server was located, for logging / diagnostics. */
-  readonly source: "bundled" | "configuredPath" | "workspaceBin";
+    /** Absolute path to the Node entry module to execute (`bin/hoverfly-lsp.js` or `.bin` shim). */
+    readonly module: string;
+    /** How the server was located, for logging / diagnostics. */
+    readonly source: 'bundled' | 'configuredPath' | 'workspaceBin';
 }
 
 /** Inputs needed to resolve the server, all injected so the function stays testable. */
 interface ResolveServerInput {
-  /** Value of the `hoverfly.server.path` setting (may be undefined/empty). */
-  readonly configuredPath: string | undefined;
-  /** First workspace folder's filesystem path, or undefined when no folder is open. */
-  readonly workspaceRoot: string | undefined;
-  /** Absolute path to the extension's bundled server entry module. */
-  readonly bundledModule: string;
-  /** Existence predicate for filesystem paths (inject `fs.existsSync` in production). */
-  readonly exists: (path: string) => boolean;
-  /** Path joiner (inject `path.join`; defaulted to a POSIX-ish join for tests). */
-  readonly join?: (...segments: string[]) => string;
+    /** Value of the `hoverfly.server.path` setting (may be undefined/empty). */
+    readonly configuredPath: string | undefined;
+    /** First workspace folder's filesystem path, or undefined when no folder is open. */
+    readonly workspaceRoot: string | undefined;
+    /** Absolute path to the extension's bundled server entry module. */
+    readonly bundledModule: string;
+    /** Existence predicate for filesystem paths (inject `fs.existsSync` in production). */
+    readonly exists: (path: string) => boolean;
+    /** Path joiner (inject `path.join`; defaulted to a POSIX-ish join for tests). */
+    readonly join?: (...segments: string[]) => string;
 }
 
-const defaultJoin = (...segments: string[]): string => segments.join("/").replace(/\/{2,}/g, "/");
+const defaultJoin = (...segments: string[]): string => segments.join('/').replace(/\/{2,}/g, '/');
 
 /** Trim a configured path; treat whitespace-only as unset. */
 function normalizeConfigured(value: string | undefined): string | undefined {
-  if (typeof value !== "string") {
-    return undefined;
-  }
-  const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : undefined;
+    if (typeof value !== 'string') {
+        return undefined;
+    }
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : undefined;
 }
 
 /**
@@ -55,24 +55,24 @@ function normalizeConfigured(value: string | undefined): string | undefined {
  * server is the guaranteed fallback, so the extension never fails to find a server to launch.
  */
 function resolveServer(input: ResolveServerInput): ResolvedServer {
-  const join = input.join ?? defaultJoin;
+    const join = input.join ?? defaultJoin;
 
-  // 1. Explicit setting wins unconditionally (the user asked for this exact binary).
-  const configured = normalizeConfigured(input.configuredPath);
-  if (configured !== undefined) {
-    return { module: configured, source: "configuredPath" };
-  }
-
-  // 2. Project-local install: <workspaceRoot>/node_modules/.bin/hoverfly-lsp
-  if (input.workspaceRoot !== undefined) {
-    const workspaceBin = join(input.workspaceRoot, "node_modules", ".bin", "hoverfly-lsp");
-    if (input.exists(workspaceBin)) {
-      return { module: workspaceBin, source: "workspaceBin" };
+    // 1. Explicit setting wins unconditionally (the user asked for this exact binary).
+    const configured = normalizeConfigured(input.configuredPath);
+    if (configured !== undefined) {
+        return { module: configured, source: 'configuredPath' };
     }
-  }
 
-  // 3. Bundled server shipped inside the extension (always present).
-  return { module: input.bundledModule, source: "bundled" };
+    // 2. Project-local install: <workspaceRoot>/node_modules/.bin/hoverfly-lsp
+    if (input.workspaceRoot !== undefined) {
+        const workspaceBin = join(input.workspaceRoot, 'node_modules', '.bin', 'hoverfly-lsp');
+        if (input.exists(workspaceBin)) {
+            return { module: workspaceBin, source: 'workspaceBin' };
+        }
+    }
+
+    // 3. Bundled server shipped inside the extension (always present).
+    return { module: input.bundledModule, source: 'bundled' };
 }
 
 export { resolveServer };

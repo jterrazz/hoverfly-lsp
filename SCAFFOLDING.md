@@ -48,19 +48,18 @@ decisions in `research/03-lsp-architecture.md` and `research/10-architect-decisi
   `node_modules/.bin`.
 - `oxlint.config.ts` extends `oxlint.node` and ignores `**/dist/**` + `testdata/**`.
 - Added a root **`knip.json`** declaring per-workspace entry points (core `src/index.ts`;
-  server `src/cli.ts` + `bin/hoverfly-lsp.js`; root `oxlint.config.ts` + `vitest.config.ts`)
-  and a few `ignoreDependencies`:
-  - `vscode-json-languageservice` in `packages/core`: a real dependency declared now per
-    D1/report 03, but **not yet imported** (Phase 2 wires it). Without the ignore, knip
-    would flag it as unused.
-  - `oxlint` at root: imported by `oxlint.config.ts` but provided transitively through
-    `@jterrazz/typescript`, not a direct dependency.
+  server `src/cli.ts` + `bin/hoverfly-lsp.js`; root `oxfmt.config.ts` + `oxlint.config.ts` +
+  `vitest.config.ts`) and a few `ignoreDependencies`:
+    - `vscode-json-languageservice` in `packages/core`: a real dependency declared now per
+      D1/report 03, but **not yet imported** (Phase 2 wires it). Without the ignore, knip
+      would flag it as unused.
+    - `oxfmt` and `oxlint` at root: imported by `oxfmt.config.ts` / `oxlint.config.ts` but
+      provided transitively through `@jterrazz/typescript`, not a direct dependency.
 - Added **`.prettierignore`** (`testdata/`, `dist/`) so `oxfmt` does not try to reformat
   the intentionally-malformed fixture `testdata/invalid/invalid-json.hoverfly.json`.
-- Formatting note: `oxfmt` runs with its **defaults (2-space indent)**; the house
-  4-space JSON/TS indentation seen in `package-test` comes from oxfmt defaults of an older
-  codestyle version; current `@jterrazz/typescript@6` + `oxfmt` default to 2 spaces.
-  We accept the tool default rather than fighting it (no `.oxfmtrc`).
+- Formatting note: `oxfmt.config.ts` now wires the family preset
+  (`@jterrazz/typescript`'s `oxfmt`) — 4-space indent, single quotes, 100-char width,
+  matching every other house repo, in place of the earlier bare 2-space tool default.
 
 ### 4. CI: plain workflow with a node 20+22 matrix, not the reusable `validate.yaml`
 
@@ -92,11 +91,11 @@ decisions in `research/03-lsp-architecture.md` and `research/10-architect-decisi
 - So **`.github/workflows/release.yml`** matches the house **conventions** but is monorepo-aware:
   same **`release: created`** trigger, same **OIDC trusted publishing** (`--provenance` +
   `id-token: write`, **no `NPM_TOKEN`**), node 24. It:
-  1. runs the full gate on the `[20, 22, 24]` node matrix (lint on 24; mirrors `validate.yml`),
-  2. verifies `github.event.release.tag_name` equals the version in every manifest (core,
-     server, vscode, zed `extension.toml`, claude-code `plugin.json`) before publishing,
-  3. `npm publish`es `@jterrazz/hoverfly-lsp` with `--access public --provenance` (tokenless OIDC),
-  4. packages the `.vsix` and uploads it onto the just-created release (`gh release upload`).
+    1. runs the full gate on the `[20, 22, 24]` node matrix (lint on 24; mirrors `validate.yml`),
+    2. verifies `github.event.release.tag_name` equals the version in every manifest (core,
+       server, vscode, zed `extension.toml`, claude-code `plugin.json`) before publishing,
+    3. `npm publish`es `@jterrazz/hoverfly-lsp` with `--access public --provenance` (tokenless OIDC),
+    4. packages the `.vsix` and uploads it onto the just-created release (`gh release upload`).
 - **One-time**: configure npm trusted publishing (repo `jterrazz/hoverfly-lsp`, workflow
   `release.yml`) for `@jterrazz/hoverfly-lsp`, exactly as for the other `@jterrazz` packages. No
   `NPM_TOKEN` secret is needed. `@hoverfly-lsp/core` is private, so nothing to configure for it.

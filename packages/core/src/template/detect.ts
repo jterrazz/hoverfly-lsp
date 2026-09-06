@@ -9,5 +9,5 @@
  * `{{` is enough (HF501 is a warning), so no escaping or balance analysis is attempted here.
  */
 export function hasTemplateSyntax(decoded: string): boolean {
-  return decoded.includes("{{");
+    return decoded.includes('{{');
 }

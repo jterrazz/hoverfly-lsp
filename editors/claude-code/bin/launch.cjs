@@ -24,99 +24,99 @@
  * bundle the server or npm-depend on `@jterrazz/hoverfly-lsp` so that (2) resolves. See README.
  */
 
-"use strict";
+'use strict';
 
-const fs = require("node:fs");
-const { createRequire } = require("node:module");
-const path = require("node:path");
+const fs = require('node:fs');
+const { createRequire } = require('node:module');
+const path = require('node:path');
 
-const BUNDLE_RELATIVE = path.join("dist", "cli.cjs");
+const BUNDLE_RELATIVE = path.join('dist', 'cli.cjs');
 
 /** Return `candidate` if it resolves to the server bundle file, else undefined. */
 function resolveBundle(candidate) {
-  if (!candidate) {
+    if (!candidate) {
+        return undefined;
+    }
+    try {
+        const stat = fs.statSync(candidate);
+        if (stat.isFile()) {
+            return candidate;
+        }
+        if (stat.isDirectory()) {
+            const inDir = path.join(candidate, BUNDLE_RELATIVE);
+            if (fs.existsSync(inDir)) {
+                return inDir;
+            }
+        }
+    } catch {
+        // Candidate does not exist — fall through.
+    }
     return undefined;
-  }
-  try {
-    const stat = fs.statSync(candidate);
-    if (stat.isFile()) {
-      return candidate;
-    }
-    if (stat.isDirectory()) {
-      const inDir = path.join(candidate, BUNDLE_RELATIVE);
-      if (fs.existsSync(inDir)) {
-        return inDir;
-      }
-    }
-  } catch {
-    // Candidate does not exist — fall through.
-  }
-  return undefined;
 }
 
 /** Resolve the `@jterrazz/hoverfly-lsp` package's bundle from node_modules, from several base dirs. */
 function resolveFromNodeModules() {
-  const bases = [process.cwd(), __dirname];
-  for (const base of bases) {
-    try {
-      const req = createRequire(path.join(base, "noop.js"));
-      // The package's "main"/bin both lead to the bundle; resolve the package root via its
-      // Package.json so we don't depend on a specific export map.
-      const pkgJson = req.resolve("@jterrazz/hoverfly-lsp/package.json");
-      const bundle = path.join(path.dirname(pkgJson), BUNDLE_RELATIVE);
-      if (fs.existsSync(bundle)) {
-        return bundle;
-      }
-    } catch {
-      // Not installed under this base — try the next.
+    const bases = [process.cwd(), __dirname];
+    for (const base of bases) {
+        try {
+            const req = createRequire(path.join(base, 'noop.js'));
+            // The package's "main"/bin both lead to the bundle; resolve the package root via its
+            // Package.json so we don't depend on a specific export map.
+            const pkgJson = req.resolve('@jterrazz/hoverfly-lsp/package.json');
+            const bundle = path.join(path.dirname(pkgJson), BUNDLE_RELATIVE);
+            if (fs.existsSync(bundle)) {
+                return bundle;
+            }
+        } catch {
+            // Not installed under this base — try the next.
+        }
     }
-  }
-  return undefined;
+    return undefined;
 }
 
 function resolveServerBundle() {
-  // 1. Explicit override.
-  const fromEnv = resolveBundle(process.env.HOVERFLY_LSP_PATH);
-  if (fromEnv) {
-    return fromEnv;
-  }
+    // 1. Explicit override.
+    const fromEnv = resolveBundle(process.env.HOVERFLY_LSP_PATH);
+    if (fromEnv) {
+        return fromEnv;
+    }
 
-  // 2. npm-installed package (future published path).
-  const fromNm = resolveFromNodeModules();
-  if (fromNm) {
-    return fromNm;
-  }
+    // 2. npm-installed package (future published path).
+    const fromNm = resolveFromNodeModules();
+    if (fromNm) {
+        return fromNm;
+    }
 
-  // 3. Dev fallback: repo-relative server bundle.
-  //    Path editors/claude-code/bin/launch.cjs -> packages/server/dist/cli.cjs
-  const devBundle = path.resolve(
-    __dirname,
-    "..",
-    "..",
-    "..",
-    "packages",
-    "server",
-    "dist",
-    "cli.cjs",
-  );
-  if (fs.existsSync(devBundle)) {
-    return devBundle;
-  }
+    // 3. Dev fallback: repo-relative server bundle.
+    //    Path editors/claude-code/bin/launch.cjs -> packages/server/dist/cli.cjs
+    const devBundle = path.resolve(
+        __dirname,
+        '..',
+        '..',
+        '..',
+        'packages',
+        'server',
+        'dist',
+        'cli.cjs',
+    );
+    if (fs.existsSync(devBundle)) {
+        return devBundle;
+    }
 
-  return undefined;
+    return undefined;
 }
 
 const bundle = resolveServerBundle();
 
 if (!bundle) {
-  process.stderr.write(
-    "hoverfly-lsp: could not locate the language server bundle.\n" +
-      "Tried $HOVERFLY_LSP_PATH, a node_modules `@jterrazz/hoverfly-lsp` install, and the\n" +
-      "repo-relative dev bundle (packages/server/dist/cli.cjs). Install `@jterrazz/hoverfly-lsp`\n" +
-      "(npm i -g @jterrazz/hoverfly-lsp or as a project dependency), or set HOVERFLY_LSP_PATH to\n" +
-      "the server's dist/cli.cjs.\n",
-  );
-  process.exit(1);
+    process.stderr.write(
+        'hoverfly-lsp: could not locate the language server bundle.\n' +
+            'Tried $HOVERFLY_LSP_PATH, a node_modules `@jterrazz/hoverfly-lsp` install, and the\n' +
+            'repo-relative dev bundle (packages/server/dist/cli.cjs). Install `@jterrazz/hoverfly-lsp`\n' +
+            '(npm i -g @jterrazz/hoverfly-lsp or as a project dependency), or set HOVERFLY_LSP_PATH to\n' +
+            "the server's dist/cli.cjs.\n",
+    );
+    process.exit(1);
 }
 
 // Run the bundle in-process. cli.cjs reads process.argv (it understands --stdio, etc.) and

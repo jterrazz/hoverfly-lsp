@@ -14,10 +14,10 @@
  * simulations rather than dismissed).
  */
 
-import type { ASTNode } from "vscode-json-languageservice";
+import type { ASTNode } from 'vscode-json-languageservice';
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 /**
@@ -30,21 +30,21 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
  * `schemaVersion` is a string starting with "v".
  */
 export function isHoverflySimulationAst(root: ASTNode | undefined): boolean {
-  if (root?.type !== "object") {
-    return false;
-  }
-  const dataNode = root.properties.find((p) => p.keyNode.value === "data")?.valueNode;
-  if (dataNode?.type !== "object") {
-    return false;
-  }
-  const metaNode = root.properties.find((p) => p.keyNode.value === "meta")?.valueNode;
-  if (metaNode?.type !== "object") {
-    return false;
-  }
-  const schemaVersionNode = metaNode.properties.find(
-    (p) => p.keyNode.value === "schemaVersion",
-  )?.valueNode;
-  return schemaVersionNode?.type === "string" && schemaVersionNode.value.startsWith("v");
+    if (root?.type !== 'object') {
+        return false;
+    }
+    const dataNode = root.properties.find((p) => p.keyNode.value === 'data')?.valueNode;
+    if (dataNode?.type !== 'object') {
+        return false;
+    }
+    const metaNode = root.properties.find((p) => p.keyNode.value === 'meta')?.valueNode;
+    if (metaNode?.type !== 'object') {
+        return false;
+    }
+    const schemaVersionNode = metaNode.properties.find(
+        (p) => p.keyNode.value === 'schemaVersion',
+    )?.valueNode;
+    return schemaVersionNode?.type === 'string' && schemaVersionNode.value.startsWith('v');
 }
 
 /**
@@ -61,36 +61,36 @@ export function isHoverflySimulationAst(root: ASTNode | undefined): boolean {
  * filename. Never throws.
  */
 export function hasHoverflyFilename(uri: string): boolean {
-  // Take the last path segment (strip any query/fragment a URI might carry).
-  const withoutQuery = uri.split(/[?#]/, 1)[0] ?? uri;
-  const segment = (withoutQuery.split("/").pop() ?? withoutQuery).toLowerCase();
-  return (
-    segment.endsWith(".hoverfly.json") ||
-    segment.endsWith(".hfy") ||
-    segment === "hoverfly-simulation.json"
-  );
+    // Take the last path segment (strip any query/fragment a URI might carry).
+    const withoutQuery = uri.split(/[?#]/, 1)[0] ?? uri;
+    const segment = (withoutQuery.split('/').pop() ?? withoutQuery).toLowerCase();
+    return (
+        segment.endsWith('.hoverfly.json') ||
+        segment.endsWith('.hfy') ||
+        segment === 'hoverfly-simulation.json'
+    );
 }
 
 export function isHoverflySimulation(text: string): boolean {
-  let root: unknown;
-  try {
-    root = JSON.parse(text);
-  } catch {
-    return false;
-  }
+    let root: unknown;
+    try {
+        root = JSON.parse(text);
+    } catch {
+        return false;
+    }
 
-  if (!isPlainObject(root)) {
-    return false;
-  }
+    if (!isPlainObject(root)) {
+        return false;
+    }
 
-  const { data, meta } = root;
-  if (!isPlainObject(data)) {
-    return false;
-  }
-  if (!isPlainObject(meta)) {
-    return false;
-  }
+    const { data, meta } = root;
+    if (!isPlainObject(data)) {
+        return false;
+    }
+    if (!isPlainObject(meta)) {
+        return false;
+    }
 
-  const schemaVersion = meta["schemaVersion"];
-  return typeof schemaVersion === "string" && schemaVersion.startsWith("v");
+    const schemaVersion = meta['schemaVersion'];
+    return typeof schemaVersion === 'string' && schemaVersion.startsWith('v');
 }
