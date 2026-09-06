@@ -17,7 +17,7 @@
  *   - HF601  — `globalActions.delays[].urlPattern` / `delaysLogNormal[].urlPattern`.
  */
 
-import { RE2JS } from "re2js";
+import { RE2JS } from 're2js';
 
 /**
  * Whether `pattern` compiles under Go's RE2 engine (i.e. Hoverfly would accept it). Returns
@@ -28,10 +28,10 @@ import { RE2JS } from "re2js";
  * trade-off per research/14 §3.1.
  */
 export function isValidRe2(pattern: string): boolean {
-  try {
-    RE2JS.compile(pattern);
-    return true;
-  } catch {
-    return false;
-  }
+    try {
+        RE2JS.compile(pattern);
+        return true;
+    } catch {
+        return false;
+    }
 }

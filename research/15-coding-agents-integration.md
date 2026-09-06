@@ -26,53 +26,53 @@
 - **Confirmed current, not superseded:** Claude Code 2.1.50+ supports the modern fields (`startupTimeout`, etc.); latest release cited 2.1.52. LSP is gated behind `ENABLE_LSP_TOOL` and configured via plugins; `.lsp.json` remains the documented mechanism for languages not in the marketplace. There is an active community marketplace (Piebald-AI/claude-code-lsps) shipping LSP plugins the same way.
 - **We already ship:** `editors/claude-code/.lsp.json` + `.claude-plugin/plugin.json` + `bin/launch.cjs`. Keep as-is.
 - Sources:
-  - https://code.claude.com/docs/en/plugins-reference.md
-  - https://code.claude.com/docs/en/discover-plugins.md
-  - https://github.com/Piebald-AI/claude-code-lsps
-  - https://news.ycombinator.com/item?id=46355165 (Claude Code gets native LSP support)
+    - https://code.claude.com/docs/en/plugins-reference.md
+    - https://code.claude.com/docs/en/discover-plugins.md
+    - https://github.com/Piebald-AI/claude-code-lsps
+    - https://news.ycombinator.com/item?id=46355165 (Claude Code gets native LSP support)
 
 ### OpenCode (sst/opencode) — native `lsp` section in `opencode.json`
 
 - First-class LSP integration. Built-in servers for popular languages; custom servers declared under the `lsp` key. **Consumes diagnostics as agent feedback** (opens file → matches extension → starts matching LSP → feeds diagnostics to the agent).
 - Config shape (verbatim from docs):
-  ```json
-  {
-    "$schema": "https://opencode.ai/config.json",
-    "lsp": {
-      "hoverfly": {
-        "command": ["hoverfly-lsp", "--stdio"],
-        "extensions": [".json"]
-      }
+    ```json
+    {
+        "$schema": "https://opencode.ai/config.json",
+        "lsp": {
+            "hoverfly": {
+                "command": ["hoverfly-lsp", "--stdio"],
+                "extensions": [".json"]
+            }
+        }
     }
-  }
-  ```
-  Also supports `env`, `initialization` (init options), and `disabled`.
+    ```
+    Also supports `env`, `initialization` (init options), and `disabled`.
 - **Effort for us:** README recipe only (5 lines). Note: like Claude Code, our `.json` extension is broad — server-side fingerprinting is what keeps us from false-firing on non-Hoverfly JSON.
 - Sources:
-  - https://opencode.ai/docs/lsp/
-  - https://deepwiki.com/sst/opencode/5.4-language-server-integration
+    - https://opencode.ai/docs/lsp/
+    - https://deepwiki.com/sst/opencode/5.4-language-server-integration
 
 ### OpenAI Codex CLI — no native LSP yet; LSP-via-MCP + post-edit hook plugins
 
 - As of ~v0.125, **no built-in LSP**; it's one of the most-upvoted open feature requests (issues #8745, #14799). The expected near-term path is project-scoped MCP / `.codex/config.toml`.
 - Mature community solution: **`code-yeongyu/codex-lsp`** — a generic, language-agnostic Codex plugin that (a) runs **post-edit diagnostics hooks** after `apply_patch`/`write`/`edit`/`multiedit` and returns blocking feedback on errors, and (b) exposes MCP tools (`lsp.diagnostics`, `lsp.goto_definition`, `lsp.find_references`, `lsp.symbols`, `lsp.prepare_rename`, `lsp.rename`). Works with **any stdio LSP**. Config:
-  ```json
-  {
-    "lsp": {
-      "hoverfly": {
-        "command": ["hoverfly-lsp", "--stdio"],
-        "extensions": [".json"]
-      }
+    ```json
+    {
+        "lsp": {
+            "hoverfly": {
+                "command": ["hoverfly-lsp", "--stdio"],
+                "extensions": [".json"]
+            }
+        }
     }
-  }
-  ```
-  at `.codex/lsp-client.json` (project) or `~/.codex/lsp-client.json`.
+    ```
+    at `.codex/lsp-client.json` (project) or `~/.codex/lsp-client.json`.
 - **Effort for us:** README recipe pointing users at codex-lsp + the snippet above. Zero shipped artifacts.
 - Sources:
-  - https://github.com/openai/codex/issues/8745, https://github.com/openai/codex/issues/14799
-  - https://github.com/code-yeongyu/codex-lsp
-  - https://developers.openai.com/codex/mcp
-  - https://codex.danielvaughan.com/2026/04/25/codex-cli-lsp-integration-language-server-semantic-code-intelligence/
+    - https://github.com/openai/codex/issues/8745, https://github.com/openai/codex/issues/14799
+    - https://github.com/code-yeongyu/codex-lsp
+    - https://developers.openai.com/codex/mcp
+    - https://codex.danielvaughan.com/2026/04/25/codex-cli-lsp-integration-language-server-semantic-code-intelligence/
 
 ### Gemini CLI — no native LSP; MCP-capable; "use the IDE's LSP" direction
 
@@ -80,29 +80,29 @@
 - Reachable today via a **generic LSP→MCP bridge** (LSP Bridge, agent-lsp, etc.) pointed at our binary, or — when the user runs Gemini CLI inside an IDE — via our existing IDE extensions (VS Code/Zed) feeding the IDE's diagnostics.
 - **Effort for us:** covered by the generic MCP-bridge recipe; no Gemini-specific artifact.
 - Sources:
-  - https://github.com/google-gemini/gemini-cli/issues/2465, https://github.com/google-gemini/gemini-cli/issues/6690
-  - https://geminicli.com/docs/tools/mcp-server/
+    - https://github.com/google-gemini/gemini-cli/issues/2465, https://github.com/google-gemini/gemini-cli/issues/6690
+    - https://geminicli.com/docs/tools/mcp-server/
 
 ### GitHub Copilot CLI — native LSP config + "LSP Setup skill" (notable)
 
 - **Has native LSP support.** Configured via `~/.copilot/lsp-config.json` (user) or `lsp.json` / `.github/lsp.json` (repo). Schema is an `lspServers` object — nearly identical to Claude Code's `.lsp.json` (`command`, `args`, `fileExtensions` map). Does **not** bundle servers (install separately). Consumes definitions, references, hover, type resolution across deps, and diagnostics.
-  ```json
-  {
-    "lspServers": {
-      "hoverfly": {
-        "command": "hoverfly-lsp",
-        "args": ["--stdio"],
-        "fileExtensions": { ".json": "json" }
-      }
+    ```json
+    {
+        "lspServers": {
+            "hoverfly": {
+                "command": "hoverfly-lsp",
+                "args": ["--stdio"],
+                "fileExtensions": { ".json": "json" }
+            }
+        }
     }
-  }
-  ```
+    ```
 - **"LSP Setup skill" (June 2026):** an agent skill that auto-installs/configures LSP servers for 14 languages, and for unmapped languages "will search for an appropriate server and walk you through manual configuration." This is the **emerging "agent skill ships LSP config" pattern** — and it's the most plausible future distribution channel for us on Copilot (a hoverfly LSP-setup skill), but not needed now.
 - **Effort for us:** README recipe (5 lines). Mirrors our Claude Code config almost exactly.
 - Sources:
-  - https://github.blog/ai-and-ml/github-copilot/give-github-copilot-cli-real-code-intelligence-with-language-servers/
-  - https://github.com/github/copilot-cli
-  - https://docs.github.com/en/copilot/concepts/context/mcp
+    - https://github.blog/ai-and-ml/github-copilot/give-github-copilot-cli-real-code-intelligence-with-language-servers/
+    - https://github.com/github/copilot-cli
+    - https://docs.github.com/en/copilot/concepts/context/mcp
 
 ### Cursor / Windsurf / VS Code forks — run VS Code extensions, BUT via Open VSX
 
@@ -110,8 +110,8 @@
 - Their agent modes (Cursor agent, Windsurf Cascade) read diagnostics from the running VS Code-host LSP — so once our extension is installed, the agent gets Hoverfly diagnostics for free.
 - **Effort for us:** one publishing step — add Open VSX publish to the VS Code extension release. No new editor directory.
 - Sources:
-  - https://forum.cursor.com/t/extension-marketplace-changes-transition-to-openvsx/109138
-  - https://thehackernews.com/2026/01/vs-code-forks-recommend-missing.html (Open VSX is the fork default)
+    - https://forum.cursor.com/t/extension-marketplace-changes-transition-to-openvsx/109138
+    - https://thehackernews.com/2026/01/vs-code-forks-recommend-missing.html (Open VSX is the fork default)
 
 ### Zed agent panel — partial; manual `@diagnostics`, no programmatic pull (yet)
 
@@ -119,16 +119,16 @@
 - **But** the Agent Panel / external ACP agents (Claude Code-in-Zed, Gemini, Codex via ACP) currently **cannot programmatically read project diagnostics between turns** — the user must manually inject them via the `@diagnostics` mention (open discussion #58546). So our Zed extension covers the _human_ loop and the manual `@diagnostics` path, but not fully-automated agent consumption. This is a Zed-side gap, not something we can fix.
 - **Effort for us:** nothing beyond the Zed extension we already ship; optionally a README note that users `@diagnostics`-mention Hoverfly files into the agent.
 - Sources:
-  - https://github.com/zed-industries/zed/discussions/58546
-  - https://zed.dev/docs/ai/agent-panel
+    - https://github.com/zed-industries/zed/discussions/58546
+    - https://zed.dev/docs/ai/agent-panel
 
 ### Aider — no LSP; uses its own linters
 
 - Aider deliberately does **not** integrate LSP; it builds its own repo map and runs built-in/external linters on edit. There is no LSP hook to target. The only way Aider would surface Hoverfly errors is via its `--lint-cmd` pointing at a Hoverfly CLI validator (out of scope for an LSP).
 - **Effort for us:** none. Document as "not supported (Aider has no LSP)".
 - Sources:
-  - https://aider.chat/docs/usage/lint-test.html
-  - https://github.com/aider-ai/aider
+    - https://aider.chat/docs/usage/lint-test.html
+    - https://github.com/aider-ai/aider
 
 ### Qwen Code — native LSP (bonus data point)
 
@@ -203,13 +203,13 @@ Sources: https://github.com/isaacphi/mcp-language-server · https://glama.ai/mcp
 
 ```json
 {
-  "lspServers": {
-    "hoverfly": {
-      "command": "hoverfly-lsp",
-      "args": ["--stdio"],
-      "fileExtensions": { ".json": "json" }
+    "lspServers": {
+        "hoverfly": {
+            "command": "hoverfly-lsp",
+            "args": ["--stdio"],
+            "fileExtensions": { ".json": "json" }
+        }
     }
-  }
 }
 ```
 

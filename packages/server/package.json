@@ -1,31 +1,31 @@
 {
-  "name": "@jterrazz/hoverfly-lsp",
-  "version": "0.1.0",
-  "description": "Language Server for Hoverfly JSON simulation files (stdio)",
-  "license": "MIT",
-  "author": "Jean-Baptiste Terrazzoni <contact@jterrazz.com>",
-  "bin": {
-    "hoverfly-lsp": "bin/hoverfly-lsp.js"
-  },
-  "files": [
-    "bin",
-    "dist/cli.cjs"
-  ],
-  "type": "module",
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
-  },
-  "scripts": {
-    "build": "tsc --build && npm run build:bundle",
-    "build:bundle": "node esbuild.config.js"
-  },
-  "dependencies": {
-    "vscode-languageserver": "^10.0.0",
-    "vscode-languageserver-textdocument": "^1.0.12"
-  },
-  "devDependencies": {
-    "@hoverfly-lsp/core": "*",
-    "esbuild": "^0.25.12"
-  }
+    "name": "@jterrazz/hoverfly-lsp",
+    "version": "0.1.0",
+    "description": "Language Server for Hoverfly JSON simulation files (stdio)",
+    "license": "MIT",
+    "author": "Jean-Baptiste Terrazzoni <contact@jterrazz.com>",
+    "bin": {
+        "hoverfly-lsp": "bin/hoverfly-lsp.js"
+    },
+    "files": [
+        "bin",
+        "dist/cli.cjs"
+    ],
+    "type": "module",
+    "publishConfig": {
+        "access": "public",
+        "registry": "https://registry.npmjs.org/"
+    },
+    "scripts": {
+        "build": "tsc --build && npm run build:bundle",
+        "build:bundle": "node esbuild.config.js"
+    },
+    "dependencies": {
+        "vscode-languageserver": "^10.0.0",
+        "vscode-languageserver-textdocument": "^1.0.12"
+    },
+    "devDependencies": {
+        "@hoverfly-lsp/core": "*",
+        "esbuild": "^0.25.12"
+    }
 }

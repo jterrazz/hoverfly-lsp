@@ -1,10 +1,10 @@
 {
-  "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    "rootDir": "src",
-    "outDir": "dist",
-    "tsBuildInfoFile": ".artifacts/tsc/tsconfig.tsbuildinfo"
-  },
-  "include": ["src/**/*.ts"],
-  "references": [{ "path": "../core" }]
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+        "rootDir": "src",
+        "outDir": "dist",
+        "tsBuildInfoFile": ".artifacts/tsc/tsconfig.tsbuildinfo"
+    },
+    "include": ["src/**/*.ts"],
+    "references": [{ "path": "../core" }]
 }

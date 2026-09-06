@@ -154,15 +154,15 @@ Every registered matcher has a **non-nil** `MatchValueGenerator` (most use
 - The matchers whose generator actually **transforms/extracts** a value to feed the next link are
   the ones with a non-identity generator:
 
-  | Matcher       | Generator                        | What it feeds into `DoMatch`                                   |
-  | ------------- | -------------------------------- | -------------------------------------------------------------- |
-  | `jsonpath`    | `JsonPathMatcherValueGenerator`  | the JSONPath query result (string or JSON-marshalled)          |
-  | `xpath`       | `XPathMatchValueGenerator`       | the XPath result `.String()`                                   |
-  | `jwt`         | `JwtMatchValueGenerator`         | the decoded JWT as composite JSON `{"header":..,"payload":..}` |
-  | `jwtjsonpath` | `JwtJsonPathMatchValueGenerator` | JSONPath result over the decoded JWT composite                 |
+    | Matcher       | Generator                        | What it feeds into `DoMatch`                                   |
+    | ------------- | -------------------------------- | -------------------------------------------------------------- |
+    | `jsonpath`    | `JsonPathMatcherValueGenerator`  | the JSONPath query result (string or JSON-marshalled)          |
+    | `xpath`       | `XPathMatchValueGenerator`       | the XPath result `.String()`                                   |
+    | `jwt`         | `JwtMatchValueGenerator`         | the decoded JWT as composite JSON `{"header":..,"payload":..}` |
+    | `jwtjsonpath` | `JwtJsonPathMatchValueGenerator` | JSONPath result over the decoded JWT composite                 |
 
-  These four are the matchers where `doMatch` is genuinely _meaningful as extraction_. The LSP can
-  surface this distinction as a hint, but **doMatch is syntactically valid on every matcher**.
+    These four are the matchers where `doMatch` is genuinely _meaningful as extraction_. The LSP can
+    surface this distinction as a hint, but **doMatch is syntactically valid on every matcher**.
 
 ### 2c. Config dispatch — **ONLY `array` supports config**
 

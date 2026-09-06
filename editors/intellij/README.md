@@ -133,11 +133,11 @@ rebuild, then publish with the Gradle task:
 1. Generate a **permanent** token at <https://plugins.jetbrains.com/author/me/tokens>.
 2. Export it and publish:
 
-   ```bash
-   export JETBRAINS_MARKETPLACE_TOKEN=...
-   cd editors/intellij/plugin
-   JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home ./gradlew publishPlugin
-   ```
+    ```bash
+    export JETBRAINS_MARKETPLACE_TOKEN=...
+    cd editors/intellij/plugin
+    JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home ./gradlew publishPlugin
+    ```
 
 The `publishPlugin` task (configured in `build.gradle.kts` under
 `intellijPlatform { publishing { ... } }`) builds the zip and uploads it to the `default`
@@ -273,7 +273,7 @@ Paste the contents of [`initializationOptions.json`](./initializationOptions.jso
 
 ```json
 {
-  "registeredActions": []
+    "registeredActions": []
 }
 ```
 
@@ -295,8 +295,8 @@ Trigger a diagnostic:
 
 ```json
 {
-  "data": { "pairs": [{ "request": {}, "response": {} }] },
-  "meta": { "schemaVersion": "v5" }
+    "data": { "pairs": [{ "request": {}, "response": {} }] },
+    "meta": { "schemaVersion": "v5" }
 }
 ```
 

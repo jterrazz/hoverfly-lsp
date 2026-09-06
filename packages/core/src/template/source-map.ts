@@ -18,48 +18,48 @@
 
 /** The result of mapping a raw JSON string token. */
 interface StringSourceMap {
-  /** The decoded string content (no surrounding quotes, escapes resolved). */
-  readonly decoded: string;
-  /**
-   * Map a decoded-string offset (0..decoded.length, measured in UTF-16 code units) to the
-   * absolute document offset of the source character that produced it. The end offset
-   * (`decoded.length`) maps to the document offset just past the last content character (i.e.
-   * the position of the closing quote, or end of the raw token when unquoted), so a half-open
-   * `[start, end)` decoded span yields a sensible `[start, end)` document span.
-   */
-  readonly toDocOffset: (decodedOffset: number) => number;
-  /**
-   * The inverse of {@link toDocOffset}: map an absolute DOCUMENT offset that falls inside this
-   * string token's content window back to the decoded-string offset of the character it lands
-   * on (or just before, when the document offset sits mid-escape). Used by completion/hover,
-   * which receive a document {@link Position} and must drive the template analysis at the
-   * equivalent DECODED offset.
-   *
-   * - A document offset before the first content character clamps to `0`.
-   * - A document offset at/after the closing quote (or end of raw token) clamps to
-   *   `decoded.length`.
-   * - A document offset that lands in the MIDDLE of a multi-char escape (`\n`, `\uXXXX`, a
-   *   surrogate pair) maps to the decoded code unit that escape produced — so the cursor never
-   *   resolves to a fractional position.
-   */
-  readonly toDecodedOffset: (docOffset: number) => number;
+    /** The decoded string content (no surrounding quotes, escapes resolved). */
+    readonly decoded: string;
+    /**
+     * Map a decoded-string offset (0..decoded.length, measured in UTF-16 code units) to the
+     * absolute document offset of the source character that produced it. The end offset
+     * (`decoded.length`) maps to the document offset just past the last content character (i.e.
+     * the position of the closing quote, or end of the raw token when unquoted), so a half-open
+     * `[start, end)` decoded span yields a sensible `[start, end)` document span.
+     */
+    readonly toDocOffset: (decodedOffset: number) => number;
+    /**
+     * The inverse of {@link toDocOffset}: map an absolute DOCUMENT offset that falls inside this
+     * string token's content window back to the decoded-string offset of the character it lands
+     * on (or just before, when the document offset sits mid-escape). Used by completion/hover,
+     * which receive a document {@link Position} and must drive the template analysis at the
+     * equivalent DECODED offset.
+     *
+     * - A document offset before the first content character clamps to `0`.
+     * - A document offset at/after the closing quote (or end of raw token) clamps to
+     *   `decoded.length`.
+     * - A document offset that lands in the MIDDLE of a multi-char escape (`\n`, `\uXXXX`, a
+     *   surrogate pair) maps to the decoded code unit that escape produced — so the cursor never
+     *   resolves to a fractional position.
+     */
+    readonly toDecodedOffset: (docOffset: number) => number;
 }
 
 /** Hex-digit guard for `\uXXXX` parsing. */
 function isHexDigit(ch: string | undefined): boolean {
-  return ch !== undefined && /[0-9A-Fa-f]/.test(ch);
+    return ch !== undefined && /[0-9A-Fa-f]/.test(ch);
 }
 
 /** The eight single-character JSON escapes (`\X`), mapped to their decoded character. */
 const SIMPLE_ESCAPES: Readonly<Record<string, string>> = {
-  '"': '"',
-  "/": "/",
-  "\\": "\\",
-  b: "\b",
-  f: "\f",
-  n: "\n",
-  r: "\r",
-  t: "\t",
+    '"': '"',
+    '/': '/',
+    '\\': '\\',
+    b: '\b',
+    f: '\f',
+    n: '\n',
+    r: '\r',
+    t: '\t',
 };
 
 /**
@@ -72,109 +72,109 @@ const SIMPLE_ESCAPES: Readonly<Record<string, string>> = {
  * @param docOffsetOfToken the absolute document offset of the FIRST character of `rawToken`.
  */
 function createStringSourceMap(rawToken: string, docOffsetOfToken: number): StringSourceMap {
-  // Determine the content window: strip a single pair of surrounding double quotes if present.
-  const quoted = rawToken.length >= 2 && rawToken.startsWith('"') && rawToken.endsWith('"');
-  const contentStart = quoted ? 1 : 0;
-  const contentEnd = quoted ? rawToken.length - 1 : rawToken.length;
+    // Determine the content window: strip a single pair of surrounding double quotes if present.
+    const quoted = rawToken.length >= 2 && rawToken.startsWith('"') && rawToken.endsWith('"');
+    const contentStart = quoted ? 1 : 0;
+    const contentEnd = quoted ? rawToken.length - 1 : rawToken.length;
 
-  let decoded = "";
-  // For each decoded UTF-16 code unit, the absolute document offset of its source character.
-  const offsets: number[] = [];
+    let decoded = '';
+    // For each decoded UTF-16 code unit, the absolute document offset of its source character.
+    const offsets: number[] = [];
 
-  let i = contentStart;
-  while (i < contentEnd) {
-    const docOffset = docOffsetOfToken + i;
-    const ch = rawToken[i];
+    let i = contentStart;
+    while (i < contentEnd) {
+        const docOffset = docOffsetOfToken + i;
+        const ch = rawToken[i];
 
-    if (ch !== "\\") {
-      // Identity run: one source char => one decoded code unit.
-      decoded += ch;
-      offsets.push(docOffset);
-      i += 1;
-      continue;
-    }
-
-    const next = rawToken[i + 1];
-
-    if (next !== undefined && next in SIMPLE_ESCAPES) {
-      // Two source chars (`\n`) => one decoded code unit, mapped to the backslash.
-      decoded += SIMPLE_ESCAPES[next];
-      offsets.push(docOffset);
-      i += 2;
-      continue;
-    }
-
-    if (
-      next === "u" &&
-      isHexDigit(rawToken[i + 2]) &&
-      isHexDigit(rawToken[i + 3]) &&
-      isHexDigit(rawToken[i + 4]) &&
-      isHexDigit(rawToken[i + 5])
-    ) {
-      // Six source chars (`\uXXXX`) => one decoded code unit, mapped to the backslash.
-      const code = Number.parseInt(rawToken.slice(i + 2, i + 6), 16);
-      decoded += String.fromCharCode(code);
-      offsets.push(docOffset);
-      i += 6;
-      continue;
-    }
-
-    // Malformed escape (lone trailing `\`, or `\z`): pass the backslash through literally so the
-    // Mapping stays total and the parser still sees the rest. One source char => one code unit.
-    decoded += ch;
-    offsets.push(docOffset);
-    i += 1;
-  }
-
-  // The end sentinel: decoded.length maps just past the last content character.
-  const endDocOffset = docOffsetOfToken + contentEnd;
-  offsets.push(endDocOffset);
-
-  const contentDocStart = docOffsetOfToken + contentStart;
-
-  return {
-    decoded,
-    toDocOffset: (decodedOffset: number): number => {
-      if (decodedOffset <= 0) {
-        return offsets[0] ?? endDocOffset;
-      }
-      if (decodedOffset >= decoded.length) {
-        return endDocOffset;
-      }
-      return offsets[decodedOffset] ?? endDocOffset;
-    },
-    toDecodedOffset: (docOffset: number): number => {
-      // Clamp before the content window (e.g. on the opening quote) to the string start.
-      if (docOffset <= contentDocStart) {
-        return 0;
-      }
-      // At/after the closing quote (or end of an unquoted token) → end of decoded string.
-      if (docOffset >= endDocOffset) {
-        return decoded.length;
-      }
-      /*
-       * `offsets[k]` is the document offset where the source run producing decoded unit `k`
-       * starts; the array is non-decreasing. The decoded offset for `docOffset` is the count of
-       * decoded units whose source run starts strictly BEFORE `docOffset` (a half-open mapping
-       * symmetric with {@link toDocOffset}). A cursor exactly on a run start therefore maps to
-       * the position BEFORE that unit; a cursor mid-escape maps to the position after the unit
-       * that escape produced — never a fractional position. Binary search for the first unit
-       * whose source offset is >= docOffset.
-       */
-      let lo = 0;
-      let hi = decoded.length; // Sentinel lives at offsets[decoded.length]
-      while (lo < hi) {
-        const mid = (lo + hi) >> 1;
-        const at = offsets[mid] ?? endDocOffset;
-        if (at < docOffset) {
-          lo = mid + 1;
-        } else {
-          hi = mid;
+        if (ch !== '\\') {
+            // Identity run: one source char => one decoded code unit.
+            decoded += ch;
+            offsets.push(docOffset);
+            i += 1;
+            continue;
         }
-      }
-      return lo;
-    },
-  };
+
+        const next = rawToken[i + 1];
+
+        if (next !== undefined && next in SIMPLE_ESCAPES) {
+            // Two source chars (`\n`) => one decoded code unit, mapped to the backslash.
+            decoded += SIMPLE_ESCAPES[next];
+            offsets.push(docOffset);
+            i += 2;
+            continue;
+        }
+
+        if (
+            next === 'u' &&
+            isHexDigit(rawToken[i + 2]) &&
+            isHexDigit(rawToken[i + 3]) &&
+            isHexDigit(rawToken[i + 4]) &&
+            isHexDigit(rawToken[i + 5])
+        ) {
+            // Six source chars (`\uXXXX`) => one decoded code unit, mapped to the backslash.
+            const code = Number.parseInt(rawToken.slice(i + 2, i + 6), 16);
+            decoded += String.fromCharCode(code);
+            offsets.push(docOffset);
+            i += 6;
+            continue;
+        }
+
+        // Malformed escape (lone trailing `\`, or `\z`): pass the backslash through literally so the
+        // Mapping stays total and the parser still sees the rest. One source char => one code unit.
+        decoded += ch;
+        offsets.push(docOffset);
+        i += 1;
+    }
+
+    // The end sentinel: decoded.length maps just past the last content character.
+    const endDocOffset = docOffsetOfToken + contentEnd;
+    offsets.push(endDocOffset);
+
+    const contentDocStart = docOffsetOfToken + contentStart;
+
+    return {
+        decoded,
+        toDocOffset: (decodedOffset: number): number => {
+            if (decodedOffset <= 0) {
+                return offsets[0] ?? endDocOffset;
+            }
+            if (decodedOffset >= decoded.length) {
+                return endDocOffset;
+            }
+            return offsets[decodedOffset] ?? endDocOffset;
+        },
+        toDecodedOffset: (docOffset: number): number => {
+            // Clamp before the content window (e.g. on the opening quote) to the string start.
+            if (docOffset <= contentDocStart) {
+                return 0;
+            }
+            // At/after the closing quote (or end of an unquoted token) → end of decoded string.
+            if (docOffset >= endDocOffset) {
+                return decoded.length;
+            }
+            /*
+             * `offsets[k]` is the document offset where the source run producing decoded unit `k`
+             * starts; the array is non-decreasing. The decoded offset for `docOffset` is the count of
+             * decoded units whose source run starts strictly BEFORE `docOffset` (a half-open mapping
+             * symmetric with {@link toDocOffset}). A cursor exactly on a run start therefore maps to
+             * the position BEFORE that unit; a cursor mid-escape maps to the position after the unit
+             * that escape produced — never a fractional position. Binary search for the first unit
+             * whose source offset is >= docOffset.
+             */
+            let lo = 0;
+            let hi = decoded.length; // Sentinel lives at offsets[decoded.length]
+            while (lo < hi) {
+                const mid = (lo + hi) >> 1;
+                const at = offsets[mid] ?? endDocOffset;
+                if (at < docOffset) {
+                    lo = mid + 1;
+                } else {
+                    hi = mid;
+                }
+            }
+            return lo;
+        },
+    };
 }
 
 export { createStringSourceMap, type StringSourceMap };

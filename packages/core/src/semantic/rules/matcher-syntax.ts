@@ -35,34 +35,34 @@
  * matcher's syntax contract is hardcoded beyond the per-matcher dispatch this file owns.
  */
 
-import { XMLValidator } from "fast-xml-parser";
-import type { ASTNode, ObjectASTNode } from "vscode-json-languageservice";
-import type { Diagnostic } from "vscode-languageserver-types";
+import { XMLValidator } from 'fast-xml-parser';
+import type { ASTNode, ObjectASTNode } from 'vscode-json-languageservice';
+import type { Diagnostic } from 'vscode-languageserver-types';
 
-import { makeDiagnostic } from "../diagnostics.js";
-import { isValidRe2 } from "../re2.js";
-import type { FieldContainer, MatcherModel, RuleContext, SemanticRule } from "../types.js";
+import { makeDiagnostic } from '../diagnostics.js';
+import { isValidRe2 } from '../re2.js';
+import type { FieldContainer, MatcherModel, RuleContext, SemanticRule } from '../types.js';
 
 /* ------------------------------- matcher-tree walking ------------------------------------ */
 
 /** The KEY/VALUE node of property `key` on an object node, if present. */
 function valueNodeOf(object: ObjectASTNode | undefined, key: string): ASTNode | undefined {
-  return object?.properties.find((p) => p.keyNode.value === key)?.valueNode;
+    return object?.properties.find((p) => p.keyNode.value === key)?.valueNode;
 }
 
 /** Build a {@link MatcherModel} from a nested `doMatch` item node, inheriting placement. */
 function nestedMatcher(node: ASTNode, fieldName: string, container: FieldContainer): MatcherModel {
-  const object = node.type === "object" ? node : undefined;
-  const matcherNode = valueNodeOf(object, "matcher");
-  return {
-    node: object,
-    matcherNode,
-    matcherName: matcherNode?.type === "string" ? matcherNode.value : undefined,
-    valueNode: valueNodeOf(object, "value"),
-    configNode: valueNodeOf(object, "config"),
-    doMatchNode: valueNodeOf(object, "doMatch"),
-    parent: { fieldName, container },
-  };
+    const object = node.type === 'object' ? node : undefined;
+    const matcherNode = valueNodeOf(object, 'matcher');
+    return {
+        node: object,
+        matcherNode,
+        matcherName: matcherNode?.type === 'string' ? matcherNode.value : undefined,
+        valueNode: valueNodeOf(object, 'value'),
+        configNode: valueNodeOf(object, 'config'),
+        doMatchNode: valueNodeOf(object, 'doMatch'),
+        parent: { fieldName, container },
+    };
 }
 
 /**
@@ -71,53 +71,53 @@ function nestedMatcher(node: ASTNode, fieldName: string, container: FieldContain
  * nesting level, same as HF2xx.
  */
 function walkMatchers(matchers: readonly MatcherModel[]): MatcherModel[] {
-  const out: MatcherModel[] = [];
-  const visit = (matcher: MatcherModel): void => {
-    out.push(matcher);
-    const doMatchNode = matcher.doMatchNode;
-    if (doMatchNode?.type === "object") {
-      visit(nestedMatcher(doMatchNode, matcher.parent.fieldName, matcher.parent.container));
-    } else if (doMatchNode?.type === "array") {
-      for (const item of doMatchNode.items) {
-        visit(nestedMatcher(item, matcher.parent.fieldName, matcher.parent.container));
-      }
+    const out: MatcherModel[] = [];
+    const visit = (matcher: MatcherModel): void => {
+        out.push(matcher);
+        const doMatchNode = matcher.doMatchNode;
+        if (doMatchNode?.type === 'object') {
+            visit(nestedMatcher(doMatchNode, matcher.parent.fieldName, matcher.parent.container));
+        } else if (doMatchNode?.type === 'array') {
+            for (const item of doMatchNode.items) {
+                visit(nestedMatcher(item, matcher.parent.fieldName, matcher.parent.container));
+            }
+        }
+    };
+    for (const matcher of matchers) {
+        visit(matcher);
     }
-  };
-  for (const matcher of matchers) {
-    visit(matcher);
-  }
-  return out;
+    return out;
 }
 
 /* ----------------------------------- syntax checks --------------------------------------- */
 
 /** Whether `s` has balanced `[]`, `()`, `{}` and balanced `'`/`"` quotes (a dialect-agnostic lint). */
 function isBalanced(s: string): boolean {
-  const stack: string[] = [];
-  const close: Record<string, string> = { "(": ")", "[": "]", "{": "}" };
-  let quote: "'" | '"' | undefined;
-  for (const ch of s) {
-    if (quote) {
-      if (ch === quote) {
-        quote = undefined;
-      }
-      continue;
+    const stack: string[] = [];
+    const close: Record<string, string> = { '(': ')', '[': ']', '{': '}' };
+    let quote: "'" | '"' | undefined;
+    for (const ch of s) {
+        if (quote) {
+            if (ch === quote) {
+                quote = undefined;
+            }
+            continue;
+        }
+        if (ch === '"' || ch === "'") {
+            quote = ch;
+            continue;
+        }
+        if (ch === '(' || ch === '[' || ch === '{') {
+            stack.push(close[ch]!);
+            continue;
+        }
+        if (ch === ')' || ch === ']' || ch === '}') {
+            if (stack.pop() !== ch) {
+                return false;
+            }
+        }
     }
-    if (ch === '"' || ch === "'") {
-      quote = ch;
-      continue;
-    }
-    if (ch === "(" || ch === "[" || ch === "{") {
-      stack.push(close[ch]!);
-      continue;
-    }
-    if (ch === ")" || ch === "]" || ch === "}") {
-      if (stack.pop() !== ch) {
-        return false;
-      }
-    }
-  }
-  return stack.length === 0 && quote === undefined;
+    return stack.length === 0 && quote === undefined;
 }
 
 /**
@@ -126,120 +126,122 @@ function isBalanced(s: string): boolean {
  * regex metacharacters like `<`/`&` would otherwise trip a strict XML validator). research/14 §3.7.
  */
 function neutralizeTemplateTokens(xml: string): string {
-  return xml.replace(/\{\{.*?\}\}/gs, "x");
+    return xml.replace(/\{\{.*?\}\}/gs, 'x');
 }
 
 /** Each `{{ regex: PATTERN }}` PATTERN found in an `xmltemplated` value (for HF230 reuse). */
 function extractTemplatedRegexes(xml: string): string[] {
-  const out: string[] = [];
-  // Mirrors Hoverfly's leaf regex `^\s*{{\s*regex:(.*)}}\s*$` applied per `{{…}}` token.
-  const tokenRe = /\{\{\s*regex:(?<pattern>.*?)\}\}/gs;
-  for (const match of xml.matchAll(tokenRe)) {
-    out.push((match.groups?.["pattern"] ?? "").trim());
-  }
-  return out;
+    const out: string[] = [];
+    // Mirrors Hoverfly's leaf regex `^\s*{{\s*regex:(.*)}}\s*$` applied per `{{…}}` token.
+    const tokenRe = /\{\{\s*regex:(?<pattern>.*?)\}\}/gs;
+    for (const match of xml.matchAll(tokenRe)) {
+        out.push((match.groups?.['pattern'] ?? '').trim());
+    }
+    return out;
 }
 
 /* ---------------------------------- per-matcher checks ----------------------------------- */
 
 /** HF230 / HF231 / HF232 / HF233 / HF234 / HF235 / HF236 for one matcher. */
 function checkSyntax(context: RuleContext, matcher: MatcherModel, diagnostics: Diagnostic[]): void {
-  const { matcherName, valueNode } = matcher;
-  if (!valueNode) {
-    return; // Absent value is a schema/HF212 concern, never a syntax one.
-  }
+    const { matcherName, valueNode } = matcher;
+    if (!valueNode) {
+        return; // Absent value is a schema/HF212 concern, never a syntax one.
+    }
 
-  // `matcher` lookup is case-insensitive (D8); the default (absent) name is exact → no syntax rule.
-  const name = (matcherName ?? "").toLowerCase();
+    // `matcher` lookup is case-insensitive (D8); the default (absent) name is exact → no syntax rule.
+    const name = (matcherName ?? '').toLowerCase();
 
-  switch (name) {
-    case "regex": {
-      checkRegex(context, valueNode, diagnostics);
-      return;
+    switch (name) {
+        case 'regex': {
+            checkRegex(context, valueNode, diagnostics);
+            return;
+        }
+        case 'json':
+        case 'jsonpartial': {
+            checkJsonText(context, name, valueNode, diagnostics);
+            return;
+        }
+        case 'jwt': {
+            checkJwt(context, valueNode, diagnostics);
+            return;
+        }
+        case 'jsonpath':
+        case 'jwtjsonpath': {
+            checkBalance(context, 'HF232', valueNode, diagnostics);
+            return;
+        }
+        case 'xpath': {
+            checkBalance(context, 'HF233', valueNode, diagnostics);
+            return;
+        }
+        case 'xml':
+        case 'xmltemplated': {
+            checkXml(context, name, valueNode, diagnostics);
+            return;
+        }
+        case 'array': {
+            checkArray(context, valueNode, diagnostics);
+            return;
+        }
+        default: {
+            // Glob, exact, negate, "" — no value-syntax contract (research/14 §3.2, §7).
+            return;
+        }
     }
-    case "json":
-    case "jsonpartial": {
-      checkJsonText(context, name, valueNode, diagnostics);
-      return;
-    }
-    case "jwt": {
-      checkJwt(context, valueNode, diagnostics);
-      return;
-    }
-    case "jsonpath":
-    case "jwtjsonpath": {
-      checkBalance(context, "HF232", valueNode, diagnostics);
-      return;
-    }
-    case "xpath": {
-      checkBalance(context, "HF233", valueNode, diagnostics);
-      return;
-    }
-    case "xml":
-    case "xmltemplated": {
-      checkXml(context, name, valueNode, diagnostics);
-      return;
-    }
-    case "array": {
-      checkArray(context, valueNode, diagnostics);
-      return;
-    }
-    default: {
-      // Glob, exact, negate, "" — no value-syntax contract (research/14 §3.2, §7).
-      return;
-    }
-  }
 }
 
 /** HF230 — `regex` value must compile as a Go RE2 pattern. */
 function checkRegex(context: RuleContext, valueNode: ASTNode, diagnostics: Diagnostic[]): void {
-  if (valueNode.type !== "string") {
-    return; // Wrong type → HF203 owns it.
-  }
-  if (valueNode.value === "") {
-    return; // Empty → HF211 owns it.
-  }
-  if (!isValidRe2(valueNode.value)) {
-    diagnostics.push(makeDiagnostic(context.textDocument, "HF230", valueNode));
-  }
+    if (valueNode.type !== 'string') {
+        return; // Wrong type → HF203 owns it.
+    }
+    if (valueNode.value === '') {
+        return; // Empty → HF211 owns it.
+    }
+    if (!isValidRe2(valueNode.value)) {
+        diagnostics.push(makeDiagnostic(context.textDocument, 'HF230', valueNode));
+    }
 }
 
 /** HF231 — `json` / `jsonpartial` value string must parse as JSON. */
 function checkJsonText(
-  context: RuleContext,
-  name: string,
-  valueNode: ASTNode,
-  diagnostics: Diagnostic[],
+    context: RuleContext,
+    name: string,
+    valueNode: ASTNode,
+    diagnostics: Diagnostic[],
 ): void {
-  if (valueNode.type !== "string") {
-    return; // Wrong type → HF203 owns it.
-  }
-  if (!parsesAsJson(valueNode.value)) {
-    diagnostics.push(makeDiagnostic(context.textDocument, "HF231", valueNode, { name }));
-  }
+    if (valueNode.type !== 'string') {
+        return; // Wrong type → HF203 owns it.
+    }
+    if (!parsesAsJson(valueNode.value)) {
+        diagnostics.push(makeDiagnostic(context.textDocument, 'HF231', valueNode, { name }));
+    }
 }
 
 /** HF231 + HF235 — `jwt` value must be JSON text whose top-level keys are header/payload only. */
 function checkJwt(context: RuleContext, valueNode: ASTNode, diagnostics: Diagnostic[]): void {
-  if (valueNode.type !== "string") {
-    return; // Wrong type → HF203 owns it.
-  }
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(valueNode.value);
-  } catch {
-    // HF231 — the motivating `$.username` case: a string that is not valid JSON text.
-    diagnostics.push(makeDiagnostic(context.textDocument, "HF231", valueNode, { name: "jwt" }));
-    return;
-  }
-  // HF235 — parses, but a top-level key outside {header, payload} can never match a JWT composite.
-  if (parsed !== null && typeof parsed === "object" && !Array.isArray(parsed)) {
-    for (const key of Object.keys(parsed)) {
-      if (key !== "header" && key !== "payload") {
-        diagnostics.push(makeDiagnostic(context.textDocument, "HF235", valueNode, { k: key }));
-      }
+    if (valueNode.type !== 'string') {
+        return; // Wrong type → HF203 owns it.
     }
-  }
+    let parsed: unknown;
+    try {
+        parsed = JSON.parse(valueNode.value);
+    } catch {
+        // HF231 — the motivating `$.username` case: a string that is not valid JSON text.
+        diagnostics.push(makeDiagnostic(context.textDocument, 'HF231', valueNode, { name: 'jwt' }));
+        return;
+    }
+    // HF235 — parses, but a top-level key outside {header, payload} can never match a JWT composite.
+    if (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        for (const key of Object.keys(parsed)) {
+            if (key !== 'header' && key !== 'payload') {
+                diagnostics.push(
+                    makeDiagnostic(context.textDocument, 'HF235', valueNode, { k: key }),
+                );
+            }
+        }
+    }
 }
 
 /**
@@ -247,71 +249,71 @@ function checkJwt(context: RuleContext, valueNode: ASTNode, diagnostics: Diagnos
  * balanced (so it never fires here); the empty-`jwtjsonpath` no-match is owned by HF211 anyway.
  */
 function checkBalance(
-  context: RuleContext,
-  code: "HF232" | "HF233",
-  valueNode: ASTNode,
-  diagnostics: Diagnostic[],
+    context: RuleContext,
+    code: 'HF232' | 'HF233',
+    valueNode: ASTNode,
+    diagnostics: Diagnostic[],
 ): void {
-  if (valueNode.type !== "string") {
-    return; // Wrong type → HF203 owns it.
-  }
-  if (!isBalanced(valueNode.value)) {
-    diagnostics.push(makeDiagnostic(context.textDocument, code, valueNode));
-  }
+    if (valueNode.type !== 'string') {
+        return; // Wrong type → HF203 owns it.
+    }
+    if (!isBalanced(valueNode.value)) {
+        diagnostics.push(makeDiagnostic(context.textDocument, code, valueNode));
+    }
 }
 
 /** HF234 (+ HF230 reuse) — `xml` / `xmltemplated` value must be well-formed XML. */
 function checkXml(
-  context: RuleContext,
-  name: string,
-  valueNode: ASTNode,
-  diagnostics: Diagnostic[],
+    context: RuleContext,
+    name: string,
+    valueNode: ASTNode,
+    diagnostics: Diagnostic[],
 ): void {
-  if (valueNode.type !== "string") {
-    return; // Wrong type → HF203 owns it.
-  }
-  const raw = valueNode.value;
-
-  if (name === "xmltemplated") {
-    // Each `{{ regex: PATTERN }}` leaf is a Go RE2 pattern compiled at match time → reuse HF230.
-    for (const pattern of extractTemplatedRegexes(raw)) {
-      if (pattern !== "" && !isValidRe2(pattern)) {
-        diagnostics.push(makeDiagnostic(context.textDocument, "HF230", valueNode));
-      }
+    if (valueNode.type !== 'string') {
+        return; // Wrong type → HF203 owns it.
     }
-  }
+    const raw = valueNode.value;
 
-  const xml = name === "xmltemplated" ? neutralizeTemplateTokens(raw) : raw;
-  if (xml.trim() === "") {
-    return; // An empty/whitespace value is not a well-formedness defect to flag here.
-  }
-  if (XMLValidator.validate(xml) !== true) {
-    diagnostics.push(makeDiagnostic(context.textDocument, "HF234", valueNode, { name }));
-  }
+    if (name === 'xmltemplated') {
+        // Each `{{ regex: PATTERN }}` leaf is a Go RE2 pattern compiled at match time → reuse HF230.
+        for (const pattern of extractTemplatedRegexes(raw)) {
+            if (pattern !== '' && !isValidRe2(pattern)) {
+                diagnostics.push(makeDiagnostic(context.textDocument, 'HF230', valueNode));
+            }
+        }
+    }
+
+    const xml = name === 'xmltemplated' ? neutralizeTemplateTokens(raw) : raw;
+    if (xml.trim() === '') {
+        return; // An empty/whitespace value is not a well-formedness defect to flag here.
+    }
+    if (XMLValidator.validate(xml) !== true) {
+        diagnostics.push(makeDiagnostic(context.textDocument, 'HF234', valueNode, { name }));
+    }
 }
 
 /** HF236 — every `array` element must be a JSON string. */
 function checkArray(context: RuleContext, valueNode: ASTNode, diagnostics: Diagnostic[]): void {
-  if (valueNode.type !== "array") {
-    return; // Wrong type → HF203 owns it.
-  }
-  valueNode.items.forEach((item, index) => {
-    if (item.type !== "string") {
-      diagnostics.push(makeDiagnostic(context.textDocument, "HF236", item, { i: index }));
+    if (valueNode.type !== 'array') {
+        return; // Wrong type → HF203 owns it.
     }
-  });
+    valueNode.items.forEach((item, index) => {
+        if (item.type !== 'string') {
+            diagnostics.push(makeDiagnostic(context.textDocument, 'HF236', item, { i: index }));
+        }
+    });
 }
 
 /* --------------------------------------- helpers ----------------------------------------- */
 
 /** Whether `text` parses as JSON (the same strict grammar as Go's `encoding/json`). */
 function parsesAsJson(text: string): boolean {
-  try {
-    JSON.parse(text);
-    return true;
-  } catch {
-    return false;
-  }
+    try {
+        JSON.parse(text);
+        return true;
+    } catch {
+        return false;
+    }
 }
 
 /* ------------------------------------------ rule ----------------------------------------- */
@@ -322,18 +324,18 @@ function parsesAsJson(text: string): boolean {
  * defer to HF203/HF211.
  */
 export const matcherSyntaxRule: SemanticRule = {
-  codes: ["HF230", "HF231", "HF232", "HF233", "HF234", "HF235", "HF236"],
-  run(context: RuleContext): Diagnostic[] {
-    const diagnostics: Diagnostic[] = [];
-    for (const pair of context.model.pairs) {
-      for (const field of pair.request.fields) {
-        for (const matcher of walkMatchers(field.matchers)) {
-          checkSyntax(context, matcher, diagnostics);
+    codes: ['HF230', 'HF231', 'HF232', 'HF233', 'HF234', 'HF235', 'HF236'],
+    run(context: RuleContext): Diagnostic[] {
+        const diagnostics: Diagnostic[] = [];
+        for (const pair of context.model.pairs) {
+            for (const field of pair.request.fields) {
+                for (const matcher of walkMatchers(field.matchers)) {
+                    checkSyntax(context, matcher, diagnostics);
+                }
+            }
         }
-      }
-    }
-    return diagnostics;
-  },
+        return diagnostics;
+    },
 };
 
 /** All matcher-value-syntax rules. The integrator spreads this into `ALL_RULES`. */

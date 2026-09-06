@@ -190,17 +190,17 @@ read). Notes:
 - **`now` formats** (verbatim from `nowHelper`): `""` → RFC3339 UTC (`2006-01-02T15:04:05Z07:00`);
   `"unix"` → `now.Unix()` (seconds); `"epoch"` → `now.UnixNano()/1000000` (**milliseconds**, despite
   the name); anything else → treated as a Go time layout `now.UTC().Format(format)`.
-  ```go
-  if format == "" {
-      formatted = now.UTC().Format(defaultDateTimeFormat)
-  } else if format == "unix" {
-      formatted = strconv.FormatInt(now.Unix(), 10)
-  } else if format == "epoch" {
-      formatted = strconv.FormatInt(now.UnixNano()/1000000, 10)
-  } else {
-      formatted = now.UTC().Format(format)
-  }
-  ```
+    ```go
+    if format == "" {
+        formatted = now.UTC().Format(defaultDateTimeFormat)
+    } else if format == "unix" {
+        formatted = strconv.FormatInt(now.Unix(), 10)
+    } else if format == "epoch" {
+        formatted = strconv.FormatInt(now.UnixNano()/1000000, 10)
+    } else {
+        formatted = now.UTC().Format(format)
+    }
+    ```
 - **`concat` is variadic** and flattens any `[]interface{}` argument (so it concatenates arrays).
 - **`faker` returns `[]reflect.Value`** and is the only helper whose output type is fully dynamic.
 - **`setStatusCode` / `setHeader`** mutate `options.InternalVars` (consumed in `RenderTemplate` to
@@ -449,35 +449,35 @@ current item as **`this`** (and `this.<field>` for maps/structs/RowMap). Confirm
 Real-world templates (verbatim from `docs/pages/keyconcepts/templating/`) prove the LSP must handle:
 
 - **Block helpers with bodies and `{{else}}`:**
-  ```handlebars
-  {{#equal (csvDeleteRows "pets" "category" "cats" true) "0"}}
-    {{setStatusCode "404"}}
-    {"Message":"Error no cats found"}
-  {{else}}
-    {{setStatusCode "200"}}
-    {"Message":"All cats deleted"}
-  {{/equal}}
-  ```
+    ```handlebars
+    {{#equal (csvDeleteRows 'pets' 'category' 'cats' true) '0'}}
+        {{setStatusCode '404'}}
+        {"Message":"Error no cats found"}
+    {{else}}
+        {{setStatusCode '200'}}
+        {"Message":"All cats deleted"}
+    {{/equal}}
+    ```
 - **`#each` over data-source results with `this` / `this.field` / `@last`:**
-  ```handlebars
-  {{#each (csvAsMap "pets")}}
-    { "id":{{this.id}}, "name":"{{this.name}}" }{{#unless @last}},{{/unless}}
-  {{/each}}
-  ```
+    ```handlebars
+    {{#each (csvAsMap 'pets')}}
+        { "id":{{this.id}}, "name":"{{this.name}}" }{{#unless @last}},{{/unless}}
+    {{/each}}
+    ```
 - **Nested `#each` with bare `this`:**
-  ```handlebars
-  {{#each (csvAsArray "pets")}}{{#each this}}{{this}} {{/each}}{{/each}}
-  ```
+    ```handlebars
+    {{#each (csvAsArray 'pets')}}{{#each this}}{{this}} {{/each}}{{/each}}
+    ```
 - **Subexpressions (parenthesised helper calls as arguments), arbitrarily nested:**
-  ```handlebars
-  {{addToArray "subtotal" (multiply (this.price) (this.quantity) "") false}}
-  total:
-  {{sum (getArray "subtotal") "0.00"}}
-  ```
+    ```handlebars
+    {{addToArray 'subtotal' (multiply (this.price) (this.quantity) '') false}}
+    total:
+    {{sum (getArray 'subtotal') '0.00'}}
+    ```
 - **The `Request.Body` method-call form inside `#each`:**
-  ```handlebars
-  {{#each (Request.Body "jsonpath" "$.lineitems.lineitem")}} … {{/each}}
-  ```
+    ```handlebars
+    {{#each (Request.Body 'jsonpath' '$.lineitems.lineitem')}} … {{/each}}
+    ```
 - **Dotted path expressions / indexed access:** `{{Request.QueryParam.foo}}`,
   `{{Request.QueryParam.foo.[1]}}`, `{{Request.Header.Authorization.[0]}}`,
   `{{Request.Path.[2]}}`, `{{State.someKey}}`, `{{Literals.x}}`, `{{Vars.x}}` (the `TemplatingData`
@@ -641,9 +641,9 @@ LSP should account for and document in hover/diagnostics:
 - Array results: when the JSONPath yields a JSON array string, `jsonPath` unmarshals it to
   `[]interface{}` so it can be iterated with `{{#each}}`.
 
-  → **LSP guidance:** validate `jsonpath` expressions against the _kubectl_ grammar, not generic
-  JSONPath. Be lenient (warn, don't error) since exact engine behavior is hard to replicate; offer
-  hover docs linking to kubectl JSONPath. Do NOT assume Jayway functions/filters.
+    → **LSP guidance:** validate `jsonpath` expressions against the _kubectl_ grammar, not generic
+    JSONPath. Be lenient (warn, don't error) since exact engine behavior is hard to replicate; offer
+    hover docs linking to kubectl JSONPath. Do NOT assume Jayway functions/filters.
 
 **XPath = `github.com/ChrisTrenkamp/xsel`** (an XPath 1.0/2.0 engine over a custom store/parser; NOT
 `antchfx/xpath`, NOT `go-xmlpath`). go.mod has no separate version (it's a direct require —

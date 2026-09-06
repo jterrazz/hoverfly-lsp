@@ -45,59 +45,59 @@ The recommended approach is to register a **new language ID** (`hoverfly-simulat
 
 ```json
 {
-  "name": "hoverfly-lsp",
-  "displayName": "Hoverfly Simulation Language Support",
-  "description": "Diagnostics, autocomplete, and hover docs for Hoverfly simulation files",
-  "version": "0.1.0",
-  "publisher": "your-publisher-id",
-  "engines": { "vscode": "^1.82.0" },
-  "categories": ["Programming Languages", "Linters"],
-  "activationEvents": [],
-  "main": "./out/extension.js",
-  "contributes": {
-    "languages": [
-      {
-        "id": "hoverfly-simulation",
-        "aliases": ["Hoverfly Simulation", "hoverfly"],
-        "filenames": ["simulation.json"],
-        "filenamePatterns": [
-          "*.hoverfly.json",
-          "**/hoverfly/**/*.json",
-          "**/.hoverfly/**/*.json",
-          "hoverfly-simulation.json"
+    "name": "hoverfly-lsp",
+    "displayName": "Hoverfly Simulation Language Support",
+    "description": "Diagnostics, autocomplete, and hover docs for Hoverfly simulation files",
+    "version": "0.1.0",
+    "publisher": "your-publisher-id",
+    "engines": { "vscode": "^1.82.0" },
+    "categories": ["Programming Languages", "Linters"],
+    "activationEvents": [],
+    "main": "./out/extension.js",
+    "contributes": {
+        "languages": [
+            {
+                "id": "hoverfly-simulation",
+                "aliases": ["Hoverfly Simulation", "hoverfly"],
+                "filenames": ["simulation.json"],
+                "filenamePatterns": [
+                    "*.hoverfly.json",
+                    "**/hoverfly/**/*.json",
+                    "**/.hoverfly/**/*.json",
+                    "hoverfly-simulation.json"
+                ],
+                "configuration": "./language-configuration.json"
+            }
         ],
-        "configuration": "./language-configuration.json"
-      }
-    ],
-    "grammars": [
-      {
-        "language": "hoverfly-simulation",
-        "scopeName": "source.json.hoverfly",
-        "path": "./syntaxes/hoverfly.tmLanguage.json",
-        "embeddedLanguages": {
-          "meta.embedded.block.json": "json"
+        "grammars": [
+            {
+                "language": "hoverfly-simulation",
+                "scopeName": "source.json.hoverfly",
+                "path": "./syntaxes/hoverfly.tmLanguage.json",
+                "embeddedLanguages": {
+                    "meta.embedded.block.json": "json"
+                }
+            }
+        ],
+        "configuration": {
+            "title": "Hoverfly LSP",
+            "properties": {
+                "hoverflyLsp.trace.server": {
+                    "type": "string",
+                    "enum": ["off", "messages", "verbose"],
+                    "default": "off",
+                    "description": "Traces communication between VS Code and the Hoverfly language server."
+                }
+            }
         }
-      }
-    ],
-    "configuration": {
-      "title": "Hoverfly LSP",
-      "properties": {
-        "hoverflyLsp.trace.server": {
-          "type": "string",
-          "enum": ["off", "messages", "verbose"],
-          "default": "off",
-          "description": "Traces communication between VS Code and the Hoverfly language server."
-        }
-      }
+    },
+    "dependencies": {
+        "vscode-languageclient": "^10.0.0"
+    },
+    "devDependencies": {
+        "@types/vscode": "^1.82.0",
+        "typescript": "^5.0.0"
     }
-  },
-  "dependencies": {
-    "vscode-languageclient": "^10.0.0"
-  },
-  "devDependencies": {
-    "@types/vscode": "^1.82.0",
-    "typescript": "^5.0.0"
-  }
 }
 ```
 
@@ -107,72 +107,72 @@ As of VS Code 1.74.0+, leaving `activationEvents` as `[]` (empty array) is corre
 ### 1.3 `extension.ts` — Stdio client setup
 
 ```typescript
-import * as path from "path";
-import { workspace, ExtensionContext } from "vscode";
+import * as path from 'path';
+import { workspace, ExtensionContext } from 'vscode';
 import {
-  LanguageClient,
-  LanguageClientOptions,
-  ServerOptions,
-  TransportKind,
-} from "vscode-languageclient/node";
+    LanguageClient,
+    LanguageClientOptions,
+    ServerOptions,
+    TransportKind,
+} from 'vscode-languageclient/node';
 
 let client: LanguageClient;
 
 export async function activate(context: ExtensionContext): Promise<void> {
-  // Path to the server binary installed alongside the extension.
-  // In production, this would be something like:
-  //   const serverBin = context.asAbsolutePath(path.join('node_modules', '.bin', 'hoverfly-lsp'));
-  // For a Node.js server module:
-  const serverModule = context.asAbsolutePath(path.join("server", "out", "server.js"));
+    // Path to the server binary installed alongside the extension.
+    // In production, this would be something like:
+    //   const serverBin = context.asAbsolutePath(path.join('node_modules', '.bin', 'hoverfly-lsp'));
+    // For a Node.js server module:
+    const serverModule = context.asAbsolutePath(path.join('server', 'out', 'server.js'));
 
-  const serverOptions: ServerOptions = {
-    run: {
-      module: serverModule,
-      transport: TransportKind.stdio,
-    },
-    debug: {
-      module: serverModule,
-      transport: TransportKind.stdio,
-      options: { execArgv: ["--nolazy", "--inspect=6009"] },
-    },
-  };
+    const serverOptions: ServerOptions = {
+        run: {
+            module: serverModule,
+            transport: TransportKind.stdio,
+        },
+        debug: {
+            module: serverModule,
+            transport: TransportKind.stdio,
+            options: { execArgv: ['--nolazy', '--inspect=6009'] },
+        },
+    };
 
-  // If your server is a standalone binary (not a Node.js module):
-  // const serverOptions: ServerOptions = {
-  //   command: '/usr/local/bin/hoverfly-lsp',
-  //   args: ['--stdio'],
-  //   transport: TransportKind.stdio,
-  // };
+    // If your server is a standalone binary (not a Node.js module):
+    // const serverOptions: ServerOptions = {
+    //   command: '/usr/local/bin/hoverfly-lsp',
+    //   args: ['--stdio'],
+    //   transport: TransportKind.stdio,
+    // };
 
-  const clientOptions: LanguageClientOptions = {
-    // Only activate for files with the hoverfly-simulation language ID.
-    // The filenamePatterns in package.json assign the language ID;
-    // this documentSelector ensures the LSP client only handles those files.
-    documentSelector: [
-      { scheme: "file", language: "hoverfly-simulation" },
-      // Optionally also handle untitled hoverfly files:
-      { scheme: "untitled", language: "hoverfly-simulation" },
-    ],
-    synchronize: {
-      // Watch for changes to .hoverfly.json files in the workspace
-      fileEvents: workspace.createFileSystemWatcher("**/*.hoverfly.json"),
-    },
-    outputChannelName: "Hoverfly LSP",
-  };
+    const clientOptions: LanguageClientOptions = {
+        // Only activate for files with the hoverfly-simulation language ID.
+        // The filenamePatterns in package.json assign the language ID;
+        // this documentSelector ensures the LSP client only handles those files.
+        documentSelector: [
+            { scheme: 'file', language: 'hoverfly-simulation' },
+            // Optionally also handle untitled hoverfly files:
+            { scheme: 'untitled', language: 'hoverfly-simulation' },
+        ],
+        synchronize: {
+            // Watch for changes to .hoverfly.json files in the workspace
+            fileEvents: workspace.createFileSystemWatcher('**/*.hoverfly.json'),
+        },
+        outputChannelName: 'Hoverfly LSP',
+    };
 
-  client = new LanguageClient(
-    "hoverfly-lsp",
-    "Hoverfly Language Server",
-    serverOptions,
-    clientOptions,
-  );
+    client = new LanguageClient(
+        'hoverfly-lsp',
+        'Hoverfly Language Server',
+        serverOptions,
+        clientOptions,
+    );
 
-  await client.start();
+    await client.start();
 }
 
 export async function deactivate(): Promise<void> {
-  if (!client) return;
-  await client.stop();
+    if (!client) return;
+    await client.stop();
 }
 ```
 
@@ -180,21 +180,21 @@ export async function deactivate(): Promise<void> {
 
 ```json
 {
-  "comments": {},
-  "brackets": [
-    ["{", "}"],
-    ["[", "]"]
-  ],
-  "autoClosingPairs": [
-    { "open": "{", "close": "}" },
-    { "open": "[", "close": "]" },
-    { "open": "\"", "close": "\"" }
-  ],
-  "surroundingPairs": [
-    ["{", "}"],
-    ["[", "]"],
-    ["\"", "\""]
-  ]
+    "comments": {},
+    "brackets": [
+        ["{", "}"],
+        ["[", "]"]
+    ],
+    "autoClosingPairs": [
+        { "open": "{", "close": "}" },
+        { "open": "[", "close": "]" },
+        { "open": "\"", "close": "\"" }
+    ],
+    "surroundingPairs": [
+        ["{", "}"],
+        ["[", "]"],
+        ["\"", "\""]
+    ]
 }
 ```
 
@@ -207,8 +207,8 @@ You can also use a **pattern-only** document selector without a custom language 
 ```typescript
 // Less preferred — works but couples you to file paths instead of language ID
 documentSelector: [
-  { scheme: "file", pattern: "**/*.hoverfly.json" },
-  { scheme: "file", pattern: "**/hoverfly/**/*.json" },
+    { scheme: 'file', pattern: '**/*.hoverfly.json' },
+    { scheme: 'file', pattern: '**/hoverfly/**/*.json' },
 ];
 ```
 
@@ -401,17 +401,17 @@ If the `hoverfly-lsp` binary is already on PATH (e.g., installed globally via `n
 
 ```json
 {
-  "lsp": {
-    "hoverfly-lsp": {
-      "binary": {
-        "path": "/usr/local/bin/hoverfly-lsp",
-        "arguments": ["--stdio"]
-      }
+    "lsp": {
+        "hoverfly-lsp": {
+            "binary": {
+                "path": "/usr/local/bin/hoverfly-lsp",
+                "arguments": ["--stdio"]
+            }
+        }
+    },
+    "file_types": {
+        "Hoverfly Simulation": ["*.hoverfly.json", "hoverfly-simulation.json"]
     }
-  },
-  "file_types": {
-    "Hoverfly Simulation": ["*.hoverfly.json", "hoverfly-simulation.json"]
-  }
 }
 ```
 
@@ -475,11 +475,11 @@ The **Language ID** column sets the `TextDocumentItem#languageId` sent to the se
 
 ```json
 {
-  "hoverflyLsp": {
-    "validation": {
-      "strict": true
+    "hoverflyLsp": {
+        "validation": {
+            "strict": true
+        }
     }
-  }
 }
 ```
 
@@ -489,18 +489,18 @@ LSP4IJ supports exportable templates as zip files. The `template.json` inside fo
 
 ```json
 {
-  "name": "Hoverfly LSP",
-  "programArgs": "--stdio",
-  "commandLine": "hoverfly-lsp",
-  "fileAssociations": [
-    {
-      "kind": "fileNamePattern",
-      "patterns": "*.hoverfly.json;hoverfly-simulation.json;simulation.json",
-      "languageId": "hoverfly-simulation"
-    }
-  ],
-  "initializationOptions": {},
-  "settings": {}
+    "name": "Hoverfly LSP",
+    "programArgs": "--stdio",
+    "commandLine": "hoverfly-lsp",
+    "fileAssociations": [
+        {
+            "kind": "fileNamePattern",
+            "patterns": "*.hoverfly.json;hoverfly-simulation.json;simulation.json",
+            "languageId": "hoverfly-simulation"
+        }
+    ],
+    "initializationOptions": {},
+    "settings": {}
 }
 ```
 
@@ -617,9 +617,9 @@ hoverfly-lsp-claude/
 
 ```json
 {
-  "name": "hoverfly-lsp",
-  "description": "Hoverfly simulation file diagnostics and intelligence for Claude Code",
-  "version": "0.1.0"
+    "name": "hoverfly-lsp",
+    "description": "Hoverfly simulation file diagnostics and intelligence for Claude Code",
+    "version": "0.1.0"
 }
 ```
 
@@ -627,23 +627,23 @@ hoverfly-lsp-claude/
 
 ```json
 {
-  "hoverfly-lsp": {
-    "command": "hoverfly-lsp",
-    "args": ["--stdio"],
-    "extensionToLanguage": {
-      ".hoverfly.json": "hoverfly-simulation",
-      ".json": "json"
-    },
-    "diagnostics": true,
-    "transport": "stdio",
-    "initializationOptions": {
-      "hoverflyLsp": {
-        "contentDetection": true
-      }
-    },
-    "startupTimeout": 10000,
-    "maxRestarts": 3
-  }
+    "hoverfly-lsp": {
+        "command": "hoverfly-lsp",
+        "args": ["--stdio"],
+        "extensionToLanguage": {
+            ".hoverfly.json": "hoverfly-simulation",
+            ".json": "json"
+        },
+        "diagnostics": true,
+        "transport": "stdio",
+        "initializationOptions": {
+            "hoverflyLsp": {
+                "contentDetection": true
+            }
+        },
+        "startupTimeout": 10000,
+        "maxRestarts": 3
+    }
 }
 ```
 
@@ -705,13 +705,13 @@ If you need cclsp compatibility for older Claude Code versions, the config is:
 
 ```json
 {
-  "servers": [
-    {
-      "extensions": ["json"],
-      "command": ["hoverfly-lsp", "--stdio"],
-      "rootDir": "."
-    }
-  ]
+    "servers": [
+        {
+            "extensions": ["json"],
+            "command": ["hoverfly-lsp", "--stdio"],
+            "rootDir": "."
+        }
+    ]
 }
 ```
 
@@ -719,14 +719,14 @@ If you need cclsp compatibility for older Claude Code versions, the config is:
 
 ```json
 {
-  "mcpServers": {
-    "cclsp": {
-      "command": "cclsp",
-      "env": {
-        "CCLSP_CONFIG_PATH": "${workspaceFolder}/.claude/cclsp.json"
-      }
+    "mcpServers": {
+        "cclsp": {
+            "command": "cclsp",
+            "env": {
+                "CCLSP_CONFIG_PATH": "${workspaceFolder}/.claude/cclsp.json"
+            }
+        }
     }
-  }
 }
 ```
 
@@ -805,35 +805,35 @@ When filename-based targeting is ambiguous (especially in Claude Code), the serv
 ```typescript
 // In the LSP server's textDocument/didOpen handler
 function isHoverflySimulation(content: string): boolean {
-  try {
-    const doc = JSON.parse(content);
-    return (
-      typeof doc === "object" &&
-      doc !== null &&
-      typeof doc.data === "object" &&
-      Array.isArray(doc.data?.pairs) &&
-      typeof doc.meta === "object" &&
-      typeof doc.meta?.schemaVersion === "string" &&
-      doc.meta.schemaVersion.startsWith("v")
-    );
-  } catch {
-    return false;
-  }
+    try {
+        const doc = JSON.parse(content);
+        return (
+            typeof doc === 'object' &&
+            doc !== null &&
+            typeof doc.data === 'object' &&
+            Array.isArray(doc.data?.pairs) &&
+            typeof doc.meta === 'object' &&
+            typeof doc.meta?.schemaVersion === 'string' &&
+            doc.meta.schemaVersion.startsWith('v')
+        );
+    } catch {
+        return false;
+    }
 }
 
 // Store which documents are Hoverfly simulations
 const hoverflyDocuments = new Set<string>();
 
 connection.onDidOpenTextDocument((params) => {
-  const uri = params.textDocument.uri;
-  if (isHoverflySimulation(params.textDocument.text)) {
-    hoverflyDocuments.add(uri);
-  }
-  // For non-Hoverfly files, do nothing — don't publish diagnostics
+    const uri = params.textDocument.uri;
+    if (isHoverflySimulation(params.textDocument.text)) {
+        hoverflyDocuments.add(uri);
+    }
+    // For non-Hoverfly files, do nothing — don't publish diagnostics
 });
 
 connection.onDidCloseTextDocument((params) => {
-  hoverflyDocuments.delete(params.textDocument.uri);
+    hoverflyDocuments.delete(params.textDocument.uri);
 });
 ```
 
@@ -885,140 +885,143 @@ A plain JSON Schema gives basic validation and completion in any editor that sup
 
 ```json
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://raw.githubusercontent.com/your-org/hoverfly-lsp/main/schema/hoverfly-simulation.json",
-  "title": "Hoverfly Simulation",
-  "description": "Hoverfly v5 simulation file — describes request matchers and mocked responses",
-  "type": "object",
-  "required": ["data", "meta"],
-  "additionalProperties": false,
-  "properties": {
-    "$schema": {
-      "type": "string",
-      "description": "JSON Schema reference (optional, used by editors for validation)"
-    },
-    "data": {
-      "type": "object",
-      "description": "Simulation data containing request-response pairs",
-      "required": ["pairs"],
-      "properties": {
-        "pairs": {
-          "type": "array",
-          "description": "Array of request matcher to response mappings",
-          "items": { "$ref": "#/definitions/pair" }
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://raw.githubusercontent.com/your-org/hoverfly-lsp/main/schema/hoverfly-simulation.json",
+    "title": "Hoverfly Simulation",
+    "description": "Hoverfly v5 simulation file — describes request matchers and mocked responses",
+    "type": "object",
+    "required": ["data", "meta"],
+    "additionalProperties": false,
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "JSON Schema reference (optional, used by editors for validation)"
         },
-        "globalActions": { "$ref": "#/definitions/globalActions" }
-      }
-    },
-    "meta": {
-      "type": "object",
-      "description": "Simulation metadata",
-      "required": ["schemaVersion"],
-      "properties": {
-        "schemaVersion": {
-          "type": "string",
-          "pattern": "^v\\d+$",
-          "description": "Hoverfly simulation schema version (e.g. \"v5\")"
+        "data": {
+            "type": "object",
+            "description": "Simulation data containing request-response pairs",
+            "required": ["pairs"],
+            "properties": {
+                "pairs": {
+                    "type": "array",
+                    "description": "Array of request matcher to response mappings",
+                    "items": { "$ref": "#/definitions/pair" }
+                },
+                "globalActions": { "$ref": "#/definitions/globalActions" }
+            }
         },
-        "hoverflyVersion": {
-          "type": "string",
-          "description": "Hoverfly version that exported this simulation"
-        },
-        "timeExported": {
-          "type": "string",
-          "format": "date-time"
+        "meta": {
+            "type": "object",
+            "description": "Simulation metadata",
+            "required": ["schemaVersion"],
+            "properties": {
+                "schemaVersion": {
+                    "type": "string",
+                    "pattern": "^v\\d+$",
+                    "description": "Hoverfly simulation schema version (e.g. \"v5\")"
+                },
+                "hoverflyVersion": {
+                    "type": "string",
+                    "description": "Hoverfly version that exported this simulation"
+                },
+                "timeExported": {
+                    "type": "string",
+                    "format": "date-time"
+                }
+            }
         }
-      }
-    }
-  },
-  "definitions": {
-    "pair": {
-      "type": "object",
-      "required": ["request", "response"],
-      "properties": {
-        "request": { "$ref": "#/definitions/requestMatchers" },
-        "response": { "$ref": "#/definitions/response" }
-      }
     },
-    "matcherValue": {
-      "oneOf": [
-        {
-          "type": "object",
-          "properties": {
-            "matcher": {
-              "type": "string",
-              "enum": ["exact", "glob", "regex", "xpath", "jsonpath", "jwt", "array"]
-            },
-            "value": {}
-          }
+    "definitions": {
+        "pair": {
+            "type": "object",
+            "required": ["request", "response"],
+            "properties": {
+                "request": { "$ref": "#/definitions/requestMatchers" },
+                "response": { "$ref": "#/definitions/response" }
+            }
         },
-        { "type": "array", "items": { "$ref": "#/definitions/matcherValue" } }
-      ]
-    },
-    "requestMatchers": {
-      "type": "object",
-      "properties": {
-        "body": { "type": "array", "items": { "$ref": "#/definitions/matcherValue" } },
-        "destination": { "type": "array", "items": { "$ref": "#/definitions/matcherValue" } },
-        "headers": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "array",
-            "items": { "$ref": "#/definitions/matcherValue" }
-          }
+        "matcherValue": {
+            "oneOf": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "matcher": {
+                            "type": "string",
+                            "enum": ["exact", "glob", "regex", "xpath", "jsonpath", "jwt", "array"]
+                        },
+                        "value": {}
+                    }
+                },
+                { "type": "array", "items": { "$ref": "#/definitions/matcherValue" } }
+            ]
         },
-        "method": { "type": "array", "items": { "$ref": "#/definitions/matcherValue" } },
-        "path": { "type": "array", "items": { "$ref": "#/definitions/matcherValue" } },
-        "query": { "type": "object" },
-        "requiresState": { "type": "object" },
-        "scheme": { "type": "array", "items": { "$ref": "#/definitions/matcherValue" } }
-      }
-    },
-    "response": {
-      "type": "object",
-      "required": ["status"],
-      "properties": {
-        "status": { "type": "integer", "minimum": 100, "maximum": 599 },
-        "body": { "type": "string" },
-        "bodyFile": { "type": "string" },
-        "headers": {
-          "type": "object",
-          "additionalProperties": { "type": "array", "items": { "type": "string" } }
-        },
-        "encodedBody": { "type": "boolean" },
-        "templated": { "type": "boolean" },
-        "transitionsState": { "type": "object" },
-        "removesState": { "type": "array", "items": { "type": "string" } },
-        "fixedDelay": { "type": "integer", "description": "Fixed delay in milliseconds" },
-        "logNormalDelay": { "$ref": "#/definitions/logNormalDelay" }
-      }
-    },
-    "logNormalDelay": {
-      "type": "object",
-      "properties": {
-        "min": { "type": "integer" },
-        "max": { "type": "integer" },
-        "mean": { "type": "integer" },
-        "median": { "type": "integer" }
-      }
-    },
-    "globalActions": {
-      "type": "object",
-      "properties": {
-        "delays": {
-          "type": "array",
-          "items": {
+        "requestMatchers": {
             "type": "object",
             "properties": {
-              "urlPattern": { "type": "string" },
-              "httpMethod": { "type": "string" },
-              "delay": { "type": "integer" }
+                "body": { "type": "array", "items": { "$ref": "#/definitions/matcherValue" } },
+                "destination": {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/matcherValue" }
+                },
+                "headers": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "array",
+                        "items": { "$ref": "#/definitions/matcherValue" }
+                    }
+                },
+                "method": { "type": "array", "items": { "$ref": "#/definitions/matcherValue" } },
+                "path": { "type": "array", "items": { "$ref": "#/definitions/matcherValue" } },
+                "query": { "type": "object" },
+                "requiresState": { "type": "object" },
+                "scheme": { "type": "array", "items": { "$ref": "#/definitions/matcherValue" } }
             }
-          }
+        },
+        "response": {
+            "type": "object",
+            "required": ["status"],
+            "properties": {
+                "status": { "type": "integer", "minimum": 100, "maximum": 599 },
+                "body": { "type": "string" },
+                "bodyFile": { "type": "string" },
+                "headers": {
+                    "type": "object",
+                    "additionalProperties": { "type": "array", "items": { "type": "string" } }
+                },
+                "encodedBody": { "type": "boolean" },
+                "templated": { "type": "boolean" },
+                "transitionsState": { "type": "object" },
+                "removesState": { "type": "array", "items": { "type": "string" } },
+                "fixedDelay": { "type": "integer", "description": "Fixed delay in milliseconds" },
+                "logNormalDelay": { "$ref": "#/definitions/logNormalDelay" }
+            }
+        },
+        "logNormalDelay": {
+            "type": "object",
+            "properties": {
+                "min": { "type": "integer" },
+                "max": { "type": "integer" },
+                "mean": { "type": "integer" },
+                "median": { "type": "integer" }
+            }
+        },
+        "globalActions": {
+            "type": "object",
+            "properties": {
+                "delays": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "urlPattern": { "type": "string" },
+                            "httpMethod": { "type": "string" },
+                            "delay": { "type": "integer" }
+                        }
+                    }
+                }
+            }
         }
-      }
     }
-  }
 }
 ```
 
@@ -1028,12 +1031,12 @@ Users can add to their workspace `.vscode/settings.json` without installing any 
 
 ```json
 {
-  "json.schemas": [
-    {
-      "fileMatch": ["*.hoverfly.json", "hoverfly-simulation.json", "**/hoverfly/**/*.json"],
-      "url": "https://raw.githubusercontent.com/your-org/hoverfly-lsp/main/schema/hoverfly-simulation.json"
-    }
-  ]
+    "json.schemas": [
+        {
+            "fileMatch": ["*.hoverfly.json", "hoverfly-simulation.json", "**/hoverfly/**/*.json"],
+            "url": "https://raw.githubusercontent.com/your-org/hoverfly-lsp/main/schema/hoverfly-simulation.json"
+        }
+    ]
 }
 ```
 
@@ -1050,10 +1053,10 @@ SchemaStore is consumed automatically by VS Code (via the built-in JSON language
 
 ```json
 {
-  "name": "Hoverfly Simulation",
-  "description": "Hoverfly API simulation file (request matchers and mocked responses)",
-  "fileMatch": ["*.hoverfly.json", "hoverfly-simulation.json"],
-  "url": "https://json.schemastore.org/hoverfly-simulation.json"
+    "name": "Hoverfly Simulation",
+    "description": "Hoverfly API simulation file (request matchers and mocked responses)",
+    "fileMatch": ["*.hoverfly.json", "hoverfly-simulation.json"],
+    "url": "https://json.schemastore.org/hoverfly-simulation.json"
 }
 ```
 
@@ -1069,9 +1072,9 @@ Promote adding `"$schema"` to every simulation file:
 
 ```json
 {
-  "$schema": "https://json.schemastore.org/hoverfly-simulation.json",
-  "data": { "pairs": [] },
-  "meta": { "schemaVersion": "v5" }
+    "$schema": "https://json.schemastore.org/hoverfly-simulation.json",
+    "data": { "pairs": [] },
+    "meta": { "schemaVersion": "v5" }
 }
 ```
 

@@ -85,10 +85,10 @@ Marketplace).
    **Marketplace: Manage**).
 2. Publish:
 
-   ```bash
-   npx @vscode/vsce login Terrazzoni          # paste the PAT (one-time)
-   npx @vscode/vsce publish --packagePath editors/vscode/.artifacts/vsce/hoverfly-lsp-vscode-0.1.0.vsix
-   ```
+    ```bash
+    npx @vscode/vsce login Terrazzoni          # paste the PAT (one-time)
+    npx @vscode/vsce publish --packagePath editors/vscode/.artifacts/vsce/hoverfly-lsp-vscode-0.1.0.vsix
+    ```
 
 ### Open VSX
 
@@ -96,9 +96,9 @@ Marketplace).
    namespace: `npx ovsx create-namespace jterrazz -p <OVSX_TOKEN>`.
 2. Publish:
 
-   ```bash
-   npx ovsx publish editors/vscode/.artifacts/vsce/hoverfly-lsp-vscode-0.1.0.vsix -p <OVSX_TOKEN>
-   ```
+    ```bash
+    npx ovsx publish editors/vscode/.artifacts/vsce/hoverfly-lsp-vscode-0.1.0.vsix -p <OVSX_TOKEN>
+    ```
 
 ---
 

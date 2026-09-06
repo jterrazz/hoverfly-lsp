@@ -20,37 +20,37 @@
  */
 
 import {
-  type CompletionsCollector,
-  getLanguageService,
-  type JSONPath,
-  type JSONWorkerContribution,
-  type MarkedString,
-} from "vscode-json-languageservice";
-import type { TextDocument } from "vscode-languageserver-textdocument";
+    type CompletionsCollector,
+    getLanguageService,
+    type JSONPath,
+    type JSONWorkerContribution,
+    type MarkedString,
+} from 'vscode-json-languageservice';
+import type { TextDocument } from 'vscode-languageserver-textdocument';
 /*
  * Runtime enum VALUES come from vscode-languageserver-types (ESM-friendly named exports). They
  * cannot be imported from vscode-json-languageservice under Node ESM: its CJS lexer fails to
  * detect the enum names re-exported from that package's CJS entry.
  */
 import {
-  type CompletionItem,
-  CompletionItemKind,
-  InsertTextFormat,
-  MarkupKind,
-} from "vscode-languageserver-types";
+    type CompletionItem,
+    CompletionItemKind,
+    InsertTextFormat,
+    MarkupKind,
+} from 'vscode-languageserver-types';
 
-import { HTTP_METHODS, MATCHER_SPECS, type MatcherSpec, URI_SCHEMES } from "../registry/index.js";
-import { buildSimulationModel } from "../semantic/model.js";
-import type { HoverflyServiceSettings, SimulationModel } from "../semantic/types.js";
-import { matcherDetail, matcherMarkdown } from "./docs.js";
+import { HTTP_METHODS, MATCHER_SPECS, type MatcherSpec, URI_SCHEMES } from '../registry/index.js';
+import { buildSimulationModel } from '../semantic/model.js';
+import type { HoverflyServiceSettings, SimulationModel } from '../semantic/types.js';
+import { matcherDetail, matcherMarkdown } from './docs.js';
 import {
-  isPostServeActionPosition,
-  isRequiresStateKeyPosition,
-  isSchemaVersionPosition,
-  isTransitionsStateKeyPosition,
-  matchMatcherNamePosition,
-  matchMethodSchemeValuePosition,
-} from "./paths.js";
+    isPostServeActionPosition,
+    isRequiresStateKeyPosition,
+    isSchemaVersionPosition,
+    isTransitionsStateKeyPosition,
+    matchMatcherNamePosition,
+    matchMethodSchemeValuePosition,
+} from './paths.js';
 
 /* ------------------------------------- static data --------------------------------------- */
 
@@ -60,21 +60,24 @@ import {
  * the user to them. The data sets (IANA citation) live in `registry/http.ts`.
  */
 const VALUE_ENUMS: Readonly<Record<string, { values: readonly string[]; detail: string }>> = {
-  method: { values: HTTP_METHODS, detail: "Standard HTTP method (custom verbs are also allowed)" },
-  scheme: { values: URI_SCHEMES, detail: "Common URI scheme (any scheme is allowed)" },
+    method: {
+        values: HTTP_METHODS,
+        detail: 'Standard HTTP method (custom verbs are also allowed)',
+    },
+    scheme: { values: URI_SCHEMES, detail: 'Common URI scheme (any scheme is allowed)' },
 };
 
 /** SchemaVersion enum values; v5.3 is the current default and is preselected/sorted first. */
 const SCHEMA_VERSIONS: ReadonlyArray<{ value: string; preferred: boolean }> = [
-  { value: "v5.3", preferred: true },
-  { value: "v5", preferred: false },
-  { value: "v5.1", preferred: false },
-  { value: "v5.2", preferred: false },
+    { value: 'v5.3', preferred: true },
+    { value: 'v5', preferred: false },
+    { value: 'v5.1', preferred: false },
+    { value: 'v5.2', preferred: false },
 ];
 
 /** JSON-quote a string so the inserted text is a valid JSON value regardless of cursor quoting. */
 function jsonString(value: string): string {
-  return JSON.stringify(value);
+    return JSON.stringify(value);
 }
 
 /**
@@ -83,8 +86,8 @@ function jsonString(value: string): string {
  * JS template literal (the lint rule that forbids `${}` inside plain strings).
  */
 function tabStop(index: number, placeholder?: string): string {
-  const open = "$".concat("{");
-  return placeholder === undefined ? `$${index}` : `${open}${index}:${placeholder}}`;
+    const open = '$'.concat('{');
+    return placeholder === undefined ? `$${index}` : `${open}${index}:${placeholder}}`;
 }
 
 /* --------------------------------- the contribution itself ------------------------------- */
@@ -99,124 +102,126 @@ function tabStop(index: number, placeholder?: string): string {
  *   service supplies this from its open-document view; tests pass a small map-backed resolver.
  */
 function createHoverflyContribution(
-  settings: HoverflyServiceSettings,
-  resolveDocument: (uri: string) => TextDocument | undefined,
+    settings: HoverflyServiceSettings,
+    resolveDocument: (uri: string) => TextDocument | undefined,
 ): JSONWorkerContribution {
-  function model(uri: string): SimulationModel | undefined {
-    const document = resolveDocument(uri);
-    if (!document) {
-      return undefined;
-    }
-    /*
-     * A throwaway re-parse: the language service already parsed for this request, but the
-     * contribution API hands us only a URI + path, not the AST. The model build is defensive
-     * and never throws on malformed input.
-     */
-    return buildSimulationModelFromText(document);
-  }
-
-  return {
-    getInfoContribution(uri: string, location: JSONPath): PromiseLike<MarkedString[]> {
-      const matcherPosition = matchMatcherNamePosition(location, { requireMatcherKey: true });
-      if (!matcherPosition) {
-        /*
-         * Return undefined (not a resolved promise) so the schema-driven hover still runs; a
-         * resolved promise would short-circuit it. The library guards with `if (promise)`.
-         */
-        return undefined as unknown as PromiseLike<MarkedString[]>;
-      }
-      /*
-       * The library does not pass the hovered string's value, so read the matcher name back from
-       * the document node at this exact path to render the right matcher's docs.
-       */
-      const name = matcherNameAt(uri, location, resolveDocument);
-      const spec = name === undefined ? undefined : specForName(name, matcherPosition.isBody);
-      if (!spec) {
-        return undefined as unknown as PromiseLike<MarkedString[]>;
-      }
-      /*
-       * A bare markdown string renders as markdown (headings, bullets); a {language,value} pair
-       * would render as a fenced code block, which we do not want here.
-       */
-      const contents: MarkedString[] = [matcherMarkdown(spec)];
-      return Promise.resolve(contents);
-    },
-
-    collectPropertyCompletions(
-      uri: string,
-      location: JSONPath,
-      _currentWord: string,
-      addValue: boolean,
-      _isLast: boolean,
-      result: CompletionsCollector,
-    ): PromiseLike<unknown> {
-      if (isRequiresStateKeyPosition(location)) {
-        collectStateKeyCompletions(result, model(uri), addValue, { includeSequence: true });
-      } else if (isTransitionsStateKeyPosition(location)) {
-        collectStateKeyCompletions(result, model(uri), addValue, { includeSequence: false });
-      }
-      return Promise.resolve(undefined);
-    },
-
-    collectValueCompletions(
-      uri: string,
-      location: JSONPath,
-      propertyKey: string,
-      result: CompletionsCollector,
-    ): PromiseLike<unknown> {
-      // Matcher-name value: location is the matcher OBJECT path and the key is "matcher".
-      if (propertyKey === "matcher") {
-        const position = matchMatcherNamePosition([...location, "matcher"], {
-          requireMatcherKey: true,
-        });
-        if (position) {
-          collectMatcherNameCompletions(result, position.isBody);
+    function model(uri: string): SimulationModel | undefined {
+        const document = resolveDocument(uri);
+        if (!document) {
+            return undefined;
         }
-        return Promise.resolve(undefined);
-      }
-      const valueField = matchMethodSchemeValuePosition(location, { propertyKey });
-      if (valueField && matcherIsExactOrDefault(uri, location, resolveDocument)) {
-        collectMethodSchemeValueCompletions(result, valueField);
-        return Promise.resolve(undefined);
-      }
-      if (isSchemaVersionPosition(location, { propertyKey })) {
-        collectSchemaVersionCompletions(result);
-        return Promise.resolve(undefined);
-      }
-      if (isPostServeActionPosition(location, { propertyKey })) {
-        collectPostServeActionCompletions(result, settings);
-        return Promise.resolve(undefined);
-      }
-      return Promise.resolve(undefined);
-    },
+        /*
+         * A throwaway re-parse: the language service already parsed for this request, but the
+         * contribution API hands us only a URI + path, not the AST. The model build is defensive
+         * and never throws on malformed input.
+         */
+        return buildSimulationModelFromText(document);
+    }
 
-    collectDefaultCompletions(): PromiseLike<unknown> {
-      return Promise.resolve(undefined);
-    },
-  };
+    return {
+        getInfoContribution(uri: string, location: JSONPath): PromiseLike<MarkedString[]> {
+            const matcherPosition = matchMatcherNamePosition(location, { requireMatcherKey: true });
+            if (!matcherPosition) {
+                /*
+                 * Return undefined (not a resolved promise) so the schema-driven hover still runs; a
+                 * resolved promise would short-circuit it. The library guards with `if (promise)`.
+                 */
+                return undefined as unknown as PromiseLike<MarkedString[]>;
+            }
+            /*
+             * The library does not pass the hovered string's value, so read the matcher name back from
+             * the document node at this exact path to render the right matcher's docs.
+             */
+            const name = matcherNameAt(uri, location, resolveDocument);
+            const spec = name === undefined ? undefined : specForName(name, matcherPosition.isBody);
+            if (!spec) {
+                return undefined as unknown as PromiseLike<MarkedString[]>;
+            }
+            /*
+             * A bare markdown string renders as markdown (headings, bullets); a {language,value} pair
+             * would render as a fenced code block, which we do not want here.
+             */
+            const contents: MarkedString[] = [matcherMarkdown(spec)];
+            return Promise.resolve(contents);
+        },
+
+        collectPropertyCompletions(
+            uri: string,
+            location: JSONPath,
+            _currentWord: string,
+            addValue: boolean,
+            _isLast: boolean,
+            result: CompletionsCollector,
+        ): PromiseLike<unknown> {
+            if (isRequiresStateKeyPosition(location)) {
+                collectStateKeyCompletions(result, model(uri), addValue, { includeSequence: true });
+            } else if (isTransitionsStateKeyPosition(location)) {
+                collectStateKeyCompletions(result, model(uri), addValue, {
+                    includeSequence: false,
+                });
+            }
+            return Promise.resolve(undefined);
+        },
+
+        collectValueCompletions(
+            uri: string,
+            location: JSONPath,
+            propertyKey: string,
+            result: CompletionsCollector,
+        ): PromiseLike<unknown> {
+            // Matcher-name value: location is the matcher OBJECT path and the key is "matcher".
+            if (propertyKey === 'matcher') {
+                const position = matchMatcherNamePosition([...location, 'matcher'], {
+                    requireMatcherKey: true,
+                });
+                if (position) {
+                    collectMatcherNameCompletions(result, position.isBody);
+                }
+                return Promise.resolve(undefined);
+            }
+            const valueField = matchMethodSchemeValuePosition(location, { propertyKey });
+            if (valueField && matcherIsExactOrDefault(uri, location, resolveDocument)) {
+                collectMethodSchemeValueCompletions(result, valueField);
+                return Promise.resolve(undefined);
+            }
+            if (isSchemaVersionPosition(location, { propertyKey })) {
+                collectSchemaVersionCompletions(result);
+                return Promise.resolve(undefined);
+            }
+            if (isPostServeActionPosition(location, { propertyKey })) {
+                collectPostServeActionCompletions(result, settings);
+                return Promise.resolve(undefined);
+            }
+            return Promise.resolve(undefined);
+        },
+
+        collectDefaultCompletions(): PromiseLike<unknown> {
+            return Promise.resolve(undefined);
+        },
+    };
 }
 
 /* ----------------------------------- completion builders --------------------------------- */
 
 /** Add matcher-name value completions; `form` is offered only on the request `body`. */
 function collectMatcherNameCompletions(result: CompletionsCollector, isBody: boolean): void {
-  for (const spec of MATCHER_SPECS) {
-    if (spec.name === "") {
-      // The default/empty matcher is not a useful completion label; skip it.
-      continue;
+    for (const spec of MATCHER_SPECS) {
+        if (spec.name === '') {
+            // The default/empty matcher is not a useful completion label; skip it.
+            continue;
+        }
+        if (spec.bodyOnly && !isBody) {
+            continue;
+        }
+        result.add({
+            label: spec.name,
+            kind: CompletionItemKind.EnumMember,
+            detail: matcherDetail(spec),
+            documentation: { kind: MarkupKind.Markdown, value: matcherMarkdown(spec) },
+            insertText: jsonString(spec.name),
+            insertTextFormat: InsertTextFormat.PlainText,
+        });
     }
-    if (spec.bodyOnly && !isBody) {
-      continue;
-    }
-    result.add({
-      label: spec.name,
-      kind: CompletionItemKind.EnumMember,
-      detail: matcherDetail(spec),
-      documentation: { kind: MarkupKind.Markdown, value: matcherMarkdown(spec) },
-      insertText: jsonString(spec.name),
-      insertTextFormat: InsertTextFormat.PlainText,
-    });
-  }
 }
 
 /**
@@ -226,44 +231,44 @@ function collectMatcherNameCompletions(result: CompletionsCollector, isBody: boo
  * already inside a string literal), matching the matcher-name completion machinery.
  */
 function collectMethodSchemeValueCompletions(result: CompletionsCollector, field: string): void {
-  const enumeration = VALUE_ENUMS[field];
-  if (!enumeration) {
-    return;
-  }
-  for (const value of enumeration.values) {
-    result.add({
-      label: value,
-      kind: CompletionItemKind.EnumMember,
-      detail: enumeration.detail,
-      insertText: jsonString(value),
-      insertTextFormat: InsertTextFormat.PlainText,
-    });
-  }
+    const enumeration = VALUE_ENUMS[field];
+    if (!enumeration) {
+        return;
+    }
+    for (const value of enumeration.values) {
+        result.add({
+            label: value,
+            kind: CompletionItemKind.EnumMember,
+            detail: enumeration.detail,
+            insertText: jsonString(value),
+            insertTextFormat: InsertTextFormat.PlainText,
+        });
+    }
 }
 
 /** Add schemaVersion enum completions (v5.3 preferred). */
 function collectSchemaVersionCompletions(result: CompletionsCollector): void {
-  for (const [index, entry] of SCHEMA_VERSIONS.entries()) {
-    const item: CompletionItem & { insertText: string } = {
-      label: entry.value,
-      kind: CompletionItemKind.EnumMember,
-      detail: entry.preferred
-        ? "Hoverfly schema version (current default)"
-        : "Hoverfly schema version",
-      documentation: {
-        kind: MarkupKind.Markdown,
-        value: entry.preferred
-          ? `\`${entry.value}\` — the current default schema version.`
-          : `\`${entry.value}\` — Hoverfly validates any \`v5.x\` against the same v5 schema.`,
-      },
-      insertText: jsonString(entry.value),
-      insertTextFormat: InsertTextFormat.PlainText,
-      // Preferred version sorts first and is preselected.
-      sortText: entry.preferred ? "0" : `1-${index}`,
-      preselect: entry.preferred,
-    };
-    result.add(item);
-  }
+    for (const [index, entry] of SCHEMA_VERSIONS.entries()) {
+        const item: CompletionItem & { insertText: string } = {
+            label: entry.value,
+            kind: CompletionItemKind.EnumMember,
+            detail: entry.preferred
+                ? 'Hoverfly schema version (current default)'
+                : 'Hoverfly schema version',
+            documentation: {
+                kind: MarkupKind.Markdown,
+                value: entry.preferred
+                    ? `\`${entry.value}\` — the current default schema version.`
+                    : `\`${entry.value}\` — Hoverfly validates any \`v5.x\` against the same v5 schema.`,
+            },
+            insertText: jsonString(entry.value),
+            insertTextFormat: InsertTextFormat.PlainText,
+            // Preferred version sorts first and is preselected.
+            sortText: entry.preferred ? '0' : `1-${index}`,
+            preselect: entry.preferred,
+        };
+        result.add(item);
+    }
 }
 
 /**
@@ -273,72 +278,73 @@ function collectSchemaVersionCompletions(result: CompletionsCollector): void {
  * (true at a bare `{` position, false when the key already carries `: ""`).
  */
 function collectStateKeyCompletions(
-  result: CompletionsCollector,
-  simulation: SimulationModel | undefined,
-  addValue: boolean,
-  options: { includeSequence: boolean },
+    result: CompletionsCollector,
+    simulation: SimulationModel | undefined,
+    addValue: boolean,
+    options: { includeSequence: boolean },
 ): void {
-  const keys = collectStateKeys(simulation);
-  for (const key of keys) {
-    result.add({
-      label: key,
-      kind: CompletionItemKind.Property,
-      detail: "State key (declared in this simulation)",
-      insertText: addValue ? `${jsonString(key)}: "${tabStop(1)}"` : jsonString(key),
-      insertTextFormat: InsertTextFormat.Snippet,
-    });
-  }
-  if (options.includeSequence) {
-    const namePlaceholder = `sequence:${tabStop(1, "name")}`;
-    result.add({
-      label: "sequence:",
-      kind: CompletionItemKind.Snippet,
-      detail: "Sequence-state key prefix (ordered sequence responses)",
-      documentation: {
-        kind: MarkupKind.Markdown,
-        value:
-          "A `requiresState` key prefixed `sequence:` drives ordered sequence responses (Hoverfly increments the sequence as each pair is served).",
-      },
-      insertText: addValue ? `${jsonString(namePlaceholder)}: "${tabStop(2)}"` : namePlaceholder,
-      insertTextFormat: InsertTextFormat.Snippet,
-    });
-  }
+    const keys = collectStateKeys(simulation);
+    for (const key of keys) {
+        result.add({
+            label: key,
+            kind: CompletionItemKind.Property,
+            detail: 'State key (declared in this simulation)',
+            insertText: addValue ? `${jsonString(key)}: "${tabStop(1)}"` : jsonString(key),
+            insertTextFormat: InsertTextFormat.Snippet,
+        });
+    }
+    if (options.includeSequence) {
+        const namePlaceholder = `sequence:${tabStop(1, 'name')}`;
+        result.add({
+            label: 'sequence:',
+            kind: CompletionItemKind.Snippet,
+            detail: 'Sequence-state key prefix (ordered sequence responses)',
+            documentation: {
+                kind: MarkupKind.Markdown,
+                value: 'A `requiresState` key prefixed `sequence:` drives ordered sequence responses (Hoverfly increments the sequence as each pair is served).',
+            },
+            insertText: addValue
+                ? `${jsonString(namePlaceholder)}: "${tabStop(2)}"`
+                : namePlaceholder,
+            insertTextFormat: InsertTextFormat.Snippet,
+        });
+    }
 }
 
 /** Add postServeAction value completions from the service `registeredActions` allowlist. */
 function collectPostServeActionCompletions(
-  result: CompletionsCollector,
-  settings: HoverflyServiceSettings,
+    result: CompletionsCollector,
+    settings: HoverflyServiceSettings,
 ): void {
-  for (const action of settings.registeredActions ?? []) {
-    result.add({
-      label: action,
-      kind: CompletionItemKind.Value,
-      detail: "Registered post-serve action",
-      insertText: jsonString(action),
-      insertTextFormat: InsertTextFormat.PlainText,
-    });
-  }
+    for (const action of settings.registeredActions ?? []) {
+        result.add({
+            label: action,
+            kind: CompletionItemKind.Value,
+            detail: 'Registered post-serve action',
+            insertText: jsonString(action),
+            insertTextFormat: InsertTextFormat.PlainText,
+        });
+    }
 }
 
 /* --------------------------------------- helpers ----------------------------------------- */
 
 /** The matcher spec for `name`, honouring body-only `form` and case-insensitive registry lookup. */
 function specForName(name: string, isBody: boolean): MatcherSpec | undefined {
-  const lower = name.toLowerCase();
-  for (const spec of MATCHER_SPECS) {
-    if (spec.bodyOnly) {
-      // `form` is case-SENSITIVE and body-only.
-      if (spec.name === name && isBody) {
-        return spec;
-      }
-      continue;
+    const lower = name.toLowerCase();
+    for (const spec of MATCHER_SPECS) {
+        if (spec.bodyOnly) {
+            // `form` is case-SENSITIVE and body-only.
+            if (spec.name === name && isBody) {
+                return spec;
+            }
+            continue;
+        }
+        if (spec.name.toLowerCase() === lower) {
+            return spec;
+        }
     }
-    if (spec.name.toLowerCase() === lower) {
-      return spec;
-    }
-  }
-  return undefined;
+    return undefined;
 }
 
 /**
@@ -351,28 +357,28 @@ function specForName(name: string, isBody: boolean): MatcherSpec | undefined {
  * only ever set via `transitionsState` was invisible when typed into `requiresState`).
  */
 function collectStateKeys(simulation: SimulationModel | undefined): string[] {
-  if (!simulation) {
-    return [];
-  }
-  const keys = new Set<string>();
-  for (const pair of simulation.pairs) {
-    for (const entry of pair.requiresState) {
-      if (entry.key.length > 0) {
-        keys.add(entry.key);
-      }
+    if (!simulation) {
+        return [];
     }
-    for (const entry of pair.transitionsState) {
-      if (entry.key.length > 0) {
-        keys.add(entry.key);
-      }
+    const keys = new Set<string>();
+    for (const pair of simulation.pairs) {
+        for (const entry of pair.requiresState) {
+            if (entry.key.length > 0) {
+                keys.add(entry.key);
+            }
+        }
+        for (const entry of pair.transitionsState) {
+            if (entry.key.length > 0) {
+                keys.add(entry.key);
+            }
+        }
+        for (const entry of pair.removesState) {
+            if (entry.key.length > 0) {
+                keys.add(entry.key);
+            }
+        }
     }
-    for (const entry of pair.removesState) {
-      if (entry.key.length > 0) {
-        keys.add(entry.key);
-      }
-    }
-  }
-  return [...keys].sort();
+    return [...keys].sort();
 }
 
 /**
@@ -380,16 +386,16 @@ function collectStateKeys(simulation: SimulationModel | undefined): string[] {
  * matcher object. Returns undefined if it cannot be resolved (the hover then defers to schema).
  */
 function matcherNameAt(
-  uri: string,
-  location: JSONPath,
-  resolveDocument: (uri: string) => TextDocument | undefined,
+    uri: string,
+    location: JSONPath,
+    resolveDocument: (uri: string) => TextDocument | undefined,
 ): string | undefined {
-  const document = resolveDocument(uri);
-  if (!document) {
-    return undefined;
-  }
-  // Location ends with "matcher"; the value we want is at that exact path.
-  return readStringAtPath(document, location);
+    const document = resolveDocument(uri);
+    if (!document) {
+        return undefined;
+    }
+    // Location ends with "matcher"; the value we want is at that exact path.
+    return readStringAtPath(document, location);
 }
 
 /**
@@ -398,17 +404,17 @@ function matcherNameAt(
  * nothing there. `location` is the matcher OBJECT path; the sibling matcher is at `[…,"matcher"]`.
  */
 function matcherIsExactOrDefault(
-  uri: string,
-  location: JSONPath,
-  resolveDocument: (uri: string) => TextDocument | undefined,
+    uri: string,
+    location: JSONPath,
+    resolveDocument: (uri: string) => TextDocument | undefined,
 ): boolean {
-  const document = resolveDocument(uri);
-  if (!document) {
-    return false;
-  }
-  const matcher = readStringAtPath(document, [...location, "matcher"]);
-  // Absent matcher key → readStringAtPath returns undefined → default-exact → offer.
-  return matcher === undefined || matcher === "" || matcher.toLowerCase() === "exact";
+    const document = resolveDocument(uri);
+    if (!document) {
+        return false;
+    }
+    const matcher = readStringAtPath(document, [...location, 'matcher']);
+    // Absent matcher key → readStringAtPath returns undefined → default-exact → offer.
+    return matcher === undefined || matcher === '' || matcher.toLowerCase() === 'exact';
 }
 
 /* ---- minimal AST/document helpers (kept local; the contribution owns no model wiring) ---- */
@@ -417,30 +423,30 @@ function matcherIsExactOrDefault(
 const parserOnly = getLanguageService({});
 
 function buildSimulationModelFromText(document: TextDocument): SimulationModel {
-  return buildSimulationModel(parserOnly.parseJSONDocument(document));
+    return buildSimulationModel(parserOnly.parseJSONDocument(document));
 }
 
 /** Resolve the string value at an exact JSON path, or undefined. */
 function readStringAtPath(document: TextDocument, path: JSONPath): string | undefined {
-  const parsed = parserOnly.parseJSONDocument(document);
-  let node = parsed.root;
-  for (const segment of path) {
-    if (!node) {
-      return undefined;
+    const parsed = parserOnly.parseJSONDocument(document);
+    let node = parsed.root;
+    for (const segment of path) {
+        if (!node) {
+            return undefined;
+        }
+        if (typeof segment === 'number') {
+            if (node.type !== 'array') {
+                return undefined;
+            }
+            node = node.items[segment];
+        } else {
+            if (node.type !== 'object') {
+                return undefined;
+            }
+            node = node.properties.find((p) => p.keyNode.value === segment)?.valueNode;
+        }
     }
-    if (typeof segment === "number") {
-      if (node.type !== "array") {
-        return undefined;
-      }
-      node = node.items[segment];
-    } else {
-      if (node.type !== "object") {
-        return undefined;
-      }
-      node = node.properties.find((p) => p.keyNode.value === segment)?.valueNode;
-    }
-  }
-  return node?.type === "string" ? node.value : undefined;
+    return node?.type === 'string' ? node.value : undefined;
 }
 
 export { createHoverflyContribution };

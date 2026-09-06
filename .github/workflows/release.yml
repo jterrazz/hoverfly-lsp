@@ -16,122 +16,122 @@ name: Release
 # Marketplace / Open VSX / Zed registry / Claude Code submissions stay manual — see PUBLISHING.md.
 
 on:
-  release:
-    # `published` is the canonical "a release went live" trigger — it fires whether the release
-    # is published directly (gh release create / UI) or saved as a draft first, unlike `created`.
-    types: [published]
+    release:
+        # `published` is the canonical "a release went live" trigger — it fires whether the release
+        # is published directly (gh release create / UI) or saved as a draft first, unlike `created`.
+        types: [published]
 
 jobs:
-  # Full quality gate. A release whose commit fails the gate never publishes.
-  validate:
-    name: Validate (node ${{ matrix.node-version }})
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        # Build + test across the engine range (node >=20); lint runs only on 24
-        # (oxlint.config.ts needs native TS loading, node 23.6+) — see validate.yml.
-        node-version: ["20", "22", "24"]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+    # Full quality gate. A release whose commit fails the gate never publishes.
+    validate:
+        name: Validate (node ${{ matrix.node-version }})
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                # Build + test across the engine range (node >=20); lint runs only on 24
+                # (oxlint.config.ts needs native TS loading, node 23.6+) — see validate.yml.
+                node-version: ['20', '22', '24']
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: npm
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ matrix.node-version }}
+                  cache: npm
 
-      - name: Install
-        run: npm ci
+            - name: Install
+              run: npm ci
 
-      - name: Build
-        run: npm run build
+            - name: Build
+              run: npm run build
 
-      - name: Typecheck
-        run: npm run typecheck
+            - name: Typecheck
+              run: npm run typecheck
 
-      - name: Lint
-        if: matrix.node-version == '24'
-        run: npm run lint
+            - name: Lint
+              if: matrix.node-version == '24'
+              run: npm run lint
 
-      - name: Test
-        run: npm test
+            - name: Test
+              run: npm test
 
-  # Publish the one npm package (@jterrazz/hoverfly-lsp; core is private and bundled in), then
-  # attach the bundled VS Code extension to the release. Auth is tokenless via OIDC trusted
-  # publishing.
-  publish:
-    name: Publish
-    needs: validate
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write # upload the .vsix asset onto the release
-      id-token: write # npm provenance + OIDC trusted publishing (no token needed)
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+    # Publish the one npm package (@jterrazz/hoverfly-lsp; core is private and bundled in), then
+    # attach the bundled VS Code extension to the release. Auth is tokenless via OIDC trusted
+    # publishing.
+    publish:
+        name: Publish
+        needs: validate
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write # upload the .vsix asset onto the release
+            id-token: write # npm provenance + OIDC trusted publishing (no token needed)
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "24"
-          cache: npm
-          registry-url: https://registry.npmjs.org
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '24'
+                  cache: npm
+                  registry-url: https://registry.npmjs.org
 
-      - name: Install
-        run: npm ci
+            - name: Install
+              run: npm ci
 
-      - name: Build
-        run: npm run build
+            - name: Build
+              run: npm run build
 
-      # Guard: the release tag must match the npm package versions (core + server) — those are what
-      # this workflow publishes to npm. Editor artifacts (VS Code / Zed / Claude Code) live on their
-      # own registries with IMMUTABLE versions, so they version INDEPENDENTLY (e.g. a Marketplace-only
-      # icon fix bumps the extension without an npm release). They are not checked here.
-      - name: Verify release tag matches the npm package versions
-        env:
-          TAG_NAME: ${{ github.event.release.tag_name }}
-        run: |
-          TAG="${TAG_NAME#v}"
-          echo "Release version: $TAG"
-          fail=0
-          check() {
-            local file="$1" actual
-            actual="$(node -p "require('./$file').version")"
-            if [ "$actual" != "$TAG" ]; then
-              echo "::error file=$file::version $actual != release $TAG"
-              fail=1
-            else
-              echo "ok: $file @ $actual"
-            fi
-          }
-          check packages/core/package.json
-          check packages/server/package.json
-          exit $fail
+            # Guard: the release tag must match the npm package versions (core + server) — those are what
+            # this workflow publishes to npm. Editor artifacts (VS Code / Zed / Claude Code) live on their
+            # own registries with IMMUTABLE versions, so they version INDEPENDENTLY (e.g. a Marketplace-only
+            # icon fix bumps the extension without an npm release). They are not checked here.
+            - name: Verify release tag matches the npm package versions
+              env:
+                  TAG_NAME: ${{ github.event.release.tag_name }}
+              run: |
+                  TAG="${TAG_NAME#v}"
+                  echo "Release version: $TAG"
+                  fail=0
+                  check() {
+                    local file="$1" actual
+                    actual="$(node -p "require('./$file').version")"
+                    if [ "$actual" != "$TAG" ]; then
+                      echo "::error file=$file::version $actual != release $TAG"
+                      fail=1
+                    else
+                      echo "ok: $file @ $actual"
+                    fi
+                  }
+                  check packages/core/package.json
+                  check packages/server/package.json
+                  exit $fail
 
-      # The only published package. core stays private (devDependency) and is inlined into the
-      # server bundle by esbuild, so the tarball has no runtime dependency on it. --access public
-      # is required for the scoped package; --provenance + id-token authenticates via npm trusted
-      # publishing (no token). Idempotent: if this exact version is already on npm (e.g. the first
-      # release was published manually), skip rather than fail — so cutting the GitHub release still
-      # attaches the .vsix without a duplicate-publish error.
-      - name: Publish @jterrazz/hoverfly-lsp (skip if already on npm)
-        run: |
-          VER="$(node -p "require('./packages/server/package.json').version")"
-          if npm view "@jterrazz/hoverfly-lsp@$VER" version >/dev/null 2>&1; then
-            echo "@jterrazz/hoverfly-lsp@$VER is already published — skipping publish."
-          else
-            npm publish --workspace @jterrazz/hoverfly-lsp --access public --provenance
-          fi
+            # The only published package. core stays private (devDependency) and is inlined into the
+            # server bundle by esbuild, so the tarball has no runtime dependency on it. --access public
+            # is required for the scoped package; --provenance + id-token authenticates via npm trusted
+            # publishing (no token). Idempotent: if this exact version is already on npm (e.g. the first
+            # release was published manually), skip rather than fail — so cutting the GitHub release still
+            # attaches the .vsix without a duplicate-publish error.
+            - name: Publish @jterrazz/hoverfly-lsp (skip if already on npm)
+              run: |
+                  VER="$(node -p "require('./packages/server/package.json').version")"
+                  if npm view "@jterrazz/hoverfly-lsp@$VER" version >/dev/null 2>&1; then
+                    echo "@jterrazz/hoverfly-lsp@$VER is already published — skipping publish."
+                  else
+                    npm publish --workspace @jterrazz/hoverfly-lsp --access public --provenance
+                  fi
 
-      # Package the VS Code extension (server bundle is copied in by esbuild during build) and
-      # attach it to the release the user just created. Marketplace/Open VSX publish stays manual.
-      - name: Package VS Code extension
-        run: npm run package --workspace hoverfly-lsp-vscode
+            # Package the VS Code extension (server bundle is copied in by esbuild during build) and
+            # attach it to the release the user just created. Marketplace/Open VSX publish stays manual.
+            - name: Package VS Code extension
+              run: npm run package --workspace hoverfly-lsp-vscode
 
-      - name: Attach .vsix to the release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG_NAME: ${{ github.event.release.tag_name }}
-        run: gh release upload "$TAG_NAME" editors/vscode/.artifacts/vsce/*.vsix --clobber
+            - name: Attach .vsix to the release
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  TAG_NAME: ${{ github.event.release.tag_name }}
+              run: gh release upload "$TAG_NAME" editors/vscode/.artifacts/vsce/*.vsix --clobber

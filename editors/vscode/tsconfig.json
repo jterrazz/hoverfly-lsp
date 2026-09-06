@@ -1,12 +1,12 @@
 {
-  "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    "rootDir": ".",
-    "outDir": "dist",
-    "tsBuildInfoFile": ".artifacts/tsc/tsconfig.tsbuildinfo",
-    "noEmit": true,
-    "types": ["node", "vscode"],
-    "lib": ["ES2022"]
-  },
-  "include": ["src/**/*.ts", "test/**/*.ts"]
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+        "rootDir": ".",
+        "outDir": "dist",
+        "tsBuildInfoFile": ".artifacts/tsc/tsconfig.tsbuildinfo",
+        "noEmit": true,
+        "types": ["node", "vscode"],
+        "lib": ["ES2022"]
+    },
+    "include": ["src/**/*.ts", "test/**/*.ts"]
 }

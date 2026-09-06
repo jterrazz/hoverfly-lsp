@@ -1,52 +1,52 @@
 name: Validate
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
 
 jobs:
-  validate:
-    name: Validate (node ${{ matrix.node-version }})
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        # Build + test run across the supported engine range (package.json: node >=20).
-        # Lint runs only on 24 — oxlint.config.ts needs native TS loading (node 23.6+).
-        node-version: ["20", "22", "24"]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+    validate:
+        name: Validate (node ${{ matrix.node-version }})
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                # Build + test run across the supported engine range (package.json: node >=20).
+                # Lint runs only on 24 — oxlint.config.ts needs native TS loading (node 23.6+).
+                node-version: ['20', '22', '24']
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: npm
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ matrix.node-version }}
+                  cache: npm
 
-      - name: Install
-        run: npm ci
+            - name: Install
+              run: npm ci
 
-      - name: Build
-        run: npm run build
+            - name: Build
+              run: npm run build
 
-      - name: Docs are up to date
-        run: |
-          npm run docs:diagnostics
-          git diff --quiet -- docs/ || {
-            echo "::error::docs/ is stale. Run 'npm run docs:diagnostics' and commit the result."
-            git --no-pager diff -- docs/
-            exit 1
-          }
+            - name: Docs are up to date
+              run: |
+                  npm run docs:diagnostics
+                  git diff --quiet -- docs/ || {
+                    echo "::error::docs/ is stale. Run 'npm run docs:diagnostics' and commit the result."
+                    git --no-pager diff -- docs/
+                    exit 1
+                  }
 
-      - name: Typecheck
-        run: npm run typecheck
+            - name: Typecheck
+              run: npm run typecheck
 
-      - name: Lint
-        if: matrix.node-version == '24'
-        run: npm run lint
+            - name: Lint
+              if: matrix.node-version == '24'
+              run: npm run lint
 
-      - name: Test
-        run: npm test
+            - name: Test
+              run: npm test

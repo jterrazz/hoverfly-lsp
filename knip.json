@@ -1,24 +1,24 @@
 {
-  "$schema": "https://unpkg.com/knip@6/schema.json",
-  "workspaces": {
-    ".": {
-      "entry": ["oxlint.config.ts", "vitest.config.ts"],
-      "ignoreDependencies": ["oxlint"],
-      "ignore": ["editors/claude-code/bin/launch.cjs"]
-    },
-    "packages/core": {
-      "entry": ["src/index.ts", "src/semantic/index.ts", "src/semantic/rules/index.ts"],
-      "project": ["src/**/*.ts"],
-      "ignoreDependencies": ["vscode-languageserver-types"]
-    },
-    "packages/server": {
-      "entry": ["src/main.ts", "bin/hoverfly-lsp.js", "esbuild.config.js"],
-      "project": ["src/**/*.ts"]
-    },
-    "editors/vscode": {
-      "entry": ["src/extension.ts", "esbuild.config.mjs", "test/**/*.test.ts"],
-      "project": ["src/**/*.ts", "test/**/*.ts"],
-      "ignoreDependencies": ["@types/vscode", "@vscode/vsce"]
+    "$schema": "https://unpkg.com/knip@6/schema.json",
+    "workspaces": {
+        ".": {
+            "entry": ["oxfmt.config.ts", "oxlint.config.ts", "vitest.config.ts"],
+            "ignoreDependencies": ["oxfmt", "oxlint"],
+            "ignore": ["editors/claude-code/bin/launch.cjs"]
+        },
+        "packages/core": {
+            "entry": ["src/index.ts", "src/semantic/index.ts", "src/semantic/rules/index.ts"],
+            "project": ["src/**/*.ts"],
+            "ignoreDependencies": ["vscode-languageserver-types"]
+        },
+        "packages/server": {
+            "entry": ["src/main.ts", "bin/hoverfly-lsp.js", "esbuild.config.js"],
+            "project": ["src/**/*.ts"]
+        },
+        "editors/vscode": {
+            "entry": ["src/extension.ts", "esbuild.config.mjs", "test/**/*.test.ts"],
+            "project": ["src/**/*.ts", "test/**/*.ts"],
+            "ignoreDependencies": ["@types/vscode", "@vscode/vsce"]
+        }
     }
-  }
 }

@@ -30,15 +30,15 @@ The `extensions.toml` block to add is in
   extension").
 - **Subdirectory `path` key IS supported**: this is the make-or-break point for
   us, and it works. The docs show the subdir form explicitly:
-  ```toml
-  [my-extension]
-  submodule = "extensions/my-extension"
-  path = "packages/zed"
-  version = "0.0.1"
-  ```
-  Live precedent with our exact layout: the `agnix` entry uses
-  `submodule = "extensions/agnix"` + `path = "editors/zed"`. So **no
-  root move / separate repo is needed**: `editors/zed` works as-is.
+    ```toml
+    [my-extension]
+    submodule = "extensions/my-extension"
+    path = "packages/zed"
+    version = "0.0.1"
+    ```
+    Live precedent with our exact layout: the `agnix` entry uses
+    `submodule = "extensions/agnix"` + `path = "editors/zed"`. So **no
+    root move / separate repo is needed**: `editors/zed` works as-is.
 - **`version` must match `extension.toml`** at the pinned submodule commit. Docs:
   "Make sure the `version` matches the one set in `extension.toml` at the
   particular commit." Ours is `0.1.0` in `editors/zed/extension.toml` at `v0.1.0`.

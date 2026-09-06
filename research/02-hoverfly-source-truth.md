@@ -190,159 +190,165 @@ referenced as `SimulationViewV5Schema` in `simulation_views.go`.
 
 ```json
 {
-  "additionalProperties": false,
-  "definitions": {
-    "delay": {
-      "properties": {
-        "delay": { "type": "integer" },
-        "httpMethod": { "type": "string" },
-        "urlPattern": { "type": "string" }
-      },
-      "type": "object"
-    },
-    "delay-log-normal": {
-      "properties": {
-        "httpMethod": { "type": "string" },
-        "max": { "type": "integer" },
-        "mean": { "type": "integer" },
-        "median": { "type": "integer" },
-        "min": { "type": "integer" },
-        "urlPattern": { "type": "string" }
-      },
-      "type": "object"
-    },
-    "field-matchers": {
-      "properties": {
-        "matcher": { "type": "string" },
-        "value": {},
-        "config": {
-          "properties": {
-            "ignoreUnknown": { "type": "boolean" },
-            "ignoreOrder": { "type": "boolean" },
-            "ignoreOccurrences": { "type": "boolean" }
-          },
-          "type": "object"
+    "additionalProperties": false,
+    "definitions": {
+        "delay": {
+            "properties": {
+                "delay": { "type": "integer" },
+                "httpMethod": { "type": "string" },
+                "urlPattern": { "type": "string" }
+            },
+            "type": "object"
         },
-        "doMatch": { "$ref": "#/definitions/field-matchers" }
-      },
-      "type": "object"
-    },
-    "headers": {
-      "additionalProperties": { "items": { "type": "string" }, "type": "array" },
-      "type": "object"
-    },
-    "literals": {
-      "properties": { "name": { "type": "string" }, "value": {} },
-      "required": ["name", "value"],
-      "type": "object"
-    },
-    "meta": {
-      "properties": {
-        "hoverflyVersion": { "type": "string" },
-        "schemaVersion": { "type": "string" },
-        "timeExported": { "type": "string" }
-      },
-      "required": ["schemaVersion"],
-      "type": "object"
-    },
-    "request": {
-      "properties": {
-        "body": { "items": { "$ref": "#/definitions/field-matchers" }, "type": "array" },
-        "destination": { "items": { "$ref": "#/definitions/field-matchers" }, "type": "array" },
-        "headers": { "$ref": "#/definitions/request-headers" },
-        "path": { "items": { "$ref": "#/definitions/field-matchers" }, "type": "array" },
-        "query": { "$ref": "#/definitions/request-queries" },
-        "requiresState": {
-          "patternProperties": { ".{1,}": { "type": "string" } },
-          "type": "object"
+        "delay-log-normal": {
+            "properties": {
+                "httpMethod": { "type": "string" },
+                "max": { "type": "integer" },
+                "mean": { "type": "integer" },
+                "median": { "type": "integer" },
+                "min": { "type": "integer" },
+                "urlPattern": { "type": "string" }
+            },
+            "type": "object"
         },
-        "scheme": { "items": { "$ref": "#/definitions/field-matchers" }, "type": "array" }
-      },
-      "type": "object"
-    },
-    "request-headers": {
-      "additionalProperties": {
-        "items": { "$ref": "#/definitions/field-matchers" },
-        "type": "array"
-      },
-      "type": "object"
-    },
-    "request-queries": {
-      "additionalProperties": {
-        "items": { "$ref": "#/definitions/field-matchers" },
-        "type": "array"
-      },
-      "type": "object"
-    },
-    "request-response-pair": {
-      "properties": {
-        "labels": { "items": { "type": "string" }, "type": "array" },
-        "request": { "$ref": "#/definitions/request" },
-        "response": { "$ref": "#/definitions/response" }
-      },
-      "required": ["request", "response"],
-      "type": "object"
-    },
-    "response": {
-      "properties": {
-        "body": { "type": "string" },
-        "bodyFile": { "type": "string" },
-        "encodedBody": { "type": "boolean" },
-        "fixedDelay": { "type": "integer" },
-        "headers": { "$ref": "#/definitions/headers" },
-        "logNormalDelay": {
-          "properties": {
-            "max": { "type": "integer" },
-            "mean": { "type": "integer" },
-            "median": { "type": "integer" },
-            "min": { "type": "integer" }
-          }
+        "field-matchers": {
+            "properties": {
+                "matcher": { "type": "string" },
+                "value": {},
+                "config": {
+                    "properties": {
+                        "ignoreUnknown": { "type": "boolean" },
+                        "ignoreOrder": { "type": "boolean" },
+                        "ignoreOccurrences": { "type": "boolean" }
+                    },
+                    "type": "object"
+                },
+                "doMatch": { "$ref": "#/definitions/field-matchers" }
+            },
+            "type": "object"
         },
-        "postServeAction": { "type": "string" },
-        "removesState": { "type": "array" },
-        "status": { "type": "integer" },
-        "templated": { "type": "boolean" },
-        "transitionsState": {
-          "patternProperties": { ".{1,}": { "type": "string" } },
-          "type": "object"
+        "headers": {
+            "additionalProperties": { "items": { "type": "string" }, "type": "array" },
+            "type": "object"
+        },
+        "literals": {
+            "properties": { "name": { "type": "string" }, "value": {} },
+            "required": ["name", "value"],
+            "type": "object"
+        },
+        "meta": {
+            "properties": {
+                "hoverflyVersion": { "type": "string" },
+                "schemaVersion": { "type": "string" },
+                "timeExported": { "type": "string" }
+            },
+            "required": ["schemaVersion"],
+            "type": "object"
+        },
+        "request": {
+            "properties": {
+                "body": { "items": { "$ref": "#/definitions/field-matchers" }, "type": "array" },
+                "destination": {
+                    "items": { "$ref": "#/definitions/field-matchers" },
+                    "type": "array"
+                },
+                "headers": { "$ref": "#/definitions/request-headers" },
+                "path": { "items": { "$ref": "#/definitions/field-matchers" }, "type": "array" },
+                "query": { "$ref": "#/definitions/request-queries" },
+                "requiresState": {
+                    "patternProperties": { ".{1,}": { "type": "string" } },
+                    "type": "object"
+                },
+                "scheme": { "items": { "$ref": "#/definitions/field-matchers" }, "type": "array" }
+            },
+            "type": "object"
+        },
+        "request-headers": {
+            "additionalProperties": {
+                "items": { "$ref": "#/definitions/field-matchers" },
+                "type": "array"
+            },
+            "type": "object"
+        },
+        "request-queries": {
+            "additionalProperties": {
+                "items": { "$ref": "#/definitions/field-matchers" },
+                "type": "array"
+            },
+            "type": "object"
+        },
+        "request-response-pair": {
+            "properties": {
+                "labels": { "items": { "type": "string" }, "type": "array" },
+                "request": { "$ref": "#/definitions/request" },
+                "response": { "$ref": "#/definitions/response" }
+            },
+            "required": ["request", "response"],
+            "type": "object"
+        },
+        "response": {
+            "properties": {
+                "body": { "type": "string" },
+                "bodyFile": { "type": "string" },
+                "encodedBody": { "type": "boolean" },
+                "fixedDelay": { "type": "integer" },
+                "headers": { "$ref": "#/definitions/headers" },
+                "logNormalDelay": {
+                    "properties": {
+                        "max": { "type": "integer" },
+                        "mean": { "type": "integer" },
+                        "median": { "type": "integer" },
+                        "min": { "type": "integer" }
+                    }
+                },
+                "postServeAction": { "type": "string" },
+                "removesState": { "type": "array" },
+                "status": { "type": "integer" },
+                "templated": { "type": "boolean" },
+                "transitionsState": {
+                    "patternProperties": { ".{1,}": { "type": "string" } },
+                    "type": "object"
+                }
+            },
+            "type": "object"
+        },
+        "variables": {
+            "properties": {
+                "name": { "type": "string" },
+                "function": { "type": "string" },
+                "arguments": { "type": "array" }
+            },
+            "required": ["name", "function"],
+            "type": "object"
         }
-      },
-      "type": "object"
     },
-    "variables": {
-      "properties": {
-        "name": { "type": "string" },
-        "function": { "type": "string" },
-        "arguments": { "type": "array" }
-      },
-      "required": ["name", "function"],
-      "type": "object"
-    }
-  },
-  "description": "Hoverfly simulation schema",
-  "properties": {
-    "data": {
-      "properties": {
-        "globalActions": {
-          "properties": {
-            "delays": { "items": { "$ref": "#/definitions/delay" }, "type": "array" },
-            "delaysLogNormal": {
-              "items": { "$ref": "#/definitions/delay-log-normal" },
-              "type": "array"
-            }
-          },
-          "type": "object"
+    "description": "Hoverfly simulation schema",
+    "properties": {
+        "data": {
+            "properties": {
+                "globalActions": {
+                    "properties": {
+                        "delays": { "items": { "$ref": "#/definitions/delay" }, "type": "array" },
+                        "delaysLogNormal": {
+                            "items": { "$ref": "#/definitions/delay-log-normal" },
+                            "type": "array"
+                        }
+                    },
+                    "type": "object"
+                },
+                "literals": { "items": { "$ref": "#/definitions/literals" }, "type": "array" },
+                "pairs": {
+                    "items": { "$ref": "#/definitions/request-response-pair" },
+                    "type": "array"
+                },
+                "variables": { "items": { "$ref": "#/definitions/variables" }, "type": "array" }
+            },
+            "type": "object"
         },
-        "literals": { "items": { "$ref": "#/definitions/literals" }, "type": "array" },
-        "pairs": { "items": { "$ref": "#/definitions/request-response-pair" }, "type": "array" },
-        "variables": { "items": { "$ref": "#/definitions/variables" }, "type": "array" }
-      },
-      "type": "object"
+        "meta": { "$ref": "#/definitions/meta" }
     },
-    "meta": { "$ref": "#/definitions/meta" }
-  },
-  "required": ["data", "meta"],
-  "type": "object"
+    "required": ["data", "meta"],
+    "type": "object"
 }
 ```
 
@@ -455,9 +461,9 @@ lowercase**, even though the Go identifiers are CamelCase:
   to chain a generated value into `doMatch`.
 - **array**: value coerced via `util.GetStringArray()` (string split on `;`, or an actual array).
   Config booleans:
-  - `ignoreOrder` — order of elements irrelevant.
-  - `ignoreUnknown` — incoming may contain extra elements not in the matcher value.
-  - `ignoreOccurrences` — duplicate counts irrelevant.
+    - `ignoreOrder` — order of elements irrelevant.
+    - `ignoreUnknown` — incoming may contain extra elements not in the matcher value.
+    - `ignoreOccurrences` — duplicate counts irrelevant.
 - **jwt**: `ParseJWT` splits the token on `.`, base64-decodes header + payload, builds
   `{"header":{...},"payload":{...}}` JSON, then delegates to `JsonPartialMatch`. Value should be a
   JSON document describing the expected header/payload subset.

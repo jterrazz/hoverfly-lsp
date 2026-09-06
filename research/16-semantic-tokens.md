@@ -24,8 +24,8 @@ The server declares a `SemanticTokensLegend` in its `ServerCapabilities.semantic
 
 ```ts
 interface SemanticTokensLegend {
-  tokenTypes: string[]; // index → type name; the integer in slot 4 of each token indexes this
-  tokenModifiers: string[]; // index → modifier name; a token's modifier bitset indexes these bits
+    tokenTypes: string[]; // index → type name; the integer in slot 4 of each token indexes this
+    tokenModifiers: string[]; // index → modifier name; a token's modifier bitset indexes these bits
 }
 ```
 
@@ -92,25 +92,25 @@ Sources: [Semantic Highlight Guide](https://code.visualstudio.com/api/language-e
   **standard token-type → TextMate scope map**, then colors via the theme's normal `tokenColors`.
   Relevant standard mappings (from the guide's table):
 
-  | LSP type     | TextMate scope fallback                             | colored by Dark+?                                                         |
-  | ------------ | --------------------------------------------------- | ------------------------------------------------------------------------- |
-  | `function`   | `entity.name.function`                              | yes                                                                       |
-  | `variable`   | `variable.other.readwrite` / `entity.name.variable` | yes                                                                       |
-  | `property`   | `variable.other.property`                           | yes                                                                       |
-  | `parameter`  | `variable.parameter`                                | yes                                                                       |
-  | `enumMember` | `variable.other.enummember`                         | yes                                                                       |
-  | `namespace`  | `entity.name.namespace`                             | yes                                                                       |
-  | `macro`      | `entity.name.function.preprocessor`                 | yes                                                                       |
-  | `keyword`    | (keyword scopes)                                    | yes                                                                       |
-  | `string`     | (string scopes)                                     | yes                                                                       |
-  | `number`     | (number/constant scopes)                            | yes                                                                       |
-  | `operator`   | (operator/punctuation scopes)                       | partial — **operator/punctuation is frequently uncolored** in many themes |
+    | LSP type     | TextMate scope fallback                             | colored by Dark+?                                                         |
+    | ------------ | --------------------------------------------------- | ------------------------------------------------------------------------- |
+    | `function`   | `entity.name.function`                              | yes                                                                       |
+    | `variable`   | `variable.other.readwrite` / `entity.name.variable` | yes                                                                       |
+    | `property`   | `variable.other.property`                           | yes                                                                       |
+    | `parameter`  | `variable.parameter`                                | yes                                                                       |
+    | `enumMember` | `variable.other.enummember`                         | yes                                                                       |
+    | `namespace`  | `entity.name.namespace`                             | yes                                                                       |
+    | `macro`      | `entity.name.function.preprocessor`                 | yes                                                                       |
+    | `keyword`    | (keyword scopes)                                    | yes                                                                       |
+    | `string`     | (string scopes)                                     | yes                                                                       |
+    | `number`     | (number/constant scopes)                            | yes                                                                       |
+    | `operator`   | (operator/punctuation scopes)                       | partial — **operator/punctuation is frequently uncolored** in many themes |
 
-  Takeaway: `function/variable/property/parameter/enumMember/keyword/string/number/namespace/macro`
-  are reliably colored. **`operator` is the weakest** — in Dark+ punctuation/operators often inherit
-  the default foreground, so a token typed `operator` may look unstyled. We still use it for the
-  `{{ }} # /` delimiters because it is semantically correct and themes that _do_ color operators
-  (One Dark Pro, many community themes) will pick it up; nothing worse than "same as JSON text".
+    Takeaway: `function/variable/property/parameter/enumMember/keyword/string/number/namespace/macro`
+    are reliably colored. **`operator` is the weakest** — in Dark+ punctuation/operators often inherit
+    the default foreground, so a token typed `operator` may look unstyled. We still use it for the
+    `{{ }} # /` delimiters because it is semantically correct and themes that _do_ color operators
+    (One Dark Pro, many community themes) will pick it up; nothing worse than "same as JSON text".
 
 ### 2.2 Zed
 

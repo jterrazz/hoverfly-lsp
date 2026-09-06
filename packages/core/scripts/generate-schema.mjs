@@ -4,16 +4,16 @@
  * access to the schema (tsc + NodeNext does not copy .json into dist/).
  * Run from the repo root or this package: node packages/core/scripts/generate-schema.mjs
  */
-import { readFileSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const schemaDir = join(here, "..", "src", "schema");
-const jsonPath = join(schemaDir, "hoverfly.schema.json");
-const outPath = join(schemaDir, "hoverfly.schema.generated.ts");
+const schemaDir = join(here, '..', 'src', 'schema');
+const jsonPath = join(schemaDir, 'hoverfly.schema.json');
+const outPath = join(schemaDir, 'hoverfly.schema.generated.ts');
 
-const parsed = JSON.parse(readFileSync(jsonPath, "utf8"));
+const parsed = JSON.parse(readFileSync(jsonPath, 'utf8'));
 
 /*
  * Embed as a JSON string parsed at module load. This keeps the schema in one compact line
@@ -21,9 +21,9 @@ const parsed = JSON.parse(readFileSync(jsonPath, "utf8"));
  * backticks and ${ makes it safe inside a template literal.
  */
 const literal = JSON.stringify(parsed)
-  .replaceAll("\\", String.raw`\\`)
-  .replaceAll("`", String.raw`\``)
-  .replaceAll("${", String.raw`\${`);
+    .replaceAll('\\', String.raw`\\`)
+    .replaceAll('`', String.raw`\``)
+    .replaceAll('${', String.raw`\${`);
 
 const contents = `/**
  * GENERATED — do not edit by hand.

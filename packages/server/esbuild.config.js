@@ -10,28 +10,28 @@
  * Everything is inlined (no `external`), so the published bin needs no node_modules. The version
  * is injected via `define` so the bundle never reads package.json at runtime.
  */
-import { build } from "esbuild";
-import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
+import { build } from 'esbuild';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
-const here = fileURLToPath(new URL(".", import.meta.url));
-const pkg = JSON.parse(readFileSync(new URL("package.json", import.meta.url), "utf8"));
+const here = fileURLToPath(new URL('.', import.meta.url));
+const pkg = JSON.parse(readFileSync(new URL('package.json', import.meta.url), 'utf8'));
 
 await build({
-  entryPoints: [`${here}src/main.ts`],
-  outfile: `${here}dist/cli.cjs`,
-  bundle: true,
-  platform: "node",
-  format: "cjs",
-  target: "node20",
-  sourcemap: true,
-  minify: false,
-  // Prefer the ESM build of deps that ship both. In particular vscode-json-languageservice's
-  // `main` is a UMD bundle whose internal relative requires esbuild leaves unresolved (the UMD
-  // `require` parameter shadows the real one); its `module` build (lib/esm) bundles cleanly.
-  mainFields: ["module", "main"],
-  define: {
-    HOVERFLY_LSP_VERSION: JSON.stringify(pkg.version),
-  },
-  logLevel: "info",
+    entryPoints: [`${here}src/main.ts`],
+    outfile: `${here}dist/cli.cjs`,
+    bundle: true,
+    platform: 'node',
+    format: 'cjs',
+    target: 'node20',
+    sourcemap: true,
+    minify: false,
+    // Prefer the ESM build of deps that ship both. In particular vscode-json-languageservice's
+    // `main` is a UMD bundle whose internal relative requires esbuild leaves unresolved (the UMD
+    // `require` parameter shadows the real one); its `module` build (lib/esm) bundles cleanly.
+    mainFields: ['module', 'main'],
+    define: {
+        HOVERFLY_LSP_VERSION: JSON.stringify(pkg.version),
+    },
+    logLevel: 'info',
 });

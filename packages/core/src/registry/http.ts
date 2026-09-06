@@ -44,15 +44,15 @@ export const VALUE_DID_YOU_MEAN_MAX_DISTANCE = 1;
  * RFC 9110 (HTTP Semantics) §9.3.
  */
 export const HTTP_METHODS: readonly string[] = [
-  "GET",
-  "HEAD",
-  "POST",
-  "PUT",
-  "DELETE",
-  "CONNECT",
-  "OPTIONS",
-  "TRACE",
-  "PATCH",
+    'GET',
+    'HEAD',
+    'POST',
+    'PUT',
+    'DELETE',
+    'CONNECT',
+    'OPTIONS',
+    'TRACE',
+    'PATCH',
 ];
 
 /**
@@ -64,4 +64,4 @@ export const HTTP_METHODS: readonly string[] = [
  *
  * Source: RFC 3986 §3.1 (scheme syntax); Hoverfly request-field population (`Request.Scheme`).
  */
-export const URI_SCHEMES: readonly string[] = ["http", "https", "ws", "wss"];
+export const URI_SCHEMES: readonly string[] = ['http', 'https', 'ws', 'wss'];
