@@ -1,0 +1,4 @@
+# The Zed extension is its own project root, and cargo's output is an artefact:
+# it builds to .artifacts/cargo/ instead of target/, like every other tool here.
+[build]
+target-dir = ".artifacts/cargo"

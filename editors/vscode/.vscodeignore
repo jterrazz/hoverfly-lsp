@@ -3,12 +3,13 @@ src/**
 test/**
 tsconfig.json
 esbuild.config.mjs
-dist/.tsbuildinfo-vscode
+
+# Build, test and lint artefacts (the tsc buildinfo, and the .vsix itself).
+.artifacts/**
 
 # Source maps (large; not needed at runtime).
 **/*.map
 
 # Tooling / VCS noise.
 .gitignore
-.vscode-test/**
 node_modules/**

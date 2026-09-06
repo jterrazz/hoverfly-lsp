@@ -1,21 +1,15 @@
 node_modules/
+.artifacts/
 dist/
-*.tsbuildinfo
 .DS_Store
-coverage/
-*.log
-.vscode-test/
-*.vsix
 
-# VS Code extension: server bundle copied in at build time (see editors/vscode/esbuild.config.mjs).
+# VS Code extension: the published server copied in at build time (see
+# editors/vscode/esbuild.config.mjs). It ships INSIDE the .vsix at the path the
+# extension resolves at runtime, so it is a product like dist/, not an artefact.
 editors/vscode/server/
 
-# Zed extension build artifacts (produced by `cargo build` / "zed: install dev extension").
-editors/zed/target/
-editors/zed/grammars/
-editors/zed/*.wasm
-
-# IntelliJ plugin (Gradle). Commit the wrapper + sources; ignore build output + SDK caches.
+# IntelliJ plugin (Gradle). Commit the wrapper + sources; ignore the platform
+# working directories Gradle and the IDE fix in place and cannot be told to move.
 editors/intellij/plugin/build/
 editors/intellij/plugin/.gradle/
 editors/intellij/plugin/.intellijPlatform/
