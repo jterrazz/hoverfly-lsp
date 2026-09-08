@@ -9,6 +9,10 @@ plugins {
 group = providers.gradleProperty("pluginGroup").get()
 version = providers.gradleProperty("pluginVersion").get()
 
+// Every tool of this repository writes under `.artifacts/<tool>/`, and Gradle's build
+// directory is movable where its `.gradle/` working directory is not.
+layout.buildDirectory = layout.projectDirectory.dir(".artifacts/gradle")
+
 repositories {
     mavenCentral()
     intellijPlatform {
