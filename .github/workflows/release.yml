@@ -13,7 +13,8 @@ name: Release
 #
 #   gh release create v0.1.0 --generate-notes      # or via the GitHub UI
 #
-# Marketplace / Open VSX / Zed registry / Claude Code submissions stay manual — see PUBLISHING.md.
+# Marketplace / Open VSX / Zed registry / Claude Code submissions stay manual — see
+# docs/04-operating.md.
 
 on:
     release:

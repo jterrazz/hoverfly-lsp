@@ -253,15 +253,13 @@ Node >= 20, npm-workspaces monorepo.
 ```bash
 npm install
 npm run build          # tsc across workspaces
-npm test               # vitest (869 tests)
-npm run lint           # oxlint + oxfmt + tsgo + knip
+npm test               # vitest
+npm run lint           # tsc + oxlint + oxfmt + knip + the repo gates
 ```
 
-To add a diagnostic: register the code in `packages/core/src/semantic/catalog.ts`, emit it from a
-validator under `packages/core/src/semantic/`, add an `invalid/` fixture and regenerate its golden
-(`env UPDATE_GOLDENS=1 npx vitest --run packages/core/test/semantic/golden.test.ts`), then
-`npm run docs:diagnostics`. See [CONTRIBUTING.md](./CONTRIBUTING.md) and
-[testdata/README.md](./testdata/README.md). In-editor release checks: [MANUAL-QA.md](./MANUAL-QA.md).
+The manual for everyone who changes this repository is **[docs/](./docs/README.md)**: the
+architecture, the development loop, what proves a change, and how a release is cut. Adding a
+diagnostic is a five-step recipe in [docs/02-developing.md](./docs/02-developing.md).
 
 ## License
 
