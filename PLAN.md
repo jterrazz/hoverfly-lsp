@@ -79,10 +79,10 @@ What v0.1.0 delivers (869 tests green):
 - **Format:** Hoverfly v5.x JSON simulations, fully featured; v1–v4 accepted with an upgrade hint
   (no completion investment), per architect decision D6.
 - **Diagnostics:** the frozen `HF1xx`–`HF6xx` catalog (37 codes), golden-tested, each carrying
-  `code` + `source: "hoverfly"` + `codeDescription.href`. See [docs/diagnostics.md](./docs/diagnostics.md).
+  `code` + `source: "hoverfly"` + `codeDescription.href`. See [docs/reference/diagnostics.md](./docs/reference/diagnostics.md).
 - **Templating:** block-aware Handlebars-subset parser; 52 Hoverfly helpers + 8 raymond built-ins
   with arity checks; `Vars`/`Literals` resolution; 210 faker types (gofakeit v6.28.0); `now`
-  offset validation. See [docs/template-reference.md](./docs/template-reference.md).
+  offset validation. See [docs/reference/template-reference.md](./docs/reference/template-reference.md).
 - **Completion & hover:** fields, matcher names, helper names, faker types, state keys,
   `Vars`/`Literals`; hover docs with docs.hoverfly.io links.
 - **Server:** stdio bin `hoverfly-lsp --stdio`, push **and** pull diagnostics (pull matters for

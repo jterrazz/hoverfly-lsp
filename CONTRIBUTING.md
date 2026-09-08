@@ -29,7 +29,7 @@ packages/core     @hoverfly-lsp/core      pure analysis library (private; bundle
 packages/server   @jterrazz/hoverfly-lsp  stdio LSP server (the published package; bin: hoverfly-lsp)
 editors/          vscode / zed / intellij / claude-code integrations
 testdata/         the reference corpus (valid/ + invalid/ goldens)
-docs/             generated diagnostics + template reference
+docs/             the manual (numbered chapters + the generated docs/reference/)
 scripts/          doc generators
 research/         research reports + architect decisions
 ```
@@ -71,7 +71,7 @@ fixture); a missing code means a validator gap (report it, do not paper over it)
 
 ## Regenerating docs
 
-`docs/diagnostics.md` and `docs/template-reference.md` are **generated** from the built core
+`docs/reference/diagnostics.md` and `docs/reference/template-reference.md` are **generated** from the built core
 package (`packages/core/dist`) by `scripts/generate-diagnostic-docs.mjs`; never hand-edit them.
 The diagnostic table merges the runtime catalog (`packages/core/src/semantic/catalog.ts`: code,
 severity, message) with the trigger/range prose carried in the generator from
@@ -80,7 +80,7 @@ severity, message) with the trigger/range prose carried in the generator from
 
 ```bash
 npm run build            # the generator imports the BUILT dist
-npm run docs:diagnostics # writes docs/diagnostics.md + docs/template-reference.md
+npm run docs:diagnostics # writes both files under docs/reference/
 ```
 
 CI fails if the committed docs are stale (`npm run docs:diagnostics` then `git diff --quiet -- docs/`),

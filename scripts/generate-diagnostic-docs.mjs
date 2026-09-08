@@ -1,7 +1,9 @@
 /**
- * Generates docs/diagnostics.md and docs/template-reference.md from the BUILT core package
- * (`@hoverfly-lsp/core` -> packages/core/dist). The catalog, helper, faker and matcher data
- * are the single source of truth; never hand-edit the generated files.
+ * Generates docs/reference/diagnostics.md and docs/reference/template-reference.md from the
+ * BUILT core package (`@hoverfly-lsp/core` -> packages/core/dist). The catalog, helper, faker
+ * and matcher data are the single source of truth; never hand-edit the generated files.
+ * `docs/reference/` is the projection half of the manual: the authored chapters are the
+ * numbered ones beside it, and nothing under reference/ is written by hand.
  *
  * The catalog object carries code/severity/message/href. The per-code Trigger and Range
  * prose lives in research/11-diagnostic-catalog.md (it is documentation, not runtime data),
@@ -32,7 +34,7 @@ import { fileURLToPath } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..');
-const DOCS_DIR = resolve(ROOT, 'docs');
+const DOCS_DIR = resolve(ROOT, 'docs/reference');
 
 const GENERATED_NOTICE =
     '<!-- GENERATED FILE. Do not edit by hand. Run `npm run docs:diagnostics` to regenerate. -->';
@@ -535,7 +537,9 @@ async function main() {
         renderTemplateReferenceDoc(),
         'utf8',
     );
-    process.stdout.write('Wrote docs/diagnostics.md and docs/template-reference.md\n');
+    process.stdout.write(
+        'Wrote docs/reference/diagnostics.md and docs/reference/template-reference.md\n',
+    );
 }
 
 await main();
