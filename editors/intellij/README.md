@@ -56,7 +56,7 @@ cd editors/intellij/plugin
 JAVA_HOME=/path/to/jdk-21 ./gradlew buildPlugin  # macOS Homebrew: /opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home
 ```
 
-The plugin appears at `editors/intellij/plugin/build/distributions/Hoverfly-0.1.0.zip`.
+The plugin appears at `editors/intellij/plugin/.artifacts/gradle/distributions/Hoverfly-0.1.0.zip`.
 
 ### 2. Install it in the IDE
 
@@ -99,7 +99,7 @@ diagnostic; hovering `schemaVersion` should show docs. See the
 
 ## Publishing to JetBrains Marketplace
 
-The built artifact is `editors/intellij/plugin/build/distributions/Hoverfly-0.1.0.zip`.
+The built artifact is `editors/intellij/plugin/.artifacts/gradle/distributions/Hoverfly-0.1.0.zip`.
 
 Build it first (requires JDK 21; the server bundle must be current):
 

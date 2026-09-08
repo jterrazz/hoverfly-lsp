@@ -99,7 +99,7 @@ decisions in `research/03-lsp-architecture.md` and `research/10-architect-decisi
 - **One-time**: configure npm trusted publishing (repo `jterrazz/hoverfly-lsp`, workflow
   `release.yml`) for `@jterrazz/hoverfly-lsp`, exactly as for the other `@jterrazz` packages. No
   `NPM_TOKEN` secret is needed. `@hoverfly-lsp/core` is private, so nothing to configure for it.
-- **Manual (no tokens in CI)**, documented in PUBLISHING.md: VS Code Marketplace
+- **Manual (no tokens in CI)**, documented in docs/04-operating.md: VS Code Marketplace
   (`vsce publish`), Open VSX (`ovsx publish`), Zed registry PR, Claude Code marketplace
   refresh, SchemaStore submission.
 - **Versioning**: all manifests pinned to **`0.1.0`**. The single published package uses the

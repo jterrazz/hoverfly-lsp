@@ -208,8 +208,9 @@ the import, or the pair could silently never match or panic; **warning** = legal
 certainly a mistake; **information** and **hint** = style and upgrade nudges.
 
 50+ codes span 6 families: `HF1xx` structure, `HF2xx` matchers, `HF3xx` response, `HF4xx` state,
-`HF5xx` templating, `HF6xx` global actions. Full reference: **[docs/diagnostics.md](./docs/diagnostics.md)**;
-template helpers and faker types: **[docs/template-reference.md](./docs/template-reference.md)**.
+`HF5xx` templating, `HF6xx` global actions. Full reference:
+**[docs/reference/diagnostics.md](./docs/reference/diagnostics.md)**; template helpers and faker
+types: **[docs/reference/template-reference.md](./docs/reference/template-reference.md)**.
 
 ## Highlighting
 
@@ -233,7 +234,7 @@ Handlebars-subset template engine on top. Dependency direction is strictly `edit
 packages/core      @hoverfly-lsp/core      pure analysis library (private; bundled into the server)
 packages/server    @jterrazz/hoverfly-lsp  stdio LSP server (the published package; bin: hoverfly-lsp)
 editors/           vscode, zed, intellij, claude-code   thin per-editor launchers
-docs/              diagnostics + template reference (generated from core)
+docs/              the manual: numbered chapters + reference/ generated from core
 testdata/          the reference corpus (valid/ + invalid/ goldens)
 research/          binding research + the architect decision log
 schemas/           bundled Hoverfly schema + upstream provenance
@@ -252,15 +253,13 @@ Node >= 20, npm-workspaces monorepo.
 ```bash
 npm install
 npm run build          # tsc across workspaces
-npm test               # vitest (869 tests)
-npm run lint           # oxlint + oxfmt + tsgo + knip
+npm test               # vitest
+npm run lint           # tsc + oxlint + oxfmt + knip + the repo gates
 ```
 
-To add a diagnostic: register the code in `packages/core/src/semantic/catalog.ts`, emit it from a
-validator under `packages/core/src/semantic/`, add an `invalid/` fixture and regenerate its golden
-(`env UPDATE_GOLDENS=1 npx vitest --run packages/core/test/semantic/golden.test.ts`), then
-`npm run docs:diagnostics`. See [CONTRIBUTING.md](./CONTRIBUTING.md) and
-[testdata/README.md](./testdata/README.md). In-editor release checks: [MANUAL-QA.md](./MANUAL-QA.md).
+The manual for everyone who changes this repository is **[docs/](./docs/README.md)**: the
+architecture, the development loop, what proves a change, and how a release is cut. Adding a
+diagnostic is a five-step recipe in [docs/02-developing.md](./docs/02-developing.md).
 
 ## License
 

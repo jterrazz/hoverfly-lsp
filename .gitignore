@@ -10,7 +10,7 @@ editors/vscode/server/
 
 # IntelliJ plugin (Gradle). Commit the wrapper + sources; ignore the platform
 # working directories Gradle and the IDE fix in place and cannot be told to move.
-editors/intellij/plugin/build/
+# The build directory IS movable and lives under .artifacts/ (build.gradle.kts).
 editors/intellij/plugin/.gradle/
 editors/intellij/plugin/.intellijPlatform/
 editors/intellij/plugin/.kotlin/
