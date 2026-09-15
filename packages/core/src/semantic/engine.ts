@@ -63,7 +63,9 @@ function retagAsHF102(schema: Diagnostic): Diagnostic {
     return {
         code: 'HF102',
         source: DIAGNOSTIC_SOURCE,
-        severity: schema.severity,
+        // `severity` is an optional property: under exactOptionalPropertyTypes an
+        // absent severity is absent, not `undefined`.
+        ...(schema.severity === undefined ? {} : { severity: schema.severity }),
         range: schema.range,
         message: schema.message,
         codeDescription: { href: HF102_HREF },

@@ -19,7 +19,8 @@ below ever reaches up.
 service, the LSP _types_, a text-document model, and the two engines the rules
 need (`re2js`, `fast-xml-parser`) — nothing that speaks a wire protocol
 (`packages/core/package.json:23`). It is consumed as a real TypeScript project
-reference, not through a bundler (`tsconfig.base.json`). A transport import in
+reference — `tsconfig.base.json` adds the emitting, composite half the house
+`node` preset leaves out (decision D1). A transport import in
 core is the one architectural regression to watch for.
 
 `@hoverfly-lsp/core` is `"private": true` and is never published. esbuild inlines

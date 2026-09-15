@@ -1,30 +1,14 @@
 {
-    "$schema": "https://json.schemastore.org/tsconfig",
-    "display": "Hoverfly LSP base (strict ESM / NodeNext)",
+    "extends": "@jterrazz/typescript/tsconfig/node",
     "compilerOptions": {
-        "module": "NodeNext",
-        "moduleResolution": "NodeNext",
-        "target": "ES2022",
-        "lib": ["ES2022"],
-        "types": ["node"],
-
-        "strict": true,
-        "noUncheckedIndexedAccess": true,
-        "noImplicitOverride": true,
-        "noFallthroughCasesInSwitch": true,
-        "exactOptionalPropertyTypes": false,
-
+        // Every member is compiled by `tsc --build` as a project reference (D1), so
+        // this tree emits where the preset only checks — and it compiles TypeScript
+        // only, which is what `isolatedDeclarations` asks of the published member.
+        "allowJs": false,
+        "composite": true,
         "declaration": true,
         "declarationMap": true,
-        "sourceMap": true,
-        "composite": true,
-        "incremental": true,
-
-        "esModuleInterop": true,
-        "resolveJsonModule": true,
-        "skipLibCheck": true,
-        "forceConsistentCasingInFileNames": true,
-        "verbatimModuleSyntax": true,
-        "isolatedModules": true
+        "noEmit": false,
+        "sourceMap": true
     }
 }
