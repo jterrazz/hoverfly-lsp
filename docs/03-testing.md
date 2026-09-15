@@ -72,8 +72,9 @@ the corrections they forced, are `research/12-ground-truth-results.md`. That run
 is what the zero-false-positive policy rests on, and it is a deliberate act, not
 a suite: re-running it is a decision taken when the pinned upstream commit moves.
 
-Two watchers guard the same ground continuously. `.github/workflows/validate.yml`
-regenerates `docs/reference/` and fails if the committed projection is stale.
+Two watchers guard the same ground continuously. `make lint` regenerates
+`docs/reference/` and fails if the committed projection is stale — the `docs`
+target of the `Makefile`, which the shared CI reaches through `make lint`.
 `.github/workflows/schema-drift.yml` runs weekly, diffs Hoverfly's live schema
 and the cited Go source files against the pinned baseline, and opens a single
 tracking issue when they move — it never updates anything itself.

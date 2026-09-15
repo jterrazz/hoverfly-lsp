@@ -23,41 +23,12 @@ on:
         types: [published]
 
 jobs:
-    # Full quality gate. A release whose commit fails the gate never publishes.
+    # The shared house gate: `make build && make lint && make test` on node 24. A release
+    # whose commit fails it never publishes.
     validate:
-        name: Validate (node ${{ matrix.node-version }})
-        runs-on: ubuntu-latest
-        strategy:
-            fail-fast: false
-            matrix:
-                # Build + test across the engine range (node >=20); lint runs only on 24
-                # (oxlint.config.ts needs native TS loading, node 23.6+) — see validate.yml.
-                node-version: ['20', '22', '24']
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4
-
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: ${{ matrix.node-version }}
-                  cache: npm
-
-            - name: Install
-              run: npm ci
-
-            - name: Build
-              run: npm run build
-
-            - name: Typecheck
-              run: npm run typecheck
-
-            - name: Lint
-              if: matrix.node-version == '24'
-              run: npm run lint
-
-            - name: Test
-              run: npm test
+        uses: jterrazz/jterrazz-actions/.github/workflows/validate.yaml@main
+        with:
+            node-version: '24'
 
     # Publish the one npm package (@jterrazz/hoverfly-lsp; core is private and bundled in), then
     # attach the bundled VS Code extension to the release. Auth is tokenless via OIDC trusted

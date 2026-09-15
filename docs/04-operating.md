@@ -46,8 +46,8 @@ Marketplace-only fix must be able to move without an npm release.
 
 `release.yml` fires on `release: published` — the trigger that fires whether the
 release goes out directly or is saved as a draft first, unlike `created`. It
-runs the full gate on the Node 20/22/24 matrix, verifies the tag, publishes, and
-uploads the `.vsix`. The publish step is idempotent: a version already on npm is
+runs the shared house gate on Node 24, verifies the tag, publishes, and uploads
+the `.vsix`. The publish step is idempotent: a version already on npm is
 skipped rather than failed, so re-cutting a release still attaches its asset.
 
 ## Authentication

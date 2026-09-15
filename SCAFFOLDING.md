@@ -8,18 +8,19 @@ decisions in `research/03-lsp-architecture.md` and `research/10-architect-decisi
 
 ## Divergences from house conventions
 
-### 1. TypeScript config: NodeNext + project references, not the `@jterrazz/typescript` node preset
+### 1. TypeScript config: the house preset plus the project-reference plumbing
 
-- House preset (`@jterrazz/typescript/presets/tsconfig/node`) uses
-  `moduleResolution: Bundler`, `module: ESNext`, and a single flat package.
-- We use a local `tsconfig.base.json` with **`module`/`moduleResolution: NodeNext`,
-  `strict`, `noUncheckedIndexedAccess`, `composite: true`** and **TypeScript project
-  references** (`tsconfig.json` references `packages/core` + `packages/server`;
-  `server` references `core`).
-- Reason: binding decisions D1 / report 03 mandate NodeNext + strict +
-  noUncheckedIndexedAccess; `packages/core` must compile and be consumed by
-  `packages/server` as a real project-reference build (no bundler in the scaffold phase).
-  `tsc --build` is the build and typecheck driver.
+- `tsconfig.base.json` extends `@jterrazz/typescript/tsconfig/node` and adds only what
+  the preset cannot know: this tree EMITS through `tsc --build` as project references
+  (decision D1 / report 03), so `composite`, `declaration`, `declarationMap`,
+  `sourceMap` and `noEmit: false` live there, plus `allowJs: false`, which
+  `isolatedDeclarations` requires of the published member.
+- The root `tsconfig.json` stays a solution file (references `packages/core`,
+  `packages/server`, `editors/vscode`; `server` references `core`), and
+  `packages/server` — the one published package — extends
+  `@jterrazz/typescript/tsconfig/library` ahead of the base.
+- Until v10 of the toolchain this was a hand-written `NodeNext` config extending
+  nothing; the preset now carries the strictness it was written for.
 
 ### 2. Build tool: `tsc --build` for typecheck/tests, **esbuild** for the published bin
 
@@ -33,7 +34,7 @@ decisions in `research/03-lsp-architecture.md` and `research/10-architect-decisi
 - **Bundle format = CommonJS** (`dist/cli.cjs`): `vscode-languageserver` + protocol/jsonrpc
   are CJS, so a CJS bundle avoids ESM<->CJS interop shims. Explicit `.cjs` extension makes
   Node treat it as CommonJS despite the package's `"type": "module"`; the ESM bin
-  (`bin/hoverfly-lsp.js`) imports it for its side effect. `mainFields: ["module", "main"]`
+  (`packages/server/bin/hoverfly-lsp.js`) imports it for its side effect. `mainFields: ["module", "main"]`
   is required so esbuild picks `vscode-json-languageservice`'s clean ESM build instead of its
   UMD `main` (whose shadowed `require` parameter leaves relative requires unresolved). The
   version is injected via esbuild `define` (`HOVERFLY_LSP_VERSION`) so the bundle never reads
@@ -46,31 +47,33 @@ decisions in `research/03-lsp-architecture.md` and `research/10-architect-decisi
   oxfmt + knip** in parallel, exactly as in `package-test`. It works in the workspace
   setup because `@jterrazz/typescript` resolves tool bins from the hoisted root
   `node_modules/.bin`.
-- `oxlint.config.ts` extends `oxlint.node` and ignores `**/dist/**` + `testdata/**`.
+- `oxlint.config.ts` extends the `node` profile and ignores `testdata/**` — the corpus
+  is deliberately malformed, and `dist/**` is the profile's own business.
 - Added a root **`knip.json`** declaring per-workspace entry points (core `src/index.ts`;
-  server `src/cli.ts` + `bin/hoverfly-lsp.js`; root `oxfmt.config.ts` + `oxlint.config.ts` +
+  server `src/cli.ts` + `packages/server/bin/hoverfly-lsp.js`; root `oxfmt.config.ts` + `oxlint.config.ts` +
   `vitest.config.ts`) and a few `ignoreDependencies`:
     - `vscode-json-languageservice` in `packages/core`: a real dependency declared now per
       D1/report 03, but **not yet imported** (Phase 2 wires it). Without the ignore, knip
       would flag it as unused.
-    - `oxfmt` and `oxlint` at root: imported by `oxfmt.config.ts` / `oxlint.config.ts` but
-      provided transitively through `@jterrazz/typescript`, not a direct dependency.
-- Added **`.prettierignore`** (`testdata/`, `dist/`) so `oxfmt` does not try to reformat
-  the intentionally-malformed fixture `testdata/invalid/invalid-json.hoverfly.json`.
+    - `tsc` as an unlisted binary at root: `tsc --build` drives the build, and the
+      compiler arrives with `@jterrazz/typescript` rather than as a direct dependency.
+- `oxfmt.config.ts` carries the tree's own ignore patterns — the fixture corpus and the
+  two byte-identical schema copies — each with its reason on the line. They lived in a
+  `.prettierignore` until the toolchain's contract moved them into the config.
 - Formatting note: `oxfmt.config.ts` now wires the family preset
   (`@jterrazz/typescript`'s `oxfmt`) — 4-space indent, single quotes, 100-char width,
   matching every other house repo, in place of the earlier bare 2-space tool default.
 
-### 4. CI: plain workflow with a node 20+22 matrix, not the reusable `validate.yaml`
+### 4. CI: the house reusable, with one local gate in the `Makefile`
 
-- House repos call `jterrazz/jterrazz-actions/.github/workflows/validate.yaml@main`, which
-  runs `make build/lint/test` on a **single** node version and has **no typecheck step**.
-- We wrote a plain `.github/workflows/validate.yml` with a **`[20, 22]` matrix** running
-  `install → build → typecheck → lint → test`.
-- Reason: the task requires a node 20+22 matrix and an explicit typecheck stage, neither of
-  which the reusable workflow provides. A `Makefile` mirroring house targets
-  (`build/lint/test/typecheck/install`) is included so the repo can migrate to the reusable
-  workflow later if a matrix variant becomes available.
+- `.github/workflows/validate.yaml` calls
+  `jterrazz/jterrazz-actions/.github/workflows/validate.yaml@main` on node 24, which runs
+  `make build && make lint && make test` — the same three targets every house repo exposes.
+- The one step the reusable does not carry is the docs-freshness check, so it is a
+  `Makefile` target (`docs`) that `make lint` depends on: it regenerates
+  `docs/reference/` from the built core and refuses a drifted tree.
+- The build type-checks every member, so no separate typecheck stage runs in CI; the
+  `typecheck` target stays for local use.
 
 ### 5. Workspace dependency protocol: `*`, not `workspace:*`
 
@@ -91,7 +94,7 @@ decisions in `research/03-lsp-architecture.md` and `research/10-architect-decisi
 - So **`.github/workflows/release.yml`** matches the house **conventions** but is monorepo-aware:
   same **`release: created`** trigger, same **OIDC trusted publishing** (`--provenance` +
   `id-token: write`, **no `NPM_TOKEN`**), node 24. It:
-    1. runs the full gate on the `[20, 22, 24]` node matrix (lint on 24; mirrors `validate.yml`),
+    1. runs the same house gate as `validate.yaml`, on node 24,
     2. verifies `github.event.release.tag_name` equals the version in every manifest (core,
        server, vscode, zed `extension.toml`, claude-code `plugin.json`) before publishing,
     3. `npm publish`es `@jterrazz/hoverfly-lsp` with `--access public --provenance` (tokenless OIDC),

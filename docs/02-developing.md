@@ -5,7 +5,9 @@ file a given change opens, and what it owes before it is committed.
 
 ## Setup
 
-Node ≥ 20 (`.nvmrc` pins 20), npm workspaces, no other runtime.
+Node 24 (`.nvmrc` pins 24), npm workspaces, no other runtime. The published
+server still runs on Node 20 — esbuild targets it — but the toolchain does not:
+`@jterrazz/typescript` is the one devDependency and it asks for 24.
 
 ```bash
 npm install            # or: make install (npm ci, lockfile-pinned)
@@ -18,19 +20,22 @@ npm run lint:fix       # autofix format and lint
 
 The `Makefile` wraps the same targets behind an install sentinel
 (`node_modules/.install`), so `make test` reinstalls only when
-`package-lock.json` moved.
+`package-lock.json` moved. Its `docs` target is the one gate the toolchain does
+not carry — `make lint` runs it first, and the section below says what it
+refuses.
 
-Every pull request keeps `build`, `typecheck`, `lint` and `test` green.
-`.github/workflows/validate.yml` runs them on Node 20, 22 and 24 — lint only on
-24, because `oxlint.config.ts` needs native TypeScript loading — plus the
-docs-drift check below.
+Every pull request keeps `build`, `lint` and `test` green.
+`.github/workflows/validate.yaml` calls the house reusable
+(`jterrazz/jterrazz-actions`) on Node 24, which runs exactly
+`make build && make lint && make test`. The build type-checks every member, so
+no separate typecheck stage survives.
 
 ## Which file a change opens
 
 | Changing…                          | Open                                                                       |
 | ---------------------------------- | -------------------------------------------------------------------------- |
 | A diagnostic's severity or message | `packages/core/src/semantic/catalog.ts` — the only place either is written |
-| The behaviour behind a code        | the rule family in `packages/core/src/semantic/rules/hfNxx.ts`             |
+| The behaviour behind a code        | the matching rule family in `packages/core/src/semantic/rules/`            |
 | A matcher, helper or faker fact    | `packages/core/src/registry/` — never inline the fact in a rule            |
 | Hover or completion content        | `packages/core/src/contributions/` (its README carries the content policy) |
 | Template parsing or analysis       | `packages/core/src/template/`                                              |
@@ -70,9 +75,10 @@ npm run build            # the generator imports the BUILT dist, not the sources
 npm run docs:diagnostics # rewrites both pages under docs/reference/
 ```
 
-CI fails when the committed projection is stale — it regenerates and asserts
-`git diff --quiet -- docs/` — so the regenerated files are committed alongside
-the catalog or registry change that moved them.
+`make lint` fails when the committed projection is stale: its `docs` target
+regenerates both pages and compares them with what the tree carries. The
+regenerated files are committed alongside the catalog or registry change that
+moved them.
 
 ## Where the answers live
 
@@ -103,18 +109,25 @@ Decisions taken after this manual exists are recorded as ADRs in
 The `@jterrazz` conventions were followed wherever the monorepo shape allowed.
 Four divergences are deliberate and each has a reason.
 
-- **TypeScript config is local, not the house node preset.** `tsconfig.base.json`
-  sets `NodeNext` module resolution, `strict`, `noUncheckedIndexedAccess` and
-  `composite: true`, and the root `tsconfig.json` wires project references
-  (`server` → `core`). Decision D1 requires core to compile and be consumed as a
-  real project reference rather than through a bundler.
+- **`tsconfig.base.json` adds an emitting half to the house preset.** It extends
+  `@jterrazz/typescript/tsconfig/node` and keeps only what the preset cannot
+  know: this tree EMITS through `tsc --build` as project references (decision
+  D1), so `composite`, `declaration`, `declarationMap`, `sourceMap` and
+  `noEmit: false` live there — plus `allowJs: false`, which `isolatedDeclarations`
+  requires of the published member. `packages/server` is that member and extends
+  `@jterrazz/typescript/tsconfig/library` ahead of the base.
 - **The build is `tsc --build`, the published bin is esbuild.** `tsc` keeps the
   reference graph honest and emits `.d.ts`; the bin is additionally bundled to a
   single CommonJS file (`dist/cli.cjs`), because `vscode-languageserver` and its
   protocol packages are CJS and a CJS bundle avoids interop shims.
-- **CI is a plain workflow, not the reusable `validate.yaml`.** The house
-  reusable runs one Node version and has no typecheck step; this repository needs
-  the version matrix and the explicit stage.
+- **`make lint` carries one gate of its own.** The reference under `docs/` is
+  projected from the BUILT core, and no pass of the toolchain regenerates it, so
+  the `docs` target does — it is the one step the hand-rolled workflow had that
+  the house reusable does not.
+- **The prose gate does not read `research/`.** `npm run lint` passes
+  `--ignore-pattern 'research/**'`: those sixteen reports are a dated record of
+  two investigation rounds, quoting Hoverfly's Go source verbatim, and reflowing
+  a transcript to a readability floor would falsify the record.
 - **`knip.json` declares entry points per workspace.** A workspace member's real
   entry is not its `main`, and a few dependencies are reached through configs
   rather than imports; both are declared there rather than silenced case by case.

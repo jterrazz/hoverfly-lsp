@@ -1,6 +1,6 @@
 # Hoverfly LSP
 
-[![CI](https://github.com/jterrazz/hoverfly-lsp/actions/workflows/validate.yml/badge.svg)](https://github.com/jterrazz/hoverfly-lsp/actions/workflows/validate.yml)
+[![CI](https://github.com/jterrazz/hoverfly-lsp/actions/workflows/validate.yaml/badge.svg)](https://github.com/jterrazz/hoverfly-lsp/actions/workflows/validate.yaml)
 [![npm](https://img.shields.io/npm/v/@jterrazz/hoverfly-lsp?label=npm)](https://www.npmjs.com/package/@jterrazz/hoverfly-lsp)
 [![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/Terrazzoni.hoverfly-lsp-vscode?label=VS%20Code)](https://marketplace.visualstudio.com/items?itemName=Terrazzoni.hoverfly-lsp-vscode)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](#license)
