@@ -19,18 +19,17 @@
         "docs:diagnostics": "node scripts/generate-diagnostic-docs.mjs",
         "test": "vitest --run",
         "typecheck": "tsc --build",
-        "lint": "typescript check",
+        "lint": "typescript check --ignore-pattern 'research/**'",
         "lint:fix": "typescript fix"
     },
     "devDependencies": {
-        "@jterrazz/typescript": "^9.2.0",
+        "@jterrazz/typescript": "^10.0.0",
         "@types/node": "^25.5.0",
         "glob": "^13.0.6",
-        "typescript": "~5.9.3",
         "vitest": "^4.1.8",
         "vscode-languageserver-protocol": "^3.18.0"
     },
     "engines": {
-        "node": ">=20"
+        "node": ">=24"
     }
 }

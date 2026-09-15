@@ -1,7 +1,8 @@
-import { oxlint } from '@jterrazz/typescript';
-import { defineConfig } from 'oxlint';
+import { defineConfig, node } from '@jterrazz/typescript/oxlint';
 
 export default defineConfig({
-    extends: [oxlint.node],
-    ignorePatterns: ['**/dist/**', 'testdata/**'],
+    extends: [node],
+    // reason: testdata/ is the diagnostic corpus — deliberately malformed Hoverfly
+    // JSON the profile cannot know about, and a linted fixture is a rewritten claim.
+    ignorePatterns: ['testdata/**'],
 });

@@ -1,9 +1,11 @@
 {
     "$schema": "https://unpkg.com/knip@6/schema.json",
+    // `tsc --build` drives the project-reference build in every member; the compiler
+    // arrives with @jterrazz/typescript, the one toolchain dependency this repo declares.
+    "ignoreBinaries": ["tsc"],
     "workspaces": {
         ".": {
             "entry": ["oxfmt.config.ts", "oxlint.config.ts", "vitest.config.ts"],
-            "ignoreDependencies": ["oxfmt", "oxlint"],
             "ignore": ["editors/claude-code/bin/launch.cjs"]
         },
         "packages/core": {
