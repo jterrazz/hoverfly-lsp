@@ -436,7 +436,7 @@ function renderTemplateReferenceDoc() {
             '`faker` types, and `now` offsets (see the HF5xx codes in ' +
             '[diagnostics.md](./diagnostics.md)).',
         '',
-        '> Generated from `packages/analysis/src/registry/helpers.ts` and `registry/faker.ts`. ' +
+        '> Generated from `packages/analysis/src/registry/templating.ts` and `registry/faker.ts`. ' +
             'Regenerate with `npm run docs:diagnostics`.',
         '',
         `There are **${HOVERFLY_HELPERS.length} Hoverfly helpers** plus **${RAYMOND_BUILTINS.length} raymond ` +

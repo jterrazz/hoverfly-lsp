@@ -8,7 +8,7 @@ import {
     NOW_OFFSET_UNITS,
     RAYMOND_BUILTINS,
     VARIABLE_FUNCTION_NAMES,
-} from '../../src/registry/helpers.js';
+} from '../../src/registry/templating.js';
 
 function byName(specs: readonly HelperSpec[], name: string): HelperSpec | undefined {
     return specs.find((spec) => spec.name === name);

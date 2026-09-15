@@ -1,5 +1,5 @@
 /**
- * Barrel for the authoritative Hoverfly registry data modules (matchers, helpers, faker).
+ * Barrel for the authoritative Hoverfly registry data modules (matchers, templating, faker).
  * Internal to the registry directory; the semantic/template/completion phases import from
  * here. Wiring into the package root (`src/index.ts`) is owned by the service integrator.
  */
@@ -25,7 +25,7 @@ export {
     NOW_OFFSET_UNITS,
     RAYMOND_BUILTINS,
     VARIABLE_FUNCTION_NAMES,
-} from './helpers.js';
+} from './templating.js';
 
 export { FAKER_NAMES, FAKER_PARAMETERIZED_PANICS, GOFAKEIT_VERSION } from './faker.js';
 

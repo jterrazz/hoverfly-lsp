@@ -4,7 +4,7 @@
 
 Hoverfly response bodies marked `"templated": true` are rendered through [SpectoLabs/raymond](https://github.com/SpectoLabs/raymond) (a Handlebars fork). The LSP validates template syntax, helper names, helper arity, `Vars`/`Literals` resolution, `faker` types, and `now` offsets (see the HF5xx codes in [diagnostics.md](./diagnostics.md)).
 
-> Generated from `packages/analysis/src/registry/helpers.ts` and `registry/faker.ts`. Regenerate with `npm run docs:diagnostics`.
+> Generated from `packages/analysis/src/registry/templating.ts` and `registry/faker.ts`. Regenerate with `npm run docs:diagnostics`.
 
 There are **52 Hoverfly helpers** plus **8 raymond built-ins** (60 total).
 

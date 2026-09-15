@@ -12,7 +12,7 @@
  *   HF501 (W)  `{{…}}` in a response `body` while `templated` is absent/false — sent literally.
  *   HF502 (E)  template parse error (unclosed `{{`, unclosed/mismatched block) — parser message.
  *   HF503 (E)  unknown helper name (helper-position calls AND subexpression heads).
- *   HF504 (E)  helper arity / block-vs-inline misuse (per `registry/helpers.ts`).
+ *   HF504 (E)  helper arity / block-vs-inline misuse (per `registry/templating.ts`).
  *   HF505 (E)  `Vars.X` not in `data.variables[].name`.
  *   HF506 (E)  `Literals.X` not in `data.literals[].name`.
  *   HF507 (I)  unknown `faker '<Type>'` (string literal only) for the pinned gofakeit version.
