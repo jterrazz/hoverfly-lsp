@@ -11,24 +11,24 @@
  * model's `meta.schemaVersion` node — they never re-walk the AST.
  */
 
-import type { TextDocument } from 'vscode-languageserver-textdocument';
+import { type TextDocument } from 'vscode-languageserver-textdocument';
 import { type Diagnostic, type Range } from 'vscode-languageserver-types';
 
 import { makeDiagnostic } from '../diagnostics.js';
-import type { SemanticRule } from '../types.js';
+import { type SemanticRule } from '../types.js';
 
 /** Syntactically-valid schema version (decision C4): `v` then digits, optional `.digits`. */
-const SCHEMA_VERSION_PATTERN = /^v\d+(?:\.\d+)?$/;
+const SCHEMA_VERSION_PATTERN = /^v\d+(?:\.\d+)?$/u;
 
 /** Captures the leading major-version digits of a `vN(.M)?` string. */
-const MAJOR_VERSION_PATTERN = /^v(?<major>\d+)/;
+const MAJOR_VERSION_PATTERN = /^v(?<major>\d+)/u;
 
 /** Legacy major versions Hoverfly auto-upgrades on import (v1–v4). */
 const LEGACY_MAJORS = new Set([1, 2, 3, 4]);
 
 /** Parse the major version from a `vN(.M)?` string; `undefined` when not parseable. */
 function majorVersion(version: string): number | undefined {
-    const major = MAJOR_VERSION_PATTERN.exec(version)?.groups?.['major'];
+    const major = MAJOR_VERSION_PATTERN.exec(version)?.groups?.major;
     if (major === undefined) {
         return undefined;
     }

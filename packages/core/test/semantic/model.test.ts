@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, test } from 'vitest';
 import { getLanguageService } from 'vscode-json-languageservice';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
@@ -12,7 +12,7 @@ function modelOf(text: string) {
 }
 
 describe('buildSimulationModel', () => {
-    it('builds a typed view of pairs, matcher fields, response and meta', () => {
+    test('builds a typed view of pairs, matcher fields, response and meta', () => {
         // Given - a rich single-pair simulation
         const model = modelOf(
             JSON.stringify({
@@ -45,7 +45,7 @@ describe('buildSimulationModel', () => {
 
         // Then - the pair and its matcher fields are exposed with AST nodes
         expect(model.pairs).toHaveLength(1);
-        const pair = model.pairs[0]!;
+        const pair = model.pairs[0];
         const path = pair.request.fields.find((f) => f.fieldName === 'path');
         expect(path?.container).toBe('request');
         expect(path?.matchers[0]?.matcherName).toBe('exact');
@@ -66,22 +66,22 @@ describe('buildSimulationModel', () => {
         expect(model.globalActions.delaysLogNormal[0]?.urlPattern).toBe('b.*');
     });
 
-    it('never throws and degrades to empty/undefined on malformed shapes', () => {
+    test('never throws and degrades to empty/undefined on malformed shapes', () => {
         // Given - a document where every shape is wrong (pairs as object, data missing, etc.)
         const model = modelOf(`{"data":{"pairs":{}},"meta":42}`);
         // Then - it degrades gracefully
-        expect(model.pairs).toEqual([]);
+        expect(model.pairs).toStrictEqual([]);
         expect(model.meta.node).toBeUndefined();
         expect(model.meta.schemaVersion.valueNode).toBeUndefined();
-        expect(model.globalActions.delays).toEqual([]);
-        expect(model.globalActions.delaysLogNormal).toEqual([]);
+        expect(model.globalActions.delays).toStrictEqual([]);
+        expect(model.globalActions.delaysLogNormal).toStrictEqual([]);
     });
 
-    it('tolerates a non-object root', () => {
+    test('tolerates a non-object root', () => {
         // Given - a JSON array at the root
         const model = modelOf(`[]`);
         // Then - no root object, no pairs
         expect(model.root).toBeUndefined();
-        expect(model.pairs).toEqual([]);
+        expect(model.pairs).toStrictEqual([]);
     });
 });

@@ -20,7 +20,7 @@
  * describing the position; `template-completion.ts` turns that into concrete completion items.
  */
 
-import type { BlockNode, Statement } from './ast.js';
+import { type BlockNode, type Statement } from './ast.js';
 import { parse } from './parser.js';
 
 /** Where, structurally, the cursor sits inside a template. */
@@ -50,7 +50,7 @@ type TemplateContextKind =
 type NowArgSlot = 'format' | 'offset';
 
 /** The classified context plus the data needed to drive completions. */
-interface TemplateCompletionContext {
+type TemplateCompletionContext = {
     readonly kind: TemplateContextKind;
     /**
      * The partial word already typed at the cursor (e.g. `fa` for `{{fa`, `Req` for `{{Req`, the
@@ -71,7 +71,7 @@ interface TemplateCompletionContext {
     readonly blockStack: readonly string[];
     /** Whether the cursor is inside at least one `#each`/`#first` block (enables `@index`/`this`). */
     readonly inEachScope: boolean;
-}
+};
 
 /** The `now`/`faker` helper names get special argument handling. */
 const FAKER_HELPER = 'faker';
@@ -152,7 +152,7 @@ function classifySegment(
     const tokens = splitTopLevelTokens(body);
     const head = tokens[0] ?? '';
     const lastIsPartial = !/\s$/u.test(body) || body.length === 0;
-    const current = lastIsPartial ? (tokens[tokens.length - 1] ?? '') : '';
+    const current = lastIsPartial ? (tokens.at(-1) ?? '') : '';
 
     // Head still being typed (cursor is on the first token): helper/path start OR path continuation.
     if (tokens.length <= 1 && (lastIsPartial || body.trim().length === 0)) {
@@ -213,7 +213,7 @@ function pathContext(
     }
     const segments = token.split('.');
     const root = segments[0] ?? '';
-    const word = segments[segments.length - 1] ?? '';
+    const word = segments.at(-1) ?? '';
     const parts = segments.slice(1, -1);
     return {
         kind: 'pathContinuation',
@@ -253,9 +253,9 @@ function stringArgContext(
 /* ----------------------------------- low-level scanning ---------------------------------- */
 
 /** A located open-mustache: the offset just after its `{{`/`{{{` opener. */
-interface OpenMustache {
+type OpenMustache = {
     readonly contentStart: number;
-}
+};
 
 /**
  * Find the innermost OPEN mustache the cursor sits inside: scan back from the cursor for the
@@ -299,12 +299,12 @@ function hasCloseBetween(decoded: string, from: number, to: number): boolean {
 }
 
 /** The innermost open subexpression within a mustache body, and whether it is the mustache head. */
-interface InnerSegment {
+type InnerSegment = {
     /** Text of the innermost open call (from after the last unmatched `(`, or the whole body). */
     readonly text: string;
     /** True when no unmatched `(` precedes the cursor (the cursor is at the mustache head level). */
     readonly atMustacheHead: boolean;
-}
+};
 
 /**
  * Given the text of a mustache from just-after `{{` up to the cursor, return the text of the

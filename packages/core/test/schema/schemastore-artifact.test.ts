@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
 import { HOVERFLY_COMMIT } from '../../src/schema/provenance.js';
 
@@ -58,56 +58,56 @@ function readJson(path: string): JsonRecord {
 }
 
 function getMatcherProp(schema: JsonRecord): JsonRecord {
-    const definitions = schema['definitions'] as JsonRecord;
+    const definitions = schema.definitions as JsonRecord;
     const fieldMatchers = definitions['field-matchers'] as JsonRecord;
-    const properties = fieldMatchers['properties'] as JsonRecord;
-    return properties['matcher'] as JsonRecord;
+    const properties = fieldMatchers.properties as JsonRecord;
+    return properties.matcher as JsonRecord;
 }
 
-describe('SchemaStore artifact: schemas/hoverfly-simulation.json', () => {
+describe('schemaStore artifact: schemas/hoverfly-simulation.json', () => {
     const bundled = readJson(bundledPath);
     const artifact = readJson(artifactPath);
 
-    it('keeps $schema at draft-07 (same as the bundled schema)', () => {
+    test('keeps $schema at draft-07 (same as the bundled schema)', () => {
         // Given - the standalone artifact
         // Then - it self-declares draft-07, like the bundle
-        expect(artifact['$schema']).toBe(DRAFT_07);
-        expect(bundled['$schema']).toBe(DRAFT_07);
+        expect(artifact.$schema).toBe(DRAFT_07);
+        expect(bundled.$schema).toBe(DRAFT_07);
     });
 
-    it('sets $id to the future SchemaStore URL (documented delta 1)', () => {
+    test('sets $id to the future SchemaStore URL (documented delta 1)', () => {
         // Given - the artifact and the bundle
         // Then - the artifact points at SchemaStore; the bundle keeps its own LSP $id
-        expect(artifact['$id']).toBe(SCHEMASTORE_ID);
-        expect(bundled['$id']).not.toBe(SCHEMASTORE_ID);
+        expect(artifact.$id).toBe(SCHEMASTORE_ID);
+        expect(bundled.$id).not.toBe(SCHEMASTORE_ID);
     });
 
-    it('re-adds the 14 matcher-name examples (documented delta 2)', () => {
+    test('re-adds the 14 matcher-name examples (documented delta 2)', () => {
         // Given - the field-matcher.matcher property in each schema
         const artifactMatcher = getMatcherProp(artifact);
         const bundledMatcher = getMatcherProp(bundled);
         // Then - the artifact carries the 14 names; the bundle carries none (contribution owns it)
-        expect(artifactMatcher['examples']).toEqual([...MATCHER_EXAMPLES]);
-        expect(bundledMatcher['examples']).toBeUndefined();
+        expect(artifactMatcher.examples).toStrictEqual([...MATCHER_EXAMPLES]);
+        expect(bundledMatcher.examples).toBeUndefined();
         // And - matcher stays a permissive free string in both (never an enum)
-        expect(artifactMatcher['type']).toBe('string');
-        expect(artifactMatcher['enum']).toBeUndefined();
+        expect(artifactMatcher.type).toBe('string');
+        expect(artifactMatcher.enum).toBeUndefined();
     });
 
-    it('is byte-for-byte the bundled schema EXCEPT the two documented deltas (drift guard)', () => {
+    test('is byte-for-byte the bundled schema EXCEPT the two documented deltas (drift guard)', () => {
         // Given - the bundled schema with the two documented deltas applied
         const expected = readJson(bundledPath);
-        expected['$id'] = SCHEMASTORE_ID;
-        getMatcherProp(expected)['examples'] = [...MATCHER_EXAMPLES];
+        expected.$id = SCHEMASTORE_ID;
+        getMatcherProp(expected).examples = [...MATCHER_EXAMPLES];
         // Then - the artifact equals exactly that — nothing else may diverge
-        expect(artifact).toEqual(expected);
+        expect(artifact).toStrictEqual(expected);
     });
 
-    it('keeps all titles/descriptions from the bundle (the docs investment ships to consumers)', () => {
+    test('keeps all titles/descriptions from the bundle (the docs investment ships to consumers)', () => {
         // Given - the root + every definition in the artifact
-        expect(artifact['title']).toBe(bundled['title']);
-        expect(artifact['description']).toBe(bundled['description']);
-        const definitions = artifact['definitions'] as JsonRecord;
+        expect(artifact.title).toBe(bundled.title);
+        expect(artifact.description).toBe(bundled.description);
+        const definitions = artifact.definitions as JsonRecord;
         const missing: string[] = [];
         for (const [defName, def] of Object.entries(definitions)) {
             const props = (def as { properties?: Record<string, { description?: string }> })
@@ -122,31 +122,31 @@ describe('SchemaStore artifact: schemas/hoverfly-simulation.json', () => {
             }
         }
         // Then - none lost their description
-        expect(missing).toEqual([]);
+        expect(missing).toStrictEqual([]);
     });
 });
 
 describe('upstream drift baseline: schemas/upstream-*', () => {
-    it('stores a verbatim official baseline that is well-formed JSON', () => {
+    test('stores a verbatim official baseline that is well-formed JSON', () => {
         // Given - the verbatim official schema fetched at the pinned commit
         const text = readFileSync(baselinePath, 'utf8');
         // Then - it parses (the CI job diffs the live upstream against this byte baseline)
         expect(() => JSON.parse(text)).not.toThrow();
     });
 
-    it('the source-hash manifest commit AGREES with provenance.HOVERFLY_COMMIT', () => {
+    test('the source-hash manifest commit AGREES with provenance.HOVERFLY_COMMIT', () => {
         // Given - the baseline source-hash manifest the drift job compares against
         const manifest = readJson(sourceHashesPath);
         // Then - it is pinned to the exact same commit the bundled schema was derived from,
         // So the drift job can never silently compare against a different revision
-        expect(manifest['commit']).toBe(HOVERFLY_COMMIT);
-        expect(manifest['algorithm']).toBe('sha256');
+        expect(manifest.commit).toBe(HOVERFLY_COMMIT);
+        expect(manifest.algorithm).toBe('sha256');
     });
 
-    it('the manifest hashes every Go source file the matcher/templating catalogs cite', () => {
+    test('the manifest hashes every Go source file the matcher/templating catalogs cite', () => {
         // Given - the source-hash manifest
         const manifest = readJson(sourceHashesPath);
-        const files = manifest['files'] as Record<string, string>;
+        const files = manifest.files as Record<string, string>;
         // Then - it covers the research/07 matcher sources and research/08 templating sources
         const expectedFiles = [
             'core/handlers/v2/schema.json',
@@ -161,10 +161,10 @@ describe('upstream drift baseline: schemas/upstream-*', () => {
             'core/templating/template_helpers.go',
             'core/templating/parse_duration.go',
         ];
-        expect(Object.keys(files).sort()).toEqual([...expectedFiles].sort());
+        expect(Object.keys(files).toSorted()).toStrictEqual([...expectedFiles].toSorted());
         // And - every hash is a 64-char hex SHA-256 digest
         for (const hash of Object.values(files)) {
-            expect(hash).toMatch(/^[0-9a-f]{64}$/);
+            expect(hash).toMatch(/^[0-9a-f]{64}$/u);
         }
     });
 });

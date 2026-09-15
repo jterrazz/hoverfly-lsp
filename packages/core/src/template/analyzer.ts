@@ -41,14 +41,14 @@ import {
     type HelperSpec,
     NOW_OFFSET_UNITS,
 } from '../registry/index.js';
-import type {
-    BlockNode,
-    Expression,
-    MustacheNode,
-    PathExpression,
-    Statement,
-    StringLiteral,
-    SubExpression,
+import {
+    type BlockNode,
+    type Expression,
+    type MustacheNode,
+    type PathExpression,
+    type Statement,
+    type StringLiteral,
+    type SubExpression,
 } from './ast.js';
 import { parse, type TemplateParseError } from './parser.js';
 
@@ -68,7 +68,7 @@ type TemplateFindingKind =
  * analysed; the caller maps them to document positions. `args` carries the catalog message
  * placeholders (e.g. `{ name }` for HF503), so the rule never re-derives wording.
  */
-interface TemplateFinding {
+type TemplateFinding = {
     readonly kind: TemplateFindingKind;
     /** Inclusive start offset into the decoded template. */
     readonly start: number;
@@ -76,15 +76,15 @@ interface TemplateFinding {
     readonly end: number;
     /** Catalog message placeholder args for this finding's code. */
     readonly args: Readonly<Record<string, string>>;
-}
+};
 
 /** Document-level context the analyzer needs to resolve `Vars.X` / `Literals.X` references. */
-interface AnalyzerContext {
+type AnalyzerContext = {
     /** `data.variables[].name` values in scope (for HF505). */
     readonly variableNames: ReadonlySet<string>;
     /** `data.literals[].name` values in scope (for HF506). */
     readonly literalNames: ReadonlySet<string>;
-}
+};
 
 /* ------------------------------------ registry indexes ----------------------------------- */
 
@@ -103,7 +103,7 @@ const NOW_OFFSET_RE = new RegExp(
 );
 
 function escapeRegExp(text: string): string {
-    return text.replace(/[.*+?^${}()|[\]\\]/gu, String.raw`\$&`);
+    return text.replaceAll(/[.*+?^${}()|[\]\\]/gu, String.raw`\$&`);
 }
 
 /* ---------------------------------------- analyze ---------------------------------------- */

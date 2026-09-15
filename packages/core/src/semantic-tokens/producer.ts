@@ -18,13 +18,13 @@
  * yield partial tokens (the parser is error-tolerant) and unexpected shapes are skipped.
  */
 
-import type { ASTNode, JSONDocument } from 'vscode-json-languageservice';
-import type { TextDocument } from 'vscode-languageserver-textdocument';
+import { type ASTNode, type JSONDocument } from 'vscode-json-languageservice';
+import { type TextDocument } from 'vscode-languageserver-textdocument';
 
 import { hasHoverflyFilename, isHoverflySimulationAst } from '../fingerprint.js';
 import { ALL_HELPERS, FAKER_NAMES, MATCHER_SPECS } from '../registry/index.js';
 import { buildSimulationModel } from '../semantic/model.js';
-import type { MatcherModel, SimulationModel } from '../semantic/types.js';
+import { type MatcherModel, type SimulationModel } from '../semantic/types.js';
 import {
     type BlockNode,
     createStringSourceMap,
@@ -43,7 +43,7 @@ import { SEMANTIC_TOKEN_TYPE_INDEX, type SemanticTokenTypeName } from './legend.
  * One absolute semantic token (research/16 §4). Single line; `tokenType` is an index into
  * `SEMANTIC_TOKEN_TYPES`; `tokenModifiers` is a bitset (always `0` in v1).
  */
-interface SemanticToken {
+type SemanticToken = {
     /** 0-based line. */
     readonly line: number;
     /** 0-based start character (UTF-16 code units). */
@@ -54,7 +54,7 @@ interface SemanticToken {
     readonly tokenType: number;
     /** Modifier bitset; `0` in v1. */
     readonly tokenModifiers: number;
-}
+};
 
 /* ---------------------------------------- name sets -------------------------------------- */
 
@@ -82,12 +82,12 @@ class TokenEmitter {
     private readonly tokens: SemanticToken[] = [];
     private readonly document: TextDocument;
 
-    public constructor(document: TextDocument) {
+    constructor(document: TextDocument) {
         this.document = document;
     }
 
     /** Emit a token for an absolute DOCUMENT `[startOffset, endOffset)` span, split per line. */
-    public emitDocSpan(startOffset: number, endOffset: number, type: SemanticTokenTypeName): void {
+    emitDocSpan(startOffset: number, endOffset: number, type: SemanticTokenTypeName): void {
         if (endOffset <= startOffset) {
             return;
         }
@@ -118,7 +118,7 @@ class TokenEmitter {
     }
 
     /** Emit a token for a DECODED `[start, end)` span via the given source map. */
-    public emitDecoded(
+    emitDecoded(
         sourceMap: StringSourceMap,
         start: number,
         end: number,
@@ -128,8 +128,8 @@ class TokenEmitter {
     }
 
     /** The collected tokens, sorted by (line, startChar). */
-    public result(): SemanticToken[] {
-        return this.tokens.sort((a, b) => a.line - b.line || a.startChar - b.startChar);
+    result(): SemanticToken[] {
+        return this.tokens.toSorted((a, b) => a.line - b.line || a.startChar - b.startChar);
     }
 }
 
@@ -143,7 +143,7 @@ function emitPath(
     isHelperHead: boolean,
 ): void {
     if (isHelperHead) {
-        const type: SemanticTokenTypeName = BLOCK_HELPER_NAMES.has(path.original.replace(/^#/, ''))
+        const type: SemanticTokenTypeName = BLOCK_HELPER_NAMES.has(path.original.replace(/^#/u, ''))
             ? 'keyword'
             : 'function';
         emitter.emitDecoded(sourceMap, path.start, path.end, type);
@@ -167,22 +167,26 @@ function emitPath(
         }
         const segStart = cursor;
         const segEnd = cursor + segment.length;
-        const inner = segment.replace(/^\[(?<index>.*)\]$/, '$<index>');
+        const inner = segment.replace(/^\[(?<index>.*)\]$/u, '$<index>');
         const isBracketIndex = inner !== segment;
-        const isNumeric = /^-?\d+$/.test(inner);
+        const isNumeric = /^-?\d+$/u.test(inner);
 
         let type: SemanticTokenTypeName;
         if (i === 0) {
-            type = 'variable'; // Path root (Request, State, Vars, …)
+            // Path root (Request, State, Vars, …)
+            type = 'variable';
         } else if (isBracketIndex && isNumeric) {
-            type = 'number'; // [1] index selector
+            // [1] index selector
+            type = 'number';
         } else if (isNumeric) {
             type = 'number';
         } else {
-            type = 'property'; // .Path, .Method, field name
+            // .Path, .Method, field name
+            type = 'property';
         }
         emitter.emitDecoded(sourceMap, segStart, segEnd, type);
-        cursor = segEnd + 1; // Skip the dot separator
+        // Skip the dot separator
+        cursor = segEnd + 1;
     }
 }
 
@@ -228,7 +232,7 @@ function emitExpression(
 
 /** The helper name of a call path (`now`, `faker`, `Request.Body` → `now`/`faker`/`Request`). */
 function helperHeadName(path: PathExpression): string {
-    return path.parts[0] ?? path.original.replace(/^#/, '');
+    return path.parts[0] ?? path.original.replace(/^#/u, '');
 }
 
 /** Whether the call head names a known helper (so its head colors as function/keyword). */
@@ -343,7 +347,7 @@ function emitTemplateString(emitter: TokenEmitter, document: TextDocument, node:
 
 /** Whether a `templated` field node is the JSON boolean `true`. */
 function isTemplated(node: ASTNode | undefined): boolean {
-    return node?.type === 'boolean' && node.value === true;
+    return node?.type === 'boolean' && node.value;
 }
 
 /** Emit a templatable string node and array-of-strings (header value shapes). */

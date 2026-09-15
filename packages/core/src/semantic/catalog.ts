@@ -81,7 +81,7 @@ export type DiagnosticCode =
     | 'HF603'
     | 'HF604';
 
-export interface CatalogEntry {
+export type CatalogEntry = {
     readonly code: DiagnosticCode;
     readonly severity: DiagnosticSeverity;
     readonly href: string;
@@ -91,7 +91,7 @@ export interface CatalogEntry {
      * the rule supplies the full text via that arg.
      */
     readonly messageTemplate: string;
-}
+};
 
 /** `source` field stamped on every Hoverfly diagnostic. */
 export const DIAGNOSTIC_SOURCE = 'hoverfly';
@@ -493,7 +493,7 @@ export function formatMessage(
     template: string,
     args: Readonly<Record<string, unknown>> = {},
 ): string {
-    return template.replace(/\{(?<key>\w+)\}/g, (match: string, key: string) => {
+    return template.replaceAll(/\{(?<key>\w+)\}/gu, (match: string, key: string) => {
         if (Object.hasOwn(args, key)) {
             return String(args[key]);
         }

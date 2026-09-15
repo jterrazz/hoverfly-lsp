@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
 import { REGISTRY_MATCHER_NAMES } from '../../src/registry/index.js';
 import { expectCompletions, expectNoCompletions } from '../fourslash/harness.js';
@@ -7,7 +7,7 @@ import { expectCompletions, expectNoCompletions } from '../fourslash/harness.js'
 const NAMED_MATCHERS = REGISTRY_MATCHER_NAMES.filter((name) => name !== '');
 
 describe('matcher-name completions', () => {
-    it('offers the named registry matchers on request.path (quoted value)', async () => {
+    test('offers the named registry matchers on request.path (quoted value)', async () => {
         // Given - a cursor inside the quoted matcher value on request.path
         const doc = `{"data":{"pairs":[{"request":{"path":[{"matcher":"⟦⟧"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
         /*
@@ -19,14 +19,14 @@ describe('matcher-name completions', () => {
         await expectCompletions(doc, '', { exact: NAMED_MATCHERS });
     });
 
-    it('offers matchers on an UNQUOTED matcher value position', async () => {
+    test('offers matchers on an UNQUOTED matcher value position', async () => {
         // Given - a bare (unquoted) value position after the colon
         const doc = `{"data":{"pairs":[{"request":{"path":[{"matcher":⟦⟧}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
         // Then - the same named matchers are offered (insertText quotes them)
         await expectCompletions(doc, '', { contains: ['exact', 'regex', 'jsonpath'] });
     });
 
-    it('adds `form` ONLY on request.body', async () => {
+    test('adds `form` ONLY on request.body', async () => {
         // Given - a matcher value on request.body
         const doc = `{"data":{"pairs":[{"request":{"body":[{"matcher":"⟦⟧"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
         /*
@@ -36,21 +36,21 @@ describe('matcher-name completions', () => {
         await expectCompletions(doc, '', { exact: [...NAMED_MATCHERS, 'form'] });
     });
 
-    it('offers matchers inside a header matcher array', async () => {
+    test('offers matchers inside a header matcher array', async () => {
         // Given - a matcher value inside request.headers.<name>[]
         const doc = `{"data":{"pairs":[{"request":{"headers":{"Accept":[{"matcher":"⟦⟧"}]}},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
         // Then - registry matchers are offered but not `form` (headers are not body)
         await expectCompletions(doc, '', { contains: ['exact'], notContains: ['form'] });
     });
 
-    it('offers matchers inside a doMatch chain link', async () => {
+    test('offers matchers inside a doMatch chain link', async () => {
         // Given - a matcher value inside a nested doMatch
         const doc = `{"data":{"pairs":[{"request":{"path":[{"matcher":"jsonpath","value":"$.x","doMatch":{"matcher":"⟦⟧"}}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
         // Then - matcher names are offered in the chained position too
         await expectCompletions(doc, '', { contains: ['exact', 'regex'] });
     });
 
-    it('carries documentation, detail, and a quoted insertText on each item', async () => {
+    test('carries documentation, detail, and a quoted insertText on each item', async () => {
         // Given - a matcher value position
         const doc = `{"data":{"pairs":[{"request":{"path":[{"matcher":"⟦⟧"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
         // When - completions are produced
@@ -65,7 +65,7 @@ describe('matcher-name completions', () => {
         expect(regex?.insertText).toBe('"regex"');
     });
 
-    it('keeps completion documentation consistent with the hover policy (no generic panic notes)', async () => {
+    test('keeps completion documentation consistent with the hover policy (no generic panic notes)', async () => {
         // Given - a matcher value position; documentation shares the docs.ts renderer with hover
         const doc = `{"data":{"pairs":[{"request":{"path":[{"matcher":"⟦⟧"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
         const items = await expectCompletions(doc, '', { contains: ['regex', 'array'] });
@@ -87,21 +87,21 @@ describe('matcher-name completions', () => {
 });
 
 describe('matcher-name completions — negative contexts', () => {
-    it('does NOT offer matcher names in a non-simulation JSON document', async () => {
+    test('does NOT offer matcher names in a non-simulation JSON document', async () => {
         // Given - arbitrary JSON whose shape coincidentally has a "matcher" key but no sim fingerprint
         const doc = `{"random":{"matcher":"⟦⟧"}}`;
         // Then - no Hoverfly matcher completions are injected (path is not a request matcher position)
         await expectCompletions(doc, '', { notContains: NAMED_MATCHERS });
     });
 
-    it('does not offer matcher names on a response field', async () => {
+    test('does not offer matcher names on a response field', async () => {
         // Given - a cursor in the response.body string (not a matcher position)
         const doc = `{"data":{"pairs":[{"request":{"path":[]},"response":{"status":200,"body":"⟦⟧"}}]},"meta":{"schemaVersion":"v5.3"}}`;
         // Then - no matcher-name completions appear
         await expectCompletions(doc, '', { notContains: NAMED_MATCHERS });
     });
 
-    it('does not crash and offers nothing Hoverfly-specific on broken JSON', async () => {
+    test('does not crash and offers nothing Hoverfly-specific on broken JSON', async () => {
         // Given - a structurally broken document with a dangling matcher value
         const doc = `{"data":{"pairs":[{"request":{"path":[{"matcher":"⟦⟧"`;
         // Then - the call returns without throwing; matcher completion may or may not fire, but the
@@ -111,7 +111,7 @@ describe('matcher-name completions — negative contexts', () => {
 });
 
 describe('method/scheme value completions', () => {
-    it('offers the standard HTTP methods on an exact method value', async () => {
+    test('offers the standard HTTP methods on an exact method value', async () => {
         // Given - a cursor in a method matcher value with an exact matcher
         const doc = `{"data":{"pairs":[{"request":{"method":[{"matcher":"exact","value":"⟦⟧"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
         // Then - the IANA core methods are offered, quoted on insert
@@ -122,35 +122,35 @@ describe('method/scheme value completions', () => {
         expect(get?.insertText).toBe('"GET"');
     });
 
-    it('offers methods when the matcher key is absent (default-exact)', async () => {
+    test('offers methods when the matcher key is absent (default-exact)', async () => {
         // Given - a method matcher with no `matcher` key (defaults to exact)
         const doc = `{"data":{"pairs":[{"request":{"method":[{"value":"⟦⟧"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
         // Then - methods are still offered (default-exact is enum-shaped)
         await expectCompletions(doc, '', { contains: ['GET', 'OPTIONS'] });
     });
 
-    it('offers http/https/ws/wss on an exact scheme value', async () => {
+    test('offers http/https/ws/wss on an exact scheme value', async () => {
         // Given - a cursor in a scheme matcher value with an exact matcher
         const doc = `{"data":{"pairs":[{"request":{"scheme":[{"matcher":"exact","value":"⟦⟧"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
         // Then - the common schemes are offered
         await expectCompletions(doc, '', { exact: ['http', 'https', 'ws', 'wss'] });
     });
 
-    it('offers NOTHING on a regex method value (a pattern, not an enum)', async () => {
+    test('offers NOTHING on a regex method value (a pattern, not an enum)', async () => {
         // Given - a method matcher whose matcher is regex
         const doc = `{"data":{"pairs":[{"request":{"method":[{"matcher":"regex","value":"⟦⟧"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
         // Then - no method-value completions appear (the values are not offered for a pattern)
         await expectCompletions(doc, '', { notContains: ['GET', 'POST', 'DELETE'] });
     });
 
-    it('offers NOTHING on a glob scheme value', async () => {
+    test('offers NOTHING on a glob scheme value', async () => {
         // Given - a scheme matcher whose matcher is glob
         const doc = `{"data":{"pairs":[{"request":{"scheme":[{"matcher":"glob","value":"⟦⟧"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
         // Then - no scheme-value completions appear
         await expectCompletions(doc, '', { notContains: ['http', 'https'] });
     });
 
-    it('does not offer method values on a free-string field like path', async () => {
+    test('does not offer method values on a free-string field like path', async () => {
         // Given - a cursor in a path matcher value (path is a free string, not an enum)
         const doc = `{"data":{"pairs":[{"request":{"path":[{"matcher":"exact","value":"⟦⟧"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
         // Then - no method/scheme enum values leak onto path
@@ -159,7 +159,7 @@ describe('method/scheme value completions', () => {
 });
 
 describe('schemaVersion completions', () => {
-    it('offers v5.3 (preferred) plus v5/v5.1/v5.2', async () => {
+    test('offers v5.3 (preferred) plus v5/v5.1/v5.2', async () => {
         // Given - a cursor in the meta.schemaVersion value
         const doc = `{"data":{"pairs":[]},"meta":{"schemaVersion":"⟦⟧"}}`;
         // Then - the four version values are offered (the contribution's labels are unquoted; the
@@ -169,14 +169,14 @@ describe('schemaVersion completions', () => {
         });
         const preferred = items.find((i) => i.label === 'v5.3');
         // Then - v5.3 is preselected and sorts first
-        expect(preferred?.preselect).toBe(true);
+        expect(preferred?.preselect).toBeTruthy();
         expect(preferred?.sortText).toBe('0');
         expect(preferred?.insertText).toBe('"v5.3"');
     });
 });
 
 describe('postServeAction completions', () => {
-    it('offers registered actions when the setting is provided', async () => {
+    test('offers registered actions when the setting is provided', async () => {
         // Given - a cursor in response.postServeAction and a registeredActions allowlist
         const doc = `{"data":{"pairs":[{"request":{"path":[]},"response":{"status":200,"postServeAction":"⟦⟧"}}]},"meta":{"schemaVersion":"v5.3"}}`;
         // Then - the configured action names are offered
@@ -188,7 +188,7 @@ describe('postServeAction completions', () => {
         );
     });
 
-    it('offers nothing when no registeredActions are configured', async () => {
+    test('offers nothing when no registeredActions are configured', async () => {
         // Given - a postServeAction position but no settings
         const doc = `{"data":{"pairs":[{"request":{"path":[]},"response":{"status":200,"postServeAction":"⟦⟧"}}]},"meta":{"schemaVersion":"v5.3"}}`;
         // Then - no postServeAction completions (runtime-registered, unknowable from the file)
@@ -197,7 +197,7 @@ describe('postServeAction completions', () => {
 });
 
 describe('state-key cross-reference completions', () => {
-    it('offers requiresState keys declared elsewhere in the file, plus a sequence: snippet', async () => {
+    test('offers requiresState keys declared elsewhere in the file, plus a sequence: snippet', async () => {
         // Given - one pair declares requiresState keys; a second pair is typing a new requiresState key
         const doc = `{"data":{"pairs":[
       {"request":{"path":[{"matcher":"exact","value":"/a"}],"requiresState":{"cart":"full","loggedIn":"yes"}},"response":{"status":200}},
@@ -207,7 +207,7 @@ describe('state-key cross-reference completions', () => {
         await expectCompletions(doc, '', { contains: ['cart', 'loggedIn', 'sequence:'] });
     });
 
-    it('offers requiresState keys as transitionsState key completions (cross-ref)', async () => {
+    test('offers requiresState keys as transitionsState key completions (cross-ref)', async () => {
         // Given - a requiresState key declared on one pair; another pair types a transitionsState key
         const doc = `{"data":{"pairs":[
       {"request":{"path":[{"matcher":"exact","value":"/a"}],"requiresState":{"step":"1"}},"response":{"status":200}},

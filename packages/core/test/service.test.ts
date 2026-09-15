@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, test } from 'vitest';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
 import { createHoverflyLanguageService } from '../src/service.js';
@@ -20,16 +20,16 @@ function hf201RangeOf(diagnostics: readonly { code?: unknown; range?: unknown }[
 const service = createHoverflyLanguageService();
 
 describe('createHoverflyLanguageService — schema-driven validation', () => {
-    it('produces zero diagnostics for a minimal valid simulation', async () => {
+    test('produces zero diagnostics for a minimal valid simulation', async () => {
         // Given - a minimal but valid v5.3 simulation
         const text = `{"data":{"pairs":[]},"meta":{"schemaVersion":"v5.3"}}`;
         // When - validated through the real service
         const diagnostics = await service.doValidation(doc(text));
         // Then - the schema reports nothing
-        expect(diagnostics).toEqual([]);
+        expect(diagnostics).toStrictEqual([]);
     });
 
-    it.each(['minimal.hoverfly.json', 'rich-stateful-templated.hoverfly.json'])(
+    test.each(['minimal.hoverfly.json', 'rich-stateful-templated.hoverfly.json'])(
         'valid corpus fixture %s produces zero diagnostics end-to-end',
         async (name) => {
             // Given - a committed valid fixture
@@ -37,11 +37,11 @@ describe('createHoverflyLanguageService — schema-driven validation', () => {
             // When - validated through the real service
             const diagnostics = await service.doValidation(doc(text));
             // Then - zero schema diagnostics
-            expect(diagnostics).toEqual([]);
+            expect(diagnostics).toStrictEqual([]);
         },
     );
 
-    it('flags a structurally-broken simulation with HF102 schema diagnostics', async () => {
+    test('flags a structurally-broken simulation with HF102 schema diagnostics', async () => {
         // Given - a fingerprint-passing simulation (valid meta.schemaVersion) with pairs as an
         // Object and a root extra property. (A doc that fails the D3 fingerprint is gated to
         // HF101/[] instead — see the gate tests below.)
@@ -51,7 +51,7 @@ describe('createHoverflyLanguageService — schema-driven validation', () => {
         const messages = diagnostics.map((d) => d.message);
         // Then - each structural problem is reported, re-tagged as HF102
         expect(messages).toContain('Incorrect type. Expected "array".');
-        expect(messages.some((m) => m.includes('extra') && m.includes('not allowed'))).toBe(true);
+        expect(messages.some((m) => m.includes('extra') && m.includes('not allowed'))).toBeTruthy();
         // Then - every schema diagnostic carries the HF102 code and hoverfly source
         for (const d of diagnostics) {
             expect(d.code).toBe('HF102');
@@ -59,17 +59,17 @@ describe('createHoverflyLanguageService — schema-driven validation', () => {
         }
     });
 
-    it('returns [] for non-simulation JSON without a hoverfly filename (D3 gate)', async () => {
+    test('returns [] for non-simulation JSON without a hoverfly filename (D3 gate)', async () => {
         // Given - arbitrary JSON in a plainly-named file
         const text = `{"hello":"world"}`;
         const document = TextDocument.create('file:///config.json', 'json', 1, text);
         // When - validated
         const diagnostics = await service.doValidation(document);
         // Then - the service stays silent
-        expect(diagnostics).toEqual([]);
+        expect(diagnostics).toStrictEqual([]);
     });
 
-    it('emits HF101 for a hoverfly-named file that fails the fingerprint (D3)', async () => {
+    test('emits HF101 for a hoverfly-named file that fails the fingerprint (D3)', async () => {
         // Given - a *.hoverfly.json file that is not actually a simulation
         const text = `{"hello":"world"}`;
         // When - validated
@@ -80,7 +80,7 @@ describe('createHoverflyLanguageService — schema-driven validation', () => {
         expect(diagnostics[0]?.source).toBe('hoverfly');
     });
 
-    it('treats a .hfy file as a Hoverfly simulation (schema + semantic)', async () => {
+    test('treats a .hfy file as a Hoverfly simulation (schema + semantic)', async () => {
         // Given - a structurally-broken simulation in a .hfy file (not a .json extension)
         const text = `{"data":{"pairs":{}},"meta":{"schemaVersion":"v5.3"}}`;
         const document = TextDocument.create('file:///api.hfy', 'json', 1, text);
@@ -88,10 +88,10 @@ describe('createHoverflyLanguageService — schema-driven validation', () => {
         const diagnostics = await service.doValidation(document);
         // Then - the bundled schema still applies via the *.hfy fileMatch (HF102)
         expect(diagnostics.length).toBeGreaterThan(0);
-        expect(diagnostics.some((d) => d.code === 'HF102')).toBe(true);
+        expect(diagnostics.some((d) => d.code === 'HF102')).toBeTruthy();
     });
 
-    it('emits HF101 for a .hfy file that is not a simulation', async () => {
+    test('emits HF101 for a .hfy file that is not a simulation', async () => {
         // Given - arbitrary JSON in a .hfy file (explicit hoverfly name)
         const text = `{"hello":"world"}`;
         const document = TextDocument.create('file:///notes.hfy', 'json', 1, text);
@@ -102,32 +102,32 @@ describe('createHoverflyLanguageService — schema-driven validation', () => {
         expect(diagnostics[0]?.code).toBe('HF101');
     });
 
-    it('does not flag the request.method property (valid per D5)', async () => {
+    test('does not flag the request.method property (valid per D5)', async () => {
         // Given - a pair using the method field, which the official schema omits
         const text = `{"data":{"pairs":[{"request":{"method":[{"matcher":"exact","value":"GET"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
         // When - validated
         const diagnostics = await service.doValidation(doc(text));
         // Then - method is accepted
-        expect(diagnostics).toEqual([]);
+        expect(diagnostics).toStrictEqual([]);
     });
 });
 
 describe('createHoverflyLanguageService — leading BOM handling', () => {
     const BOM = '﻿';
 
-    it('does not misclassify a BOM-prefixed valid simulation as HF101', async () => {
+    test('does not misclassify a BOM-prefixed valid simulation as HF101', async () => {
         // Given - a valid simulation saved with a leading UTF-8 BOM (as many editors do)
         const valid = `{"data":{"pairs":[]},"meta":{"schemaVersion":"v5.3"}}`;
         const document = doc(BOM + valid);
         // When - validated and fingerprinted through the real service
         const diagnostics = await service.doValidation(document);
         // Then - the BOM is transparent: zero diagnostics, recognised as a simulation
-        expect(diagnostics).toEqual([]);
-        expect(service.isSimulation(document)).toBe(true);
+        expect(diagnostics).toStrictEqual([]);
+        expect(service.isSimulation(document)).toBeTruthy();
         expect(service.parse(document).root?.type).toBe('object');
     });
 
-    it('keeps diagnostic positions byte-identical with vs without a leading BOM', async () => {
+    test('keeps diagnostic positions byte-identical with vs without a leading BOM', async () => {
         // Given - the same invalid simulation (unknown matcher on line 1), one with a leading BOM
         const line0 = `{"data":{"pairs":[{"request":{"path":[`;
         const line1 = `{"matcher":"frobnicate","value":"v"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
@@ -140,16 +140,17 @@ describe('createHoverflyLanguageService — leading BOM handling', () => {
          * space (not deleting it) preserves every UTF-16 offset.
          */
         expect(hf201RangeOf(withoutBom)).toBeDefined();
-        expect(hf201RangeOf(withBom)).toEqual(hf201RangeOf(withoutBom));
+        expect(hf201RangeOf(withBom)).toStrictEqual(hf201RangeOf(withoutBom));
     });
 });
 
 describe('createHoverflyLanguageService — completion', () => {
-    it('offers request and response inside an empty pair', async () => {
+    test('offers request and response inside an empty pair', async () => {
         // Given - a cursor inside an empty pair object
         const text = `{"data":{"pairs":[{}]},"meta":{"schemaVersion":"v5.3"}}`;
         const document = doc(text);
-        const offset = text.indexOf('[{') + 2; // Inside the empty {}
+        // Inside the empty {}
+        const offset = text.indexOf('[{') + 2;
         // When - completion is requested
         const completions = await service.doComplete(document, document.positionAt(offset));
         const labels = (completions?.items ?? []).map((i) => i.label);
@@ -160,7 +161,7 @@ describe('createHoverflyLanguageService — completion', () => {
 });
 
 describe('createHoverflyLanguageService — hover', () => {
-    it('returns our description when hovering schemaVersion', async () => {
+    test('returns our description when hovering schemaVersion', async () => {
         // Given - a cursor on the schemaVersion key
         const text = `{"data":{},"meta":{"schemaVersion":"v5.3"}}`;
         const document = doc(text);
@@ -176,18 +177,18 @@ describe('createHoverflyLanguageService — hover', () => {
 });
 
 describe('createHoverflyLanguageService — fingerprint + parse passthroughs', () => {
-    it('recognises a simulation and parses to a JSON AST', () => {
+    test('recognises a simulation and parses to a JSON AST', () => {
         // Given - a valid simulation document
         const document = doc(`{"data":{},"meta":{"schemaVersion":"v5.3"}}`);
         // Then - it is fingerprinted as a simulation and parses to a rooted AST
-        expect(service.isSimulation(document)).toBe(true);
+        expect(service.isSimulation(document)).toBeTruthy();
         expect(service.parse(document).root).toBeDefined();
     });
 
-    it('does not fingerprint a non-simulation JSON document', () => {
+    test('does not fingerprint a non-simulation JSON document', () => {
         // Given - arbitrary JSON
         const document = doc(`{"hello":"world"}`);
         // Then - the D3 fingerprint rejects it
-        expect(service.isSimulation(document)).toBe(false);
+        expect(service.isSimulation(document)).toBeFalsy();
     });
 });

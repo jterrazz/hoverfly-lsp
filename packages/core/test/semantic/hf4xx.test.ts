@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, test } from 'vitest';
 import { getLanguageService } from 'vscode-json-languageservice';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
@@ -8,7 +8,7 @@ import {
     hf402TransitionsNeverRequired,
     hf403RemovesNeverSet,
 } from '../../src/semantic/rules/hf4xx.js';
-import type { RuleContext } from '../../src/semantic/types.js';
+import { type RuleContext } from '../../src/semantic/types.js';
 
 const ls = getLanguageService({});
 
@@ -19,11 +19,11 @@ function contextOf(value: unknown): RuleContext {
 }
 
 /** A single request/response pair carrying optional state maps. */
-interface StatePair {
+type StatePair = {
     requiresState?: Record<string, string>;
     transitionsState?: Record<string, string>;
     removesState?: string[];
-}
+};
 
 function sim(...pairs: StatePair[]): unknown {
     return {
@@ -46,8 +46,8 @@ function sim(...pairs: StatePair[]): unknown {
     };
 }
 
-describe('HF401 — requiresState key never set', () => {
-    it('warns when a required state is never set by any transitionsState', () => {
+describe('hF401 — requiresState key never set', () => {
+    test('warns when a required state is never set by any transitionsState', () => {
         // Given - a pair requiring a state nothing transitions
         const diags = hf401RequiresNeverSet.run(
             contextOf(sim({ requiresState: { ready: 'yes' } })),
@@ -58,7 +58,7 @@ describe('HF401 — requiresState key never set', () => {
         expect(diags[0]?.message).toContain('State "ready"');
     });
 
-    it('stays silent cross-pair: required in pair A, set in pair B', () => {
+    test('stays silent cross-pair: required in pair A, set in pair B', () => {
         // Given - pair A requires `auth`, pair B transitions `auth`
         const diags = hf401RequiresNeverSet.run(
             contextOf(
@@ -66,10 +66,10 @@ describe('HF401 — requiresState key never set', () => {
             ),
         );
         // Then - cross-pair satisfaction silences HF401
-        expect(diags).toEqual([]);
+        expect(diags).toStrictEqual([]);
     });
 
-    it('still warns when required and set only in the SAME pair (state unset on first match)', () => {
+    test('still warns when required and set only in the SAME pair (state unset on first match)', () => {
         // Given - one pair both requires and transitions `loop`
         const diags = hf401RequiresNeverSet.run(
             contextOf(sim({ requiresState: { loop: '1' }, transitionsState: { loop: '1' } })),
@@ -79,16 +79,16 @@ describe('HF401 — requiresState key never set', () => {
         expect(diags[0]?.code).toBe('HF401');
     });
 
-    it('exempts sequence:-prefixed keys (Hoverfly built-in sequencing)', () => {
+    test('exempts sequence:-prefixed keys (Hoverfly built-in sequencing)', () => {
         // Given - a required state using the sequence: prefix
         const diags = hf401RequiresNeverSet.run(
             contextOf(sim({ requiresState: { 'sequence:1': '2' } })),
         );
         // Then - sequence keys are never flagged
-        expect(diags).toEqual([]);
+        expect(diags).toStrictEqual([]);
     });
 
-    it('flags an empty-string state key', () => {
+    test('flags an empty-string state key', () => {
         // Given - a required state whose key is the empty string
         const diags = hf401RequiresNeverSet.run(contextOf(sim({ requiresState: { '': 'x' } })));
         // Then - the empty key is still required-but-never-set
@@ -96,19 +96,19 @@ describe('HF401 — requiresState key never set', () => {
         expect(diags[0]?.code).toBe('HF401');
     });
 
-    it('warns once per pair for a duplicate required key never set', () => {
+    test('warns once per pair for a duplicate required key never set', () => {
         // Given - two pairs each requiring the same unset state
         const diags = hf401RequiresNeverSet.run(
             contextOf(sim({ requiresState: { gone: '1' } }, { requiresState: { gone: '1' } })),
         );
         // Then - each occurrence gets its own diagnostic (distinct ranges)
         expect(diags).toHaveLength(2);
-        expect(diags.every((d) => d.code === 'HF401')).toBe(true);
+        expect(diags.every((d) => d.code === 'HF401')).toBeTruthy();
     });
 });
 
-describe('HF402 — transitionsState key never required', () => {
-    it('informs when a set state is never required', () => {
+describe('hF402 — transitionsState key never required', () => {
+    test('informs when a set state is never required', () => {
         // Given - a pair transitioning a state nothing requires
         const diags = hf402TransitionsNeverRequired.run(
             contextOf(sim({ transitionsState: { done: 'true' } })),
@@ -119,7 +119,7 @@ describe('HF402 — transitionsState key never required', () => {
         expect(diags[0]?.message).toContain('State "done"');
     });
 
-    it('stays silent when the set state is required by another pair', () => {
+    test('stays silent when the set state is required by another pair', () => {
         // Given - pair A transitions `auth`, pair B requires it
         const diags = hf402TransitionsNeverRequired.run(
             contextOf(
@@ -127,21 +127,21 @@ describe('HF402 — transitionsState key never required', () => {
             ),
         );
         // Then - no HF402
-        expect(diags).toEqual([]);
+        expect(diags).toStrictEqual([]);
     });
 
-    it('exempts sequence:-prefixed keys', () => {
+    test('exempts sequence:-prefixed keys', () => {
         // Given - a transitioned sequence: state
         const diags = hf402TransitionsNeverRequired.run(
             contextOf(sim({ transitionsState: { 'sequence:foo': '1' } })),
         );
         // Then - sequence keys are exempt
-        expect(diags).toEqual([]);
+        expect(diags).toStrictEqual([]);
     });
 });
 
-describe('HF403 — removesState entry never set', () => {
-    it('informs when a removed state is never set anywhere', () => {
+describe('hF403 — removesState entry never set', () => {
+    test('informs when a removed state is never set anywhere', () => {
         // Given - a pair removing a state nothing transitions
         const diags = hf403RemovesNeverSet.run(contextOf(sim({ removesState: ['ghost'] })));
         // Then - one HF403 information on the entry
@@ -150,30 +150,30 @@ describe('HF403 — removesState entry never set', () => {
         expect(diags[0]?.message).toContain('State "ghost"');
     });
 
-    it('stays silent when the removed state is set by some transitionsState', () => {
+    test('stays silent when the removed state is set by some transitionsState', () => {
         // Given - pair A sets `tmp`, pair B removes it
         const diags = hf403RemovesNeverSet.run(
             contextOf(sim({ transitionsState: { tmp: '1' } }, { removesState: ['tmp'] })),
         );
         // Then - no HF403
-        expect(diags).toEqual([]);
+        expect(diags).toStrictEqual([]);
     });
 
-    it('exempts removesState of a sequence: key', () => {
+    test('exempts removesState of a sequence: key', () => {
         // Given - removing a sequence: key (auto-managed, never transitioned)
         const diags = hf403RemovesNeverSet.run(contextOf(sim({ removesState: ['sequence:2'] })));
         // Then - sequence keys are exempt from HF403
-        expect(diags).toEqual([]);
+        expect(diags).toStrictEqual([]);
     });
 });
 
-describe('HF4xx — defensive', () => {
-    it('emits nothing on a document with no pairs', () => {
+describe('hF4xx — defensive', () => {
+    test('emits nothing on a document with no pairs', () => {
         // Given - an empty simulation
         const ctx = contextOf({ data: { pairs: [] }, meta: { schemaVersion: 'v5.3' } });
         // Then - all three rules are silent
-        expect(hf401RequiresNeverSet.run(ctx)).toEqual([]);
-        expect(hf402TransitionsNeverRequired.run(ctx)).toEqual([]);
-        expect(hf403RemovesNeverSet.run(ctx)).toEqual([]);
+        expect(hf401RequiresNeverSet.run(ctx)).toStrictEqual([]);
+        expect(hf402TransitionsNeverRequired.run(ctx)).toStrictEqual([]);
+        expect(hf403RemovesNeverSet.run(ctx)).toStrictEqual([]);
     });
 });

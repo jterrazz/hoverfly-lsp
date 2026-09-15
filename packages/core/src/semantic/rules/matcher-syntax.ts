@@ -36,12 +36,17 @@
  */
 
 import { XMLValidator } from 'fast-xml-parser';
-import type { ASTNode, ObjectASTNode } from 'vscode-json-languageservice';
-import type { Diagnostic } from 'vscode-languageserver-types';
+import { type ASTNode, type ObjectASTNode } from 'vscode-json-languageservice';
+import { type Diagnostic } from 'vscode-languageserver-types';
 
 import { makeDiagnostic } from '../diagnostics.js';
 import { isValidRe2 } from '../re2.js';
-import type { FieldContainer, MatcherModel, RuleContext, SemanticRule } from '../types.js';
+import {
+    type FieldContainer,
+    type MatcherModel,
+    type RuleContext,
+    type SemanticRule,
+} from '../types.js';
 
 /* ------------------------------- matcher-tree walking ------------------------------------ */
 
@@ -74,7 +79,7 @@ function walkMatchers(matchers: readonly MatcherModel[]): MatcherModel[] {
     const out: MatcherModel[] = [];
     const visit = (matcher: MatcherModel): void => {
         out.push(matcher);
-        const doMatchNode = matcher.doMatchNode;
+        const { doMatchNode } = matcher;
         if (doMatchNode?.type === 'object') {
             visit(nestedMatcher(doMatchNode, matcher.parent.fieldName, matcher.parent.container));
         } else if (doMatchNode?.type === 'array') {
@@ -126,16 +131,16 @@ function isBalanced(s: string): boolean {
  * regex metacharacters like `<`/`&` would otherwise trip a strict XML validator). research/14 §3.7.
  */
 function neutralizeTemplateTokens(xml: string): string {
-    return xml.replace(/\{\{.*?\}\}/gs, 'x');
+    return xml.replaceAll(/\{\{.*?\}\}/gsu, 'x');
 }
 
 /** Each `{{ regex: PATTERN }}` PATTERN found in an `xmltemplated` value (for HF230 reuse). */
 function extractTemplatedRegexes(xml: string): string[] {
     const out: string[] = [];
     // Mirrors Hoverfly's leaf regex `^\s*{{\s*regex:(.*)}}\s*$` applied per `{{…}}` token.
-    const tokenRe = /\{\{\s*regex:(?<pattern>.*?)\}\}/gs;
+    const tokenRe = /\{\{\s*regex:(?<pattern>.*?)\}\}/gsu;
     for (const match of xml.matchAll(tokenRe)) {
-        out.push((match.groups?.['pattern'] ?? '').trim());
+        out.push((match.groups?.pattern ?? '').trim());
     }
     return out;
 }
@@ -146,7 +151,8 @@ function extractTemplatedRegexes(xml: string): string[] {
 function checkSyntax(context: RuleContext, matcher: MatcherModel, diagnostics: Diagnostic[]): void {
     const { matcherName, valueNode } = matcher;
     if (!valueNode) {
-        return; // Absent value is a schema/HF212 concern, never a syntax one.
+        // Absent value is a schema/HF212 concern, never a syntax one.
+        return;
     }
 
     // `matcher` lookup is case-insensitive (D8); the default (absent) name is exact → no syntax rule.
@@ -194,10 +200,12 @@ function checkSyntax(context: RuleContext, matcher: MatcherModel, diagnostics: D
 /** HF230 — `regex` value must compile as a Go RE2 pattern. */
 function checkRegex(context: RuleContext, valueNode: ASTNode, diagnostics: Diagnostic[]): void {
     if (valueNode.type !== 'string') {
-        return; // Wrong type → HF203 owns it.
+        // Wrong type → HF203 owns it.
+        return;
     }
     if (valueNode.value === '') {
-        return; // Empty → HF211 owns it.
+        // Empty → HF211 owns it.
+        return;
     }
     if (!isValidRe2(valueNode.value)) {
         diagnostics.push(makeDiagnostic(context.textDocument, 'HF230', valueNode));
@@ -212,7 +220,8 @@ function checkJsonText(
     diagnostics: Diagnostic[],
 ): void {
     if (valueNode.type !== 'string') {
-        return; // Wrong type → HF203 owns it.
+        // Wrong type → HF203 owns it.
+        return;
     }
     if (!parsesAsJson(valueNode.value)) {
         diagnostics.push(makeDiagnostic(context.textDocument, 'HF231', valueNode, { name }));
@@ -222,7 +231,8 @@ function checkJsonText(
 /** HF231 + HF235 — `jwt` value must be JSON text whose top-level keys are header/payload only. */
 function checkJwt(context: RuleContext, valueNode: ASTNode, diagnostics: Diagnostic[]): void {
     if (valueNode.type !== 'string') {
-        return; // Wrong type → HF203 owns it.
+        // Wrong type → HF203 owns it.
+        return;
     }
     let parsed: unknown;
     try {
@@ -255,7 +265,8 @@ function checkBalance(
     diagnostics: Diagnostic[],
 ): void {
     if (valueNode.type !== 'string') {
-        return; // Wrong type → HF203 owns it.
+        // Wrong type → HF203 owns it.
+        return;
     }
     if (!isBalanced(valueNode.value)) {
         diagnostics.push(makeDiagnostic(context.textDocument, code, valueNode));
@@ -270,7 +281,8 @@ function checkXml(
     diagnostics: Diagnostic[],
 ): void {
     if (valueNode.type !== 'string') {
-        return; // Wrong type → HF203 owns it.
+        // Wrong type → HF203 owns it.
+        return;
     }
     const raw = valueNode.value;
 
@@ -285,7 +297,8 @@ function checkXml(
 
     const xml = name === 'xmltemplated' ? neutralizeTemplateTokens(raw) : raw;
     if (xml.trim() === '') {
-        return; // An empty/whitespace value is not a well-formedness defect to flag here.
+        // An empty/whitespace value is not a well-formedness defect to flag here.
+        return;
     }
     if (XMLValidator.validate(xml) !== true) {
         diagnostics.push(makeDiagnostic(context.textDocument, 'HF234', valueNode, { name }));
@@ -295,7 +308,8 @@ function checkXml(
 /** HF236 — every `array` element must be a JSON string. */
 function checkArray(context: RuleContext, valueNode: ASTNode, diagnostics: Diagnostic[]): void {
     if (valueNode.type !== 'array') {
-        return; // Wrong type → HF203 owns it.
+        // Wrong type → HF203 owns it.
+        return;
     }
     valueNode.items.forEach((item, index) => {
         if (item.type !== 'string') {

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
 import { resolveServer } from '../src/server-resolution.js';
 
@@ -7,7 +7,7 @@ const NEVER = (): boolean => false;
 const ALWAYS = (): boolean => true;
 
 describe('resolveServer — precedence', () => {
-    it('prefers the configured hoverfly.server.path above everything else', () => {
+    test('prefers the configured hoverfly.server.path above everything else', () => {
         // Given - an explicit setting AND a workspace bin that exists
         const result = resolveServer({
             configuredPath: '/usr/local/bin/hoverfly-lsp',
@@ -17,10 +17,13 @@ describe('resolveServer — precedence', () => {
         });
 
         // Then - the configured path wins unconditionally
-        expect(result).toEqual({ module: '/usr/local/bin/hoverfly-lsp', source: 'configuredPath' });
+        expect(result).toStrictEqual({
+            module: '/usr/local/bin/hoverfly-lsp',
+            source: 'configuredPath',
+        });
     });
 
-    it('falls back to the workspace node_modules/.bin install when no setting is given', () => {
+    test('falls back to the workspace node_modules/.bin install when no setting is given', () => {
         // Given - no setting, a workspace root, and the workspace bin exists on disk
         const result = resolveServer({
             configuredPath: undefined,
@@ -30,13 +33,13 @@ describe('resolveServer — precedence', () => {
         });
 
         // Then - the project-local server is chosen
-        expect(result).toEqual({
+        expect(result).toStrictEqual({
             module: '/work/node_modules/.bin/hoverfly-lsp',
             source: 'workspaceBin',
         });
     });
 
-    it('falls back to the bundled server when there is no setting and no workspace install', () => {
+    test('falls back to the bundled server when there is no setting and no workspace install', () => {
         // Given - no setting and a workspace whose .bin does not exist
         const result = resolveServer({
             configuredPath: undefined,
@@ -46,25 +49,26 @@ describe('resolveServer — precedence', () => {
         });
 
         // Then - the bundled server (guaranteed to ship) is used
-        expect(result).toEqual({ module: BUNDLED, source: 'bundled' });
+        expect(result).toStrictEqual({ module: BUNDLED, source: 'bundled' });
     });
 
-    it('falls back to the bundled server when no workspace folder is open', () => {
+    test('falls back to the bundled server when no workspace folder is open', () => {
         // Given - no setting and no workspace root (single-file window)
         const result = resolveServer({
             configuredPath: undefined,
             workspaceRoot: undefined,
             bundledModule: BUNDLED,
-            exists: ALWAYS, // Even if exists() would say yes, there is no path to probe
+            // Even if exists() would say yes, there is no path to probe
+            exists: ALWAYS,
         });
 
         // Then - bundled is used and exists() is never the deciding factor
-        expect(result).toEqual({ module: BUNDLED, source: 'bundled' });
+        expect(result).toStrictEqual({ module: BUNDLED, source: 'bundled' });
     });
 });
 
 describe('resolveServer — configured path normalization', () => {
-    it('treats a whitespace-only setting as unset', () => {
+    test('treats a whitespace-only setting as unset', () => {
         // Given - a setting that is only spaces
         const result = resolveServer({
             configuredPath: '   ',
@@ -77,7 +81,7 @@ describe('resolveServer — configured path normalization', () => {
         expect(result.source).toBe('bundled');
     });
 
-    it('trims surrounding whitespace from a real configured path', () => {
+    test('trims surrounding whitespace from a real configured path', () => {
         // Given - a configured path with stray whitespace
         const result = resolveServer({
             configuredPath: '  /opt/hoverfly-lsp  ',
@@ -87,6 +91,6 @@ describe('resolveServer — configured path normalization', () => {
         });
 
         // Then - the trimmed path is returned
-        expect(result).toEqual({ module: '/opt/hoverfly-lsp', source: 'configuredPath' });
+        expect(result).toStrictEqual({ module: '/opt/hoverfly-lsp', source: 'configuredPath' });
     });
 });

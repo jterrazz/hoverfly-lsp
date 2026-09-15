@@ -14,12 +14,12 @@
  */
 
 /** A half-open `[start, end)` offset span into the decoded template source string. */
-export interface Span {
+export type Span = {
     /** Inclusive start offset (0-based, into the decoded source). */
     readonly start: number;
     /** Exclusive end offset. */
     readonly end: number;
-}
+};
 
 /* -------------------------------------- expressions -------------------------------------- */
 
@@ -30,7 +30,7 @@ export interface Span {
  * `{ thisRef: true, parts: ["price"] }`). Bracketed segments (`Path.[2]`) contribute the inner
  * token as a part (`"2"`).
  */
-export interface PathExpression extends Span {
+export type PathExpression = Span & {
     readonly type: 'PathExpression';
     /** Segment names in order, markers stripped (e.g. `["Request", "QueryParam", "foo"]`). */
     readonly parts: readonly string[];
@@ -40,40 +40,40 @@ export interface PathExpression extends Span {
     readonly thisRef: boolean;
     /** The original source text of the whole path (markers included). */
     readonly original: string;
-}
+};
 
 /** A single- or double-quoted string literal. `value` is the unquoted, unescaped content. */
-export interface StringLiteral extends Span {
+export type StringLiteral = Span & {
     readonly type: 'StringLiteral';
     readonly value: string;
     /** The quote character used (`'` or `"`). */
     readonly quote: "'" | '"';
-}
+};
 
 /** A numeric literal (`2`, `-1.5`). `value` is the parsed number; `raw` the source text. */
-export interface NumberLiteral extends Span {
+export type NumberLiteral = Span & {
     readonly type: 'NumberLiteral';
     readonly value: number;
     readonly raw: string;
-}
+};
 
 /** A boolean literal (`true` / `false`). */
-export interface BooleanLiteral extends Span {
+export type BooleanLiteral = Span & {
     readonly type: 'BooleanLiteral';
     readonly value: boolean;
-}
+};
 
 /**
  * A parenthesised subexpression — a helper call used as an argument:
  * `(multiply (this.price) (this.qty) '')`. Structurally a helper call, but never standalone.
  */
-export interface SubExpression extends Span {
+export type SubExpression = Span & {
     readonly type: 'SubExpression';
     /** The path naming the helper (e.g. `multiply`, or `Request.Body`). */
     readonly path: PathExpression;
     /** Positional arguments (literals, paths, or nested subexpressions). */
     readonly params: readonly Expression[];
-}
+};
 
 /** Any value-producing expression that can appear as a mustache body or call argument. */
 export type Expression =
@@ -86,16 +86,16 @@ export type Expression =
 /* ----------------------------------------- nodes ----------------------------------------- */
 
 /** Literal template text between mustaches. */
-export interface ContentNode extends Span {
+export type ContentNode = Span & {
     readonly type: 'ContentNode';
     readonly value: string;
-}
+};
 
 /**
  * A mustache statement: `{{path arg...}}`. `escaped` is `false` for the triple-stache
  * unescaped form `{{{...}}}` (raymond/Handlebars HTML-escape the double-stache form).
  */
-export interface MustacheNode extends Span {
+export type MustacheNode = Span & {
     readonly type: 'MustacheNode';
     /** The leading path (helper name or path lookup). */
     readonly path: PathExpression;
@@ -103,14 +103,14 @@ export interface MustacheNode extends Span {
     readonly params: readonly Expression[];
     /** `true` for `{{...}}`, `false` for the unescaped `{{{...}}}` form. */
     readonly escaped: boolean;
-}
+};
 
 /**
  * A block statement: `{{#helper params}} program {{else}} inverse {{/helper}}`. `program` is
  * the body, `inverse` the optional `{{else}}` branch. The open/close tag spans cover the
  * literal `{{#…}}` / `{{/…}}` mustaches (for bracket-matching & "unclosed block" diagnostics).
  */
-export interface BlockNode extends Span {
+export type BlockNode = {
     readonly type: 'BlockNode';
     /** The block-helper path (`each`, `if`, `equal`, …). */
     readonly path: PathExpression;
@@ -124,16 +124,16 @@ export interface BlockNode extends Span {
     readonly openTag: Span;
     /** Span of the closing `{{/…}}` mustache (`undefined` when the block was never closed). */
     readonly closeTag: Span | undefined;
-}
+} & Span;
 
 /** A top-level / block-body statement. */
 export type Statement = BlockNode | ContentNode | MustacheNode;
 
 /** The root program: the ordered statements of a whole template. */
-export interface Program extends Span {
+export type Program = Span & {
     readonly type: 'Program';
     readonly body: readonly Statement[];
-}
+};
 
 /** Any AST node (root, statement, or expression). */
 export type TemplateNode = Expression | Program | Statement;

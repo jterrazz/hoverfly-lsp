@@ -4,7 +4,7 @@
  * reorder (which would mis-color every token) is caught.
  */
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
 import {
     SEMANTIC_TOKEN_MODIFIERS,
@@ -13,9 +13,9 @@ import {
 } from '../../src/semantic-tokens/legend.js';
 
 describe('semantic-tokens legend', () => {
-    it('freezes the exact ordered token-type array (research/16 §3.1)', () => {
+    test('freezes the exact ordered token-type array (research/16 §3.1)', () => {
         // Given/Then - the frozen order; any change here is a wire-contract break.
-        expect([...SEMANTIC_TOKEN_TYPES]).toEqual([
+        expect([...SEMANTIC_TOKEN_TYPES]).toStrictEqual([
             'namespace',
             'keyword',
             'function',
@@ -29,11 +29,11 @@ describe('semantic-tokens legend', () => {
         ]);
     });
 
-    it('has no modifiers in v1', () => {
-        expect(SEMANTIC_TOKEN_MODIFIERS).toEqual([]);
+    test('has no modifiers in v1', () => {
+        expect(SEMANTIC_TOKEN_MODIFIERS).toStrictEqual([]);
     });
 
-    it('uses only standard LSP token types', () => {
+    test('uses only standard LSP token types', () => {
         // The 22 standard LSP 3.17 token types — using only these is what makes themes color us.
         const standard = new Set([
             'namespace',
@@ -61,11 +61,11 @@ describe('semantic-tokens legend', () => {
             'operator',
         ]);
         for (const type of SEMANTIC_TOKEN_TYPES) {
-            expect(standard.has(type)).toBe(true);
+            expect(standard.has(type)).toBeTruthy();
         }
     });
 
-    it('maps every type name to its array index', () => {
+    test('maps every type name to its array index', () => {
         SEMANTIC_TOKEN_TYPES.forEach((name, index) => {
             expect(SEMANTIC_TOKEN_TYPE_INDEX[name]).toBe(index);
         });

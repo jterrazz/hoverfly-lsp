@@ -4,7 +4,7 @@
  * `HF2XX_RULES` into `ALL_RULES` (the golden runner stays red until then).
  */
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, test } from 'vitest';
 import { getLanguageService } from 'vscode-json-languageservice';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
@@ -30,145 +30,147 @@ function codes(diagnostics: ReturnType<typeof runOnRequest>): string[] {
     return diagnostics.map((d) => String(d.code));
 }
 
-describe('HF201 — unknown matcher', () => {
-    it('flags an unregistered matcher name with a panic message on the name node', () => {
+describe('hF201 — unknown matcher', () => {
+    test('flags an unregistered matcher name with a panic message on the name node', () => {
         // Given - a matcher whose name is not in the registry
         const diags = runOnRequest({ path: [{ matcher: 'xform', value: 'x' }] });
         // Then - one HF201 error referencing the name and the runtime panic
-        expect(codes(diags)).toEqual(['HF201']);
+        expect(codes(diags)).toStrictEqual(['HF201']);
         expect(diags[0]?.code).toBe('HF201');
         expect(diags[0]?.message).toContain('xform');
         expect(diags[0]?.message).toContain('panics');
     });
 
-    it('does not flag the empty-string default matcher name', () => {
+    test('does not flag the empty-string default matcher name', () => {
         // Given - an explicit empty matcher name (the default exact matcher)
         // Then - no name diagnostic
-        expect(codes(runOnRequest({ path: [{ matcher: '', value: 'x' }] }))).toEqual([]);
+        expect(codes(runOnRequest({ path: [{ matcher: '', value: 'x' }] }))).toStrictEqual([]);
     });
 
-    it('does not flag a matcher with no matcher field (default exact)', () => {
+    test('does not flag a matcher with no matcher field (default exact)', () => {
         // Given - a matcher object with only a value
         // Then - nothing fires (default exact, string value)
-        expect(codes(runOnRequest({ path: [{ value: 'x' }] }))).toEqual([]);
+        expect(codes(runOnRequest({ path: [{ value: 'x' }] }))).toStrictEqual([]);
     });
 });
 
-describe('HF202 — non-canonical casing', () => {
-    it('hints the canonical lowercase for jsonPartial', () => {
+describe('hF202 — non-canonical casing', () => {
+    test('hints the canonical lowercase for jsonPartial', () => {
         // Given - a known matcher in mixed case (lookup is case-insensitive)
         const diags = runOnRequest({ body: [{ matcher: 'jsonPartial', value: '{}' }] });
         // Then - one HF202 hint pointing at the canonical name
-        expect(codes(diags)).toEqual(['HF202']);
+        expect(codes(diags)).toStrictEqual(['HF202']);
         expect(diags[0]?.message).toContain('jsonpartial');
     });
 
-    it('hints for upper-cased EXACT and still validates its value type', () => {
+    test('hints for upper-cased EXACT and still validates its value type', () => {
         // Given - EXACT (resolves to exact, string-only) with an object value
         const diags = runOnRequest({ path: [{ matcher: 'EXACT', value: {} }] });
         // Then - both the casing hint AND the value-type error fire
-        expect(codes(diags).sort()).toEqual(['HF202', 'HF203']);
+        expect(codes(diags).toSorted()).toStrictEqual(['HF202', 'HF203']);
     });
 });
 
-describe('HF203 — value type mismatch', () => {
-    it('flags an object value on a string matcher', () => {
+describe('hF203 — value type mismatch', () => {
+    test('flags an object value on a string matcher', () => {
         // Given - exact (string-only) with an object value
         const diags = runOnRequest({ path: [{ matcher: 'exact', value: {} }] });
         // Then - HF203 on the value, naming the expected type from the registry
-        expect(codes(diags)).toEqual(['HF203']);
+        expect(codes(diags)).toStrictEqual(['HF203']);
         expect(diags[0]?.message).toContain('expects a string');
         expect(diags[0]?.message).toContain('never match');
     });
 
-    it('flags a string value on the array matcher', () => {
+    test('flags a string value on the array matcher', () => {
         // Given - array (array-only) with a string value
         const diags = runOnRequest({ body: [{ matcher: 'array', value: 'a;b' }] });
         // Then - HF203 expecting a JSON array
-        expect(codes(diags)).toEqual(['HF203']);
+        expect(codes(diags)).toStrictEqual(['HF203']);
         expect(diags[0]?.message).toContain('a JSON array');
     });
 
-    it('does not flag a correct array value', () => {
+    test('does not flag a correct array value', () => {
         // Given - array with an array value
         // Then - nothing
-        expect(codes(runOnRequest({ body: [{ matcher: 'array', value: ['a', 'b'] }] }))).toEqual(
-            [],
-        );
+        expect(
+            codes(runOnRequest({ body: [{ matcher: 'array', value: ['a', 'b'] }] })),
+        ).toStrictEqual([]);
     });
 });
 
-describe('HF204 — config on a non-array matcher', () => {
-    it('flags config on exact, even when empty', () => {
+describe('hF204 — config on a non-array matcher', () => {
+    test('flags config on exact, even when empty', () => {
         // Given - exact carrying a config object
         const diags = runOnRequest({ path: [{ matcher: 'exact', value: 'x', config: {} }] });
         // Then - HF204 error on the config node
-        expect(codes(diags)).toEqual(['HF204']);
+        expect(codes(diags)).toStrictEqual(['HF204']);
         expect(diags[0]?.message).toContain('"array"');
     });
 
-    it('does not flag config on the array matcher', () => {
+    test('does not flag config on the array matcher', () => {
         // Given - array with a valid boolean config
         const diags = runOnRequest({
             body: [{ matcher: 'array', value: ['a'], config: { ignoreOrder: true } }],
         });
         // Then - nothing
-        expect(codes(diags)).toEqual([]);
+        expect(codes(diags)).toStrictEqual([]);
     });
 });
 
-describe('HF205 — unknown array config key', () => {
-    it('warns on an unrecognised config key', () => {
+describe('hF205 — unknown array config key', () => {
+    test('warns on an unrecognised config key', () => {
         // Given - array config with a typo'd key
         const diags = runOnRequest({
             body: [{ matcher: 'array', value: ['a'], config: { ignoreCase: true } }],
         });
         // Then - HF205 warning naming the ignored key
-        expect(codes(diags)).toEqual(['HF205']);
+        expect(codes(diags)).toStrictEqual(['HF205']);
         expect(diags[0]?.message).toContain('ignoreCase');
     });
 });
 
-describe('HF206 — non-boolean array config value', () => {
-    it('flags a string config value as a panic', () => {
+describe('hF206 — non-boolean array config value', () => {
+    test('flags a string config value as a panic', () => {
         // Given - array config whose value is the string "true"
         const diags = runOnRequest({
             body: [{ matcher: 'array', value: ['a'], config: { ignoreOrder: 'true' } }],
         });
         // Then - HF206 error describing the offending JSON type
-        expect(codes(diags)).toEqual(['HF206']);
+        expect(codes(diags)).toStrictEqual(['HF206']);
         expect(diags[0]?.message).toContain('a string');
     });
 });
 
-describe('HF207 — negate with a non-string value', () => {
-    it('warns about vacuous-true on a numeric negate value', () => {
+describe('hF207 — negate with a non-string value', () => {
+    test('warns about vacuous-true on a numeric negate value', () => {
         // Given - negate with a number value
         const diags = runOnRequest({ path: [{ matcher: 'negate', value: 5 }] });
         // Then - HF207 (NOT HF203) — vacuous true
-        expect(codes(diags)).toEqual(['HF207']);
+        expect(codes(diags)).toStrictEqual(['HF207']);
         expect(diags[0]?.message).toContain('vacuous');
     });
 
-    it('does not flag negate with a string value', () => {
+    test('does not flag negate with a string value', () => {
         // Given - negate with a string value
         // Then - nothing
-        expect(codes(runOnRequest({ path: [{ matcher: 'negate', value: 'x' }] }))).toEqual([]);
+        expect(codes(runOnRequest({ path: [{ matcher: 'negate', value: 'x' }] }))).toStrictEqual(
+            [],
+        );
     });
 });
 
-describe('HF208 — form mis-placed', () => {
-    it('flags lowercase form on a header field', () => {
+describe('hF208 — form mis-placed', () => {
+    test('flags lowercase form on a header field', () => {
         // Given - form on a header (object value), not the body
         const diags = runOnRequest({
             headers: { 'Content-Type': [{ matcher: 'form', value: { a: [] } }] },
         });
         // Then - HF208 error (panics elsewhere than body)
-        expect(codes(diags)).toEqual(['HF208']);
+        expect(codes(diags)).toStrictEqual(['HF208']);
         expect(diags[0]?.message).toContain('body');
     });
 
-    it('flags form inside an object-shaped doMatch chain even on the body', () => {
+    test('flags form inside an object-shaped doMatch chain even on the body', () => {
         // Given - a body jsonpath whose (correct, single-object) doMatch nests a form matcher
         const diags = runOnRequest({
             body: [
@@ -180,10 +182,10 @@ describe('HF208 — form mis-placed', () => {
             ],
         });
         // Then - HF208 for the nested form (jsonpath itself is valid, no HF210)
-        expect(codes(diags)).toEqual(['HF208']);
+        expect(codes(diags)).toStrictEqual(['HF208']);
     });
 
-    it('flags form inside a legacy array-shaped doMatch chain too', () => {
+    test('flags form inside a legacy array-shaped doMatch chain too', () => {
         // Given - the (schema-invalid) array shape — matcher diagnostics must still recurse
         const diags = runOnRequest({
             body: [
@@ -195,49 +197,49 @@ describe('HF208 — form mis-placed', () => {
             ],
         });
         // Then - HF208 still fires on the nested form
-        expect(codes(diags)).toEqual(['HF208']);
+        expect(codes(diags)).toStrictEqual(['HF208']);
     });
 
-    it('does not flag lowercase form on the body top level', () => {
+    test('does not flag lowercase form on the body top level', () => {
         // Given - form correctly placed on body with an object value
         const diags = runOnRequest({
             body: [{ matcher: 'form', value: { username: [{ matcher: 'exact', value: 'a' }] } }],
         });
         // Then - nothing
-        expect(codes(diags)).toEqual([]);
+        expect(codes(diags)).toStrictEqual([]);
     });
 });
 
-describe('HF209 — wrong-case form', () => {
-    it('flags Form (case-sensitive) on the body', () => {
+describe('hF209 — wrong-case form', () => {
+    test('flags Form (case-sensitive) on the body', () => {
         // Given - Form (capital F) on the body
         const diags = runOnRequest({ body: [{ matcher: 'Form', value: { a: [] } }] });
         // Then - HF209 error naming the offending spelling
-        expect(codes(diags)).toEqual(['HF209']);
+        expect(codes(diags)).toStrictEqual(['HF209']);
         expect(diags[0]?.message).toContain('Form');
         expect(diags[0]?.message).toContain('case-sensitive');
     });
 
-    it('flags FORM regardless of placement', () => {
+    test('flags FORM regardless of placement', () => {
         // Given - FORM on a header field
         const diags = runOnRequest({ headers: { X: [{ matcher: 'FORM', value: { a: [] } }] } });
         // Then - HF209 (case dominates placement)
-        expect(codes(diags)).toEqual(['HF209']);
+        expect(codes(diags)).toStrictEqual(['HF209']);
     });
 });
 
-describe('HF210 — doMatch after an identity matcher', () => {
-    it('hints that a chain after exact is an AND on one value (object shape)', () => {
+describe('hF210 — doMatch after an identity matcher', () => {
+    test('hints that a chain after exact is an AND on one value (object shape)', () => {
         // Given - exact with a single-object doMatch (exact does not transform the value)
         const diags = runOnRequest({
             path: [{ matcher: 'exact', value: '/x', doMatch: { matcher: 'glob', value: '/*' } }],
         });
         // Then - HF210 hint on the doMatch key, naming the identity matcher
-        expect(codes(diags)).toEqual(['HF210']);
+        expect(codes(diags)).toStrictEqual(['HF210']);
         expect(diags[0]?.message).toContain('exact');
     });
 
-    it('does not hint after a transforming matcher (jsonpath, object shape)', () => {
+    test('does not hint after a transforming matcher (jsonpath, object shape)', () => {
         // Given - jsonpath (transforms the value) with a single-object doMatch chain
         const diags = runOnRequest({
             body: [
@@ -245,10 +247,10 @@ describe('HF210 — doMatch after an identity matcher', () => {
             ],
         });
         // Then - no HF210 (and the nested exact/string is valid)
-        expect(codes(diags)).toEqual([]);
+        expect(codes(diags)).toStrictEqual([]);
     });
 
-    it('recurses object-shaped chains: HF210 fires at every identity level', () => {
+    test('recurses object-shaped chains: HF210 fires at every identity level', () => {
         // Given - exact -> exact -> exact nested single-object doMatch chain
         const diags = runOnRequest({
             path: [
@@ -264,21 +266,21 @@ describe('HF210 — doMatch after an identity matcher', () => {
             ],
         });
         // Then - two HF210 hints (one per matcher that owns a doMatch)
-        expect(codes(diags)).toEqual(['HF210', 'HF210']);
+        expect(codes(diags)).toStrictEqual(['HF210', 'HF210']);
     });
 });
 
 describe('object-shaped doMatch recursion (HF201/HF203/HF210)', () => {
-    it('fires HF201 on an unknown matcher nested in an object doMatch', () => {
+    test('fires HF201 on an unknown matcher nested in an object doMatch', () => {
         // Given - jsonpath whose object-shaped doMatch names an unknown matcher
         const diags = runOnRequest({
             body: [{ matcher: 'jsonpath', value: '$.x', doMatch: { matcher: 'nope', value: 'y' } }],
         });
         // Then - HF201 fires on the nested matcher
-        expect(codes(diags)).toEqual(['HF201']);
+        expect(codes(diags)).toStrictEqual(['HF201']);
     });
 
-    it('fires HF203 on a value-type mismatch nested in an object doMatch', () => {
+    test('fires HF203 on a value-type mismatch nested in an object doMatch', () => {
         // Given - jsonpath whose object-shaped doMatch is array (array-only) with a string value
         const diags = runOnRequest({
             body: [
@@ -286,48 +288,48 @@ describe('object-shaped doMatch recursion (HF201/HF203/HF210)', () => {
             ],
         });
         // Then - HF203 fires on the nested value
-        expect(codes(diags)).toEqual(['HF203']);
+        expect(codes(diags)).toStrictEqual(['HF203']);
     });
 });
 
-describe('HF211 — empty value that never matches', () => {
-    it('warns on an empty regex value', () => {
+describe('hF211 — empty value that never matches', () => {
+    test('warns on an empty regex value', () => {
         // Given - regex with an empty-string value
         const diags = runOnRequest({ path: [{ matcher: 'regex', value: '' }] });
         // Then - HF211 warning
-        expect(codes(diags)).toEqual(['HF211']);
+        expect(codes(diags)).toStrictEqual(['HF211']);
         expect(diags[0]?.message).toContain('regex');
     });
 
-    it('warns on an empty jwtjsonpath value', () => {
+    test('warns on an empty jwtjsonpath value', () => {
         // Given - jwtjsonpath rejects empty
         const diags = runOnRequest({ body: [{ matcher: 'jwtjsonpath', value: '' }] });
         // Then - HF211
-        expect(codes(diags)).toEqual(['HF211']);
+        expect(codes(diags)).toStrictEqual(['HF211']);
     });
 
-    it('does not flag an empty exact value (empty exact can legitimately match)', () => {
+    test('does not flag an empty exact value (empty exact can legitimately match)', () => {
         // Given - exact with empty string
         // Then - nothing (HF211 only targets jwtjsonpath/regex/glob)
-        expect(codes(runOnRequest({ path: [{ matcher: 'exact', value: '' }] }))).toEqual([]);
+        expect(codes(runOnRequest({ path: [{ matcher: 'exact', value: '' }] }))).toStrictEqual([]);
     });
 });
 
 describe('placement / container shapes', () => {
-    it('handles query as an object-of-arrays', () => {
+    test('handles query as an object-of-arrays', () => {
         // Given - a query map whose key holds a matcher array with an unknown matcher
         const diags = runOnRequest({ query: { q: [{ matcher: 'nope', value: 'x' }] } });
         // Then - HF201 fires on the nested matcher (the model flattens the query map)
-        expect(codes(diags)).toEqual(['HF201']);
+        expect(codes(diags)).toStrictEqual(['HF201']);
     });
 
-    it('requiresState is not a matcher field and is ignored', () => {
+    test('requiresState is not a matcher field and is ignored', () => {
         // Given - a request with requiresState (a state map, not matchers)
         const diags = runOnRequest({
             path: [{ matcher: 'exact', value: '/x' }],
             requiresState: { authed: 'true' },
         });
         // Then - no matcher diagnostics from the state map
-        expect(codes(diags)).toEqual([]);
+        expect(codes(diags)).toStrictEqual([]);
     });
 });

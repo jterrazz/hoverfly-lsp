@@ -13,7 +13,7 @@ const DOCS_TEMPLATING =
     'https://docs.hoverfly.io/en/latest/pages/keyconcepts/templating/templating.html';
 
 /** A `Request.<member>` accessor. */
-interface RequestMember {
+type RequestMember = {
     /** The member name as written after `Request.` (`QueryParam`, `Path`, `Body`, …). */
     readonly name: string;
     /** Whether the accessor is invoked as a function (`Request.Body 'jsonpath' '$.x'`). */
@@ -24,7 +24,7 @@ interface RequestMember {
     readonly docs: string;
     /** A representative usage example. */
     readonly example: string;
-}
+};
 
 /**
  * The `Request` accessor members (report 08 §6 + report 02 §4.2). `Body` is the func-typed field
@@ -86,21 +86,22 @@ const REQUEST_MEMBERS: readonly RequestMember[] = [
         methodCall: true,
         indexed: false,
         docs:
-            "Invoked as a function with two string args: `Request.Body '<queryType>' '<query>'`, " +
-            'where `queryType` ∈ {`jsonpath`, `xpath`, `jsonpathfromxml`} (equivalent to the ' +
-            '`requestBody` helper). The JSONPath engine is **kubectl** (`k8s.io/client-go/util/jsonpath`), ' +
-            'NOT Jayway/RFC9535; XPath is `ChrisTrenkamp/xsel` and returns a single string. ' +
-            `${DOCS_TEMPLATING}`,
+            `Invoked as a function with two string args: \`Request.Body '<queryType>' '<query>'\`, ` +
+            `where \`queryType\` ∈ {\`jsonpath\`, \`xpath\`, \`jsonpathfromxml\`} (equivalent to the ` +
+            `\`requestBody\` helper). The JSONPath engine is **kubectl** (\`k8s.io/client-go/util/jsonpath\`), ` +
+            `NOT Jayway/RFC9535; XPath is \`ChrisTrenkamp/xsel\` and returns a single string. ${
+                DOCS_TEMPLATING
+            }`,
         example: "{{Request.Body 'jsonpath' '$.id'}}",
     },
 ];
 
 /** The dotted path roots that begin a `TemplatingData` lookup (report 02 §4.2). */
-interface PathRoot {
+type PathRoot = {
     readonly name: string;
     readonly docs: string;
     readonly example: string;
-}
+};
 
 const PATH_ROOTS: readonly PathRoot[] = [
     {
@@ -126,11 +127,11 @@ const PATH_ROOTS: readonly PathRoot[] = [
 ];
 
 /** An `@`-data variable available inside `#each`/`#first` blocks. */
-interface DataVariable {
+type DataVariable = {
     /** The name WITHOUT the leading `@` (`index`, `first`, `last`, `key`). */
     readonly name: string;
     readonly docs: string;
-}
+};
 
 const EACH_DATA_VARIABLES: readonly DataVariable[] = [
     { name: 'index', docs: 'The zero-based iteration index of the current `#each` element.' },

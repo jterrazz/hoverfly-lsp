@@ -18,13 +18,13 @@
  * Reuses the parser-owned {@link createStringSourceMap}; adds no template grammar of its own.
  */
 
-import type {
-    ASTNode,
-    JSONDocument,
-    ObjectASTNode,
-    StringASTNode,
+import {
+    type ASTNode,
+    type JSONDocument,
+    type ObjectASTNode,
+    type StringASTNode,
 } from 'vscode-json-languageservice';
-import type { TextDocument } from 'vscode-languageserver-textdocument';
+import { type TextDocument } from 'vscode-languageserver-textdocument';
 
 import {
     createStringSourceMap,
@@ -33,7 +33,7 @@ import {
 } from '../template/index.js';
 
 /** A located templatable string + the cursor mapped into its decoded content. */
-interface TemplateLocation {
+type TemplateLocation = {
     /** The decoded template text (escapes resolved, no surrounding quotes). */
     readonly decoded: string;
     /** The cursor as a decoded-string offset. */
@@ -44,7 +44,7 @@ interface TemplateLocation {
     readonly node: StringASTNode;
     /** Whether `templated: true` was set on the enclosing response (drives diagnostics, not us). */
     readonly templatedEnabled: boolean;
-}
+};
 
 /**
  * If `offset` (a document offset) is inside a templatable string of `jsonDocument`, return the
@@ -162,8 +162,10 @@ function isStringNode(node: ASTNode | undefined): node is StringASTNode {
  * closing quote both count). The node's `offset`/`length` cover the quotes.
  */
 function containsOffset(node: StringASTNode, offset: number): boolean {
-    const start = node.offset + 1; // Just after opening quote
-    const end = node.offset + node.length - 1; // The closing quote
+    // Just after opening quote
+    const start = node.offset + 1;
+    // The closing quote
+    const end = node.offset + node.length - 1;
     return offset >= start && offset <= end;
 }
 

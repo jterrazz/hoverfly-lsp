@@ -14,7 +14,7 @@
  * simulations rather than dismissed).
  */
 
-import type { ASTNode } from 'vscode-json-languageservice';
+import { type ASTNode } from 'vscode-json-languageservice';
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -62,7 +62,7 @@ export function isHoverflySimulationAst(root: ASTNode | undefined): boolean {
  */
 export function hasHoverflyFilename(uri: string): boolean {
     // Take the last path segment (strip any query/fragment a URI might carry).
-    const withoutQuery = uri.split(/[?#]/, 1)[0] ?? uri;
+    const withoutQuery = uri.split(/[?#]/u, 1)[0] ?? uri;
     const segment = (withoutQuery.split('/').pop() ?? withoutQuery).toLowerCase();
     return (
         segment.endsWith('.hoverfly.json') ||
@@ -91,6 +91,6 @@ export function isHoverflySimulation(text: string): boolean {
         return false;
     }
 
-    const schemaVersion = meta['schemaVersion'];
+    const { schemaVersion } = meta;
     return typeof schemaVersion === 'string' && schemaVersion.startsWith('v');
 }

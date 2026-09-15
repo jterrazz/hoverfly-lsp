@@ -175,12 +175,12 @@ known faker types, matcher-name enums) that the JSON grammar alone cannot see.
 >     "semantic_tokens": "combined"
 > }
 > ```
->
-> `"combined"` overlays the server's tokens on Zed's tree-sitter JSON highlighting (recommended);
-> `"full"` uses the server's tokens exclusively. To scope it to Hoverfly files only, nest it instead:
-> `{ "languages": { "Hoverfly": { "semantic_tokens": "combined" } } }`. Then run
-> **`editor: restart language server`** from the command palette (a mode change needs a server
-> restart to take effect).
+
+`"combined"` overlays the server's tokens on Zed's tree-sitter JSON highlighting (recommended);
+`"full"` uses the server's tokens exclusively. To scope it to Hoverfly files only, nest it instead:
+`{ "languages": { "Hoverfly": { "semantic_tokens": "combined" } } }`. Then run
+**`editor: restart language server`** from the command palette (a mode change needs a server
+restart to take effect).
 
 The legend uses only standard LSP token types, which Zed maps to its theme's existing highlight
 categories (`function`, `keyword`, `property`, `variable`, `enumMember`, `string`, `number`,

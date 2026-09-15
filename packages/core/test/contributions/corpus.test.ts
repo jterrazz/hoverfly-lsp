@@ -38,14 +38,13 @@ import { glob } from 'glob';
 import { readFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, test } from 'vitest';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { CompletionItemKind } from 'vscode-languageserver-types';
 
 import { createHoverflyLanguageService } from '../../src/service.js';
 import {
     type CompletionMarkerExpectation,
-    type HoverMarkerExpectation,
     loadCorpusExpectation,
     stripMarkersToOffsets,
 } from '../fourslash/harness.js';
@@ -53,7 +52,7 @@ import {
 const repoRoot = fileURLToPath(new URL('../../../../', import.meta.url));
 
 /** When set, dump actual results for fixtures whose relpath contains this substring (`1`/`all` = every fixture). */
-const DUMP = process.env['CORPUS_DUMP'];
+const DUMP = process.env.CORPUS_DUMP;
 
 /** Reverse map CompletionItemKind number → name (`12` → `"Value"`, `20` → `"EnumMember"`). */
 const KIND_NAMES: Record<number, string> = Object.fromEntries(
@@ -85,18 +84,18 @@ function isBroken(relPath: string): boolean {
 const completionFixtures = await glob('testdata/completion/**/*.hoverfly.json', { cwd: repoRoot });
 const hoverFixtures = await glob('testdata/hover/**/*.hoverfly.json', { cwd: repoRoot });
 
-interface Prepared {
+type Prepared = {
     readonly text: string;
     readonly offsets: ReadonlyMap<string, number>;
     readonly settings: ReturnType<typeof loadCorpusExpectation>['settings'];
     readonly markers: ReturnType<typeof loadCorpusExpectation>['markers'];
-}
+};
 
 /** Strip markers, load the sidecar, and assert each fixture/sidecar invariant up front. */
 function prepare(relPath: string): Prepared {
     const source = readFileSync(join(repoRoot, relPath), 'utf8');
     const { text, offsets } = stripMarkersToOffsets(source);
-    const sidecarPath = join(repoRoot, relPath.replace(/\.hoverfly\.json$/, '.expect.json'));
+    const sidecarPath = join(repoRoot, relPath.replace(/\.hoverfly\.json$/u, '.expect.json'));
     const expectation = loadCorpusExpectation(sidecarPath);
 
     // Every declared marker must exist in the document, and vice-versa (catch typos either side).
@@ -104,26 +103,26 @@ function prepare(relPath: string): Prepared {
         expect(
             offsets.has(name),
             `${relPath}: sidecar declares marker '${name || '(default)'}' but the fixture has no such ⟦⟧ marker`,
-        ).toBe(true);
+        ).toBeTruthy();
     }
     for (const name of offsets.keys()) {
         expect(
             name in expectation.markers,
             `${relPath}: fixture has marker '${name || '(default)'}' with no expectation in ${basename(sidecarPath)}`,
-        ).toBe(true);
+        ).toBeTruthy();
     }
 
     return { text, offsets, settings: expectation.settings, markers: expectation.markers };
 }
 
 describe('corpus: testdata/completion', () => {
-    it('finds completion fixtures', () => {
+    test('finds completion fixtures', () => {
         // Given - the on-disk completion corpus
         // Then - it is not empty (guards against a broken glob path)
         expect(completionFixtures.length).toBeGreaterThan(0);
     });
 
-    it.each(completionFixtures)('%s', async (relPath) => {
+    test.each(completionFixtures)('%s', async (relPath) => {
         const { text, offsets, settings, markers } = prepare(relPath);
         const service = createHoverflyLanguageService([], settings ?? {});
         const document = TextDocument.create(fixtureUri(relPath), 'json', 1, text);
@@ -135,7 +134,7 @@ describe('corpus: testdata/completion', () => {
                 diagnostics.map((d) => `${String(d.code)}: ${d.message}`),
                 `${relPath}: marker-stripped fixture must be a VALID simulation (zero diagnostics). ` +
                     `Place it under a .../broken/ subdir if it is intentionally mid-typing/invalid.`,
-            ).toEqual([]);
+            ).toStrictEqual([]);
         }
 
         for (const [marker, expectation] of Object.entries(markers)) {
@@ -162,10 +161,7 @@ describe('corpus: testdata/completion', () => {
                 expect(labels, `${where}: unexpected completion '${label}'`).not.toContain(label);
             }
             if (exp.count !== undefined) {
-                expect(
-                    labels.length,
-                    `${where}: expected ${exp.count} completions, got ${labels.length} [${labels.join(', ')}]`,
-                ).toBe(exp.count);
+                expect(labels).toHaveLength(exp.count);
             }
             for (const [label, kindName] of Object.entries(exp.kindOf ?? {})) {
                 const item = items.find((i) => i.label === label);
@@ -196,13 +192,13 @@ function renderHover(
 }
 
 describe('corpus: testdata/hover', () => {
-    it('finds hover fixtures', () => {
+    test('finds hover fixtures', () => {
         // Given - the on-disk hover corpus
         // Then - it is not empty
         expect(hoverFixtures.length).toBeGreaterThan(0);
     });
 
-    it.each(hoverFixtures)('%s', async (relPath) => {
+    test.each(hoverFixtures)('%s', async (relPath) => {
         const { text, offsets, settings, markers } = prepare(relPath);
         const service = createHoverflyLanguageService([], settings ?? {});
         const document = TextDocument.create(fixtureUri(relPath), 'json', 1, text);
@@ -213,7 +209,7 @@ describe('corpus: testdata/hover', () => {
                 diagnostics.map((d) => `${String(d.code)}: ${d.message}`),
                 `${relPath}: marker-stripped fixture must be a VALID simulation (zero diagnostics). ` +
                     `Place it under a .../broken/ subdir if it is intentionally mid-typing/invalid.`,
-            ).toEqual([]);
+            ).toStrictEqual([]);
         }
 
         for (const [marker, expectation] of Object.entries(markers)) {
@@ -228,7 +224,7 @@ describe('corpus: testdata/hover', () => {
                 );
             }
 
-            const exp = expectation as HoverMarkerExpectation;
+            const exp = expectation;
             for (const fragment of exp.includes ?? []) {
                 expect(rendered, `${where}: hover should include '${fragment}'`).toContain(
                     fragment,

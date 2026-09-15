@@ -18,7 +18,7 @@
  * treating the final `"matcher"` segment as optional.
  */
 
-import type { JSONPath, Segment } from 'vscode-json-languageservice';
+import { type JSONPath, type Segment } from 'vscode-json-languageservice';
 
 /** Top-level request fields whose value is a matcher array (the only places matchers live). */
 const DIRECT_MATCHER_FIELDS: ReadonlySet<string> = new Set([
@@ -45,12 +45,12 @@ function isString(segment: Segment | undefined): segment is string {
  * know whether `form` is offered — body only), and whether the position is the matcher OBJECT
  * itself (a value-completion site) vs the `matcher` key's value.
  */
-interface MatcherPosition {
+type MatcherPosition = {
     /** The owning request field name (`path`, `body`, a header key, …). */
     readonly field: string;
     /** Whether the owning field is the request `body` (the only place `form` is legal). */
     readonly isBody: boolean;
-}
+};
 
 /**
  * Recognise a matcher-NAME position from a location path, tolerating the trailing `"matcher"`
@@ -71,7 +71,7 @@ function matchMatcherNamePosition(
 ): MatcherPosition | undefined {
     let segments = path;
     let endsWithMatcherKey = false;
-    if (isString(segments[segments.length - 1]) && segments[segments.length - 1] === 'matcher') {
+    if (isString(segments.at(-1)) && segments.at(-1) === 'matcher') {
         segments = segments.slice(0, -1);
         endsWithMatcherKey = true;
     }
@@ -84,7 +84,7 @@ function matchMatcherNamePosition(
      * matcher-array index or a "doMatch" chain link. Peel any trailing "doMatch" links first.
      */
     let trimmed = [...segments];
-    while (trimmed[trimmed.length - 1] === 'doMatch') {
+    while (trimmed.at(-1) === 'doMatch') {
         trimmed = trimmed.slice(0, -1);
     }
 
@@ -92,13 +92,13 @@ function matchMatcherNamePosition(
      * Now the tail must be `<field>, <index>` for a direct field, or
      * `headers|query, <name>, <index>` for a nested map — preceded by `request`.
      */
-    const last = trimmed[trimmed.length - 1];
+    const last = trimmed.at(-1);
     if (!isIndex(last)) {
         /*
          * A doMatch link lands directly on a matcher object (no array index); accept it when the
          * segment before the doMatch chain identifies a matcher field under `request`.
          */
-        if (endsWithMatcherKey || segments[segments.length - 1] === 'doMatch') {
+        if (endsWithMatcherKey || segments.at(-1) === 'doMatch') {
             return classifyByField(trimmed);
         }
         return undefined;
@@ -112,8 +112,8 @@ function matchMatcherNamePosition(
  * request matcher field and whether that field is `body`.
  */
 function classifyByField(beforeIndex: JSONPath): MatcherPosition | undefined {
-    const last = beforeIndex[beforeIndex.length - 1];
-    const prev = beforeIndex[beforeIndex.length - 2];
+    const last = beforeIndex.at(-1);
+    const prev = beforeIndex.at(-2);
 
     // Direct field: …, "request", <field>
     if (isString(last) && DIRECT_MATCHER_FIELDS.has(last) && prev === 'request') {
@@ -121,7 +121,7 @@ function classifyByField(beforeIndex: JSONPath): MatcherPosition | undefined {
     }
 
     // Header/query map: …, "request", headers|query, <name>
-    const grand = beforeIndex[beforeIndex.length - 3];
+    const grand = beforeIndex.at(-3);
     if (isString(last) && isString(prev) && NESTED_MATCHER_MAPS.has(prev) && grand === 'request') {
         return { field: last, isBody: false };
     }
@@ -135,8 +135,8 @@ function isSchemaVersionPosition(
     options: { readonly propertyKey?: string } = {},
 ): boolean {
     // Hover: path ends `["meta","schemaVersion"]`. Value completion: path is `["meta"]`, key passed.
-    const last = path[path.length - 1];
-    if (last === 'schemaVersion' && path[path.length - 2] === 'meta') {
+    const last = path.at(-1);
+    if (last === 'schemaVersion' && path.at(-2) === 'meta') {
         return true;
     }
     return options.propertyKey === 'schemaVersion' && last === 'meta';
@@ -147,14 +147,14 @@ function isSchemaVersionPosition(
  * Property-completion only: `location` is the requiresState object's path.
  */
 function isRequiresStateKeyPosition(path: JSONPath): boolean {
-    return path[path.length - 1] === 'requiresState' && path[path.length - 2] === 'request';
+    return path.at(-1) === 'requiresState' && path.at(-2) === 'request';
 }
 
 /**
  * True when `propertyKey` is a NEW key being typed inside a `response.transitionsState` object.
  */
 function isTransitionsStateKeyPosition(path: JSONPath): boolean {
-    return path[path.length - 1] === 'transitionsState' && path[path.length - 2] === 'response';
+    return path.at(-1) === 'transitionsState' && path.at(-2) === 'response';
 }
 
 /**
@@ -182,9 +182,9 @@ function matchMethodSchemeValuePosition(
     if (options.propertyKey !== 'value') {
         return undefined;
     }
-    const index = path[path.length - 1];
-    const field = path[path.length - 2];
-    const request = path[path.length - 3];
+    const index = path.at(-1);
+    const field = path.at(-2);
+    const request = path.at(-3);
     if (
         isIndex(index) &&
         isString(field) &&
@@ -201,8 +201,8 @@ function isPostServeActionPosition(
     path: JSONPath,
     options: { readonly propertyKey?: string } = {},
 ): boolean {
-    const last = path[path.length - 1];
-    if (last === 'postServeAction' && path[path.length - 2] === 'response') {
+    const last = path.at(-1);
+    if (last === 'postServeAction' && path.at(-2) === 'response') {
         return true;
     }
     return options.propertyKey === 'postServeAction' && last === 'response';

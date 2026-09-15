@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
 import { hoverflySchema } from '../../src/schema/hoverfly.schema.generated.js';
 import {
@@ -14,21 +14,21 @@ const schemaJsonPath = fileURLToPath(
 );
 
 describe('bundled hoverfly schema', () => {
-    it('the source JSON is well-formed JSON', () => {
+    test('the source JSON is well-formed JSON', () => {
         // Given - the editable schema source on disk
         const text = readFileSync(schemaJsonPath, 'utf8');
         // Then - it parses as JSON without throwing
         expect(() => JSON.parse(text)).not.toThrow();
     });
 
-    it('the generated module matches the source JSON byte-for-byte (regenerate if this fails)', () => {
+    test('the generated module matches the source JSON byte-for-byte (regenerate if this fails)', () => {
         // Given - the editable source and the embedded copy
         const fromDisk = JSON.parse(readFileSync(schemaJsonPath, 'utf8')) as unknown;
         // Then - the embedded schema is the same document
-        expect(hoverflySchema).toEqual(fromDisk);
+        expect(hoverflySchema).toStrictEqual(fromDisk);
     });
 
-    it('declares the draft-07 $schema and the LSP $id', () => {
+    test('declares the draft-07 $schema and the LSP $id', () => {
         // Given - the bundled schema
         // Then - it self-declares draft and identity
         expect(hoverflySchema.$schema).toBe('http://json-schema.org/draft-07/schema#');
@@ -37,16 +37,16 @@ describe('bundled hoverfly schema', () => {
         );
     });
 
-    it('keeps the root additionalProperties:false constraint from the official schema', () => {
+    test('keeps the root additionalProperties:false constraint from the official schema', () => {
         // Given - the bundled schema root
         // Then - extra top-level keys are rejected (faithful to official)
-        expect(hoverflySchema.additionalProperties).toBe(false);
-        expect(hoverflySchema.required).toEqual(['data', 'meta']);
+        expect(hoverflySchema.additionalProperties).toBeFalsy();
+        expect(hoverflySchema.required).toStrictEqual(['data', 'meta']);
     });
 
-    it('keeps matcher as a free string and carries NO matcher-name examples (D5)', () => {
+    test('keeps matcher as a free string and carries NO matcher-name examples (D5)', () => {
         // Given - the field-matcher definition
-        const matcher = hoverflySchema.definitions?.['field-matchers']?.properties?.['matcher'];
+        const matcher = hoverflySchema.definitions?.['field-matchers']?.properties?.matcher;
         // Then - it stays a permissive string with no enum (never stricter)
         expect(matcher?.type).toBe('string');
         expect(matcher?.enum).toBeUndefined();
@@ -60,14 +60,14 @@ describe('bundled hoverfly schema', () => {
         expect(matcher?.examples).toBeUndefined();
     });
 
-    it('adds the request.method property (valid per D5, absent from the official schema)', () => {
+    test('adds the request.method property (valid per D5, absent from the official schema)', () => {
         // Given - the request definition
-        const method = hoverflySchema.definitions?.['request']?.properties?.['method'];
+        const method = hoverflySchema.definitions?.request?.properties?.method;
         // Then - method is a field-matcher array
         expect(method?.type).toBe('array');
     });
 
-    it('types field-matchers as object (official schema does), so an array-shaped doMatch is HF102', () => {
+    test('types field-matchers as object (official schema does), so an array-shaped doMatch is HF102', () => {
         // Given - the field-matchers definition (doMatch self-$refs it)
         const fieldMatchers = hoverflySchema.definitions?.['field-matchers'];
         /*
@@ -79,15 +79,14 @@ describe('bundled hoverfly schema', () => {
         expect(fieldMatchers?.type).toBe('object');
     });
 
-    it('stays a faithful superset: no type on logNormalDelay (official leaves it untyped)', () => {
+    test('stays a faithful superset: no type on logNormalDelay (official leaves it untyped)', () => {
         // Given - a definition the official schema leaves untyped
-        const logNormalDelay =
-            hoverflySchema.definitions?.['response']?.properties?.['logNormalDelay'];
+        const logNormalDelay = hoverflySchema.definitions?.response?.properties?.logNormalDelay;
         // Then - we do not add a `type` it lacks (never stricter than official)
         expect(logNormalDelay?.type).toBeUndefined();
     });
 
-    it('provides high-value defaultSnippets', () => {
+    test('provides high-value defaultSnippets', () => {
         // Given - the pair and field-matcher definitions
         const pair = hoverflySchema.definitions?.['request-response-pair'];
         const fieldMatchers = hoverflySchema.definitions?.['field-matchers'];
@@ -96,7 +95,7 @@ describe('bundled hoverfly schema', () => {
         expect(fieldMatchers?.defaultSnippets?.length).toBeGreaterThan(0);
     });
 
-    it('every property under every definition has a description (the docs investment)', () => {
+    test('every property under every definition has a description (the docs investment)', () => {
         // Given - all definitions in the bundled schema
         const definitions = hoverflySchema.definitions ?? {};
         const missing: string[] = [];
@@ -113,15 +112,15 @@ describe('bundled hoverfly schema', () => {
             }
         }
         // Then - none are missing a description (these power schema-driven hover + completion)
-        expect(missing).toEqual([]);
+        expect(missing).toStrictEqual([]);
     });
 });
 
 describe('schema provenance', () => {
-    it('pins the upstream Hoverfly commit, URL and fetch date', () => {
+    test('pins the upstream Hoverfly commit, URL and fetch date', () => {
         // Given - the provenance constants
         // Then - they are populated for the CI drift job
-        expect(HOVERFLY_COMMIT).toMatch(/^[0-9a-f]{40}$/);
+        expect(HOVERFLY_COMMIT).toMatch(/^[0-9a-f]{40}$/u);
         expect(HOVERFLY_SCHEMA_URL).toContain('SpectoLabs/hoverfly');
         expect(SCHEMA_FETCHED_AT).toBe('2026-06-11');
     });

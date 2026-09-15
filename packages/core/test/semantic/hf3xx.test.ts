@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, test } from 'vitest';
 import { getLanguageService } from 'vscode-json-languageservice';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DiagnosticSeverity } from 'vscode-languageserver-types';
@@ -25,41 +25,43 @@ function diagnoseResponse(response: Record<string, unknown>) {
 
 const codes = (diags: { code?: unknown }[]) => diags.map((d) => String(d.code));
 
-describe('HF301 — body and bodyFile both set', () => {
-    it('warns and points at the bodyFile key', () => {
+describe('hF301 — body and bodyFile both set', () => {
+    test('warns and points at the bodyFile key', () => {
         // Given - a response with both body and bodyFile
         const diags = diagnoseResponse({ status: 200, body: 'hi', bodyFile: 'out.txt' });
         // Then - one HF301 warning
-        expect(codes(diags)).toEqual(['HF301']);
+        expect(codes(diags)).toStrictEqual(['HF301']);
         expect(diags[0]?.severity).toBe(DiagnosticSeverity.Warning);
     });
 
-    it('stays silent when only one of body/bodyFile is set', () => {
+    test('stays silent when only one of body/bodyFile is set', () => {
         // Given - body only, then bodyFile only
-        expect(diagnoseResponse({ status: 200, body: 'hi' })).toEqual([]);
-        expect(diagnoseResponse({ status: 200, bodyFile: 'out.txt' })).toEqual([]);
+        expect(diagnoseResponse({ status: 200, body: 'hi' })).toStrictEqual([]);
+        expect(diagnoseResponse({ status: 200, bodyFile: 'out.txt' })).toStrictEqual([]);
     });
 });
 
-describe('HF302 — Content-Length and Transfer-Encoding both set', () => {
-    it('warns on the second header key (case-insensitive names)', () => {
+describe('hF302 — Content-Length and Transfer-Encoding both set', () => {
+    test('warns on the second header key (case-insensitive names)', () => {
         // Given - both conflicting headers, with array-shaped header values
         const diags = diagnoseResponse({
             status: 200,
             headers: { 'content-length': ['3'], 'Transfer-Encoding': ['chunked'] },
         });
         // Then - one HF302 warning
-        expect(codes(diags)).toEqual(['HF302']);
+        expect(codes(diags)).toStrictEqual(['HF302']);
     });
 
-    it('stays silent with only one of the two', () => {
+    test('stays silent with only one of the two', () => {
         // Given - just Content-Length
-        expect(diagnoseResponse({ status: 200, headers: { 'Content-Length': ['3'] } })).toEqual([]);
+        expect(
+            diagnoseResponse({ status: 200, headers: { 'Content-Length': ['3'] } }),
+        ).toStrictEqual([]);
     });
 });
 
-describe('HF303 — Content-Length mismatch', () => {
-    it('warns when Content-Length disagrees with UTF-8 byte length', () => {
+describe('hF303 — Content-Length mismatch', () => {
+    test('warns when Content-Length disagrees with UTF-8 byte length', () => {
         // Given - a 5-byte body declared as length 3
         const diags = diagnoseResponse({
             status: 200,
@@ -67,12 +69,12 @@ describe('HF303 — Content-Length mismatch', () => {
             headers: { 'Content-Length': ['3'] },
         });
         // Then - one HF303 carrying declared (3) and actual (5)
-        expect(codes(diags)).toEqual(['HF303']);
+        expect(codes(diags)).toStrictEqual(['HF303']);
         expect(diags[0]?.message).toContain('3');
         expect(diags[0]?.message).toContain('5');
     });
 
-    it('uses UTF-8 byte length, not code-unit length', () => {
+    test('uses UTF-8 byte length, not code-unit length', () => {
         // Given - a 2-codepoint body that is 6 UTF-8 bytes ("€€"), declared as 2
         const diags = diagnoseResponse({
             status: 200,
@@ -83,14 +85,14 @@ describe('HF303 — Content-Length mismatch', () => {
         expect(diags[0]?.message).toContain('6');
     });
 
-    it('is silent when length matches', () => {
+    test('is silent when length matches', () => {
         // Given - a correct Content-Length
         expect(
             diagnoseResponse({ status: 200, body: 'hello', headers: { 'Content-Length': ['5'] } }),
-        ).toEqual([]);
+        ).toStrictEqual([]);
     });
 
-    it('skips when templated/encodedBody/bodyFile makes the body unmeasurable', () => {
+    test('skips when templated/encodedBody/bodyFile makes the body unmeasurable', () => {
         // Given - templated body with a stale Content-Length
         expect(
             diagnoseResponse({
@@ -99,7 +101,7 @@ describe('HF303 — Content-Length mismatch', () => {
                 templated: true,
                 headers: { 'Content-Length': ['3'] },
             }),
-        ).toEqual([]);
+        ).toStrictEqual([]);
         // Given - encodedBody true
         expect(
             diagnoseResponse({
@@ -108,107 +110,109 @@ describe('HF303 — Content-Length mismatch', () => {
                 encodedBody: true,
                 headers: { 'Content-Length': ['3'] },
             }),
-        ).toEqual([]);
+        ).toStrictEqual([]);
     });
 });
 
-describe('HF304 — status out of range', () => {
-    it.each([99, 600, 0, 700])('warns on status %i', (status) => {
+describe('hF304 — status out of range', () => {
+    test.each([99, 600, 0, 700])('warns on status %i', (status) => {
         // Given - an out-of-range status
         const diags = diagnoseResponse({ status });
         // Then - one HF304
-        expect(codes(diags)).toEqual(['HF304']);
+        expect(codes(diags)).toStrictEqual(['HF304']);
     });
 
-    it.each([100, 200, 404, 599])('accepts in-range status %i', (status) => {
+    test.each([100, 200, 404, 599])('accepts in-range status %i', (status) => {
         // Given - an in-range status
-        expect(diagnoseResponse({ status })).toEqual([]);
+        expect(diagnoseResponse({ status })).toStrictEqual([]);
     });
 });
 
-describe('HF305 — encodedBody but invalid base64', () => {
-    it('warns on a non-base64 body when encodedBody is true', () => {
+describe('hF305 — encodedBody but invalid base64', () => {
+    test('warns on a non-base64 body when encodedBody is true', () => {
         // Given - encodedBody true with an obviously non-base64 body
         const diags = diagnoseResponse({ status: 200, body: 'not base64!!', encodedBody: true });
         // Then - one HF305 on the body
-        expect(codes(diags)).toEqual(['HF305']);
+        expect(codes(diags)).toStrictEqual(['HF305']);
     });
 
-    it('accepts valid padded base64', () => {
+    test('accepts valid padded base64', () => {
         // Given - "hello" base64-encoded
-        expect(diagnoseResponse({ status: 200, body: 'aGVsbG8=', encodedBody: true })).toEqual([]);
+        expect(
+            diagnoseResponse({ status: 200, body: 'aGVsbG8=', encodedBody: true }),
+        ).toStrictEqual([]);
     });
 
-    it('accepts an empty body (decodes to empty) and ignores when encodedBody is false', () => {
+    test('accepts an empty body (decodes to empty) and ignores when encodedBody is false', () => {
         // Given - empty body / encodedBody false
-        expect(diagnoseResponse({ status: 200, body: '', encodedBody: true })).toEqual([]);
-        expect(diagnoseResponse({ status: 200, body: 'not base64!!', encodedBody: false })).toEqual(
-            [],
-        );
+        expect(diagnoseResponse({ status: 200, body: '', encodedBody: true })).toStrictEqual([]);
+        expect(
+            diagnoseResponse({ status: 200, body: 'not base64!!', encodedBody: false }),
+        ).toStrictEqual([]);
     });
 });
 
-describe('HF306 — negative fixedDelay', () => {
-    it('warns on a negative fixedDelay and is silent on >= 0', () => {
+describe('hF306 — negative fixedDelay', () => {
+    test('warns on a negative fixedDelay and is silent on >= 0', () => {
         // Given - negative delay
-        expect(codes(diagnoseResponse({ status: 200, fixedDelay: -100 }))).toEqual(['HF306']);
+        expect(codes(diagnoseResponse({ status: 200, fixedDelay: -100 }))).toStrictEqual(['HF306']);
         // Given - zero and positive delay (both ignored / valid)
-        expect(diagnoseResponse({ status: 200, fixedDelay: 0 })).toEqual([]);
-        expect(diagnoseResponse({ status: 200, fixedDelay: 250 })).toEqual([]);
+        expect(diagnoseResponse({ status: 200, fixedDelay: 0 })).toStrictEqual([]);
+        expect(diagnoseResponse({ status: 200, fixedDelay: 250 })).toStrictEqual([]);
     });
 });
 
-describe('HF307 — logNormalDelay constraints', () => {
-    it('accepts a valid log-normal delay', () => {
+describe('hF307 — logNormalDelay constraints', () => {
+    test('accepts a valid log-normal delay', () => {
         // Given - min<=median<=mean<=max, all > 0
         expect(
             diagnoseResponse({
                 status: 200,
                 logNormalDelay: { min: 10, max: 100, mean: 50, median: 40 },
             }),
-        ).toEqual([]);
+        ).toStrictEqual([]);
     });
 
-    it('warns when mean or median <= 0', () => {
+    test('warns when mean or median <= 0', () => {
         // Given - mean 0 (Go: mean <= 0 fails)
         const diags = diagnoseResponse({ status: 200, logNormalDelay: { mean: 0, median: 5 } });
-        expect(codes(diags)).toEqual(['HF307']);
+        expect(codes(diags)).toStrictEqual(['HF307']);
         expect(diags[0]?.message.toLowerCase()).toContain('mean');
     });
 
-    it('warns when min is negative', () => {
+    test('warns when min is negative', () => {
         // Given - negative min
         const diags = diagnoseResponse({
             status: 200,
             logNormalDelay: { min: -1, max: 100, mean: 50, median: 40 },
         });
-        expect(codes(diags)).toEqual(['HF307']);
+        expect(codes(diags)).toStrictEqual(['HF307']);
     });
 
-    it('warns when max < min', () => {
+    test('warns when max < min', () => {
         // Given - max below min
         const diags = diagnoseResponse({
             status: 200,
             logNormalDelay: { min: 100, max: 10, mean: 50, median: 40 },
         });
-        expect(codes(diags)).toEqual(['HF307']);
+        expect(codes(diags)).toStrictEqual(['HF307']);
     });
 
-    it('warns when median > mean', () => {
+    test('warns when median > mean', () => {
         // Given - median above mean (no max bound)
         const diags = diagnoseResponse({
             status: 200,
             logNormalDelay: { mean: 30, median: 50 },
         });
-        expect(codes(diags)).toEqual(['HF307']);
+        expect(codes(diags)).toStrictEqual(['HF307']);
         expect(diags[0]?.message.toLowerCase()).toContain('median');
     });
 });
 
-describe('HF3xx — exported rule shape', () => {
-    it('declares the seven HF3xx codes and never throws on a malformed model', () => {
+describe('hF3xx — exported rule shape', () => {
+    test('declares the seven HF3xx codes and never throws on a malformed model', () => {
         // Given - the rule's advertised codes
-        expect(hf3xxResponseRule.codes).toEqual([
+        expect(hf3xxResponseRule.codes).toStrictEqual([
             'HF301',
             'HF302',
             'HF303',
@@ -218,6 +222,6 @@ describe('HF3xx — exported rule shape', () => {
             'HF307',
         ]);
         // Then - running over junk input yields no throw and no diagnostics
-        expect(hf3xxResponseRule.run(contextOf(`{"data":123}`))).toEqual([]);
+        expect(hf3xxResponseRule.run(contextOf(`{"data":123}`))).toStrictEqual([]);
     });
 });

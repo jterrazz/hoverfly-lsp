@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
 import {
     type BooleanLiteral,
@@ -17,8 +17,8 @@ import {
  * {@link BooleanLiteral}) carry their parsed values. These pin the public AST surface the HF5xx
  * rules consume.
  */
-describe('AST shapes', () => {
-    it('produces a Program root carrying a full-source span', () => {
+describe('aST shapes', () => {
+    test('produces a Program root carrying a full-source span', () => {
         // Given - a small template
         const source = 'x {{y}}';
         const result: ParseResult = parse(source);
@@ -29,7 +29,7 @@ describe('AST shapes', () => {
         expect(program.end).toBe(source.length);
     });
 
-    it('gives every node a half-open [start, end) span', () => {
+    test('gives every node a half-open [start, end) span', () => {
         // Given
         const { ast } = parse('a{{b}}c');
         // Then - each statement is a valid Span with end > start
@@ -39,7 +39,7 @@ describe('AST shapes', () => {
         }
     });
 
-    it('parses string, number, and boolean literals into typed nodes', () => {
+    test('parses string, number, and boolean literals into typed nodes', () => {
         // Given - one of each literal kind as helper args
         const { ast } = parse("{{h 'txt' -1.5 true}}");
         const mustache = ast.body[0];
@@ -63,6 +63,6 @@ describe('AST shapes', () => {
         // Then - BooleanLiteral
         expect(boolean_?.type).toBe('BooleanLiteral');
         const booleanLiteral = boolean_ as BooleanLiteral;
-        expect(booleanLiteral.value).toBe(true);
+        expect(booleanLiteral.value).toBeTruthy();
     });
 });

@@ -5,8 +5,8 @@
  * Range), mapped through the document's offset→position conversion.
  */
 
-import type { ASTNode } from 'vscode-json-languageservice';
-import type { TextDocument } from 'vscode-languageserver-textdocument';
+import { type ASTNode } from 'vscode-json-languageservice';
+import { type TextDocument } from 'vscode-languageserver-textdocument';
 import { type Diagnostic, type Range } from 'vscode-languageserver-types';
 
 import {

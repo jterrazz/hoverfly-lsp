@@ -24,7 +24,7 @@
  * nested objects. It is the only AST re-walk here and is kept minimal.
  */
 
-import type { ASTNode, ObjectASTNode } from 'vscode-json-languageservice';
+import { type ASTNode, type ObjectASTNode } from 'vscode-json-languageservice';
 import { type Diagnostic } from 'vscode-languageserver-types';
 
 import {
@@ -34,7 +34,12 @@ import {
     TRANSFORMING_MATCHER_NAMES,
 } from '../../registry/index.js';
 import { makeDiagnostic } from '../diagnostics.js';
-import type { FieldContainer, MatcherModel, RuleContext, SemanticRule } from '../types.js';
+import {
+    type FieldContainer,
+    type MatcherModel,
+    type RuleContext,
+    type SemanticRule,
+} from '../types.js';
 
 /* ------------------------------------ registry lookup ------------------------------------ */
 
@@ -60,13 +65,13 @@ const ARRAY_CONFIG_KEYS: ReadonlySet<string> = new Set(
 /* ---------------------------------- matcher tree walking --------------------------------- */
 
 /** A matcher seen during the walk, plus placement/depth and the raw key nodes HF2xx needs. */
-interface WalkedMatcher {
+type WalkedMatcher = {
     readonly matcher: MatcherModel;
     /** 0 at a field's top level; +1 per `doMatch` nesting level. */
     readonly depth: number;
     /** The `doMatch` property's KEY node (HF210 points here), when present. */
     readonly doMatchKeyNode: ASTNode | undefined;
-}
+};
 
 /** The KEY node of property `key` on an object node, if present (the model exposes only values). */
 function keyNodeOf(object: ObjectASTNode | undefined, key: string): ASTNode | undefined {
@@ -103,7 +108,7 @@ function walkMatchers(matchers: readonly MatcherModel[]): WalkedMatcher[] {
             depth,
             doMatchKeyNode: keyNodeOf(matcher.node, 'doMatch'),
         });
-        const doMatchNode = matcher.doMatchNode;
+        const { doMatchNode } = matcher;
         if (doMatchNode?.type === 'object') {
             // The correct, Hoverfly-accepted shape: `doMatch` is a single chained matcher object.
             visit(

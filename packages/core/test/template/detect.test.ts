@@ -1,20 +1,20 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
 import { hasTemplateSyntax } from '../../src/template/index.js';
 
 describe('hasTemplateSyntax', () => {
-    it('detects a mustache opener', () => {
+    test('detects a mustache opener', () => {
         // Then - any `{{` counts
-        expect(hasTemplateSyntax('hello {{name}}')).toBe(true);
-        expect(hasTemplateSyntax('{{#each xs}}{{/each}}')).toBe(true);
-        expect(hasTemplateSyntax('{{{unescaped}}}')).toBe(true);
+        expect(hasTemplateSyntax('hello {{name}}')).toBeTruthy();
+        expect(hasTemplateSyntax('{{#each xs}}{{/each}}')).toBeTruthy();
+        expect(hasTemplateSyntax('{{{unescaped}}}')).toBeTruthy();
     });
 
-    it('returns false for plain text and single braces', () => {
+    test('returns false for plain text and single braces', () => {
         // Then - no `{{` => no template syntax
-        expect(hasTemplateSyntax('plain body')).toBe(false);
-        expect(hasTemplateSyntax('{ not a mustache }')).toBe(false);
-        expect(hasTemplateSyntax('')).toBe(false);
-        expect(hasTemplateSyntax('{"json":"object"}')).toBe(false);
+        expect(hasTemplateSyntax('plain body')).toBeFalsy();
+        expect(hasTemplateSyntax('{ not a mustache }')).toBeFalsy();
+        expect(hasTemplateSyntax('')).toBeFalsy();
+        expect(hasTemplateSyntax('{"json":"object"}')).toBeFalsy();
     });
 });

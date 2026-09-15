@@ -19,16 +19,26 @@
  * See research/16 §3.2 for the construct→type mapping each entry serves.
  */
 export const SEMANTIC_TOKEN_TYPES = [
-    'namespace', // 0 — reserved (unused in v1; keeps indices stable for a future refinement)
-    'keyword', // 1 — block-helper keywords (if/unless/each/with/equal/first)
-    'function', // 2 — inline helper / subexpression-head calls (now, faker, replace, …)
-    'variable', // 3 — path roots (Request, State, Vars, Literals, Journal, …)
-    'property', // 4 — subsequent path segments (.Path, .Method, field names)
-    'parameter', // 5 — @index/@first/@last/@key and `this`
-    'enumMember', // 6 — known faker types and matcher names (closed enums)
-    'string', // 7 — string-literal arguments
-    'number', // 8 — numeric literals and bracket indices ([1])
-    'operator', // 9 — mustache delimiters {{ }} {{{ }}} and # / block markers
+    // 0 — reserved (unused in v1; keeps indices stable for a future refinement)
+    'namespace',
+    // 1 — block-helper keywords (if/unless/each/with/equal/first)
+    'keyword',
+    // 2 — inline helper / subexpression-head calls (now, faker, replace, …)
+    'function',
+    // 3 — path roots (Request, State, Vars, Literals, Journal, …)
+    'variable',
+    // 4 — subsequent path segments (.Path, .Method, field names)
+    'property',
+    // 5 — @index/@first/@last/@key and `this`
+    'parameter',
+    // 6 — known faker types and matcher names (closed enums)
+    'enumMember',
+    // 7 — string-literal arguments
+    'string',
+    // 8 — numeric literals and bracket indices ([1])
+    'number',
+    // 9 — mustache delimiters {{ }} {{{ }}} and # / block markers
+    'operator',
 ] as const;
 
 /** No modifiers in v1. */

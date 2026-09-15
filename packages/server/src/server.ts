@@ -282,7 +282,7 @@ function createServer(connection: Connection): void {
      * advertised to clients that support semantic tokens, and a client that did not advertise support
      * gets an empty token set rather than an answer it never asked for.
      */
-    connection.languages.semanticTokens.on((params): ResponseError<void> | SemanticTokens => {
+    connection.languages.semanticTokens.on((params): ResponseError | SemanticTokens => {
         if (!hasInitialized) {
             return notInitialized<void>();
         }

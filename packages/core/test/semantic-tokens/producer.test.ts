@@ -5,7 +5,7 @@
  * the right characters through `\n`/`\uXXXX` escapes.
  */
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, test } from 'vitest';
 import { getLanguageService } from 'vscode-json-languageservice';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
@@ -14,14 +14,14 @@ import { getSemanticTokens, type SemanticToken } from '../../src/semantic-tokens
 
 const ls = getLanguageService({});
 
-interface ResolvedToken {
+type ResolvedToken = {
     /** The exact document text the token covers. */
     text: string;
     /** The token-type NAME (resolved from the index). */
     type: string;
     line: number;
     startChar: number;
-}
+};
 
 /** Run the producer and resolve each token to {text, type, line, startChar} for assertions. */
 function tokensOf(
@@ -57,7 +57,7 @@ function sim(response: unknown, request: unknown = { path: [{ matcher: 'exact', 
 }
 
 /** The (text, type) pairs of resolved tokens, for compact set-style assertions. */
-function pairs(resolved: ResolvedToken[]): Array<[string, string]> {
+function pairs(resolved: ResolvedToken[]): [string, string][] {
     return resolved.map((t) => [t.text, t.type]);
 }
 
@@ -66,7 +66,7 @@ describe("getSemanticTokens — the user's example body", () => {
     const body =
         '{"id":"{{ Request.Path.[1] }}","now":"{{ now \'\' }}","name":"{{ faker \'Name\' }}"}';
 
-    it('colors every construct with the right type and exact text', () => {
+    test('colors every construct with the right type and exact text', () => {
         // Given - a templated body with the three mustaches
         const { resolved } = tokensOf(sim({ status: 200, body, templated: true }));
         const p = pairs(resolved);
@@ -87,14 +87,14 @@ describe("getSemanticTokens — the user's example body", () => {
         expect(p).toContainEqual(["'Name'", 'enumMember']);
     });
 
-    it("emits all three mustaches' delimiters (six operator tokens of {{ and }})", () => {
+    test("emits all three mustaches' delimiters (six operator tokens of {{ and }})", () => {
         const { resolved } = tokensOf(sim({ status: 200, body, templated: true }));
         const operators = resolved.filter((t) => t.type === 'operator').map((t) => t.text);
-        expect(operators.filter((t) => t === '{{').length).toBe(3);
-        expect(operators.filter((t) => t === '}}').length).toBe(3);
+        expect(operators.filter((t) => t === '{{')).toHaveLength(3);
+        expect(operators.filter((t) => t === '}}')).toHaveLength(3);
     });
 
-    it('returns tokens sorted by (line, startChar)', () => {
+    test('returns tokens sorted by (line, startChar)', () => {
         const { raw } = tokensOf(sim({ status: 200, body, templated: true }));
         for (let i = 1; i < raw.length; i += 1) {
             const prev = raw[i - 1];
@@ -104,13 +104,13 @@ describe("getSemanticTokens — the user's example body", () => {
             }
             const before =
                 prev.line < cur.line || (prev.line === cur.line && prev.startChar <= cur.startChar);
-            expect(before).toBe(true);
+            expect(before).toBeTruthy();
         }
     });
 });
 
 describe('getSemanticTokens — escape torture (source-map credibility)', () => {
-    it(String.raw`lands tokens on the right characters when \n precedes the mustache`, () => {
+    test(String.raw`lands tokens on the right characters when \n precedes the mustache`, () => {
         // Given - a literal `\n` (a 2-char JSON escape) before `{{ now }}`
         const body = String.raw`a\nb {{ now }}`;
         const { resolved, doc } = tokensOf(sim({ status: 200, body, templated: true }));
@@ -126,7 +126,7 @@ describe('getSemanticTokens — escape torture (source-map credibility)', () => 
         expect(doc.getText().slice(offset, offset + 2)).toBe('{{');
     });
 
-    it(String.raw`lands tokens on the right characters when \uXXXX precedes the mustache`, () => {
+    test(String.raw`lands tokens on the right characters when \uXXXX precedes the mustache`, () => {
         // Given - a `é` (6-char escape, one decoded code unit) before `{{ faker 'Name' }}`
         const body = String.raw`x\u00e9 {{ faker 'Name' }}`;
         const { resolved } = tokensOf(sim({ status: 200, body, templated: true }));
@@ -138,7 +138,7 @@ describe('getSemanticTokens — escape torture (source-map credibility)', () => 
 });
 
 describe('getSemanticTokens — matcher names', () => {
-    it('colors a known matcher name as enumMember over the value (no quotes)', () => {
+    test('colors a known matcher name as enumMember over the value (no quotes)', () => {
         // Given - request fields using regex and jwt matchers
         const text = sim(
             { status: 200, body: 'ok' },
@@ -154,7 +154,7 @@ describe('getSemanticTokens — matcher names', () => {
         expect(p).toContainEqual(['jwt', 'enumMember']);
     });
 
-    it('does NOT color an unknown matcher name', () => {
+    test('does NOT color an unknown matcher name', () => {
         const text = sim(
             { status: 200, body: 'ok' },
             { path: [{ matcher: 'bogus', value: '/x' }] },
@@ -165,7 +165,7 @@ describe('getSemanticTokens — matcher names', () => {
 });
 
 describe('getSemanticTokens — block helpers', () => {
-    it('colors {{#each}} as keyword and the path inside as property', () => {
+    test('colors {{#each}} as keyword and the path inside as property', () => {
         // Given - a block-helper body iterating a path
         const body = '{{#each Request.Body}}{{this.name}}{{/each}}';
         const { resolved } = tokensOf(sim({ status: 200, body, templated: true }));
@@ -177,38 +177,38 @@ describe('getSemanticTokens — block helpers', () => {
         // This.name → parameter (context-injected `this` root)
         expect(p).toContainEqual(['this.name', 'parameter']);
         // Block markers are operators
-        expect(resolved.some((t) => t.type === 'operator' && t.text === '{{#')).toBe(true);
-        expect(resolved.some((t) => t.type === 'operator' && t.text === '{{/')).toBe(true);
+        expect(resolved.some((t) => t.type === 'operator' && t.text === '{{#')).toBeTruthy();
+        expect(resolved.some((t) => t.type === 'operator' && t.text === '{{/')).toBeTruthy();
     });
 });
 
 describe('getSemanticTokens — gating', () => {
-    it('returns [] for a non-simulation JSON document', () => {
+    test('returns [] for a non-simulation JSON document', () => {
         // Given - plain JSON with a template-looking string but no Hoverfly fingerprint
         const text = JSON.stringify({ hello: '{{ now }}' });
         const doc = TextDocument.create('file:///plain.json', 'json', 1, text);
         const json = ls.parseJSONDocument(doc);
         // Then - no tokens
-        expect(getSemanticTokens(doc, json)).toEqual([]);
+        expect(getSemanticTokens(doc, json)).toStrictEqual([]);
     });
 
-    it('colors a Hoverfly-named file even without the fingerprint object shape', () => {
+    test('colors a Hoverfly-named file even without the fingerprint object shape', () => {
         // Given - a .hoverfly.json file whose content is a full sim (filename gate is the OR branch)
         const { resolved } = tokensOf(
             sim({ status: 200, body: '{{ now }}', templated: true }),
             'file:///api.hoverfly.json',
         );
-        expect(resolved.some((t) => t.text === 'now' && t.type === 'function')).toBe(true);
+        expect(resolved.some((t) => t.text === 'now' && t.type === 'function')).toBeTruthy();
     });
 
-    it('colors a body with {{ even when templated is false (HF501 scope)', () => {
+    test('colors a body with {{ even when templated is false (HF501 scope)', () => {
         // Given - template syntax in a non-templated body
         const { resolved } = tokensOf(sim({ status: 200, body: '{{ now }}' }));
         // Then - the template is still tokenized (so editors color what the user is writing)
-        expect(resolved.some((t) => t.text === 'now')).toBe(true);
+        expect(resolved.some((t) => t.text === 'now')).toBeTruthy();
     });
 
-    it('does NOT throw on a malformed template (partial tokens)', () => {
+    test('does NOT throw on a malformed template (partial tokens)', () => {
         // Given - an unclosed mustache
         const body = '{{ now ';
         expect(() => tokensOf(sim({ status: 200, body, templated: true }))).not.toThrow();

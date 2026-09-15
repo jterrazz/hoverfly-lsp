@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, test } from 'vitest';
 import { getLanguageService } from 'vscode-json-languageservice';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
@@ -16,8 +16,8 @@ function sim(schemaVersion: string): string {
     return JSON.stringify({ data: { pairs: [] }, meta: { schemaVersion } });
 }
 
-describe('HF101 — not a simulation', () => {
-    it("points at the document's first line with the catalog message", () => {
+describe('hF101 — not a simulation', () => {
+    test("points at the document's first line with the catalog message", () => {
         // Given - a non-simulation document
         const doc = TextDocument.create('file:///x.hoverfly.json', 'json', 1, `{"hello":"world"}`);
         // When - HF101 is built
@@ -25,14 +25,14 @@ describe('HF101 — not a simulation', () => {
         // Then - it is the warning-level structure diagnostic on line 0
         expect(d.code).toBe('HF101');
         expect(d.source).toBe('hoverfly');
-        expect(d.range.start).toEqual({ line: 0, character: 0 });
+        expect(d.range.start).toStrictEqual({ line: 0, character: 0 });
         expect(d.range.end.line).toBe(0);
         expect(d.message).toContain('does not look like a Hoverfly simulation');
     });
 });
 
-describe('HF103/HF104 — schemaVersion rule', () => {
-    it('flags a legacy v1–v4 version as HF103 information on the version string', () => {
+describe('hF103/HF104 — schemaVersion rule', () => {
+    test('flags a legacy v1–v4 version as HF103 information on the version string', () => {
         // Given - a v3 simulation
         const diags = hf1xxSchemaVersionRule.run(contextOf(sim('v3')));
         // Then - one HF103 information diagnostic carrying the version
@@ -44,14 +44,14 @@ describe('HF103/HF104 — schemaVersion rule', () => {
         expect(node?.start.line).toBe(node?.end.line);
     });
 
-    it('does not flag a current v5.x version', () => {
+    test('does not flag a current v5.x version', () => {
         // Given - the current default version
         // Then - no HF103/HF104
         const diags = hf1xxSchemaVersionRule.run(contextOf(sim('v5.3')));
-        expect(diags).toEqual([]);
+        expect(diags).toStrictEqual([]);
     });
 
-    it('flags an unrecognised version syntax as HF104 error', () => {
+    test('flags an unrecognised version syntax as HF104 error', () => {
         // Given - a version that fails ^v\d+(\.\d+)?$
         const diags = hf1xxSchemaVersionRule.run(contextOf(sim('v5x')));
         // Then - one HF104 error diagnostic
@@ -60,19 +60,19 @@ describe('HF103/HF104 — schemaVersion rule', () => {
         expect(diags[0]?.message).toContain('v5x');
     });
 
-    it('accepts a bare major like v5 (C4 pattern allows optional minor)', () => {
+    test('accepts a bare major like v5 (C4 pattern allows optional minor)', () => {
         // Given - v5 with no minor
         // Then - neither HF103 nor HF104 fires
         const diags = hf1xxSchemaVersionRule.run(contextOf(sim('v5')));
-        expect(diags).toEqual([]);
+        expect(diags).toStrictEqual([]);
     });
 
-    it('stays silent when schemaVersion is absent or non-string (a schema concern)', () => {
+    test('stays silent when schemaVersion is absent or non-string (a schema concern)', () => {
         // Given - meta without a string schemaVersion
         const diags = hf1xxSchemaVersionRule.run(
             contextOf(`{"data":{"pairs":[]},"meta":{"schemaVersion":5}}`),
         );
         // Then - HF1xx defers to the schema layer (HF102), emitting nothing itself
-        expect(diags).toEqual([]);
+        expect(diags).toStrictEqual([]);
     });
 });

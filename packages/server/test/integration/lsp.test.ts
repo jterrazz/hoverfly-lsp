@@ -2,7 +2,7 @@ import { type ChildProcessWithoutNullStreams, spawn } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 import {
     type CompletionList,
     CompletionRequest,
@@ -54,12 +54,12 @@ const SEMANTIC_TOKENS_CLIENT_CAPABILITIES = {
 };
 
 /** One absolute semantic token decoded from the LSP 5-int delta array. */
-interface AbsoluteToken {
+type AbsoluteToken = {
     line: number;
     startChar: number;
     length: number;
     tokenType: number;
-}
+};
 
 /**
  * Decode the flat 5-int delta array (deltaLine, deltaStartChar, length, tokenType, tokenModifiers)
@@ -113,11 +113,11 @@ function spawnServer(): { child: ChildProcessWithoutNullStreams; connection: Pro
 }
 
 /** Collect the next publishDiagnostics notification for a given uri. */
-function nextDiagnostics(
+async function nextDiagnostics(
     connection: ProtocolConnection,
     uri: string,
 ): Promise<PublishDiagnosticsParams> {
-    return new Promise<PublishDiagnosticsParams>((resolve) => {
+    return await new Promise<PublishDiagnosticsParams>((resolve) => {
         const dispose = connection.onNotification(
             PublishDiagnosticsNotification.type,
             (params: PublishDiagnosticsParams) => {
@@ -159,12 +159,13 @@ describe('hoverfly-lsp — initialize handshake', () => {
     beforeAll(() => {
         ({ child, connection } = spawnServer());
     });
+
     afterAll(() => {
         connection.dispose();
         child.kill();
     });
 
-    it('advertises completion (with triggers), hover, and a pull diagnostic provider', async () => {
+    test('advertises completion (with triggers), hover, and a pull diagnostic provider', async () => {
         // Given - a standard initialize
         const result: InitializeResult = await connection.sendRequest(InitializeRequest.type, {
             processId: process.pid,
@@ -175,26 +176,26 @@ describe('hoverfly-lsp — initialize handshake', () => {
 
         // Then - completion advertises the Hoverfly + Handlebars trigger characters
         expect(caps.completionProvider).toBeDefined();
-        expect(caps.completionProvider?.triggerCharacters).toEqual(
+        expect(caps.completionProvider?.triggerCharacters).toStrictEqual(
             expect.arrayContaining(['"', '{', '.', '#', '@', "'", '(']),
         );
         // Then - hover is on
-        expect(caps.hoverProvider).toBe(true);
+        expect(caps.hoverProvider).toBeTruthy();
         // Then - a pull diagnostic provider with single-file (non-workspace) semantics
         expect(caps.diagnosticProvider).toBeDefined();
         const diag = caps.diagnosticProvider as {
             interFileDependencies?: boolean;
             workspaceDiagnostics?: boolean;
         };
-        expect(diag.interFileDependencies).toBe(false);
-        expect(diag.workspaceDiagnostics).toBe(false);
+        expect(diag.interFileDependencies).toBeFalsy();
+        expect(diag.workspaceDiagnostics).toBeFalsy();
         // Then - incremental open/close sync
         expect(result.serverInfo?.name).toBe('hoverfly-lsp');
     });
 });
 
 describe('hoverfly-lsp — $/lifecycle conformance', () => {
-    it('rejects a feature request sent BEFORE initialize with ServerNotInitialized (-32002)', async () => {
+    test('rejects a feature request sent BEFORE initialize with ServerNotInitialized (-32002)', async () => {
         // Given - a freshly spawned server that has NOT been initialized
         const { child, connection } = spawnServer();
         try {
@@ -213,7 +214,7 @@ describe('hoverfly-lsp — $/lifecycle conformance', () => {
         }
     });
 
-    it('rejects a SECOND initialize with InvalidRequest (-32600)', async () => {
+    test('rejects a SECOND initialize with InvalidRequest (-32600)', async () => {
         // Given - a server that has already completed one initialize
         const { child, connection } = spawnServer();
         try {
@@ -240,7 +241,7 @@ describe('hoverfly-lsp — $/lifecycle conformance', () => {
         }
     });
 
-    it('classifies a BOM-prefixed valid simulation as a simulation (no spurious HF101)', async () => {
+    test('classifies a BOM-prefixed valid simulation as a simulation (no spurious HF101)', async () => {
         // Given - an initialized push-client and a valid simulation saved with a leading UTF-8 BOM
         const { child, connection } = spawnServer();
         try {
@@ -261,7 +262,7 @@ describe('hoverfly-lsp — $/lifecycle conformance', () => {
 
             // Then - zero diagnostics (the BOM is transparent; no HF101)
             const published = await diagnostics;
-            expect(published.diagnostics).toEqual([]);
+            expect(published.diagnostics).toStrictEqual([]);
         } finally {
             connection.dispose();
             child.kill();
@@ -282,12 +283,13 @@ describe('hoverfly-lsp — push diagnostics (client without pull)', () => {
         });
         void connection.sendNotification(InitializedNotification.type, {});
     });
+
     afterAll(() => {
         connection.dispose();
         child.kill();
     });
 
-    it('pushes multi-code diagnostics for an invalid fixture on didOpen', async () => {
+    test('pushes multi-code diagnostics for an invalid fixture on didOpen', async () => {
         // Given - a fixture that produces three distinct HF codes (HF401/HF402/HF403)
         const uri = 'file:///dangling-states.hoverfly.json';
         const text = readFixture('testdata/invalid/hf4xx/dangling-states.hoverfly.json');
@@ -301,10 +303,10 @@ describe('hoverfly-lsp — push diagnostics (client without pull)', () => {
         // Then - the published codes contain all three dangling-state diagnostics
         const published = await diagnostics;
         const codes = codesOf(published.diagnostics);
-        expect(codes).toEqual(expect.arrayContaining(['HF401', 'HF402', 'HF403']));
+        expect(codes).toStrictEqual(expect.arrayContaining(['HF401', 'HF402', 'HF403']));
     });
 
-    it('re-pushes updated diagnostics after an incremental edit breaks the doc', async () => {
+    test('re-pushes updated diagnostics after an incremental edit breaks the doc', async () => {
         // Given - a valid simulation is open with empty diagnostics
         const uri = 'file:///edit.hoverfly.json';
         const valid = `{\n  "data": { "pairs": [] },\n  "meta": { "schemaVersion": "v5.3" }\n}`;
@@ -313,7 +315,7 @@ describe('hoverfly-lsp — push diagnostics (client without pull)', () => {
             textDocument: { uri, languageId: 'json', version: 1, text: valid },
         });
         const initial = await opened;
-        expect(initial.diagnostics).toEqual([]);
+        expect(initial.diagnostics).toStrictEqual([]);
 
         // When - an incremental change replaces "pairs" with a structurally-invalid object
         const updated = nextDiagnostics(connection, uri);
@@ -332,7 +334,7 @@ describe('hoverfly-lsp — push diagnostics (client without pull)', () => {
         expect(codesOf(published.diagnostics)).toContain('HF102');
     });
 
-    it('publishes zero diagnostics for a non-simulation .json without crashing', async () => {
+    test('publishes zero diagnostics for a non-simulation .json without crashing', async () => {
         // Given - arbitrary JSON in a plainly-named file (D3 gate -> [])
         const uri = 'file:///config.json';
         const diagnostics = nextDiagnostics(connection, uri);
@@ -347,10 +349,10 @@ describe('hoverfly-lsp — push diagnostics (client without pull)', () => {
 
         // Then - empty diagnostics, server alive
         const published = await diagnostics;
-        expect(published.diagnostics).toEqual([]);
+        expect(published.diagnostics).toStrictEqual([]);
     });
 
-    it('places diagnostic ranges at UTF-16 code-unit offsets across an astral emoji', async () => {
+    test('places diagnostic ranges at UTF-16 code-unit offsets across an astral emoji', async () => {
         // Given - line 0 carries astral emoji 😊 (U+1F60A: 1 codepoint = 2 UTF-16 units); line 1 holds an unknown-matcher error
         const uri = 'file:///emoji.hoverfly.json';
         const line0 = `{ "x": "😊😊", "data": { "pairs": [ {`;
@@ -411,12 +413,13 @@ describe('hoverfly-lsp — pull diagnostics (client with pull)', () => {
             },
         });
     });
+
     afterAll(() => {
         connection.dispose();
         child.kill();
     });
 
-    it('textDocument/diagnostic returns a full report with the same HF codes', async () => {
+    test('textDocument/diagnostic returns a full report with the same HF codes', async () => {
         // When - the client pulls diagnostics
         const report = (await connection.sendRequest(DocumentDiagnosticRequest.type, {
             textDocument: { uri },
@@ -424,7 +427,9 @@ describe('hoverfly-lsp — pull diagnostics (client with pull)', () => {
 
         // Then - a full report carrying the multi-code set
         expect(report.kind).toBe('full');
-        expect(codesOf(report.items)).toEqual(expect.arrayContaining(['HF401', 'HF402', 'HF403']));
+        expect(codesOf(report.items)).toStrictEqual(
+            expect.arrayContaining(['HF401', 'HF402', 'HF403']),
+        );
     });
 });
 
@@ -441,12 +446,13 @@ describe('hoverfly-lsp — completion & hover', () => {
         });
         void connection.sendNotification(InitializedNotification.type, {});
     });
+
     afterAll(() => {
         connection.dispose();
         child.kill();
     });
 
-    it('completes faker/helpers inside a templated body mustache (computed position)', async () => {
+    test('completes faker/helpers inside a templated body mustache (computed position)', async () => {
         // Given - a templated body mid-typing `{{fa`
         const uri = 'file:///complete-template.hoverfly.json';
         const body = '{{fa';
@@ -469,7 +475,7 @@ describe('hoverfly-lsp — completion & hover', () => {
         expect(labels).toContain('randomFloat');
     });
 
-    it('completes matcher names at a matcher-value position', async () => {
+    test('completes matcher names at a matcher-value position', async () => {
         // Given - an empty matcher value on request.path
         const uri = 'file:///complete-matcher.hoverfly.json';
         const text = `{"data":{"pairs":[{"request":{"path":[{"matcher":""}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
@@ -486,10 +492,10 @@ describe('hoverfly-lsp — completion & hover', () => {
         const labels = (completions?.items ?? []).map((i) => i.label);
 
         // Then - registry matcher names are offered
-        expect(labels).toEqual(expect.arrayContaining(['exact', 'regex', 'jsonpath']));
+        expect(labels).toStrictEqual(expect.arrayContaining(['exact', 'regex', 'jsonpath']));
     });
 
-    it('completes HTTP method values at an exact method-value position (round-trip)', async () => {
+    test('completes HTTP method values at an exact method-value position (round-trip)', async () => {
         // Given - an empty value on an exact request.method matcher (the originally-reported gap)
         const uri = 'file:///complete-method.hoverfly.json';
         const text = `{"data":{"pairs":[{"request":{"method":[{"matcher":"exact","value":""}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
@@ -506,10 +512,10 @@ describe('hoverfly-lsp — completion & hover', () => {
         const labels = (completions?.items ?? []).map((i) => i.label);
 
         // Then - the standard HTTP methods are offered through the full server
-        expect(labels).toEqual(expect.arrayContaining(['GET', 'POST', 'DELETE']));
+        expect(labels).toStrictEqual(expect.arrayContaining(['GET', 'POST', 'DELETE']));
     });
 
-    it('completes a requiresState KEY cross-referenced from another pair (state-key round-trip)', async () => {
+    test('completes a requiresState KEY cross-referenced from another pair (state-key round-trip)', async () => {
         // Given - a producer sets `authenticated` via transitionsState; a consumer types a new key.
         // This is the real-server path for the originally-reported requiresState cross-ref gap.
         const uri = 'file:///complete-state-key.hoverfly.json';
@@ -533,7 +539,7 @@ describe('hoverfly-lsp — completion & hover', () => {
         expect(labels).toContain('sequence:');
     });
 
-    it('hovers a matcher name and surfaces registry docs markdown', async () => {
+    test('hovers a matcher name and surfaces registry docs markdown', async () => {
         // Given - a "glob" matcher name on request.path
         const uri = 'file:///hover-matcher.hoverfly.json';
         const text = `{"data":{"pairs":[{"request":{"path":[{"matcher":"glob","value":"x"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
@@ -570,12 +576,13 @@ describe('hoverfly-lsp — initializationOptions settings', () => {
         });
         void connection.sendNotification(InitializedNotification.type, {});
     });
+
     afterAll(() => {
         connection.dispose();
         child.kill();
     });
 
-    it('emits HF602 for a postServeAction outside the configured registeredActions', async () => {
+    test('emits HF602 for a postServeAction outside the configured registeredActions', async () => {
         // Given - a fixture using an action NOT in the allowlist
         const uri = 'file:///postserve.hoverfly.json';
         const text = readFixture(
@@ -593,7 +600,7 @@ describe('hoverfly-lsp — initializationOptions settings', () => {
 });
 
 describe('hoverfly-lsp — semantic tokens', () => {
-    it('advertises a semanticTokensProvider with the exact frozen legend (full, no range)', async () => {
+    test('advertises a semanticTokensProvider with the exact frozen legend (full, no range)', async () => {
         // Given - a client that advertises semantic-tokens support
         const { child, connection } = spawnServer();
         try {
@@ -612,18 +619,18 @@ describe('hoverfly-lsp — semantic tokens', () => {
 
             // Then - the provider is advertised with the legend verbatim and in order
             expect(provider).toBeDefined();
-            expect(provider?.legend.tokenTypes).toEqual([...EXPECTED_LEGEND_TYPES]);
-            expect(provider?.legend.tokenModifiers).toEqual([]);
+            expect(provider?.legend.tokenTypes).toStrictEqual([...EXPECTED_LEGEND_TYPES]);
+            expect(provider?.legend.tokenModifiers).toStrictEqual([]);
             // Then - full pass on, range deliberately off (documented decision)
-            expect(provider?.full).toBe(true);
-            expect(provider?.range).toBe(false);
+            expect(provider?.full).toBeTruthy();
+            expect(provider?.range).toBeFalsy();
         } finally {
             connection.dispose();
             child.kill();
         }
     });
 
-    it('does NOT advertise the provider to a client without semantic-tokens support', async () => {
+    test('does NOT advertise the provider to a client without semantic-tokens support', async () => {
         // Given - a push client with no textDocument.semanticTokens capability
         const { child, connection } = spawnServer();
         try {
@@ -653,12 +660,13 @@ describe('hoverfly-lsp — semantic tokens', () => {
             });
             void connection.sendNotification(InitializedNotification.type, {});
         });
+
         afterAll(() => {
             connection.dispose();
             child.kill();
         });
 
-        it('returns a well-formed delta array landing tokens on the template constructs', async () => {
+        test('returns a well-formed delta array landing tokens on the template constructs', async () => {
             // Given - a templated body using a faker helper on a single line
             const uri = 'file:///tokens-body.hoverfly.json';
             const prefix = `{"data":{"pairs":[{"request":{"path":[]},"response":{"status":200,"templated":true,"body":"`;
@@ -707,7 +715,7 @@ describe('hoverfly-lsp — semantic tokens', () => {
             expect(nameToken?.tokenType).toBe(EXPECTED_LEGEND_TYPES.indexOf('enumMember'));
         });
 
-        it('returns an empty data array for a non-simulation .json', async () => {
+        test('returns an empty data array for a non-simulation .json', async () => {
             // Given - arbitrary JSON in a plainly-named file (D3 gate -> no tokens)
             const uri = 'file:///tokens-config.json';
             void connection.sendNotification(DidOpenTextDocumentNotification.type, {
@@ -720,10 +728,10 @@ describe('hoverfly-lsp — semantic tokens', () => {
             })) as SemanticTokens;
 
             // Then - the data array is empty (gate honored end-to-end)
-            expect(tokens.data).toEqual([]);
+            expect(tokens.data).toStrictEqual([]);
         });
 
-        it('places token startChar at UTF-16 offsets across an astral emoji before the template', async () => {
+        test('places token startChar at UTF-16 offsets across an astral emoji before the template', async () => {
             // Given - a templated body where an astral emoji 😊 (2 UTF-16 units) precedes the mustache
             const uri = 'file:///tokens-emoji.hoverfly.json';
             const prefix = `{"data":{"pairs":[{"request":{"path":[]},"response":{"status":200,"templated":true,"body":"`;
@@ -775,12 +783,13 @@ describe('hoverfly-lsp — performance sanity', () => {
             },
         });
     });
+
     afterAll(() => {
         connection.dispose();
         child.kill();
     });
 
-    it('pull round-trip on the 30+ pair realworld file completes under 2s', async () => {
+    test('pull round-trip on the 30+ pair realworld file completes under 2s', async () => {
         // When - the diagnostic pull round-trips over the wire
         const start = performance.now();
         const report = (await connection.sendRequest(DocumentDiagnosticRequest.type, {

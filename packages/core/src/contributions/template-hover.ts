@@ -14,8 +14,13 @@
  * fall back to schema/JSON hover). Never throws. All facts come from the registry / member data.
  */
 
-import type { Hover, JSONDocument, Position, Range } from 'vscode-json-languageservice';
-import type { TextDocument } from 'vscode-languageserver-textdocument';
+import {
+    type Hover,
+    type JSONDocument,
+    type Position,
+    type Range,
+} from 'vscode-json-languageservice';
+import { type TextDocument } from 'vscode-languageserver-textdocument';
 import { MarkupKind } from 'vscode-languageserver-types';
 
 import {
@@ -70,11 +75,11 @@ function getTemplateHover(
 /* --------------------------------------- token search ------------------------------------ */
 
 /** A hover hit: the markdown to show plus the decoded-offset span of the token. */
-interface HoverHit {
+type HoverHit = {
     readonly markdown: string;
     readonly start: number;
     readonly end: number;
-}
+};
 
 /** Walk the statements for the innermost token whose span contains `cursor`. */
 function findHover(statements: readonly Statement[], cursor: number): HoverHit | undefined {

@@ -29,10 +29,9 @@ import {
     RAYMOND_BUILTINS,
 } from '@hoverfly-lsp/core';
 import { mkdir, writeFile } from 'node:fs/promises';
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 
-const HERE = dirname(fileURLToPath(import.meta.url));
+const HERE = import.meta.dirname;
 const ROOT = resolve(HERE, '..');
 const DOCS_DIR = resolve(ROOT, 'docs/reference');
 
@@ -332,45 +331,43 @@ function assertProseComplete() {
 }
 
 function renderDiagnosticsDoc() {
-    const codes = Object.keys(DIAGNOSTIC_CATALOG).sort();
+    const codes = Object.keys(DIAGNOSTIC_CATALOG).toSorted();
     const lines = [];
-    lines.push(GENERATED_NOTICE);
-    lines.push('');
-    lines.push('# Diagnostic catalog');
-    lines.push('');
     lines.push(
+        GENERATED_NOTICE,
+        '',
+        '# Diagnostic catalog',
+        '',
         'Every diagnostic the Hoverfly LSP emits carries a stable `HFxxx` code, ' +
             '`source: "hoverfly"`, and a `codeDescription.href` pointing back at this page. ' +
             "Codes are **stable API**: once frozen, a code's meaning never changes (new codes may be " +
             'added; deprecated codes are never reused).',
-    );
-    lines.push('');
-    lines.push(
+        '',
         'Severity policy (architect decision D4): **Error** = Hoverfly would reject the import or the ' +
             'pair could silently never match; **Warning** = legal but almost certainly a mistake; ' +
             '**Information** = style/upgrade hints; **Hint** = optional niceties.',
-    );
-    lines.push('');
-    lines.push(
+        '',
         '> Generated from `packages/core/src/semantic/catalog.ts` (code, severity, message) plus the ' +
             'trigger/range prose from `research/11-diagnostic-catalog.md`. Regenerate with ' +
             '`npm run docs:diagnostics`.',
+        '',
+        `There are **${codes.length} codes** across ${FAMILIES.length} families.`,
+        '',
     );
-    lines.push('');
-    lines.push(`There are **${codes.length} codes** across ${FAMILIES.length} families.`);
-    lines.push('');
 
     for (const family of FAMILIES) {
         const familyCodes = codes.filter((code) => code.startsWith(family.prefix));
         if (familyCodes.length === 0) {
             continue;
         }
-        lines.push(`## ${family.title}`);
-        lines.push('');
-        lines.push(family.blurb);
-        lines.push('');
-        lines.push('| Code | Severity | Trigger | Range | Message |');
-        lines.push('| --- | --- | --- | --- | --- |');
+        lines.push(
+            `## ${family.title}`,
+            '',
+            family.blurb,
+            '',
+            '| Code | Severity | Trigger | Range | Message |',
+            '| --- | --- | --- | --- | --- |',
+        );
         for (const code of familyCodes) {
             const entry = DIAGNOSTIC_CATALOG[code];
             const prose = DIAGNOSTIC_PROSE[code];
@@ -386,27 +383,28 @@ function renderDiagnosticsDoc() {
         lines.push('');
     }
 
-    lines.push('## Per-code anchors');
-    lines.push('');
     lines.push(
+        '## Per-code anchors',
+        '',
         'The `codeDescription.href` for each diagnostic resolves to ' +
             '`https://hoverfly-lsp.dev/diagnostics/<code>`; the anchors below mirror that catalog.',
+        '',
     );
-    lines.push('');
     for (const code of codes) {
         const entry = DIAGNOSTIC_CATALOG[code];
         const prose = DIAGNOSTIC_PROSE[code];
-        lines.push(`### ${code}`);
-        lines.push('');
-        lines.push(`- **Severity:** ${SEVERITY_LABEL[entry.severity]}`);
-        lines.push(`- **Trigger:** ${prose.trigger}`);
-        lines.push(`- **Range:** ${prose.range}`);
+        lines.push(
+            `### ${code}`,
+            '',
+            `- **Severity:** ${SEVERITY_LABEL[entry.severity]}`,
+            `- **Trigger:** ${prose.trigger}`,
+            `- **Range:** ${prose.range}`,
+        );
         const message =
             entry.messageTemplate === '{message}' || entry.messageTemplate === '{explain}'
                 ? 'passthrough (supplied by the parser/schema)'
                 : `\`${entry.messageTemplate}\``;
-        lines.push(`- **Message:** ${message}`);
-        lines.push('');
+        lines.push(`- **Message:** ${message}`, '');
     }
 
     return `${lines.join('\n').trimEnd()}\n`;
@@ -421,89 +419,78 @@ function helperRow(spec) {
                   .join(', ') + (spec.variadic ? ', …' : '');
     const kind = spec.block ? 'block' : 'inline';
     // Strip the trailing docs URL from the prose; the registry appends a link to every entry.
-    const doc = spec.docs.replace(/\s*https?:\/\/\S+\s*$/, '').trim();
+    const doc = spec.docs.replace(/\s*https?:\/\/\S+\s*$/u, '').trim();
     return `| \`${spec.name}\` | ${kind} | ${mdEscape(argList)} | \`${mdEscape(spec.example)}\` | ${mdEscape(doc)} |`;
 }
 
 function renderTemplateReferenceDoc() {
     const lines = [];
-    lines.push(GENERATED_NOTICE);
-    lines.push('');
-    lines.push('# Template reference');
-    lines.push('');
     lines.push(
+        GENERATED_NOTICE,
+        '',
+        '# Template reference',
+        '',
         'Hoverfly response bodies marked `"templated": true` are rendered through ' +
             '[SpectoLabs/raymond](https://github.com/SpectoLabs/raymond) (a Handlebars fork). The LSP ' +
             'validates template syntax, helper names, helper arity, `Vars`/`Literals` resolution, ' +
             '`faker` types, and `now` offsets (see the HF5xx codes in ' +
             '[diagnostics.md](./diagnostics.md)).',
-    );
-    lines.push('');
-    lines.push(
+        '',
         '> Generated from `packages/core/src/registry/helpers.ts` and `registry/faker.ts`. ' +
             'Regenerate with `npm run docs:diagnostics`.',
-    );
-    lines.push('');
-    lines.push(
+        '',
         `There are **${HOVERFLY_HELPERS.length} Hoverfly helpers** plus **${RAYMOND_BUILTINS.length} raymond ` +
             `built-ins** (${ALL_HELPERS.length} total).`,
-    );
-    lines.push('');
-
-    lines.push('## Hoverfly helpers');
-    lines.push('');
-    lines.push(
+        '',
+        '## Hoverfly helpers',
+        '',
         `The ${HOVERFLY_HELPERS.length} helpers registered in Hoverfly's \`helperMethodMap\`. These, and ` +
             '**only** these, are also valid in `data.variables[].function`.',
+        '',
+        '| Helper | Kind | Arguments | Example | Notes |',
+        '| --- | --- | --- | --- | --- |',
     );
-    lines.push('');
-    lines.push('| Helper | Kind | Arguments | Example | Notes |');
-    lines.push('| --- | --- | --- | --- | --- |');
     for (const spec of HOVERFLY_HELPERS) {
         lines.push(helperRow(spec));
     }
-    lines.push('');
-
-    lines.push('## Raymond built-ins');
-    lines.push('');
     lines.push(
+        '',
+        '## Raymond built-ins',
+        '',
         `The ${RAYMOND_BUILTINS.length} Handlebars built-ins usable in any templated body. ` +
             '`first` and `equal` are SpectoLabs-fork additions a generic Handlebars language server ' +
             'would not know. These are **not** valid in `data.variables[].function`.',
+        '',
+        '| Helper | Kind | Arguments | Example | Notes |',
+        '| --- | --- | --- | --- | --- |',
     );
-    lines.push('');
-    lines.push('| Helper | Kind | Arguments | Example | Notes |');
-    lines.push('| --- | --- | --- | --- | --- |');
     for (const spec of RAYMOND_BUILTINS) {
         lines.push(helperRow(spec));
     }
-    lines.push('');
-
-    lines.push('## `now` offsets and formats');
-    lines.push('');
-    lines.push(`- ${NOW_FORMAT_NOTES.units}`);
-    lines.push(`- ${NOW_FORMAT_NOTES.formats}`);
-    lines.push(`- Accepted units: ${NOW_OFFSET_UNITS.map((u) => `\`${u}\``).join(', ')}.`);
-    lines.push(`- Offset pattern: \`${NOW_FORMAT_NOTES.offsetPattern}\`.`);
-    lines.push('');
-
-    lines.push('## `faker` types');
-    lines.push('');
     lines.push(
+        '',
+        '## `now` offsets and formats',
+        '',
+        `- ${NOW_FORMAT_NOTES.units}`,
+        `- ${NOW_FORMAT_NOTES.formats}`,
+        `- Accepted units: ${NOW_OFFSET_UNITS.map((u) => `\`${u}\``).join(', ')}.`,
+        `- Offset pattern: \`${NOW_FORMAT_NOTES.offsetPattern}\`.`,
+        '',
+        '## `faker` types',
+        '',
         `Hoverfly's \`{{faker 'X'}}\` dispatches by reflection over \`*gofakeit.Faker\` (pinned to ` +
             `gofakeit **v${GOFAKEIT_VERSION}**). Only the **${FAKER_NAMES.length} zero-argument** method names ` +
             'below are valid, and they are **case-sensitive**. Parameterized methods (`Number`, ' +
             '`Sentence`, `Password`, `Regex`, …) panic at render time when called with no arguments; ' +
             'the LSP flags those (HF508). The authoritative list lives in ' +
             '[`packages/core/src/registry/faker.ts`](../packages/core/src/registry/faker.ts).',
+        '',
+        `<details><summary>All ${FAKER_NAMES.length} faker type names</summary>`,
+        '',
     );
-    lines.push('');
-    lines.push(`<details><summary>All ${FAKER_NAMES.length} faker type names</summary>`);
-    lines.push('');
     // Chunk into rows of 6 for a readable table.
     const cols = 6;
-    lines.push('| | | | | | |');
-    lines.push('| --- | --- | --- | --- | --- | --- |');
+    lines.push('| | | | | | |', '| --- | --- | --- | --- | --- | --- |');
     for (let i = 0; i < FAKER_NAMES.length; i += cols) {
         const row = FAKER_NAMES.slice(i, i + cols);
         while (row.length < cols) {
@@ -511,19 +498,18 @@ function renderTemplateReferenceDoc() {
         }
         lines.push(`| ${row.map((n) => (n ? `\`${n}\`` : '')).join(' | ')} |`);
     }
-    lines.push('');
-    lines.push('</details>');
-    lines.push('');
-
-    lines.push('## JSONPath / XPath dialects');
-    lines.push('');
     lines.push(
+        '',
+        '</details>',
+        '',
+        '## JSONPath / XPath dialects',
+        '',
         "Hoverfly's JSONPath support uses the **kubectl** dialect " +
             '(`k8s.io/client-go/util/jsonpath`), **not** Jayway or RFC 9535. XPath is evaluated by ' +
             '`ChrisTrenkamp/xsel`. Expressions written for Jayway-style JSONPath (filters, recursive ' +
             'descent specifics) may not behave the same; author against the kubectl JSONPath syntax.',
+        '',
     );
-    lines.push('');
 
     return `${lines.join('\n').trimEnd()}\n`;
 }

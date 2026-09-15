@@ -1,10 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, test } from 'vitest';
 import { DiagnosticSeverity } from 'vscode-languageserver-types';
 
 import { DIAGNOSTIC_CATALOG, formatMessage } from '../../src/semantic/catalog.js';
 
 describe('diagnostic catalog', () => {
-    it('keys every entry by its own code', () => {
+    test('keys every entry by its own code', () => {
         // Given - the frozen catalog table
         // Then - each record's code matches its key (no transcription drift)
         for (const [key, entry] of Object.entries(DIAGNOSTIC_CATALOG)) {
@@ -12,7 +12,7 @@ describe('diagnostic catalog', () => {
         }
     });
 
-    it('gives every code a docs href derived from the lowercased code', () => {
+    test('gives every code a docs href derived from the lowercased code', () => {
         // Given - the catalog
         // Then - hrefs follow the canonical /diagnostics/hfxxx convention
         for (const entry of Object.values(DIAGNOSTIC_CATALOG)) {
@@ -22,7 +22,7 @@ describe('diagnostic catalog', () => {
         }
     });
 
-    it('carries the catalog severities from the frozen catalog', () => {
+    test('carries the catalog severities from the frozen catalog', () => {
         // Given - the Sev column of every row in research/11-diagnostic-catalog.md
         const { Error: E, Warning: W, Information: I, Hint: H } = DiagnosticSeverity;
         const expectedSeverity: Readonly<Record<string, DiagnosticSeverity>> = {
@@ -88,12 +88,12 @@ describe('diagnostic catalog', () => {
             expect(entry.severity, code).toBe(expectedSeverity[code]);
         }
         // And - the assertion table itself stays in lockstep with the catalog (no missing rows)
-        expect(Object.keys(expectedSeverity).sort()).toStrictEqual(
-            Object.keys(DIAGNOSTIC_CATALOG).sort(),
+        expect(Object.keys(expectedSeverity).toSorted()).toStrictEqual(
+            Object.keys(DIAGNOSTIC_CATALOG).toSorted(),
         );
     });
 
-    it('contains all 56 catalog codes including the value-domain extension', () => {
+    test('contains all 56 catalog codes including the value-domain extension', () => {
         // Given - the catalog
         // Then - HF101..HF604 are all present (37 original + 17 structural + 2 method/scheme value codes)
         const codes = Object.keys(DIAGNOSTIC_CATALOG);
@@ -109,7 +109,7 @@ describe('diagnostic catalog', () => {
 });
 
 describe('formatMessage', () => {
-    it('substitutes named placeholders', () => {
+    test('substitutes named placeholders', () => {
         // Given - a template and matching args
         // Then - the slot is filled
         expect(formatMessage('Unknown matcher "{name}"', { name: 'exct' })).toBe(
@@ -117,13 +117,13 @@ describe('formatMessage', () => {
         );
     });
 
-    it('leaves an unknown placeholder literal (never throws)', () => {
+    test('leaves an unknown placeholder literal (never throws)', () => {
         // Given - a template referencing a missing arg
         // Then - the slot stays as written
         expect(formatMessage('hi {missing}', {})).toBe('hi {missing}');
     });
 
-    it('stringifies non-string args', () => {
+    test('stringifies non-string args', () => {
         // Given - a numeric arg
         // Then - it is coerced to its string form
         expect(formatMessage('Status {n} is bad', { n: 700 })).toBe('Status 700 is bad');

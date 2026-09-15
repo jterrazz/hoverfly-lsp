@@ -5,7 +5,7 @@
  * test: a near-miss typo fires a Hint; every plausible custom value stays SILENT.
  */
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, test } from 'vitest';
 import { getLanguageService } from 'vscode-json-languageservice';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DiagnosticSeverity } from 'vscode-languageserver-types';
@@ -28,73 +28,73 @@ function runOnRequest(request: unknown) {
 
 const codes = (diags: { code?: unknown }[]) => diags.map((d) => String(d.code));
 
-describe('HF215 — method value did-you-mean', () => {
-    it('fires a Hint on a near-miss typo (the reported GT bug)', () => {
+describe('hF215 — method value did-you-mean', () => {
+    test('fires a Hint on a near-miss typo (the reported GT bug)', () => {
         // Given - a method `exact` value that is a one-edit typo of GET
         const diags = runOnRequest({ method: [{ matcher: 'exact', value: 'GT' }] });
         // Then - one HF215 Hint suggesting GET
-        expect(codes(diags)).toEqual(['HF215']);
+        expect(codes(diags)).toStrictEqual(['HF215']);
         expect(diags[0]?.severity).toBe(DiagnosticSeverity.Hint);
         expect(diags[0]?.message).toContain('"GT"');
         expect(diags[0]?.message).toContain('"GET"');
     });
 
-    it('fires on a default-exact (no matcher key) near-miss', () => {
+    test('fires on a default-exact (no matcher key) near-miss', () => {
         // Given - a method matcher with no `matcher` key (default exact) and a typo
         const diags = runOnRequest({ method: [{ value: 'DELET' }] });
         // Then - HF215 suggesting DELETE
-        expect(codes(diags)).toEqual(['HF215']);
+        expect(codes(diags)).toStrictEqual(['HF215']);
         expect(diags[0]?.message).toContain('"DELETE"');
     });
 
-    it('is SILENT on a standard method', () => {
+    test('is SILENT on a standard method', () => {
         // Given - a real method
         const diags = runOnRequest({ method: [{ matcher: 'exact', value: 'GET' }] });
         // Then - nothing
-        expect(diags).toEqual([]);
+        expect(diags).toStrictEqual([]);
     });
 
-    it('is SILENT on a custom verb far from every standard method', () => {
+    test('is SILENT on a custom verb far from every standard method', () => {
         // Given - bespoke / WebDAV verbs (spec-legal, accepted by Hoverfly verbatim)
         for (const verb of ['PURGE', 'PROPFIND', 'MKCOL']) {
             const diags = runOnRequest({ method: [{ matcher: 'exact', value: verb }] });
             // Then - no false positive
-            expect(diags, verb).toEqual([]);
+            expect(diags, verb).toStrictEqual([]);
         }
     });
 
-    it('is SILENT on a glob/regex method value (a pattern, not an enum)', () => {
+    test('is SILENT on a glob/regex method value (a pattern, not an enum)', () => {
         // Given - a typo-shaped value but under a pattern matcher
         const diags = runOnRequest({ method: [{ matcher: 'regex', value: 'GT' }] });
         // Then - no method-value hint (regex value is not an enum)
-        expect(diags).toEqual([]);
+        expect(diags).toStrictEqual([]);
     });
 });
 
-describe('HF216 — scheme value did-you-mean', () => {
-    it('fires a Hint on a near-miss scheme typo', () => {
+describe('hF216 — scheme value did-you-mean', () => {
+    test('fires a Hint on a near-miss scheme typo', () => {
         // Given - a scheme `exact` value that is a one-edit typo of http
         const diags = runOnRequest({ scheme: [{ matcher: 'exact', value: 'htttp' }] });
         // Then - HF216 suggesting http
-        expect(codes(diags)).toEqual(['HF216']);
+        expect(codes(diags)).toStrictEqual(['HF216']);
         expect(diags[0]?.severity).toBe(DiagnosticSeverity.Hint);
         expect(diags[0]?.message).toContain('"http"');
     });
 
-    it('is SILENT on http/https/ws/wss', () => {
+    test('is SILENT on http/https/ws/wss', () => {
         // Given - the common schemes
         for (const scheme of ['http', 'https', 'ws', 'wss']) {
             const diags = runOnRequest({ scheme: [{ matcher: 'exact', value: scheme }] });
             // Then - nothing
-            expect(diags, scheme).toEqual([]);
+            expect(diags, scheme).toStrictEqual([]);
         }
     });
 
-    it('is SILENT on a custom scheme like ftp (distance 2 from http — a legal scheme)', () => {
+    test('is SILENT on a custom scheme like ftp (distance 2 from http — a legal scheme)', () => {
         // Given - ftp: a real scheme that lies within edit-distance 2 of http (the very reason the
         // Value-domain threshold is tightened to 1)
         const diags = runOnRequest({ scheme: [{ matcher: 'exact', value: 'ftp' }] });
         // Then - no false positive
-        expect(diags).toEqual([]);
+        expect(diags).toStrictEqual([]);
     });
 });

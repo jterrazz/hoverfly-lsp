@@ -40,8 +40,8 @@
  * the {@link STRUCTURE_ALLOWED_KEYS} matrix and stays minimal and defensive (never throws).
  */
 
-import type { ASTNode, ObjectASTNode } from 'vscode-json-languageservice';
-import type { Diagnostic } from 'vscode-languageserver-types';
+import { type ASTNode, type ObjectASTNode } from 'vscode-json-languageservice';
+import { type Diagnostic } from 'vscode-languageserver-types';
 
 import {
     DID_YOU_MEAN_MAX_DISTANCE,
@@ -50,7 +50,7 @@ import {
 } from '../../registry/index.js';
 import { makeDiagnostic } from '../diagnostics.js';
 import { levenshtein } from '../levenshtein.js';
-import type { RuleContext, SemanticRule } from '../types.js';
+import { type RuleContext, type SemanticRule } from '../types.js';
 
 /* ----------------------------------- allowed-key lookup ---------------------------------- */
 
@@ -406,7 +406,7 @@ const structureRule: SemanticRule = {
     codes: ['HF212', 'HF308', 'HF404', 'HF405', 'HF603', 'HF604'],
     run(context: RuleContext): Diagnostic[] {
         const diagnostics: Diagnostic[] = [];
-        const root = context.model.root;
+        const { root } = context.model;
         if (!root) {
             return diagnostics;
         }

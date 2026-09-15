@@ -19,24 +19,24 @@ import { glob } from 'glob';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, test } from 'vitest';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DiagnosticSeverity } from 'vscode-languageserver-types';
 
 import { createHoverflyLanguageService } from '../../src/service.js';
 
 const repoRoot = fileURLToPath(new URL('../../../../', import.meta.url));
-const UPDATE = process.env['UPDATE_GOLDENS'] === '1';
+const UPDATE = process.env.UPDATE_GOLDENS === '1';
 
 const service = createHoverflyLanguageService();
 
 /** A stable, human-readable projection of a Diagnostic for golden comparison. */
-interface GoldenDiagnostic {
+type GoldenDiagnostic = {
     code: string;
     severity: string;
     range: { start: [number, number]; end: [number, number] };
     message: string;
-}
+};
 
 const SEVERITY_NAMES: Record<number, string> = {
     [DiagnosticSeverity.Error]: 'error',
@@ -70,13 +70,13 @@ const invalidFixtures = await glob('testdata/invalid/**/*.hoverfly.json', { cwd:
 const validFixtures = await glob('testdata/valid/**/*.hoverfly.json', { cwd: repoRoot });
 
 describe('golden: testdata/invalid', () => {
-    it('finds invalid fixtures', () => {
+    test('finds invalid fixtures', () => {
         // Given - the invalid corpus
         // Then - it is not empty (guards against a broken glob path)
         expect(invalidFixtures.length).toBeGreaterThan(0);
     });
 
-    it.each(invalidFixtures)('%s matches its .diagnostics.golden', async (relPath) => {
+    test.each(invalidFixtures)('%s matches its .diagnostics.golden', async (relPath) => {
         // Given - an invalid fixture and its sibling golden file
         const goldenPath = join(repoRoot, `${relPath}.diagnostics.golden`);
         const actual = await diagnose(relPath);
@@ -88,25 +88,26 @@ describe('golden: testdata/invalid', () => {
         }
 
         // Then - a golden exists and the diagnostics match it exactly
-        expect(existsSync(goldenPath), `missing golden: run UPDATE_GOLDENS=1 (${goldenPath})`).toBe(
-            true,
-        );
+        expect(
+            existsSync(goldenPath),
+            `missing golden: run UPDATE_GOLDENS=1 (${goldenPath})`,
+        ).toBeTruthy();
         const expected = JSON.parse(readFileSync(goldenPath, 'utf8')) as GoldenDiagnostic[];
-        expect(actual).toEqual(expected);
+        expect(actual).toStrictEqual(expected);
     });
 });
 
 describe('golden: testdata/valid produces zero diagnostics', () => {
-    it('finds valid fixtures', () => {
+    test('finds valid fixtures', () => {
         // Given - the valid corpus (recursive glob)
         // Then - it is not empty
         expect(validFixtures.length).toBeGreaterThan(0);
     });
 
-    it.each(validFixtures)('%s yields zero diagnostics end-to-end', async (relPath) => {
+    test.each(validFixtures)('%s yields zero diagnostics end-to-end', async (relPath) => {
         // Given - a committed valid fixture
         const actual = await diagnose(relPath);
         // Then - the full pipeline reports nothing
-        expect(actual).toEqual([]);
+        expect(actual).toStrictEqual([]);
     });
 });

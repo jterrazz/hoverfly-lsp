@@ -20,34 +20,34 @@
  * Pure, zero-dependency, zero knowledge of diagnostic codes.
  */
 
-import type {
-    BlockNode,
-    BooleanLiteral,
-    ContentNode,
-    Expression,
-    MustacheNode,
-    NumberLiteral,
-    PathExpression,
-    Program,
-    Span,
-    Statement,
-    StringLiteral,
-    SubExpression,
+import {
+    type BlockNode,
+    type BooleanLiteral,
+    type ContentNode,
+    type Expression,
+    type MustacheNode,
+    type NumberLiteral,
+    type PathExpression,
+    type Program,
+    type Span,
+    type Statement,
+    type StringLiteral,
+    type SubExpression,
 } from './ast.js';
 
 /** A recoverable parse error with an offset range into the decoded source. */
-interface TemplateParseError extends Span {
+type TemplateParseError = Span & {
     readonly message: string;
-}
+};
 
 /** The result of {@link parse}: a (possibly partial) AST plus any recovered-from errors. */
-interface ParseResult {
+type ParseResult = {
     readonly ast: Program;
     readonly errors: readonly TemplateParseError[];
-}
+};
 
 /** Block-open mustache keywords (`#name`) recognised as opening a block. */
-const NUMBER_RE = /^-?(?:\d+\.?\d*|\.\d+)$/;
+const NUMBER_RE = /^-?(?:\d+\.?\d*|\.\d+)$/u;
 
 /** Recursive-descent parser over the decoded template source. */
 class Parser {
@@ -55,12 +55,12 @@ class Parser {
     private pos = 0;
     private readonly errors: TemplateParseError[] = [];
 
-    public constructor(source: string) {
+    constructor(source: string) {
         this.source = source;
     }
 
-    public parse(): ParseResult {
-        const body = this.parseStatements(undefined);
+    parse(): ParseResult {
+        const body = this.parseStatements();
         const ast: Program = {
             type: 'Program',
             start: 0,
@@ -77,7 +77,7 @@ class Parser {
      * `{{else ...}}` that this level should hand back to its caller. Returns the statements;
      * leaves `pos` at the start of the terminating mustache (the caller consumes it).
      */
-    private parseStatements(closers: ReadonlySet<string> | undefined): Statement[] {
+    private parseStatements(closers?: ReadonlySet<string>): Statement[] {
         const out: Statement[] = [];
 
         while (this.pos < this.source.length) {
@@ -118,7 +118,7 @@ class Parser {
         // `{{else}}` / `{{else ...}}` — match the keyword followed by a boundary.
         if (this.source.startsWith('else', after)) {
             const boundary = this.source[after + 4];
-            return boundary === undefined || /[\s}]/.test(boundary);
+            return boundary === undefined || /[\s}]/u.test(boundary);
         }
         return false;
     }
@@ -309,7 +309,7 @@ class Parser {
             return false;
         }
         const boundary = this.source[after + 4];
-        return boundary === undefined || /[\s}]/.test(boundary);
+        return boundary === undefined || /[\s}]/u.test(boundary);
     }
 
     /** Consume the `{{else}}` (or `{{else ...}}`) mustache, advancing `pos` past it. */
@@ -515,7 +515,7 @@ class Parser {
 
     /** Resolve the in-template `\'`/`\"`/`\\` escapes raymond honours inside a quoted literal. */
     private unescapeStringBody(body: string): string {
-        return body.replace(/\\(?<escaped>.)/g, (_match, escaped: string) => escaped);
+        return body.replaceAll(/\\(?<escaped>.)/gu, (_match, escaped: string) => escaped);
     }
 
     /** Parse a number or boolean literal at `cursor`; returns `undefined` if it isn't one. */
@@ -557,7 +557,7 @@ class Parser {
 
         const parts = rest
             .split('.')
-            .map((segment) => segment.replace(/^\[(?<inner>.*)\]$/, '$<inner>'))
+            .map((segment) => segment.replace(/^\[(?<inner>.*)\]$/u, '$<inner>'))
             .filter((segment) => segment.length > 0);
 
         return { type: 'PathExpression', start: cursor, end, parts, data, thisRef, original };
@@ -573,7 +573,7 @@ class Parser {
             const ch = this.source[i];
             if (
                 ch === undefined ||
-                /\s/.test(ch) ||
+                /\s/u.test(ch) ||
                 ch === ')' ||
                 ch === '(' ||
                 ch === "'" ||
@@ -591,7 +591,7 @@ class Parser {
         let i = from;
         while (i < to) {
             const ch = this.source[i];
-            if (ch === undefined || !/\s/.test(ch)) {
+            if (ch === undefined || !/\s/u.test(ch)) {
                 break;
             }
             i += 1;

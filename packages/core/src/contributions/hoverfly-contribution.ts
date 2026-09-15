@@ -26,7 +26,7 @@ import {
     type JSONWorkerContribution,
     type MarkedString,
 } from 'vscode-json-languageservice';
-import type { TextDocument } from 'vscode-languageserver-textdocument';
+import { type TextDocument } from 'vscode-languageserver-textdocument';
 /*
  * Runtime enum VALUES come from vscode-languageserver-types (ESM-friendly named exports). They
  * cannot be imported from vscode-json-languageservice under Node ESM: its CJS lexer fails to
@@ -41,7 +41,7 @@ import {
 
 import { HTTP_METHODS, MATCHER_SPECS, type MatcherSpec, URI_SCHEMES } from '../registry/index.js';
 import { buildSimulationModel } from '../semantic/model.js';
-import type { HoverflyServiceSettings, SimulationModel } from '../semantic/types.js';
+import { type HoverflyServiceSettings, type SimulationModel } from '../semantic/types.js';
 import { matcherDetail, matcherMarkdown } from './docs.js';
 import {
     isPostServeActionPosition,
@@ -68,7 +68,7 @@ const VALUE_ENUMS: Readonly<Record<string, { values: readonly string[]; detail: 
 };
 
 /** SchemaVersion enum values; v5.3 is the current default and is preselected/sorted first. */
-const SCHEMA_VERSIONS: ReadonlyArray<{ value: string; preferred: boolean }> = [
+const SCHEMA_VERSIONS: readonly { value: string; preferred: boolean }[] = [
     { value: 'v5.3', preferred: true },
     { value: 'v5', preferred: false },
     { value: 'v5.1', preferred: false },
@@ -160,7 +160,7 @@ function createHoverflyContribution(
                     includeSequence: false,
                 });
             }
-            return Promise.resolve(undefined);
+            return Promise.resolve();
         },
 
         collectValueCompletions(
@@ -177,26 +177,26 @@ function createHoverflyContribution(
                 if (position) {
                     collectMatcherNameCompletions(result, position.isBody);
                 }
-                return Promise.resolve(undefined);
+                return Promise.resolve();
             }
             const valueField = matchMethodSchemeValuePosition(location, { propertyKey });
             if (valueField && matcherIsExactOrDefault(uri, location, resolveDocument)) {
                 collectMethodSchemeValueCompletions(result, valueField);
-                return Promise.resolve(undefined);
+                return Promise.resolve();
             }
             if (isSchemaVersionPosition(location, { propertyKey })) {
                 collectSchemaVersionCompletions(result);
-                return Promise.resolve(undefined);
+                return Promise.resolve();
             }
             if (isPostServeActionPosition(location, { propertyKey })) {
                 collectPostServeActionCompletions(result, settings);
-                return Promise.resolve(undefined);
+                return Promise.resolve();
             }
-            return Promise.resolve(undefined);
+            return Promise.resolve();
         },
 
         collectDefaultCompletions(): PromiseLike<unknown> {
-            return Promise.resolve(undefined);
+            return Promise.resolve();
         },
     };
 }
@@ -378,7 +378,7 @@ function collectStateKeys(simulation: SimulationModel | undefined): string[] {
             }
         }
     }
-    return [...keys].sort();
+    return [...keys].toSorted();
 }
 
 /**

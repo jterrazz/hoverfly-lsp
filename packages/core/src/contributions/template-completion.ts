@@ -14,8 +14,13 @@
  * Every helper/faker fact comes from the registry; no helper/faker name is hardcoded here.
  */
 
-import type { ASTNode, JSONDocument, ObjectASTNode, Position } from 'vscode-json-languageservice';
-import type { TextDocument } from 'vscode-languageserver-textdocument';
+import {
+    type ASTNode,
+    type JSONDocument,
+    type ObjectASTNode,
+    type Position,
+} from 'vscode-json-languageservice';
+import { type TextDocument } from 'vscode-languageserver-textdocument';
 import {
     type CompletionItem,
     CompletionItemKind,
@@ -32,7 +37,7 @@ import { findTemplateLocation } from './template-location.js';
 import { EACH_DATA_VARIABLES, PATH_ROOTS, REQUEST_MEMBERS } from './template-members.js';
 
 /** `now` format examples to surface in the `format` argument slot (registry-derived notes). */
-const NOW_FORMAT_EXAMPLES: ReadonlyArray<{ value: string; detail: string }> = [
+const NOW_FORMAT_EXAMPLES: readonly { value: string; detail: string }[] = [
     { value: '', detail: 'RFC3339 (default)' },
     { value: 'unix', detail: 'Unix seconds' },
     { value: 'epoch', detail: 'milliseconds (misnamed)' },
@@ -303,7 +308,7 @@ function blockCloseItems(context: TemplateCompletionContext): CompletionItem[] {
 /** `State.<key>` completions: every state key declared anywhere in the simulation. */
 function stateKeyItems(jsonDocument: JSONDocument): CompletionItem[] {
     const keys = collectStateKeys(jsonDocument);
-    return [...keys].sort().map((key) => ({
+    return [...keys].toSorted().map((key) => ({
         label: key,
         kind: CompletionItemKind.Variable,
         detail: 'State key (declared in this simulation)',
@@ -319,7 +324,7 @@ function dataNameItems(
     detail: string,
 ): CompletionItem[] {
     const names = collectDataNames(jsonDocument, dataKey);
-    return [...names].sort().map((name) => ({
+    return [...names].toSorted().map((name) => ({
         label: name,
         kind: CompletionItemKind.Variable,
         detail,

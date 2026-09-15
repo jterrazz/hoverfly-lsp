@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
 import { expectHover, getHoverText } from '../fourslash/harness.js';
 
@@ -11,7 +11,7 @@ import { expectHover, getHoverText } from '../fourslash/harness.js';
  */
 
 describe('matcher-name hover', () => {
-    it('renders registry docs, value type, config, and doMatch for a matcher name', async () => {
+    test('renders registry docs, value type, config, and doMatch for a matcher name', async () => {
         // Given - the cursor on a "glob" matcher name string
         const doc = `{"data":{"pairs":[{"request":{"path":[{"matcher":"⟦⟧glob","value":"x"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
         // Then - the hover surfaces the registry-sourced docs and metadata lines
@@ -27,7 +27,7 @@ describe('matcher-name hover', () => {
         });
     });
 
-    it('does NOT append the generic unknown-matcher panic warning to a valid matcher hover', async () => {
+    test('does NOT append the generic unknown-matcher panic warning to a valid matcher hover', async () => {
         // Given - a perfectly valid "regex" matcher name (the user's reported scenario)
         const doc = `{"data":{"pairs":[{"request":{"path":[{"matcher":"⟦⟧regex","value":"x"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
         // When - the matcher hover renders
@@ -44,7 +44,7 @@ describe('matcher-name hover', () => {
         expect(text).not.toContain('⚠️');
     });
 
-    it("surfaces array's own config-keys note (ON array, not the generic config panic)", async () => {
+    test("surfaces array's own config-keys note (ON array, not the generic config panic)", async () => {
         // Given - the cursor on an "array" matcher name (the only config-bearing matcher)
         const doc = `{"data":{"pairs":[{"request":{"path":[{"matcher":"⟦⟧array","value":[]}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
         // When
@@ -58,7 +58,7 @@ describe('matcher-name hover', () => {
         expect(text).not.toContain('Unknown matcher name');
     });
 
-    it("surfaces form's own body-only + case-sensitivity note when hovered under request.body", async () => {
+    test("surfaces form's own body-only + case-sensitivity note when hovered under request.body", async () => {
         // Given - a "form" matcher name on request.body
         const doc = `{"data":{"pairs":[{"request":{"body":[{"matcher":"⟦⟧form","value":{}}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
         // When
@@ -70,7 +70,7 @@ describe('matcher-name hover', () => {
         expect(text).not.toContain('Unknown matcher name');
     });
 
-    it("surfaces negate's vacuous-true footgun (ON negate)", async () => {
+    test("surfaces negate's vacuous-true footgun (ON negate)", async () => {
         // Given - a "negate" matcher name (the only vacuous-true matcher)
         const doc = `{"data":{"pairs":[{"request":{"path":[{"matcher":"⟦⟧negate","value":"x"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
         // When
@@ -81,7 +81,7 @@ describe('matcher-name hover', () => {
         expect(text).not.toContain('Unknown matcher name');
     });
 
-    it('does NOT hijack hover on a non-matcher field (schema hover still works)', async () => {
+    test('does NOT hijack hover on a non-matcher field (schema hover still works)', async () => {
         // Given - the cursor on the schemaVersion key (a schema-documented field, not a matcher)
         const doc = `{"data":{"pairs":[]},"meta":{"schemaVersion":"⟦⟧v5.3"}}`;
         // Then - the schema-driven hover content (not matcher docs) is rendered
@@ -90,7 +90,7 @@ describe('matcher-name hover', () => {
         expect(text).not.toContain('Value type:');
     });
 
-    it('returns no matcher hover for a non-simulation document', async () => {
+    test('returns no matcher hover for a non-simulation document', async () => {
         // Given - arbitrary JSON with a coincidental matcher key, no simulation fingerprint
         const doc = `{"foo":{"matcher":"⟦⟧glob"}}`;
         // Then - no matcher-docs hover is injected

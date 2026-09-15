@@ -12,14 +12,14 @@
  */
 import { build } from 'esbuild';
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 
-const here = fileURLToPath(new URL('.', import.meta.url));
+const here = import.meta.dirname;
 const pkg = JSON.parse(readFileSync(new URL('package.json', import.meta.url), 'utf8'));
 
 await build({
-    entryPoints: [`${here}src/main.ts`],
-    outfile: `${here}dist/cli.cjs`,
+    entryPoints: [join(here, 'src', 'main.ts')],
+    outfile: join(here, 'dist', 'cli.cjs'),
     bundle: true,
     platform: 'node',
     format: 'cjs',

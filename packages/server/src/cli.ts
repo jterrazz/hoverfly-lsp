@@ -54,7 +54,7 @@ function isAcceptedArg(arg: string): boolean {
         arg === '--clientProcessId' ||
         arg.startsWith('--clientProcessId=') ||
         // The integer that follows a bare `--socket` / `--pipe` / `--clientProcessId`.
-        /^\d+$/.test(arg)
+        /^\d+$/u.test(arg)
     );
 }
 

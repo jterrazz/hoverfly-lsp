@@ -12,17 +12,17 @@
  *      {@link VALUE_SHAPE_SUPPRESSORS}).
  */
 
-import type { JSONDocument } from 'vscode-json-languageservice';
-import type { TextDocument } from 'vscode-languageserver-textdocument';
+import { type JSONDocument } from 'vscode-json-languageservice';
+import { type TextDocument } from 'vscode-languageserver-textdocument';
 import { type Diagnostic, type Range } from 'vscode-languageserver-types';
 
 import { DIAGNOSTIC_CATALOG, DIAGNOSTIC_SOURCE } from './catalog.js';
 import { buildSimulationModel } from './model.js';
-import type {
-    HoverflyServiceSettings,
-    RuleContext,
-    SemanticRule,
-    SimulationModel,
+import {
+    type HoverflyServiceSettings,
+    type RuleContext,
+    type SemanticRule,
+    type SimulationModel,
 } from './types.js';
 
 const HF102_HREF = DIAGNOSTIC_CATALOG.HF102.href;
@@ -54,7 +54,7 @@ const VALUE_SHAPE_SUPPRESSORS: ReadonlySet<string> = new Set(['HF308', 'HF404', 
 
 function suppressesSchema(code: Diagnostic['code']): boolean {
     return (
-        typeof code === 'string' && (/^HF2\d\d$/.test(code) || VALUE_SHAPE_SUPPRESSORS.has(code))
+        typeof code === 'string' && (/^HF2\d\d$/u.test(code) || VALUE_SHAPE_SUPPRESSORS.has(code))
     );
 }
 
@@ -124,7 +124,7 @@ export function applyHF102Layer(
 
 /** Sort diagnostics by range (start line, then character, then end) for stable output. */
 export function sortByRange(diagnostics: Diagnostic[]): Diagnostic[] {
-    return [...diagnostics].sort((a, b) => {
+    return [...diagnostics].toSorted((a, b) => {
         if (a.range.start.line !== b.range.start.line) {
             return a.range.start.line - b.range.start.line;
         }

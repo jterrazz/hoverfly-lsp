@@ -35,7 +35,7 @@ const BUNDLE_RELATIVE = path.join('dist', 'cli.cjs');
 /** Return `candidate` if it resolves to the server bundle file, else undefined. */
 function resolveBundle(candidate) {
     if (!candidate) {
-        return undefined;
+        return;
     }
     try {
         const stat = fs.statSync(candidate);
@@ -51,7 +51,6 @@ function resolveBundle(candidate) {
     } catch {
         // Candidate does not exist — fall through.
     }
-    return undefined;
 }
 
 /** Resolve the `@jterrazz/hoverfly-lsp` package's bundle from node_modules, from several base dirs. */
@@ -71,7 +70,6 @@ function resolveFromNodeModules() {
             // Not installed under this base — try the next.
         }
     }
-    return undefined;
 }
 
 function resolveServerBundle() {
@@ -102,8 +100,6 @@ function resolveServerBundle() {
     if (fs.existsSync(devBundle)) {
         return devBundle;
     }
-
-    return undefined;
 }
 
 const bundle = resolveServerBundle();

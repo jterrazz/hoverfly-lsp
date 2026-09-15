@@ -5,10 +5,9 @@
  * Run from the repo root or this package: node packages/core/scripts/generate-schema.mjs
  */
 import { readFileSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 
-const here = dirname(fileURLToPath(import.meta.url));
+const here = import.meta.dirname;
 const schemaDir = join(here, '..', 'src', 'schema');
 const jsonPath = join(schemaDir, 'hoverfly.schema.json');
 const outPath = join(schemaDir, 'hoverfly.schema.generated.ts');

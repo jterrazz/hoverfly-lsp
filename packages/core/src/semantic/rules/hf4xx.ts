@@ -19,12 +19,12 @@
 import { type Diagnostic } from 'vscode-languageserver-types';
 
 import { makeDiagnostic } from '../diagnostics.js';
-import type {
-    RemovesStateEntry,
-    RuleContext,
-    SemanticRule,
-    SimulationModel,
-    StateEntry,
+import {
+    type RemovesStateEntry,
+    type RuleContext,
+    type SemanticRule,
+    type SimulationModel,
+    type StateEntry,
 } from '../types.js';
 
 /** Prefix marking Hoverfly's built-in sequencing keys, which are auto-managed. */
@@ -41,17 +41,17 @@ function isSequenceKey(key: string): boolean {
  * ----------------------------------------------------------------------------------------- */
 
 /** A state-flow occurrence tagged with the index of the pair it was found in. */
-interface PairScopedEntry<T> {
+type PairScopedEntry<T> = {
     readonly pairIndex: number;
     readonly entry: T;
-}
+};
 
 /**
  * A document-global view of state flow: the set of keys that appear on each side, plus every
  * AST-anchored occurrence (tagged with its pair index) so a rule can point a diagnostic at
  * each offending node and reason about same-pair vs cross-pair satisfaction.
  */
-interface StateFlowIndex {
+type StateFlowIndex = {
     /** Keys named by any `requiresState` across all pairs. */
     readonly requiredKeys: ReadonlySet<string>;
     /** Keys named by any `transitionsState` across all pairs (the only way a state is "set"). */
@@ -64,7 +64,7 @@ interface StateFlowIndex {
     readonly transitions: readonly StateEntry[];
     /** Every `removesState` entry, with its string node, across all pairs. */
     readonly removes: readonly RemovesStateEntry[];
-}
+};
 
 /** Build the document-global state-flow index from the model (one pass over all pairs). */
 function buildStateFlowIndex(model: SimulationModel): StateFlowIndex {

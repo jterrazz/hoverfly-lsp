@@ -28,8 +28,8 @@
  * valid Hoverfly helper → neither. The two never co-fire on the same node.
  */
 
-import type { ASTNode, ObjectASTNode } from 'vscode-json-languageservice';
-import type { Diagnostic } from 'vscode-languageserver-types';
+import { type ASTNode, type ObjectASTNode } from 'vscode-json-languageservice';
+import { type Diagnostic } from 'vscode-languageserver-types';
 
 import {
     type HelperSpec,
@@ -38,7 +38,7 @@ import {
     VARIABLE_FUNCTION_NAMES,
 } from '../../registry/index.js';
 import { makeDiagnostic } from '../diagnostics.js';
-import type { MatcherModel, RuleContext, SemanticRule } from '../types.js';
+import { type MatcherModel, type RuleContext, type SemanticRule } from '../types.js';
 
 /** The 52 Hoverfly helper names valid in `data.variables[].function`. */
 const VALID_VARIABLE_FUNCTIONS: ReadonlySet<string> = new Set(VARIABLE_FUNCTION_NAMES);
@@ -52,7 +52,7 @@ const HELPER_SPEC_BY_NAME: ReadonlyMap<string, HelperSpec> = new Map(
 );
 
 /** A character outside the templating-reference charset (anything that is not `[A-Za-z0-9_]`). */
-const NON_WORD_CHAR = /[^A-Za-z0-9_]/;
+const NON_WORD_CHAR = /[^A-Za-z0-9_]/u;
 
 /* ------------------------------------- small AST helpers --------------------------------- */
 

@@ -10,10 +10,9 @@
  */
 import { build, context } from 'esbuild';
 import { cpSync, mkdirSync, rmSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 
-const here = dirname(fileURLToPath(import.meta.url));
+const here = import.meta.dirname;
 const serverPkg = join(here, '..', '..', 'packages', 'server');
 const serverDest = join(here, 'server');
 
@@ -48,7 +47,7 @@ copyBundledServer();
 if (watch) {
     const ctx = await context(buildOptions);
     await ctx.watch();
-    // eslint-disable-next-line no-console
+    // oxlint-disable-next-line no-console -- the watch loop's only feedback is this line.
     console.log('[hoverfly vscode] watching for changes…');
 } else {
     await build(buildOptions);

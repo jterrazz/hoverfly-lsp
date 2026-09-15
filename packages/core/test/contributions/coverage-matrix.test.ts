@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
 import { REGISTRY_MATCHER_NAMES } from '../../src/registry/index.js';
 import { expectCompletions } from '../fourslash/harness.js';
@@ -74,15 +74,15 @@ function postServeDoc(inner: string): string {
 /* ----------------------------------- matcher names ------------------------------------- */
 
 describe('coverage: matcher-name value (request.path)', () => {
-    it('(a) empty quotes offers the full named registry set', async () => {
+    test('(a) empty quotes offers the full named registry set', async () => {
         await expectCompletions(matcherDoc('path', `"⟦⟧"`), '', { exact: NAMED_MATCHERS });
     });
 
-    it('(b) mid-word still offers matchers (client filters by prefix)', async () => {
+    test('(b) mid-word still offers matchers (client filters by prefix)', async () => {
         await expectCompletions(matcherDoc('path', `"ex⟦⟧"`), '', { contains: ['exact', 'regex'] });
     });
 
-    it('(c) bare position (no quotes) offers matchers; insertText quotes them', async () => {
+    test('(c) bare position (no quotes) offers matchers; insertText quotes them', async () => {
         const items = await expectCompletions(matcherDoc('path', `⟦⟧`), '', {
             contains: ['exact'],
         });
@@ -91,17 +91,17 @@ describe('coverage: matcher-name value (request.path)', () => {
 });
 
 describe('coverage: matcher-name value (request.body adds form)', () => {
-    it('(a) empty quotes includes form', async () => {
+    test('(a) empty quotes includes form', async () => {
         await expectCompletions(matcherDoc('body', `"⟦⟧"`), '', {
             exact: [...NAMED_MATCHERS, 'form'],
         });
     });
 
-    it('(b) mid-word still offers form', async () => {
+    test('(b) mid-word still offers form', async () => {
         await expectCompletions(matcherDoc('body', `"fo⟦⟧"`), '', { contains: ['form'] });
     });
 
-    it('(c) bare position includes form', async () => {
+    test('(c) bare position includes form', async () => {
         await expectCompletions(matcherDoc('body', `⟦⟧`), '', { contains: ['form', 'exact'] });
     });
 });
@@ -109,17 +109,17 @@ describe('coverage: matcher-name value (request.body adds form)', () => {
 /* ----------------------------------- schemaVersion ------------------------------------- */
 
 describe('coverage: meta.schemaVersion value', () => {
-    it('(a) empty quotes offers the version enum', async () => {
+    test('(a) empty quotes offers the version enum', async () => {
         await expectCompletions(schemaVersionDoc(`"⟦⟧"`), '', {
             contains: ['v5.3', 'v5', 'v5.1', 'v5.2'],
         });
     });
 
-    it('(b) mid-word offers the version enum', async () => {
+    test('(b) mid-word offers the version enum', async () => {
         await expectCompletions(schemaVersionDoc(`"v5⟦⟧"`), '', { contains: ['v5.3'] });
     });
 
-    it('(c) bare position offers the version enum; insertText quotes it', async () => {
+    test('(c) bare position offers the version enum; insertText quotes it', async () => {
         const items = await expectCompletions(schemaVersionDoc(`⟦⟧`), '', { contains: ['v5.3'] });
         expect(items.find((i) => i.label === 'v5.3')?.insertText).toBe('"v5.3"');
     });
@@ -130,30 +130,30 @@ describe('coverage: meta.schemaVersion value', () => {
 describe('coverage: request.requiresState KEY (cross-ref)', () => {
     const fromTransitions = producerPair('transitionsState', `{"auth":"yes"}`);
 
-    it('(a) empty quotes offers cross-referenced requiresState keys + sequence:', async () => {
+    test('(a) empty quotes offers cross-referenced requiresState keys + sequence:', async () => {
         const doc = stateDoc(fromTransitions, consumerPair('requiresState', `{"⟦⟧":""}`));
         await expectCompletions(doc, '', { contains: ['auth', 'sequence:'] });
     });
 
-    it('(b) mid-word offers the keys (client filters by prefix)', async () => {
+    test('(b) mid-word offers the keys (client filters by prefix)', async () => {
         const doc = stateDoc(fromTransitions, consumerPair('requiresState', `{"au⟦⟧":""}`));
         await expectCompletions(doc, '', { contains: ['auth'] });
     });
 
-    it('(c) bare position right after `{` offers keys; insertText appends the value', async () => {
+    test('(c) bare position right after `{` offers keys; insertText appends the value', async () => {
         const doc = stateDoc(fromTransitions, consumerPair('requiresState', `{⟦⟧}`));
         const items = await expectCompletions(doc, '', { contains: ['auth'] });
         // The `addValue` flag is true at the bare `{` position, so the snippet inserts `"key": "$1"`.
         expect(items.find((i) => i.label === 'auth')?.insertText).toBe('"auth": "$1"');
     });
 
-    it('THE BUG: a key declared only via transitionsState is offered in requiresState', async () => {
+    test('tHE BUG: a key declared only via transitionsState is offered in requiresState', async () => {
         // Reproduces the reported gap: `auth` set by a producer's transitionsState, consumed here.
         const doc = stateDoc(fromTransitions, consumerPair('requiresState', `{"⟦⟧":""}`));
         await expectCompletions(doc, '', { contains: ['auth'] });
     });
 
-    it('also unions keys declared only via removesState', async () => {
+    test('also unions keys declared only via removesState', async () => {
         const fromRemoves = producerPair('removesState', `["auth"]`);
         const doc = stateDoc(fromRemoves, consumerPair('requiresState', `{"⟦⟧":""}`));
         await expectCompletions(doc, '', { contains: ['auth'] });
@@ -165,17 +165,17 @@ describe('coverage: request.requiresState KEY (cross-ref)', () => {
 describe('coverage: response.transitionsState KEY (cross-ref)', () => {
     const fromRequires = producerPair('requiresState', `{"step":"1"}`);
 
-    it('(a) empty quotes offers cross-referenced keys WITHOUT a sequence: snippet', async () => {
+    test('(a) empty quotes offers cross-referenced keys WITHOUT a sequence: snippet', async () => {
         const doc = stateDoc(fromRequires, consumerPair('transitionsState', `{"⟦⟧":""}`));
         await expectCompletions(doc, '', { contains: ['step'], notContains: ['sequence:'] });
     });
 
-    it('(b) mid-word offers the keys', async () => {
+    test('(b) mid-word offers the keys', async () => {
         const doc = stateDoc(fromRequires, consumerPair('transitionsState', `{"st⟦⟧":""}`));
         await expectCompletions(doc, '', { contains: ['step'] });
     });
 
-    it('(c) bare position offers keys with an appended value', async () => {
+    test('(c) bare position offers keys with an appended value', async () => {
         const doc = stateDoc(fromRequires, consumerPair('transitionsState', `{⟦⟧}`));
         const items = await expectCompletions(doc, '', { contains: ['step'] });
         expect(items.find((i) => i.label === 'step')?.insertText).toBe('"step": "$1"');
@@ -191,11 +191,11 @@ describe('coverage: response.removesState array entry (by design: no completion)
     // So cross-ref completion here is not achievable through the JSONWorkerContribution API. We
     // Assert the (intended) absence so the limitation is pinned rather than silently regressing.
 
-    it('(a) empty quotes inside the array offers no cross-referenced state key', async () => {
+    test('(a) empty quotes inside the array offers no cross-referenced state key', async () => {
         await expectCompletions(removesStateDoc(`["⟦⟧"]`), '', { notContains: ['auth'] });
     });
 
-    it('(c) bare array position offers no cross-referenced state key', async () => {
+    test('(c) bare array position offers no cross-referenced state key', async () => {
         await expectCompletions(removesStateDoc(`[⟦⟧]`), '', { notContains: ['auth'] });
     });
 });
@@ -205,7 +205,7 @@ describe('coverage: response.removesState array entry (by design: no completion)
 describe('coverage: response.postServeAction value (settings-gated)', () => {
     const settings = { settings: { registeredActions: ['webhook', 'logger'] } } as const;
 
-    it('(a) empty quotes offers the registered actions', async () => {
+    test('(a) empty quotes offers the registered actions', async () => {
         await expectCompletions(
             postServeDoc(`"⟦⟧"`),
             '',
@@ -214,11 +214,11 @@ describe('coverage: response.postServeAction value (settings-gated)', () => {
         );
     });
 
-    it('(b) mid-word offers the registered actions', async () => {
+    test('(b) mid-word offers the registered actions', async () => {
         await expectCompletions(postServeDoc(`"web⟦⟧"`), '', { contains: ['webhook'] }, settings);
     });
 
-    it('(c) bare position offers the actions; insertText quotes them', async () => {
+    test('(c) bare position offers the actions; insertText quotes them', async () => {
         const items = await expectCompletions(
             postServeDoc(`⟦⟧`),
             '',

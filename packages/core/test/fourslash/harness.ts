@@ -19,9 +19,14 @@
 import { readFileSync } from 'node:fs';
 import { expect } from 'vitest';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import type { CompletionItem, Hover, MarkupContent, Position } from 'vscode-languageserver-types';
+import {
+    type CompletionItem,
+    type Hover,
+    type MarkupContent,
+    type Position,
+} from 'vscode-languageserver-types';
 
-import type { HoverflyServiceSettings } from '../../src/semantic/types.js';
+import { type HoverflyServiceSettings } from '../../src/semantic/types.js';
 import { createHoverflyLanguageService } from '../../src/service.js';
 
 /* ------------------------------------- marker scanning ----------------------------------- */
@@ -29,10 +34,10 @@ import { createHoverflyLanguageService } from '../../src/service.js';
 /** The opening / closing marker brackets (Unicode mathematical white square brackets). */
 const MARKER_OPEN = '⟦';
 const MARKER_CLOSE = '⟧';
-const MARKER_RE = /⟦(?<name>[^⟧]*)⟧/g;
+const MARKER_RE = /⟦(?<name>[^⟧]*)⟧/gu;
 
 /** A parsed marked document: the stripped text plus the cursor positions by marker name. */
-interface MarkedDocument {
+type MarkedDocument = {
     /** The document text with all markers removed. */
     readonly text: string;
     /** Cursor positions keyed by marker name (`""` is the default/anonymous marker). */
@@ -43,38 +48,38 @@ interface MarkedDocument {
      * straight back to `document.positionAt`. Append-only addition for the on-disk corpus runner.
      */
     readonly offsets: ReadonlyMap<string, number>;
-}
+};
 
 /* ------------------------------------- request set-up ------------------------------------ */
 
 /** Options for the assertion helpers: filename gate + service settings. */
-interface ServiceOptions {
+type ServiceOptions = {
     /** Document URI (controls the D3 filename gate). Defaults to a `*.hoverfly.json` URI. */
     readonly uri?: string;
     /** Service-level settings (e.g. `registeredActions`). */
     readonly settings?: HoverflyServiceSettings;
-}
+};
 
-interface PreparedRequest {
+type PreparedRequest = {
     readonly service: ReturnType<typeof createHoverflyLanguageService>;
     readonly document: TextDocument;
     readonly position: Position;
-}
+};
 
 /** Completion-label expectations. `exact` (when given) asserts the full sorted label set. */
-interface CompletionExpectations {
+type CompletionExpectations = {
     /** Labels that MUST be present. */
     readonly contains?: readonly string[];
     /** Labels that MUST NOT be present. */
     readonly notContains?: readonly string[];
     /** When given, the complete sorted set of labels must equal this (sorted). */
     readonly exact?: readonly string[];
-}
+};
 
 function scan(source: string): MarkedDocument {
     // Cheap balance check: a stray close bracket with no open would slip past the regex.
-    const opens = (source.match(/⟦/g) ?? []).length;
-    const closes = (source.match(/⟧/g) ?? []).length;
+    const opens = (source.match(/⟦/gu) ?? []).length;
+    const closes = (source.match(/⟧/gu) ?? []).length;
     if (opens !== closes) {
         throw new Error(
             `Unbalanced cursor markers: ${opens} '${MARKER_OPEN}' vs ${closes} '${MARKER_CLOSE}'`,
@@ -178,7 +183,7 @@ async function expectCompletions(
         }
     }
     if (expectations.exact) {
-        expect([...labels].sort()).toEqual([...expectations.exact].sort());
+        expect([...labels].toSorted()).toEqual([...expectations.exact].toSorted());
     }
     return items;
 }
@@ -234,7 +239,7 @@ async function getHoverText(
 type CompletionKindName = string;
 
 /** Per-marker expectations for a COMPLETION fixture. */
-interface CompletionMarkerExpectation {
+type CompletionMarkerExpectation = {
     /** Labels that MUST appear in the completion list at this marker. */
     readonly includes?: readonly string[];
     /** Labels that MUST NOT appear at this marker. */
@@ -246,18 +251,18 @@ interface CompletionMarkerExpectation {
     readonly count?: number;
     /** Per-label CompletionItemKind assertions, e.g. `{ "GET": "Value" }`. */
     readonly kindOf?: Readonly<Record<string, CompletionKindName>>;
-}
+};
 
 /** Per-marker expectations for a HOVER fixture. */
-interface HoverMarkerExpectation {
+type HoverMarkerExpectation = {
     /** Substrings the rendered hover markdown MUST contain at this marker. */
     readonly includes?: readonly string[];
     /** Substrings the rendered hover markdown MUST NOT contain at this marker (e.g. panic noise). */
     readonly excludes?: readonly string[];
-}
+};
 
 /** Shape of a `<case>.expect.json` sidecar. `kind` is inferred from the fixture's tree. */
-interface CorpusExpectation {
+type CorpusExpectation = {
     /**
      * Optional per-fixture service settings (e.g. `{ "registeredActions": ["webhook"] }` for
      * postServeAction completion fixtures). Passed straight to `createHoverflyLanguageService`.
@@ -267,7 +272,7 @@ interface CorpusExpectation {
     readonly markers: Readonly<
         Record<string, CompletionMarkerExpectation | HoverMarkerExpectation>
     >;
-}
+};
 
 /**
  * Read and parse a `<case>.expect.json` sidecar from disk. Robustness: a missing sidecar, malformed

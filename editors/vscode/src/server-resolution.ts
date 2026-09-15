@@ -18,15 +18,15 @@
  */
 
 /** A resolved server command: run `node` with these args (the launcher module + transport flag). */
-interface ResolvedServer {
+type ResolvedServer = {
     /** Absolute path to the Node entry module to execute (`bin/hoverfly-lsp.js` or `.bin` shim). */
     readonly module: string;
     /** How the server was located, for logging / diagnostics. */
     readonly source: 'bundled' | 'configuredPath' | 'workspaceBin';
-}
+};
 
 /** Inputs needed to resolve the server, all injected so the function stays testable. */
-interface ResolveServerInput {
+type ResolveServerInput = {
     /** Value of the `hoverfly.server.path` setting (may be undefined/empty). */
     readonly configuredPath: string | undefined;
     /** First workspace folder's filesystem path, or undefined when no folder is open. */
@@ -37,9 +37,10 @@ interface ResolveServerInput {
     readonly exists: (path: string) => boolean;
     /** Path joiner (inject `path.join`; defaulted to a POSIX-ish join for tests). */
     readonly join?: (...segments: string[]) => string;
-}
+};
 
-const defaultJoin = (...segments: string[]): string => segments.join('/').replace(/\/{2,}/g, '/');
+const defaultJoin = (...segments: string[]): string =>
+    segments.join('/').replaceAll(/\/{2,}/gu, '/');
 
 /** Trim a configured path; treat whitespace-only as unset. */
 function normalizeConfigured(value: string | undefined): string | undefined {

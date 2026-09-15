@@ -23,23 +23,23 @@
  * shared with HF603 via `../levenshtein.js`. Nothing about the value domains is hardcoded here.
  */
 
-import type { Diagnostic } from 'vscode-languageserver-types';
+import { type Diagnostic } from 'vscode-languageserver-types';
 
 import {
     HTTP_METHODS,
     URI_SCHEMES,
     VALUE_DID_YOU_MEAN_MAX_DISTANCE,
 } from '../../registry/index.js';
-import type { DiagnosticCode } from '../catalog.js';
+import { type DiagnosticCode } from '../catalog.js';
 import { makeDiagnostic } from '../diagnostics.js';
 import { nearestWithin } from '../levenshtein.js';
-import type { MatcherModel, RuleContext, SemanticRule } from '../types.js';
+import { type MatcherModel, type RuleContext, type SemanticRule } from '../types.js';
 
 /** A field's well-known-value contract: which code fires and against which standard set. */
-interface ValueDomain {
+type ValueDomain = {
     readonly code: DiagnosticCode;
     readonly standard: readonly string[];
-}
+};
 
 /** Only these two top-level request fields carry a well-known-value enum. */
 const VALUE_DOMAINS: Readonly<Record<string, ValueDomain>> = {
@@ -65,13 +65,15 @@ function checkValue(
     diagnostics: Diagnostic[],
 ): void {
     if (!isExactOrDefault(matcher)) {
-        return; // A pattern matcher (glob/regex/…) value is not an enum.
+        // A pattern matcher (glob/regex/…) value is not an enum.
+        return;
     }
-    const valueNode = matcher.valueNode;
+    const { valueNode } = matcher;
     if (valueNode?.type !== 'string' || valueNode.value === '') {
-        return; // Wrong type → HF203; empty → HF211. Never our concern.
+        // Wrong type → HF203; empty → HF211. Never our concern.
+        return;
     }
-    const value = valueNode.value;
+    const { value } = valueNode;
     // Already a standard value (any case) → never a typo. Methods compare case-sensitively at runtime,
     // But a case-variant of a real verb is not the typo class HF215 targets — so we fold case here.
     const lower = value.toLowerCase();
@@ -80,7 +82,8 @@ function checkValue(
     }
     const suggestion = nearestWithin(value, domain.standard, VALUE_DID_YOU_MEAN_MAX_DISTANCE);
     if (suggestion === undefined) {
-        return; // Far from every standard value → a plausible custom value → stay SILENT.
+        // Far from every standard value → a plausible custom value → stay SILENT.
+        return;
     }
     diagnostics.push(
         makeDiagnostic(context.textDocument, domain.code, valueNode, { value, suggestion }),

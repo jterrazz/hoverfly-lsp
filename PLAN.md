@@ -30,6 +30,7 @@ hoverfly-lsp/
 │   │       ├── contributions/ # completion & hover (JSONWorkerContribution)
 │   │       └── service.ts     # createHoverflyLanguageService() facade
 │   └── server/                # vscode-languageserver@10 wrapper, bin: hoverfly-lsp --stdio
+
 ├── editors/
 │   ├── vscode/                # extension, language id "hoverfly-simulation", bundles server
 │   ├── zed/                   # Rust/WASM extension, installs server from npm

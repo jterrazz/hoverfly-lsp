@@ -28,18 +28,18 @@
  *            family report as a catalog-vs-reality deviation for the integrator to weigh.
  */
 
-import type { ASTNode, ObjectASTNode } from 'vscode-json-languageservice';
-import type { Diagnostic } from 'vscode-languageserver-types';
+import { type ASTNode, type ObjectASTNode } from 'vscode-json-languageservice';
+import { type Diagnostic } from 'vscode-languageserver-types';
 
 import { makeDiagnostic } from '../diagnostics.js';
-import type { ResponseModel, RuleContext, SemanticRule } from '../types.js';
+import { type ResponseModel, type RuleContext, type SemanticRule } from '../types.js';
 
 /** Lowest / highest HTTP status codes Hoverfly treats as in-range (inclusive). */
 const MIN_HTTP_STATUS = 100;
 const MAX_HTTP_STATUS = 599;
 
 /** Standard, padded base64 alphabet (Go `base64.StdEncoding`): no URL-safe chars, padding required. */
-const BASE64_STD_PATTERN = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
+const BASE64_STD_PATTERN = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/u;
 
 /** Header names whose simultaneous presence (HF302) is an invalid combination. */
 const CONTENT_LENGTH = 'content-length';
@@ -49,7 +49,7 @@ const TRANSFER_ENCODING = 'transfer-encoding';
 
 /** Whether a boolean-valued response field is present and `true`. */
 function isTrue(node: ASTNode | undefined): boolean {
-    return node?.type === 'boolean' && node.value === true;
+    return node?.type === 'boolean' && node.value;
 }
 
 /** The numeric value of a node when it is a JSON number, else undefined. */
@@ -132,7 +132,7 @@ function hf303(response: ResponseModel, context: RuleContext): Diagnostic[] {
         return [];
     }
     // Only act on a well-formed integer Content-Length; anything else is a schema/other concern.
-    if (!/^\d+$/.test(valueNode.value)) {
+    if (!/^\d+$/u.test(valueNode.value)) {
         return [];
     }
 
@@ -148,7 +148,7 @@ function hf303(response: ResponseModel, context: RuleContext): Diagnostic[] {
 
 /** `status` outside the 100–599 HTTP range. */
 function hf304(response: ResponseModel, context: RuleContext): Diagnostic[] {
-    const valueNode = response.status.valueNode;
+    const { valueNode } = response.status;
     const status = numberValue(valueNode);
     if (valueNode === undefined || status === undefined) {
         return [];
@@ -183,7 +183,7 @@ function hf305(response: ResponseModel, context: RuleContext): Diagnostic[] {
 
 /** Negative `fixedDelay` — silently ignored by Hoverfly (`if FixedDelay > 0`). */
 function hf306(response: ResponseModel, context: RuleContext): Diagnostic[] {
-    const valueNode = response.fixedDelay.valueNode;
+    const { valueNode } = response.fixedDelay;
     const delay = numberValue(valueNode);
     if (valueNode === undefined || delay === undefined || delay >= 0) {
         return [];
@@ -194,14 +194,14 @@ function hf306(response: ResponseModel, context: RuleContext): Diagnostic[] {
 /* --------------------------------------- HF307 ------------------------------------------- */
 
 /** A `logNormalDelay` field plus its numeric value (NaN/undefined when absent or non-number). */
-interface LogNormalFields {
+type LogNormalFields = {
     readonly object: ObjectASTNode;
     readonly min: number | undefined;
     readonly max: number | undefined;
     readonly mean: number | undefined;
     readonly median: number | undefined;
     readonly node: (key: string) => ASTNode | undefined;
-}
+};
 
 /**
  * Evaluate Hoverfly's `ValidateLogNormalDelayOptions` constraint set against a logNormalDelay

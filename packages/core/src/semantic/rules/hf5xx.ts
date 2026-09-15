@@ -35,7 +35,7 @@
  * because it needs model/document context the template AST does not carry.
  */
 
-import type { ASTNode, ObjectASTNode } from 'vscode-json-languageservice';
+import { type ASTNode, type ObjectASTNode } from 'vscode-json-languageservice';
 import { type Diagnostic, type Range } from 'vscode-languageserver-types';
 
 import {
@@ -44,9 +44,9 @@ import {
     createStringSourceMap,
     hasTemplateSyntax,
 } from '../../template/index.js';
-import type { DiagnosticCode } from '../catalog.js';
+import { type DiagnosticCode } from '../catalog.js';
 import { makeDiagnostic } from '../diagnostics.js';
-import type { RuleContext, SemanticRule, SimulationModel } from '../types.js';
+import { type RuleContext, type SemanticRule, type SimulationModel } from '../types.js';
 
 /* --------------------------------- string source mapping --------------------------------- */
 
@@ -126,7 +126,7 @@ function collectNames(
 
 /** Whether a `templated` field node is the JSON boolean `true`. */
 function isTemplated(node: ASTNode | undefined): boolean {
-    return node?.type === 'boolean' && node.value === true;
+    return node?.type === 'boolean' && node.value;
 }
 
 const HF5XX_CODES: readonly DiagnosticCode[] = [

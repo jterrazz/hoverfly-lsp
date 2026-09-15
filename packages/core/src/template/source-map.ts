@@ -17,7 +17,7 @@
  */
 
 /** The result of mapping a raw JSON string token. */
-interface StringSourceMap {
+type StringSourceMap = {
     /** The decoded string content (no surrounding quotes, escapes resolved). */
     readonly decoded: string;
     /**
@@ -43,11 +43,11 @@ interface StringSourceMap {
      *   resolves to a fractional position.
      */
     readonly toDecodedOffset: (docOffset: number) => number;
-}
+};
 
 /** Hex-digit guard for `\uXXXX` parsing. */
 function isHexDigit(ch: string | undefined): boolean {
-    return ch !== undefined && /[0-9A-Fa-f]/.test(ch);
+    return ch !== undefined && /[0-9A-Fa-f]/u.test(ch);
 }
 
 /** The eight single-character JSON escapes (`\X`), mapped to their decoded character. */
@@ -162,7 +162,8 @@ function createStringSourceMap(rawToken: string, docOffsetOfToken: number): Stri
              * whose source offset is >= docOffset.
              */
             let lo = 0;
-            let hi = decoded.length; // Sentinel lives at offsets[decoded.length]
+            // Sentinel lives at offsets[decoded.length]
+            let hi = decoded.length;
             while (lo < hi) {
                 const mid = (lo + hi) >> 1;
                 const at = offsets[mid] ?? endDocOffset;

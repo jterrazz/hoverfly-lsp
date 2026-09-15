@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, test } from 'vitest';
 import { getLanguageService } from 'vscode-json-languageservice';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DiagnosticSeverity } from 'vscode-languageserver-types';
@@ -24,17 +24,17 @@ function sim(request: unknown, response: unknown, extra: Record<string, unknown>
     };
 }
 
-describe('HF603 — unknown key (silent drop) with did-you-mean', () => {
-    it('flags a true typo on request with the nearest canonical suggestion', () => {
+describe('hF603 — unknown key (silent drop) with did-you-mean', () => {
+    test('flags a true typo on request with the nearest canonical suggestion', () => {
         // Given - a `methd` typo (the user's observed bug)
         const diags = run(sim({ methd: [{ matcher: 'exact', value: 'GET' }] }, { status: 200 }));
         // Then - one HF603 warning suggesting `method`
-        expect(codes(diags)).toEqual(['HF603']);
+        expect(codes(diags)).toStrictEqual(['HF603']);
         expect(diags[0]?.severity).toBe(DiagnosticSeverity.Warning);
         expect(diags[0]?.message).toContain('did you mean "method"');
     });
 
-    it('flags nested field-matcher / response / globalActions / meta typos at every level', () => {
+    test('flags nested field-matcher / response / globalActions / meta typos at every level', () => {
         // Given - a typo at multiple closed-object levels
         const diags = run(
             sim(
@@ -49,26 +49,26 @@ describe('HF603 — unknown key (silent drop) with did-you-mean', () => {
         // Then - HF603 fires for each (machter, transitionState, urlPatter, values)
         const messages = diags.filter((d) => d.code === 'HF603').map((d) => d.message);
         expect(messages).toHaveLength(4);
-        expect(messages.some((m) => m.includes('"machter"') && m.includes('matcher'))).toBe(true);
-        expect(messages.some((m) => m.includes('"transitionState"'))).toBe(true);
+        expect(messages.some((m) => m.includes('"machter"') && m.includes('matcher'))).toBeTruthy();
+        expect(messages.some((m) => m.includes('"transitionState"'))).toBeTruthy();
     });
 
-    it('omits the suggestion when no allowed key is within distance 2', () => {
+    test('omits the suggestion when no allowed key is within distance 2', () => {
         // Given - an unknown key far from every allowed key
         const diags = run(sim({ path: [], somethingEntirelyDifferent: 1 }, { status: 200 }));
         // Then - HF603 with no `did you mean` suffix
-        expect(codes(diags)).toEqual(['HF603']);
+        expect(codes(diags)).toStrictEqual(['HF603']);
         expect(diags[0]?.message).not.toContain('did you mean');
     });
 
-    it('does NOT flag `request.method` (legal despite being schema-absent)', () => {
+    test('does NOT flag `request.method` (legal despite being schema-absent)', () => {
         // Given - the schema-absent-but-legal `method` key
-        expect(run(sim({ method: [{ matcher: 'exact', value: 'GET' }] }, { status: 200 }))).toEqual(
-            [],
-        );
+        expect(
+            run(sim({ method: [{ matcher: 'exact', value: 'GET' }] }, { status: 200 })),
+        ).toStrictEqual([]);
     });
 
-    it('does NOT flag user-defined keys inside headers/query/state maps', () => {
+    test('does NOT flag user-defined keys inside headers/query/state maps', () => {
         // Given - arbitrary header / query / state names
         const diags = run(
             sim(
@@ -85,10 +85,10 @@ describe('HF603 — unknown key (silent drop) with did-you-mean', () => {
             ),
         );
         // Then - none of the user-defined map keys are flagged as unknown
-        expect(codes(diags)).toEqual([]);
+        expect(codes(diags)).toStrictEqual([]);
     });
 
-    it('does NOT run on the ROOT object (already HF102 via additionalProperties)', () => {
+    test('does NOT run on the ROOT object (already HF102 via additionalProperties)', () => {
         // Given - an unknown ROOT key
         const text = JSON.stringify({
             data: { pairs: [] },
@@ -98,12 +98,12 @@ describe('HF603 — unknown key (silent drop) with did-you-mean', () => {
         const doc = TextDocument.create('file:///s.hoverfly.json', 'json', 1, text);
         // Then - the structure rule emits nothing for the root typo (HF102 owns it)
         const diags = structureRule.run(createRuleContext(doc, ls.parseJSONDocument(doc)));
-        expect(diags).toEqual([]);
+        expect(diags).toStrictEqual([]);
     });
 });
 
-describe('HF604 — case-only variant of a known key', () => {
-    it('flags `Method`/`BodyFile` as HF604 only (never HF603)', () => {
+describe('hF604 — case-only variant of a known key', () => {
+    test('flags `Method`/`BodyFile` as HF604 only (never HF603)', () => {
         // Given - case variants that Go binds case-insensitively
         const diags = run(
             sim(
@@ -112,7 +112,7 @@ describe('HF604 — case-only variant of a known key', () => {
             ),
         );
         // Then - two HF604 information diagnostics, no HF603
-        expect(codes(diags)).toEqual(['HF604', 'HF604']);
+        expect(codes(diags)).toStrictEqual(['HF604', 'HF604']);
         for (const diagnostic of diags) {
             expect(diagnostic.severity).toBe(DiagnosticSeverity.Information);
         }
@@ -120,16 +120,16 @@ describe('HF604 — case-only variant of a known key', () => {
     });
 });
 
-describe('HF212 — field-matcher with no value', () => {
-    it('flags a matcher-only object and an empty {} ', () => {
+describe('hF212 — field-matcher with no value', () => {
+    test('flags a matcher-only object and an empty {}', () => {
         // Given - `{matcher:"exact"}` (no value) and an empty `{}`
         const diags = run(sim({ path: [{ matcher: 'exact' }], method: [{}] }, { status: 200 }));
         // Then - two HF212 warnings
-        expect(codes(diags)).toEqual(['HF212', 'HF212']);
+        expect(codes(diags)).toStrictEqual(['HF212', 'HF212']);
         expect(diags[0]?.severity).toBe(DiagnosticSeverity.Warning);
     });
 
-    it('does NOT flag a bare {value} shorthand, nor `negate`/`form` (other codes own those)', () => {
+    test('does NOT flag a bare {value} shorthand, nor `negate`/`form` (other codes own those)', () => {
         // Given - a legal default-exact shorthand, a value-less negate, and a value-less form
         const diags = run(
             sim(
@@ -146,8 +146,8 @@ describe('HF212 — field-matcher with no value', () => {
     });
 });
 
-describe('HF308 — response header not an array of strings', () => {
-    it('flags a plain-string header and an array with a non-string element', () => {
+describe('hF308 — response header not an array of strings', () => {
+    test('flags a plain-string header and an array with a non-string element', () => {
         // Given - a string header, a mixed array, and a valid string array
         const diags = run(
             sim(
@@ -156,13 +156,13 @@ describe('HF308 — response header not an array of strings', () => {
             ),
         );
         // Then - HF308 fires for A and B only
-        expect(codes(diags)).toEqual(['HF308', 'HF308']);
+        expect(codes(diags)).toStrictEqual(['HF308', 'HF308']);
         expect(diags[0]?.severity).toBe(DiagnosticSeverity.Error);
     });
 });
 
-describe('HF404 / HF405 — non-string state values', () => {
-    it('flags non-string requiresState/transitionsState values (HF404)', () => {
+describe('hF404 / HF405 — non-string state values', () => {
+    test('flags non-string requiresState/transitionsState values (HF404)', () => {
         // Given - boolean and number state values
         const diags = run(
             sim(
@@ -176,7 +176,7 @@ describe('HF404 / HF405 — non-string state values', () => {
         expect(hf404[0]?.severity).toBe(DiagnosticSeverity.Error);
     });
 
-    it('flags non-string removesState entries (HF405), one per bad element', () => {
+    test('flags non-string removesState entries (HF405), one per bad element', () => {
         // Given - a removesState mixing strings and non-strings
         const diags = run(
             sim(

@@ -12,40 +12,40 @@
  * (see `model.ts`), so any field may be `undefined`. Rules must treat `undefined` as "absent".
  */
 
-import type { ASTNode, JSONDocument, ObjectASTNode } from 'vscode-json-languageservice';
-import type { TextDocument } from 'vscode-languageserver-textdocument';
-import type { Diagnostic } from 'vscode-languageserver-types';
+import { type ASTNode, type JSONDocument, type ObjectASTNode } from 'vscode-json-languageservice';
+import { type TextDocument } from 'vscode-languageserver-textdocument';
+import { type Diagnostic } from 'vscode-languageserver-types';
 
-import type { DiagnosticCode } from './catalog.js';
+import { type DiagnosticCode } from './catalog.js';
 
 /**
  * A semantic rule (or rule family). One file under `rules/` typically exports one rule whose
  * `codes` are the HFxxx codes it can emit. The engine runs every registered rule and
  * concatenates the results.
  */
-export interface SemanticRule {
+export type SemanticRule = {
     /** Catalog codes this rule may emit (documentation/coverage aid; not enforced). */
     readonly codes: readonly DiagnosticCode[];
     /** Produce diagnostics for one document. MUST NOT throw on malformed input. */
     run: (context: RuleContext) => Diagnostic[];
-}
+};
 
 /**
  * Service-level settings carried into every rule. Optional and additive: rules that consult
  * settings (e.g. HF602's `registeredActions` allowlist) read defensively, and the validation
  * pipeline supplies an empty object when none are configured.
  */
-export interface HoverflyServiceSettings {
+export type HoverflyServiceSettings = {
     /**
      * Allowlist of post-serve action names registered with the running Hoverfly instance. When
      * non-empty, HF602 flags any `postServeAction` not in this list. When absent/empty, HF602 is
      * silent (the actions are runtime-registered and unknowable from the file alone).
      */
     readonly registeredActions?: readonly string[];
-}
+};
 
 /** Everything a rule needs to analyse one document. */
-export interface RuleContext {
+export type RuleContext = {
     /** The source document (for positionAt / getText / uri). */
     readonly textDocument: TextDocument;
     /** The error-recovering JSON AST (root may be undefined on severe parse failure). */
@@ -54,7 +54,7 @@ export interface RuleContext {
     readonly model: SimulationModel;
     /** Service-level settings (allowlists, toggles); empty object when none configured. */
     readonly settings: HoverflyServiceSettings;
-}
+};
 
 /* ------------------------------------------------------------------------------------------ *
  * SimulationModel — the typed, AST-anchored view.
@@ -64,7 +64,7 @@ export interface RuleContext {
  * The fields on a request that hold matcher arrays (`path`, `method`, `body`, plus dynamic
  * header/query field names). Each maps to the list of matchers declared on it.
  */
-export interface RequestModel {
+export type RequestModel = {
     /** The `request` object node, when present. */
     readonly node: ObjectASTNode | undefined;
     /**
@@ -77,13 +77,13 @@ export interface RequestModel {
      * them uniformly. The raw `headers`/`query` object nodes are also exposed via `node`.
      */
     readonly fields: readonly RequestField[];
-}
+};
 
 /** The container a matcher field lives in, so rules know placement (HF208 etc.). */
 export type FieldContainer = 'headers' | 'query' | 'request';
 
 /** One matcher-bearing field on the request (e.g. `path`, or a single header key). */
-export interface RequestField {
+export type RequestField = {
     /** Field name as written (`path`, `method`, `body`, or a header/query key). */
     readonly fieldName: string;
     /** Where this field lives — top-level request field, or inside headers/query. */
@@ -92,10 +92,10 @@ export interface RequestField {
     readonly keyNode: ASTNode | undefined;
     /** The matchers declared on this field. */
     readonly matchers: readonly MatcherModel[];
-}
+};
 
 /** One matcher object inside a matcher array (`{ matcher, value, config, doMatch }`). */
-export interface MatcherModel {
+export type MatcherModel = {
     /** The whole matcher object node. */
     readonly node: ObjectASTNode | undefined;
     /** `matcher` field: the string node naming the matcher (e.g. `"exact"`). */
@@ -110,10 +110,10 @@ export interface MatcherModel {
     readonly doMatchNode: ASTNode | undefined;
     /** Parent field this matcher belongs to (placement + container info). */
     readonly parent: { readonly fieldName: string; readonly container: FieldContainer };
-}
+};
 
 /** A response, with the field nodes the HF3xx rules care about. */
-export interface ResponseModel {
+export type ResponseModel = {
     readonly node: ObjectASTNode | undefined;
     /** Property-node accessors for the response fields HF3xx inspects. */
     readonly status: ResponseField;
@@ -129,38 +129,38 @@ export interface ResponseModel {
     readonly headersNode: ObjectASTNode | undefined;
     /** Header entries keyed by header name (one per header property). */
     readonly headers: readonly HeaderEntry[];
-}
+};
 
 /** A single response field: its property, key, and value nodes (any may be undefined). */
-export interface ResponseField {
+export type ResponseField = {
     readonly propertyNode: ASTNode | undefined;
     readonly keyNode: ASTNode | undefined;
     readonly valueNode: ASTNode | undefined;
-}
+};
 
 /** One response header (`name: [values]`). */
-export interface HeaderEntry {
+export type HeaderEntry = {
     readonly name: string;
     readonly keyNode: ASTNode | undefined;
     readonly valueNode: ASTNode | undefined;
-}
+};
 
 /** A `requiresState` / `transitionsState` map entry (state key → value), AST-anchored. */
-export interface StateEntry {
+export type StateEntry = {
     readonly key: string;
     readonly keyNode: ASTNode | undefined;
     readonly valueNode: ASTNode | undefined;
-}
+};
 
 /** A `removesState` array entry (a state key string), AST-anchored. */
-export interface RemovesStateEntry {
+export type RemovesStateEntry = {
     readonly key: string;
     /** The string node for this entry. */
     readonly node: ASTNode | undefined;
-}
+};
 
 /** A single request/response pair view. */
-export interface PairModel {
+export type PairModel = {
     /** The whole pair object node. */
     readonly node: ObjectASTNode | undefined;
     readonly request: RequestModel;
@@ -168,37 +168,37 @@ export interface PairModel {
     readonly requiresState: readonly StateEntry[];
     readonly transitionsState: readonly StateEntry[];
     readonly removesState: readonly RemovesStateEntry[];
-}
+};
 
 /** `meta` view. */
-export interface MetaModel {
+export type MetaModel = {
     readonly node: ObjectASTNode | undefined;
     /** `schemaVersion` field accessors. */
     readonly schemaVersion: ResponseField;
-}
+};
 
 /** One `globalActions.delays[]` entry. */
-export interface DelayModel {
+export type DelayModel = {
     readonly node: ObjectASTNode | undefined;
     readonly urlPatternNode: ASTNode | undefined;
     readonly urlPattern: string | undefined;
     readonly delayNode: ASTNode | undefined;
-}
+};
 
 /** `globalActions` view. */
-export interface GlobalActionsModel {
+export type GlobalActionsModel = {
     readonly node: ObjectASTNode | undefined;
     /** `globalActions.delays[]` (fixed delays). */
     readonly delays: readonly DelayModel[];
     /** `globalActions.delaysLogNormal[]` (log-normal delays). Same `urlPattern` regex contract. */
     readonly delaysLogNormal: readonly DelayModel[];
-}
+};
 
 /**
  * Typed view of the whole simulation. Built once from the AST; every interesting node carries
  * its `ASTNode` reference so rules can target diagnostics precisely. All fields are defensive.
  */
-export interface SimulationModel {
+export type SimulationModel = {
     /** Root object node, when the document parsed to an object. */
     readonly root: ObjectASTNode | undefined;
     /** `data` object node, when present. */
@@ -206,4 +206,4 @@ export interface SimulationModel {
     readonly pairs: readonly PairModel[];
     readonly meta: MetaModel;
     readonly globalActions: GlobalActionsModel;
-}
+};

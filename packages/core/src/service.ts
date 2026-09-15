@@ -66,7 +66,7 @@ function stripLeadingBom(document: TextDocument): TextDocument {
  * intelligence beyond the schema (semantic validators, template analysis, richer completion
  * and hover) layers on via the {@link JSONWorkerContribution} hook in later phases.
  */
-export interface HoverflyLanguageService {
+export type HoverflyLanguageService = {
     /** Parse a document into an error-recovering JSON AST (reused across the other calls). */
     parse: (document: TextDocument) => JSONDocument;
     /** Whether this document looks like a Hoverfly simulation (D3 fingerprint). */
@@ -88,7 +88,7 @@ export interface HoverflyLanguageService {
         position: Position,
         jsonDocument?: JSONDocument,
     ) => Promise<Hover | null>;
-}
+};
 
 /**
  * Create a Hoverfly language service backed by `vscode-json-languageservice`.
@@ -121,11 +121,11 @@ export function createHoverflyLanguageService(
     const service: LanguageService = getLanguageService({
         // The Hoverfly contribution runs first; caller-supplied contributions follow.
         contributions: [hoverflyContribution, ...contributions],
-        schemaRequestService: (uri: string): Promise<string> => {
+        schemaRequestService: async (uri: string): Promise<string> => {
             if (uri === SCHEMA_URI) {
-                return Promise.resolve(SCHEMA_TEXT);
+                return SCHEMA_TEXT;
             }
-            return Promise.reject(new Error(`Unknown schema URI: ${uri}`));
+            throw new Error(`Unknown schema URI: ${uri}`);
         },
     });
 
@@ -182,12 +182,15 @@ export function createHoverflyLanguageService(
         isSimulation(document: TextDocument): boolean {
             return isHoverflySimulation(stripLeadingBom(document).getText());
         },
-        doValidation(document: TextDocument, jsonDocument?: JSONDocument): Promise<Diagnostic[]> {
+        async doValidation(
+            document: TextDocument,
+            jsonDocument?: JSONDocument,
+        ): Promise<Diagnostic[]> {
             /*
              * Normalise a leading BOM (offset-preserving) so a BOM-prefixed valid simulation is not
              * misclassified as HF101; the normalised view is threaded through the whole pipeline.
              */
-            return validate(stripLeadingBom(document), jsonDocument);
+            return await validate(stripLeadingBom(document), jsonDocument);
         },
         async doComplete(
             document: TextDocument,
@@ -209,7 +212,7 @@ export function createHoverflyLanguageService(
             if (templateItems) {
                 return { isIncomplete: false, items: templateItems };
             }
-            return service.doComplete(normalized, position, parsed);
+            return await service.doComplete(normalized, position, parsed);
         },
         async doHover(
             document: TextDocument,
@@ -224,7 +227,7 @@ export function createHoverflyLanguageService(
             if (templateHover) {
                 return templateHover;
             }
-            return service.doHover(normalized, position, parsed);
+            return await service.doHover(normalized, position, parsed);
         },
     };
 }
