@@ -14,7 +14,7 @@ v5 simulation files, plus the baselines the drift CI uses to know when upstream 
 It is an **enhanced but faithful superset** of Hoverfly's official schema: it adds titles,
 descriptions, default snippets, and matcher-name examples, but it is **never stricter** than
 what Hoverfly accepts at import. It is byte-identical to the LSP's bundled schema
-(`packages/core/src/schema/hoverfly.schema.json`) except for two documented deltas:
+(`packages/analysis/src/schema/hoverfly.schema.json`) except for two documented deltas:
 
 1. **`$id`** is set to the future SchemaStore URL `https://json.schemastore.org/hoverfly-simulation.json`
    (the bundled LSP schema uses an internal `hoverfly-lsp.dev` URL).
@@ -24,7 +24,7 @@ what Hoverfly accepts at import. It is byte-identical to the LSP's bundled schem
    LSP's completion contribution owns matcher-name completion (and gates `form` to the request
    body); schema-only consumers have no such contribution, so they need the examples here.
 
-A test (`packages/core/test/schema/schemastore-artifact.test.ts`) asserts this relationship so
+A test (`packages/analysis/test/schema/schemastore-artifact.test.ts`) asserts this relationship so
 the artifact and the bundle can never drift apart silently.
 
 > The `matcher` field is intentionally a free `string` (not an `enum`). Hoverfly's matcher

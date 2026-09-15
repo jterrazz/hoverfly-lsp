@@ -228,13 +228,13 @@ add `"semantic_tokens": "combined"` to your settings to light up the template co
 A single TypeScript stdio server wraps a pure analysis library, built on
 [`vscode-json-languageservice`](https://github.com/microsoft/vscode-json-languageservice) (the
 error-recovering JSON engine VS Code itself uses) with Hoverfly-specific validators and a
-Handlebars-subset template engine on top. Dependency direction is strictly `editors -> server -> core`.
+Handlebars-subset template engine on top. Dependency direction is strictly `editors -> server -> analysis`.
 
 ```
-packages/core      @hoverfly-lsp/core      pure analysis library (private; bundled into the server)
+packages/analysis  @hoverfly-lsp/analysis  pure analysis library (private; bundled into the server)
 packages/server    @jterrazz/hoverfly-lsp  stdio LSP server (the published package; bin: hoverfly-lsp)
 editors/           vscode, zed, intellij, claude-code   thin per-editor launchers
-docs/              the manual: numbered chapters + reference/ generated from core
+docs/              the manual: numbered chapters + reference/ generated from the analysis library
 testdata/          the reference corpus (valid/ + invalid/ goldens)
 research/          binding research + the architect decision log
 schemas/           bundled Hoverfly schema + upstream provenance

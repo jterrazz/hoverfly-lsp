@@ -5,7 +5,7 @@ diagnostics golden corpus (`testdata/{valid,invalid}` + `.diagnostics.golden`). 
 Hoverfly simulation carrying one or more cursor markers; a sibling `.expect.json` sidecar pins what
 the language service must (and must not) offer at each marker.
 
-Runner: [`packages/core/test/contributions/corpus.test.ts`](../../packages/core/test/contributions/corpus.test.ts).
+Runner: [`packages/analysis/test/contributions/corpus.test.ts`](../../packages/analysis/test/contributions/corpus.test.ts).
 The hover corpus under [`testdata/hover`](../hover/README.md) follows the identical layout.
 
 ## Layout
@@ -73,7 +73,7 @@ completion, put the fixture under a `.../broken/` subdir and the validity check 
 ```
 
 TypeScript types: `CorpusExpectation` / `CompletionMarkerExpectation` in
-[`test/fourslash/harness.ts`](../../packages/core/test/fourslash/harness.ts).
+[`test/fourslash/harness.ts`](../../packages/analysis/test/fourslash/harness.ts).
 
 - **`includes` / `excludes`** are exact-label assertions sourced from the real service — never
   hardcode a label the service does not produce.
@@ -96,9 +96,9 @@ TypeScript types: `CorpusExpectation` / `CompletionMarkerExpectation` in
 
 1. Pick/create a `<context>/` dir and write `<case>.hoverfly.json` with the cursor marker(s).
 2. Dump the ground truth:
-   `CORPUS_DUMP=<case> npx vitest --run packages/core/test/contributions/corpus.test.ts`
+   `CORPUS_DUMP=<case> npx vitest --run packages/analysis/test/contributions/corpus.test.ts`
    (prints the actual labels + kinds at each marker; no `--disableConsoleIntercept` needed).
 3. Write `<case>.expect.json` from that output — `includes`/`excludes`, plus `count`/`kindOf` only
    where they hold. Keep it meaningful but resilient (prefer `includes` over `count` for open sets).
-4. Run `npx vitest --run packages/core/test/contributions/corpus.test.ts` — green when the
+4. Run `npx vitest --run packages/analysis/test/contributions/corpus.test.ts` — green when the
    stripped fixture validates (unless under `broken/`) and every marker matches its sidecar.

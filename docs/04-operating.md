@@ -14,10 +14,10 @@ operations, what is automated, what stays manual, and why.
 | the IntelliJ plugin           | JetBrains Marketplace              | `./gradlew publishPlugin`      |
 | the Zed extension             | the `zed-industries/extensions` PR | a human, from a fork           |
 
-`@hoverfly-lsp/core` is private, never published, and inlined into the server
+`@hoverfly-lsp/analysis` is private, never published, and inlined into the server
 bundle by esbuild — the npm tarball carries no dependency on it.
 
-The two npm-versioned manifests (`packages/core`, `packages/server`) must agree
+The two npm-versioned manifests (`packages/analysis`, `packages/server`) must agree
 with the release tag; the workflow refuses to publish otherwise
 (`.github/workflows/release.yml:92`). The editor artefacts version
 **independently**, because their registries treat a version as immutable and a
@@ -28,7 +28,7 @@ Marketplace-only fix must be able to move without an npm release.
 1. Walk the parts of [MANUAL-QA.md](../MANUAL-QA.md) that need a real editor —
    in practice VS Code and IntelliJ. Once a version is on npm it cannot be
    replaced ([03-testing.md](03-testing.md) says why this step is not optional).
-2. Bump the version in every manifest that ships: `packages/core`,
+2. Bump the version in every manifest that ships: `packages/analysis`,
    `packages/server`, the root `package.json`, and — when they move —
    `editors/vscode`, `editors/zed/extension.toml`,
    `editors/claude-code/.claude-plugin/plugin.json`.
@@ -92,7 +92,7 @@ The server is a single self-contained CommonJS bundle plus its bin shim —
 nothing else. It speaks stdio and holds no state between sessions, and its
 schema resolver answers the one bundled URI from memory and rejects every other,
 so it touches neither the network nor the filesystem at runtime
-(`packages/core/src/service.ts:124`). Its one
+(`packages/analysis/src/service.ts:124`). Its one
 setting, `hoverfly.registeredActions`, comes from the client at `initialize` or
 through `workspace/configuration`; there is no configuration file and no secret
 anywhere in the running system.

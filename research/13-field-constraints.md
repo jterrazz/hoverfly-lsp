@@ -358,7 +358,7 @@ misspellings). Both are errors; HF510 takes precedence when the name is one of t
 ### 3.12 `variables[].arguments` ARITY — **NOT import-enforced; silent drop at render** (T8/T21 → 200).
 
 So arity mismatch never fails import and never crashes; the variable just renders empty. Propose
-**HF512 (W)**: `arguments` length ≠ the helper's arity (from `registry/helpers.ts`), for the known-52
+**HF512 (W)**: `arguments` length ≠ the helper's arity (from `registry/templating.ts`), for the known-52
 functions. Warning, not error (Hoverfly tolerates it; consequence is a silently-empty variable). This
 mirrors HF504 (template-side arity) on the `variables[]` side. (Note `requestBody` needs exactly 2;
 variadic helpers like `concat` only enforce a minimum.)
@@ -458,10 +458,10 @@ change. Every proposal cites its §4 experiment or source.
 
 ### HF5xx (templating / variables) — taken through HF510; continue at HF511
 
-| Code      | Sev | Trigger                                                                                                                                     | Range                      | Message draft                                                                                               | Evidence                                                         |
-| --------- | --- | ------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- | ----------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| **HF511** | E   | `variables[].function` is a string that is NOT one of the 52 Hoverfly helpers and NOT one of the 8 built-ins (HF510 owns the built-in case) | function value node        | `Unknown variable function "{name}" — Hoverfly rejects the import (only the 52 helper functions are valid)` | T7 §4 (HTTP 500)                                                 |
-| **HF512** | W   | `variables[].arguments` length ≠ the helper's arity (for a known-52 `function`; variadic → enforce minimum; `requestBody` → exactly 2)      | the `arguments` array node | `"{fn}" expects {sig} arguments, got {n} — the variable renders empty`                                      | T8/T21 §4 (silent drop at render); `registry/helpers.ts` arities |
+| Code      | Sev | Trigger                                                                                                                                     | Range                      | Message draft                                                                                               | Evidence                                                            |
+| --------- | --- | ------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| **HF511** | E   | `variables[].function` is a string that is NOT one of the 52 Hoverfly helpers and NOT one of the 8 built-ins (HF510 owns the built-in case) | function value node        | `Unknown variable function "{name}" — Hoverfly rejects the import (only the 52 helper functions are valid)` | T7 §4 (HTTP 500)                                                    |
+| **HF512** | W   | `variables[].arguments` length ≠ the helper's arity (for a known-52 `function`; variadic → enforce minimum; `requestBody` → exactly 2)      | the `arguments` array node | `"{fn}" expects {sig} arguments, got {n} — the variable renders empty`                                      | T8/T21 §4 (silent drop at render); `registry/templating.ts` arities |
 
 ### HF6xx (globalActions & misc) — taken through HF602; continue at HF603
 

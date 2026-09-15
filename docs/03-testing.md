@@ -18,16 +18,16 @@ milliseconds.
 
 The suites, by what they stand on:
 
-| Suite                               | Proves                                                                  |
-| ----------------------------------- | ----------------------------------------------------------------------- |
-| `packages/core/test/semantic/`      | Each rule family in isolation, plus the corpus goldens                  |
-| `packages/core/test/contributions/` | Hover and completion, including the per-context coverage matrix         |
-| `packages/core/test/template/`      | The Handlebars-subset parser, analyzer, source map and cursor context   |
-| `packages/core/test/registry/`      | The transcribed matcher, helper and faker tables                        |
-| `packages/core/test/schema/`        | The bundled schema and the standalone SchemaStore artifact stay in step |
-| `packages/core/test/corpus.test.ts` | Corpus-wide structural invariants — naming, pairing, coverage floors    |
-| `packages/server/test/integration/` | A real `initialize` handshake against the built bin over stdio          |
-| `editors/vscode/test/`              | How the extension resolves the server binary                            |
+| Suite                                   | Proves                                                                  |
+| --------------------------------------- | ----------------------------------------------------------------------- |
+| `packages/analysis/test/semantic/`      | Each rule family in isolation, plus the corpus goldens                  |
+| `packages/analysis/test/contributions/` | Hover and completion, including the per-context coverage matrix         |
+| `packages/analysis/test/template/`      | The Handlebars-subset parser, analyzer, source map and cursor context   |
+| `packages/analysis/test/registry/`      | The transcribed matcher, helper and faker tables                        |
+| `packages/analysis/test/schema/`        | The bundled schema and the standalone SchemaStore artifact stay in step |
+| `packages/analysis/test/corpus.test.ts` | Corpus-wide structural invariants — naming, pairing, coverage floors    |
+| `packages/server/test/integration/`     | A real `initialize` handshake against the built bin over stdio          |
+| `editors/vscode/test/`                  | How the extension resolves the server binary                            |
 
 ## The reference corpus
 
@@ -48,7 +48,7 @@ check.
 ### Regenerating a golden
 
 ```bash
-env UPDATE_GOLDENS=1 npx vitest --run packages/core/test/semantic/golden.test.ts
+env UPDATE_GOLDENS=1 npx vitest --run packages/analysis/test/semantic/golden.test.ts
 ```
 
 Review every regenerated golden by hand. It must carry only the codes its
@@ -59,7 +59,7 @@ second problem (fix the fixture), and a missing code means a validator gap
 ### Cursor-marker tests
 
 Completion and hover are tested through a fourslash-style harness
-(`packages/core/test/fourslash/harness.ts`). A cursor is written into a fixture
+(`packages/analysis/test/fourslash/harness.ts`). A cursor is written into a fixture
 as `⟦⟧`, or `⟦name⟧` for several positions in one document — an ordinary
 character inside a JSON string, so the document stays valid JSON once the marker
 is stripped, and one that never appears in real Hoverfly content.

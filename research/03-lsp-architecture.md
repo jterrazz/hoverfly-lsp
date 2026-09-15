@@ -17,10 +17,10 @@ Hoverfly simulation files (JSON), written in **TypeScript** (modern TS, ESM, Nod
    "build on top" path that **yaml-language-server** and **azure-pipelines-language-server** took.
 2. **Layer your own semantic ("type checking") pass on top of the schema engine**, exactly as
    yaml-language-server (modeline/k8s validators) and azure-pipelines (template/expression validators) do.
-   Schema catches structural errors; your `packages/core` semantic analyzers catch _Hoverfly-specific_ rules
+   Schema catches structural errors; your `packages/analysis` semantic analyzers catch _Hoverfly-specific_ rules
    (e.g. a matcher referencing an undefined `requestMatcher` type, duplicate exact-match pairs, regex that
    doesn't compile, `state`/`requiresState`/`transitionsState` consistency, template `{{ }}` references).
-3. **Monorepo with a hard architectural boundary**: `packages/core` (pure analysis, **zero LSP/transport
+3. **Monorepo with a hard architectural boundary**: `packages/analysis` (pure analysis, **zero LSP/transport
    deps** — depends only on `vscode-json-languageservice` + `vscode-languageserver-types` for data types),
    `packages/server` (thin LSP/stdio wrapper), `editors/{vscode,zed,intellij}` (thin clients). This mirrors
    taplo (`taplo` crate vs `taplo-lsp` crate) and typescript-go (`internal/ls` vs `internal/lsp`).
@@ -40,7 +40,7 @@ custom `npm run symlink` to link packages). TypeScript ~6.0.x, target ES2022, No
 | Package                              | Current major | Role / API shape                                                                                                                                                                                                                                                     |
 | ------------------------------------ | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `vscode-jsonrpc`                     | **9.x**       | Low-level JSON-RPC message transport (the wire protocol between client/server). Rarely used directly.                                                                                                                                                                |
-| `vscode-languageserver-types`        | **3.17.x**    | Pure data types: `Range`, `Position`, `Diagnostic`, `CompletionItem`, `Hover`, `TextEdit`, `MarkupContent`, `DiagnosticSeverity`. **Zero runtime deps.** This is what `packages/core` should depend on for return types.                                             |
+| `vscode-languageserver-types`        | **3.17.x**    | Pure data types: `Range`, `Position`, `Diagnostic`, `CompletionItem`, `Hover`, `TextEdit`, `MarkupContent`, `DiagnosticSeverity`. **Zero runtime deps.** This is what `packages/analysis` should depend on for return types.                                         |
 | `vscode-languageserver-protocol`     | **3.18.x**    | Request/notification definitions on top of types + jsonrpc.                                                                                                                                                                                                          |
 | `vscode-languageserver-textdocument` | **1.x**       | `TextDocument` implementation: `getText()`, `positionAt(offset)`, `offsetAt(position)`, incremental `update()`. Used by both core and server.                                                                                                                        |
 | `vscode-languageserver`              | **10.x**      | Server framework: `createConnection`, `TextDocuments`, lifecycle (`onInitialize`, `onDidChangeConfiguration`), feature handlers (`onCompletion`, `onHover`, `connection.sendDiagnostics`). The `/node` subpath entry (`vscode-languageserver/node`) wires stdio/IPC. |
@@ -75,12 +75,12 @@ connection.onInitialize((_params): InitializeResult => ({
 }));
 
 documents.onDidChangeContent(async ({ document }) => {
-    const diagnostics = await analyze(document); // <- delegates to packages/core
+    const diagnostics = await analyze(document); // <- delegates to packages/analysis
     connection.sendDiagnostics({ uri: document.uri, diagnostics });
 });
 
-connection.onCompletion((params) => complete(params)); // <- delegates to packages/core
-connection.onHover((params) => hover(params)); // <- delegates to packages/core
+connection.onCompletion((params) => complete(params)); // <- delegates to packages/analysis
+connection.onHover((params) => hover(params)); // <- delegates to packages/analysis
 
 documents.listen(connection);
 connection.listen();
@@ -248,7 +248,7 @@ export interface CompletionsCollector {
 can't express. `getMatchingSchemas` returns AST nodes paired with the sub-schema that matched, and the AST
 nodes (`ASTNode` with `.offset`, `.length`, `.type`, `.children`) let you produce precise `Diagnostic` ranges.
 
-### 2.4 Wiring sketch (the heart of `packages/core`)
+### 2.4 Wiring sketch (the heart of `packages/analysis`)
 
 ```ts
 import { getLanguageService, LanguageService, JSONDocument } from 'vscode-json-languageservice';
@@ -359,7 +359,7 @@ a clearer diagnostic, optionally suppressing the schema's union noise via `docum
 - Distribution: `cargo` for the Rust binary **and** npm packages — notably **`@taplo/lsp`** (current 0.8.0), a
   JS/WASM wrapper exposing the language server generically (callback-based, runs in browser/web-worker/Node).
 - **Boundary lesson**: the pure analysis crate (`taplo`) has _zero_ LSP knowledge; `taplo-lsp` translates
-  between LSP requests and `taplo` analysis calls. This is the exact `packages/core` ↔ `packages/server` line
+  between LSP requests and `taplo` analysis calls. This is the exact `packages/analysis` ↔ `packages/server` line
   we want.
 
 ### 4.2 microsoft/typescript-go (tsgo) — `cmd/` + `internal/`
@@ -382,7 +382,7 @@ a clearer diagnostic, optionally suppressing the schema's union noise via `docum
 
 ## 5. Recommended repo layout for hoverfly-lsp
 
-A **pnpm/npm workspaces monorepo**. The non-negotiable rule: `packages/core` has **zero LSP/transport
+A **pnpm/npm workspaces monorepo**. The non-negotiable rule: `packages/analysis` has **zero LSP/transport
 dependencies** (only `vscode-json-languageservice` + `vscode-languageserver-types` for return data types).
 
 ```
@@ -392,7 +392,7 @@ hoverfly-lsp/
 ├─ tsconfig.base.json                # strict, ESM, NodeNext moduleResolution, ES2022 target
 ├─ .changeset/                       # versioning (Changesets) — see §8
 ├─ packages/
-│  ├─ core/                          # @hoverfly-lsp/core — PURE ANALYSIS, no LSP transport
+│  ├─ analysis/                      # @hoverfly-lsp/analysis — PURE ANALYSIS, no LSP transport
 │  │  ├─ package.json                # deps: vscode-json-languageservice, vscode-languageserver-types,
 │  │  │                              #       vscode-languageserver-textdocument  (NO vscode-languageserver)
 │  │  ├─ src/
@@ -419,7 +419,7 @@ hoverfly-lsp/
 │  │     └─ ...                      # see §6
 │  └─ server/                        # @hoverfly-lsp/server — THIN LSP WRAPPER (the npm bin)
 │     ├─ package.json                # bin: { "hoverfly-lsp": "./bin/hoverfly-lsp.js" }
-│     │                              # deps: @hoverfly-lsp/core, vscode-languageserver,
+│     │                              # deps: @hoverfly-lsp/analysis, vscode-languageserver,
 │     │                              #       vscode-languageserver-textdocument
 │     ├─ bin/
 │     │  └─ hoverfly-lsp.js          # #!/usr/bin/env node  → import('../dist/cli.js')
@@ -450,8 +450,8 @@ hoverfly-lsp/
 ```
 
 **Dependency direction (enforced, e.g. via `eslint-plugin-import` / dependency-cruiser):**
-`editors/* → packages/server → packages/core → (vscode-json-languageservice, *-types)`.
-Never the reverse. `packages/core` must be importable and testable with **no LSP connection**.
+`editors/* → packages/server → packages/analysis → (vscode-json-languageservice, *-types)`.
+Never the reverse. `packages/analysis` must be importable and testable with **no LSP connection**.
 
 ---
 
@@ -469,7 +469,7 @@ no ts-node/register dance).
                  ╱ ╲
                 ╱   ╲  some  packages/server integration over real stdio (JSON-RPC round trips)
                ╱─────╲
-              ╱       ╲ many packages/core unit + golden + cursor tests over testdata/ corpus
+              ╱       ╲ many packages/analysis unit + golden + cursor tests over testdata/ corpus
              ╱─────────╲
 ```
 
@@ -501,7 +501,7 @@ testdata/
 ### 6.2 Golden / snapshot diagnostics tests (core)
 
 ```ts
-// packages/core/test/diagnostics.golden.test.ts
+// packages/analysis/test/diagnostics.golden.test.ts
 import { readFileSync } from 'node:fs';
 import { glob } from 'glob';
 import { test, expect } from 'vitest';
@@ -603,7 +603,7 @@ await conn.sendRequest('initialize', { capabilities: {}, rootUri: null, processI
         "engines": { "node": ">=18" },
         "files": ["bin", "dist"],
         "dependencies": {
-            "@hoverfly-lsp/core": "workspace:*",
+            "@hoverfly-lsp/analysis": "workspace:*",
             "vscode-languageserver": "^10",
             "vscode-languageserver-textdocument": "^1",
         },
@@ -649,12 +649,12 @@ await conn.sendRequest('initialize', { capabilities: {}, rootUri: null, processI
 
 ## 8. Concrete next-step checklist for implementation agents
 
-1. Author `packages/core/src/schema/hoverfly.schema.json` (draft-07) from the Hoverfly simulation spec:
+1. Author `packages/analysis/src/schema/hoverfly.schema.json` (draft-07) from the Hoverfly simulation spec:
    top-level `data.pairs[].{request,response}`, `data.globalActions.delays[]`, `meta.{schemaVersion,
 hoverflyVersion,timeExported}`. Encode matcher entries as a discriminated array of
    `{matcher: enum, value, config?}`.
 2. Implement `createHoverflyService` per §2.4; serve the schema in-memory via `schemaRequestService`.
-3. Implement `SemanticValidator[]` in `packages/core/src/semantic/` (matcher kinds, regex/glob compile,
+3. Implement `SemanticValidator[]` in `packages/analysis/src/semantic/` (matcher kinds, regex/glob compile,
    duplicate/conflicting matchers, state coherence, template `{{ }}` refs) using `getMatchingSchemas` +
    AST navigation for precise ranges. Assign stable diagnostic `code`s (e.g. `HF001`…) for golden tests.
 4. Implement `JSONWorkerContribution` for value completions (matcher kinds, HTTP methods, status codes) and

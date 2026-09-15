@@ -204,7 +204,7 @@ Notes / decisions:
 - **Block builtins → `keyword`, inline builtins/Hoverfly helpers → `function`.** `if/each/with/
 unless/equal/first` are control-flow blocks and read best as keywords; `now/faker/…/log/lookup`
   are calls and read as functions. The block-vs-inline split comes from `HelperSpec.block` in
-  `registry/helpers.ts`.
+  `registry/templating.ts`.
 - **`@data` vars and `this` → `parameter`** (not `variable`) to visually separate the
   loop-injected/context vars from real path roots. `parameter` is universally themed.
 - **faker-type vs ordinary string** is the one context-sensitive call: only the first string arg of
@@ -256,12 +256,12 @@ so the server can pass a cached model or nothing.
 
 ## 5. Files
 
-- `packages/core/src/semantic-tokens/legend.ts` — `SEMANTIC_TOKEN_TYPES`, `SEMANTIC_TOKEN_MODIFIERS`,
+- `packages/analysis/src/semantic-tokens/legend.ts` — `SEMANTIC_TOKEN_TYPES`, `SEMANTIC_TOKEN_MODIFIERS`,
   `SemanticTokenType` const map (name → index).
-- `packages/core/src/semantic-tokens/producer.ts` — `getSemanticTokens`, `SemanticToken`.
-- `packages/core/src/semantic-tokens/index.ts` — barrel.
-- Re-exported from `packages/core/src/index.ts`.
-- Tests: `packages/core/test/semantic-tokens/{legend,producer}.test.ts`.
+- `packages/analysis/src/semantic-tokens/producer.ts` — `getSemanticTokens`, `SemanticToken`.
+- `packages/analysis/src/semantic-tokens/index.ts` — barrel.
+- Re-exported from `packages/analysis/src/index.ts`.
+- Tests: `packages/analysis/test/semantic-tokens/{legend,producer}.test.ts`.
 
 ---
 

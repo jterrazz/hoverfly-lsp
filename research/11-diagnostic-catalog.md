@@ -64,7 +64,7 @@ Severity legend: E=Error, W=Warning, I=Information, H=Hint.
 | HF501 | W   | `{{ ... }}` syntax in `body` while `templated` absent/false                                         | first mustache      | `Body contains template syntax but "templated" is not true — it will be sent literally` |
 | HF502 | E   | Template parse error (unclosed `{{`, unclosed block, mismatched `{{/x}}`)                           | the offending token | `{parser message}`                                                                      |
 | HF503 | E   | Unknown helper name (not in 52+8 catalog)                                                           | helper name         | `Unknown template helper "{name}"`                                                      |
-| HF504 | E   | Helper arity mismatch (per `registry/helpers.ts`)                                                   | the call            | `"{name}" expects {sig}, got {n} arguments`                                             |
+| HF504 | E   | Helper arity mismatch (per `registry/templating.ts`)                                                | the call            | `"{name}" expects {sig}, got {n} arguments`                                             |
 | HF505 | E   | `Vars.X` unresolved against `data.variables[].name`                                                 | the path            | `Variable "{x}" is not defined in data.variables`                                       |
 | HF506 | E   | `Literals.X` unresolved against `data.literals[].name`                                              | the path            | `Literal "{x}" is not defined in data.literals`                                         |
 | HF507 | I   | Unknown `faker '<Type>'` (not in pinned 210-name list)                                              | the arg             | `Unknown faker type "{t}" for gofakeit {version}`                                       |
@@ -158,11 +158,11 @@ standard value, Hint-only — both fields are OPEN sets Hoverfly compares verbat
 
 > `{didYouMean}` is a pre-formatted suffix the HF603 rule supplies (e.g. ` (did you mean
 "status"?)`) or the empty string. The allowed-key matrix, user-keyed-map skip list, and the
-> did-you-mean Levenshtein threshold live in `packages/core/src/registry/structure.ts`.
+> did-you-mean Levenshtein threshold live in `packages/analysis/src/registry/structure.ts`.
 
 This extension brings the catalog to **56 codes** (37 original + 17 structural-strictness + 2
 method/scheme well-known-value codes HF215/HF216). The exhaustive severity table in
-`packages/core/test/semantic/catalog.test.ts` pins all 56.
+`packages/analysis/test/semantic/catalog.test.ts` pins all 56.
 
 ### Method/scheme well-known-value did-you-mean (2026-06-11)
 
@@ -172,7 +172,7 @@ HF215/HF216 add VALUE intelligence (completion + Hint did-you-mean) for `request
 returns HTTP 200 with the values stored verbatim). The zero-false-positive policy is LAW: the Hint
 fires ONLY on a near-miss (Levenshtein ≤ 2) of a standard value (a typo) and never on a plausible
 custom value (`PURGE`, `PROPFIND`, `ftp`). The standard sets (IANA HTTP Method Registry; common URI
-schemes) live in `packages/core/src/registry/http.ts`; the Levenshtein machinery is shared with
-HF603 via `packages/core/src/semantic/levenshtein.ts`. Completion offers the standard values but
+schemes) live in `packages/analysis/src/registry/http.ts`; the Levenshtein machinery is shared with
+HF603 via `packages/analysis/src/semantic/levenshtein.ts`. Completion offers the standard values but
 never restricts the field to them. Gate (both completion and Hint): the `method`/`scheme` field
 directly under `request`, with an `exact` (or absent/default-exact) matcher only.

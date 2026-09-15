@@ -21,7 +21,7 @@ docs **and** the Hoverfly Go source). Binding decisions: `research/10-architect-
 ```
 hoverfly-lsp/
 ├── packages/
-│   ├── core/                  # pure analysis library — ZERO LSP transport deps
+│   ├── analysis/              # pure analysis library — ZERO LSP transport deps
 │   │   └── src/
 │   │       ├── schema/        # bundled enhanced JSON Schema + schema service wiring
 │   │       ├── registry/      # matcher table, templating helper catalog, faker types (generated from Hoverfly source)
@@ -43,7 +43,7 @@ hoverfly-lsp/
 
 Foundation: `vscode-json-languageservice` (the engine VS Code's own JSON mode uses) provides
 error-recovering parsing and schema-driven baseline; Hoverfly intelligence layers on top via
-its documented extension points. Dependency direction: `editors → server → core`.
+its documented extension points. Dependency direction: `editors → server → analysis`.
 
 ## Feature matrix (v1)
 
@@ -109,7 +109,7 @@ Cloud-only extensions.
 
 ## Testing pyramid (decided)
 
-- **Bulk at core**: golden diagnostics (`testdata/invalid/**/*.hoverfly.json` + sibling
+- **Bulk at analysis**: golden diagnostics (`testdata/invalid/**/*.hoverfly.json` + sibling
   `.diagnostics.golden`), fixture validity (`testdata/valid/**` must produce zero diagnostics),
   cursor-marker completion/hover tests (tsgo-fourslash style).
 - **Thin at server**: full stdio JSON-RPC round-trips (initialize → didOpen → diagnostics → completion).

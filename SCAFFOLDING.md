@@ -15,8 +15,8 @@ decisions in `research/03-lsp-architecture.md` and `research/10-architect-decisi
   (decision D1 / report 03), so `composite`, `declaration`, `declarationMap`,
   `sourceMap` and `noEmit: false` live there, plus `allowJs: false`, which
   `isolatedDeclarations` requires of the published member.
-- The root `tsconfig.json` stays a solution file (references `packages/core`,
-  `packages/server`, `editors/vscode`; `server` references `core`), and
+- The root `tsconfig.json` stays a solution file (references `packages/analysis`,
+  `packages/server`, `editors/vscode`; `server` references `analysis`), and
   `packages/server` — the one published package — extends
   `@jterrazz/typescript/tsconfig/library` ahead of the base.
 - Until v10 of the toolchain this was a hand-written `NodeNext` config extending
@@ -49,10 +49,10 @@ decisions in `research/03-lsp-architecture.md` and `research/10-architect-decisi
   `node_modules/.bin`.
 - `oxlint.config.ts` extends the `node` profile and ignores `testdata/**` — the corpus
   is deliberately malformed, and `dist/**` is the profile's own business.
-- Added a root **`knip.json`** declaring per-workspace entry points (core `src/index.ts`;
+- Added a root **`knip.json`** declaring per-workspace entry points (analysis `src/index.ts`;
   server `src/cli.ts` + `packages/server/bin/hoverfly-lsp.js`; root `oxfmt.config.ts` + `oxlint.config.ts` +
   `vitest.config.ts`) and a few `ignoreDependencies`:
-    - `vscode-json-languageservice` in `packages/core`: a real dependency declared now per
+    - `vscode-json-languageservice` in `packages/analysis`: a real dependency declared now per
       D1/report 03, but **not yet imported** (Phase 2 wires it). Without the ignore, knip
       would flag it as unused.
     - `tsc` as an unlisted binary at root: `tsc --build` drives the build, and the
@@ -71,13 +71,13 @@ decisions in `research/03-lsp-architecture.md` and `research/10-architect-decisi
   `make build && make lint && make test` — the same three targets every house repo exposes.
 - The one step the reusable does not carry is the docs-freshness check, so it is a
   `Makefile` target (`docs`) that `make lint` depends on: it regenerates
-  `docs/reference/` from the built core and refuses a drifted tree.
+  `docs/reference/` from the built analysis package and refuses a drifted tree.
 - The build type-checks every member, so no separate typecheck stage runs in CI; the
   `typecheck` target stays for local use.
 
 ### 5. Workspace dependency protocol: `*`, not `workspace:*`
 
-- `packages/server` depends on `@hoverfly-lsp/core` via **`"*"`** (npm-resolved workspace
+- `packages/server` depends on `@hoverfly-lsp/analysis` via **`"*"`** (npm-resolved workspace
   symlink), since npm workspaces do **not** support pnpm/yarn's `workspace:*` protocol.
 
 ### 6. Release pipeline: house flow (`release: created` + OIDC), monorepo-aware
@@ -88,26 +88,26 @@ decisions in `research/03-lsp-architecture.md` and `research/10-architect-decisi
   root-level `npm publish --access public --provenance` with **no `NODE_AUTH_TOKEN`**: auth
   is tokenless **npm OIDC trusted publishing**.
 - The reusable can't be used as-is: we publish **one** package (`@jterrazz/hoverfly-lsp`;
-  `@hoverfly-lsp/core` is **private** (never published) and inlined into the server bundle by
+  `@hoverfly-lsp/analysis` is **private** (never published) and inlined into the server bundle by
   esbuild, so the server has no runtime dep on it) and attach a VS Code `.vsix`. A root
   `npm publish` would try to publish the private monorepo root and ignore the workspaces.
 - So **`.github/workflows/release.yml`** matches the house **conventions** but is monorepo-aware:
   same **`release: created`** trigger, same **OIDC trusted publishing** (`--provenance` +
   `id-token: write`, **no `NPM_TOKEN`**), node 24. It:
     1. runs the same house gate as `validate.yaml`, on node 24,
-    2. verifies `github.event.release.tag_name` equals the version in every manifest (core,
+    2. verifies `github.event.release.tag_name` equals the version in every manifest (analysis,
        server, vscode, zed `extension.toml`, claude-code `plugin.json`) before publishing,
     3. `npm publish`es `@jterrazz/hoverfly-lsp` with `--access public --provenance` (tokenless OIDC),
     4. packages the `.vsix` and uploads it onto the just-created release (`gh release upload`).
 - **One-time**: configure npm trusted publishing (repo `jterrazz/hoverfly-lsp`, workflow
   `release.yml`) for `@jterrazz/hoverfly-lsp`, exactly as for the other `@jterrazz` packages. No
-  `NPM_TOKEN` secret is needed. `@hoverfly-lsp/core` is private, so nothing to configure for it.
+  `NPM_TOKEN` secret is needed. `@hoverfly-lsp/analysis` is private, so nothing to configure for it.
 - **Manual (no tokens in CI)**, documented in docs/04-operating.md: VS Code Marketplace
   (`vsce publish`), Open VSX (`ovsx publish`), Zed registry PR, Claude Code marketplace
   refresh, SchemaStore submission.
 - **Versioning**: all manifests pinned to **`0.1.0`**. The single published package uses the
   user's own scope, **`@jterrazz/hoverfly-lsp`** (the bin/command stays `hoverfly-lsp`);
-  `@hoverfly-lsp/core` keeps its name but is `private` and never published. The vsce
+  `@hoverfly-lsp/analysis` keeps its name but is `private` and never published. The vsce
   constraint that an extension version cannot be `0.0.0` is satisfied. The server bin's
   `bin` value was de-`./`-prefixed so `npm publish` no longer auto-corrects/strips the bin
   mapping (`npm publish --dry-run` is clean for the published package). The `editors/vscode`

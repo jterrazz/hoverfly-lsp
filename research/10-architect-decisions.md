@@ -12,7 +12,7 @@ docs-derived reports (`01`, `05`)** — the Hoverfly docs are wrong in several p
   parser, schema-driven diagnostics/completion/hover). Hoverfly-specific intelligence is
   layered on via `JSONWorkerContribution` + AST-walking semantic validators (the
   yaml-language-server / azure-pipelines / amazon-states-language-service pattern).
-- `packages/core` = pure analysis, **zero LSP transport deps** (only
+- `packages/analysis` = pure analysis, **zero LSP transport deps** (only
   vscode-json-languageservice, vscode-languageserver-types, vscode-languageserver-textdocument).
 - `packages/server` = thin LSP wrapper, `vscode-languageserver@^10`, bin `hoverfly-lsp`
   (stdio default). Support **both push and pull diagnostics** (pull matters for headless agents).
