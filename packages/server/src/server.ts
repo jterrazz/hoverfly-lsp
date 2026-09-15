@@ -3,7 +3,7 @@ import {
     getSemanticTokens,
     type HoverflyLanguageService,
     type HoverflyServiceSettings,
-} from '@hoverfly-lsp/core';
+} from '@hoverfly-lsp/analysis';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import {
     type ClientCapabilities,
@@ -64,7 +64,7 @@ function pickSettings(raw: unknown): HoverflyServiceSettings {
  * To avoid doing the work twice, push is SKIPPED whenever the client advertised pull support
  * (it will call `textDocument/diagnostic` itself). Clients without pull still get push.
  *
- * The fingerprint/HF101 gate (decision D3) lives entirely in `core.doValidation`, so the
+ * The fingerprint/HF101 gate (decision D3) lives entirely in the analysis library's `doValidation`, so the
  * server does NOT pre-gate with `isSimulation` — a non-simulation file simply validates to
  * `[]` (or HF101 for a hoverfly-named file), with no double fingerprinting.
  */
@@ -268,9 +268,9 @@ function createServer(connection: Connection): void {
     // ----- Semantic tokens ---------------------------------------------------------------------
 
     /*
-     * Full-document semantic tokens. Core's `getSemanticTokens` returns absolute, single-line,
+     * Full-document semantic tokens. The analysis library's `getSemanticTokens` returns absolute, single-line,
      * (line, startChar)-sorted tokens whose `tokenType` is already an INDEX into the frozen legend
-     * (core owns the name→index mapping via `SEMANTIC_TOKEN_TYPE_INDEX`; the emitted tokens carry
+     * (the analysis library owns the name→index mapping via `SEMANTIC_TOKEN_TYPE_INDEX`; the emitted tokens carry
      * the integer). `SemanticTokensBuilder.push` delta-encodes them into the 5-int wire array
      * (deltaLine, deltaStartChar, length, tokenType, tokenModifiers).
      *

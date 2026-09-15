@@ -9,7 +9,7 @@
  * Plain file compare (not toMatchFileSnapshot) is used so diffs read as plain JSON and
  * regeneration is a single explicit step.
  *
- *   Regenerate goldens:  UPDATE_GOLDENS=1 npx vitest --run packages/core/test/semantic/golden.test.ts
+ *   Regenerate goldens:  UPDATE_GOLDENS=1 npx vitest --run packages/analysis/test/semantic/golden.test.ts
  *
  * Review the regenerated `.diagnostics.golden` files before committing — they are the frozen
  * contract for the HFxxx catalog.

@@ -3,7 +3,7 @@
  *
  * Embeds hoverfly.schema.json as a TypeScript module so the language service can resolve it
  * with zero runtime fs/network access (tsc + NodeNext does not copy .json into dist/, so we
- * inline it here). Regenerate with: node packages/core/scripts/generate-schema.mjs
+ * inline it here). Regenerate with: node packages/analysis/scripts/generate-schema.mjs
  *
  * @see ./hoverfly.schema.json — the editable source of truth.
  * @see ./provenance.ts — the upstream Hoverfly commit this mirrors.

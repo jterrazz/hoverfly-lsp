@@ -11,7 +11,7 @@ Each `SemanticRule` is `{ codes, run(ctx) }` — `run` returns `Diagnostic[]` an
 3. Range = the smallest node the user must change; pass the model's `*Node` directly.
 4. Register: import your array in `rules/index.ts` and spread it into `ALL_RULES`.
 5. Coverage (house rule): add a fixture `testdata/invalid/hfNxx/*.hoverfly.json` + run
-   `UPDATE_GOLDENS=1 npx vitest --run packages/core/test/semantic/golden.test.ts` to emit the
+   `UPDATE_GOLDENS=1 npx vitest --run packages/analysis/test/semantic/golden.test.ts` to emit the
    sibling `.diagnostics.golden`, AND a focused unit test under `test/semantic/`.
 
 The engine runs all rules, re-tags schema diagnostics as HF102, suppresses schema noise that

@@ -1,5 +1,5 @@
 {
-    "name": "@hoverfly-lsp/core",
+    "name": "@hoverfly-lsp/analysis",
     "version": "0.1.0",
     "private": true,
     "description": "Pure analysis library for Hoverfly simulation files (zero LSP transport deps)",

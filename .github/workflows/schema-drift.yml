@@ -30,9 +30,9 @@ jobs:
               id: pin
               run: |
                   set -euo pipefail
-                  commit="$(grep -oE 'HOVERFLY_COMMIT = "[0-9a-f]{40}"' packages/core/src/schema/provenance.ts | grep -oE '[0-9a-f]{40}')"
+                  commit="$(grep -oE 'HOVERFLY_COMMIT = "[0-9a-f]{40}"' packages/analysis/src/schema/provenance.ts | grep -oE '[0-9a-f]{40}')"
                   if [ -z "$commit" ]; then
-                    echo "::error::Could not parse HOVERFLY_COMMIT from packages/core/src/schema/provenance.ts"
+                    echo "::error::Could not parse HOVERFLY_COMMIT from packages/analysis/src/schema/provenance.ts"
                     exit 1
                   fi
                   echo "commit=$commit" >> "$GITHUB_OUTPUT"
@@ -90,7 +90,7 @@ jobs:
                   {
                     echo "Automated upstream-drift watcher (read-only) detected that Hoverfly \`master\` has moved away from the pinned baseline."
                     echo
-                    echo "- Pinned \`HOVERFLY_COMMIT\`: \`${{ steps.pin.outputs.commit }}\` (\`packages/core/src/schema/provenance.ts\`)"
+                    echo "- Pinned \`HOVERFLY_COMMIT\`: \`${{ steps.pin.outputs.commit }}\` (\`packages/analysis/src/schema/provenance.ts\`)"
                     echo "- Detected at: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
                     echo "- Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
                     echo

@@ -4,7 +4,7 @@
  * into HF5xx {@link TemplateFinding}s. The parser sublayer has ZERO knowledge of diagnostic
  * codes; the analyzer is the only file that knows the HF5xx kinds (its findings still map to
  * document positions and catalog wording inside the HF5xx semantic rule). Internal to
- * `packages/core`; wiring into the service is owned downstream.
+ * `packages/analysis`; wiring into the service is owned downstream.
  */
 
 export { analyze, type AnalyzerContext } from './analyzer.js';

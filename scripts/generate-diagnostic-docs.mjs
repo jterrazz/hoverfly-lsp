@@ -1,6 +1,6 @@
 /**
  * Generates docs/reference/diagnostics.md and docs/reference/template-reference.md from the
- * BUILT core package (`@hoverfly-lsp/core` -> packages/core/dist). The catalog, helper, faker
+ * BUILT analysis package (`@hoverfly-lsp/analysis` -> packages/analysis/dist). The catalog, helper, faker
  * and matcher data are the single source of truth; never hand-edit the generated files.
  * `docs/reference/` is the projection half of the manual: the authored chapters are the
  * numbered ones beside it, and nothing under reference/ is written by hand.
@@ -12,7 +12,7 @@
  * drift out of sync with the catalog.
  *
  * Usage:
- *   npm run docs:diagnostics            # regenerate both docs from the built core
+ *   npm run docs:diagnostics            # regenerate both docs from the built analysis package
  *
  * CI asserts the generated files are committed and up to date (see .github/workflows/validate.yml):
  *   npm run build && npm run docs:diagnostics && git diff --quiet docs/
@@ -27,7 +27,7 @@ import {
     NOW_FORMAT_NOTES,
     NOW_OFFSET_UNITS,
     RAYMOND_BUILTINS,
-} from '@hoverfly-lsp/core';
+} from '@hoverfly-lsp/analysis';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
@@ -347,7 +347,7 @@ function renderDiagnosticsDoc() {
             'pair could silently never match; **Warning** = legal but almost certainly a mistake; ' +
             '**Information** = style/upgrade hints; **Hint** = optional niceties.',
         '',
-        '> Generated from `packages/core/src/semantic/catalog.ts` (code, severity, message) plus the ' +
+        '> Generated from `packages/analysis/src/semantic/catalog.ts` (code, severity, message) plus the ' +
             'trigger/range prose from `research/11-diagnostic-catalog.md`. Regenerate with ' +
             '`npm run docs:diagnostics`.',
         '',
@@ -436,7 +436,7 @@ function renderTemplateReferenceDoc() {
             '`faker` types, and `now` offsets (see the HF5xx codes in ' +
             '[diagnostics.md](./diagnostics.md)).',
         '',
-        '> Generated from `packages/core/src/registry/helpers.ts` and `registry/faker.ts`. ' +
+        '> Generated from `packages/analysis/src/registry/helpers.ts` and `registry/faker.ts`. ' +
             'Regenerate with `npm run docs:diagnostics`.',
         '',
         `There are **${HOVERFLY_HELPERS.length} Hoverfly helpers** plus **${RAYMOND_BUILTINS.length} raymond ` +
@@ -483,7 +483,7 @@ function renderTemplateReferenceDoc() {
             'below are valid, and they are **case-sensitive**. Parameterized methods (`Number`, ' +
             '`Sentence`, `Password`, `Regex`, …) panic at render time when called with no arguments; ' +
             'the LSP flags those (HF508). The authoritative list lives in ' +
-            '[`packages/core/src/registry/faker.ts`](../packages/core/src/registry/faker.ts).',
+            '[`packages/analysis/src/registry/faker.ts`](../packages/analysis/src/registry/faker.ts).',
         '',
         `<details><summary>All ${FAKER_NAMES.length} faker type names</summary>`,
         '',

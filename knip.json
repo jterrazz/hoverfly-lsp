@@ -8,7 +8,7 @@
             "entry": ["oxfmt.config.ts", "oxlint.config.ts", "vitest.config.ts"],
             "ignore": ["editors/claude-code/bin/launch.cjs"]
         },
-        "packages/core": {
+        "packages/analysis": {
             "entry": ["src/index.ts", "src/semantic/index.ts", "src/semantic/rules/index.ts"],
             "project": ["src/**/*.ts"],
             "ignoreDependencies": ["vscode-languageserver-types"]

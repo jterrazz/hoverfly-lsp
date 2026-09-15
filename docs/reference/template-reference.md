@@ -4,7 +4,7 @@
 
 Hoverfly response bodies marked `"templated": true` are rendered through [SpectoLabs/raymond](https://github.com/SpectoLabs/raymond) (a Handlebars fork). The LSP validates template syntax, helper names, helper arity, `Vars`/`Literals` resolution, `faker` types, and `now` offsets (see the HF5xx codes in [diagnostics.md](./diagnostics.md)).
 
-> Generated from `packages/core/src/registry/helpers.ts` and `registry/faker.ts`. Regenerate with `npm run docs:diagnostics`.
+> Generated from `packages/analysis/src/registry/helpers.ts` and `registry/faker.ts`. Regenerate with `npm run docs:diagnostics`.
 
 There are **52 Hoverfly helpers** plus **8 raymond built-ins** (60 total).
 
@@ -91,7 +91,7 @@ The 8 Handlebars built-ins usable in any templated body. `first` and `equal` are
 
 ## `faker` types
 
-Hoverfly's `{{faker 'X'}}` dispatches by reflection over `*gofakeit.Faker` (pinned to gofakeit **v6.28.0**). Only the **210 zero-argument** method names below are valid, and they are **case-sensitive**. Parameterized methods (`Number`, `Sentence`, `Password`, `Regex`, …) panic at render time when called with no arguments; the LSP flags those (HF508). The authoritative list lives in [`packages/core/src/registry/faker.ts`](../packages/core/src/registry/faker.ts).
+Hoverfly's `{{faker 'X'}}` dispatches by reflection over `*gofakeit.Faker` (pinned to gofakeit **v6.28.0**). Only the **210 zero-argument** method names below are valid, and they are **case-sensitive**. Parameterized methods (`Number`, `Sentence`, `Password`, `Regex`, …) panic at render time when called with no arguments; the LSP flags those (HF508). The authoritative list lives in [`packages/analysis/src/registry/faker.ts`](../packages/analysis/src/registry/faker.ts).
 
 <details><summary>All 210 faker type names</summary>
 

@@ -10,7 +10,7 @@ import { HOVERFLY_COMMIT } from '../../src/schema/provenance.js';
  * `schemas/hoverfly-simulation.json` is the schema we submit to SchemaStore and tell
  * schema-only consumers (VS Code json.schemas, IntelliJ mapping, `$schema` self-declaration)
  * to use. It is NOT a separate, hand-maintained document: it is the bundled LSP schema
- * (`packages/core/src/schema/hoverfly.schema.json`) with exactly two DOCUMENTED deltas:
+ * (`packages/analysis/src/schema/hoverfly.schema.json`) with exactly two DOCUMENTED deltas:
  *
  *   1. `$id`  -> the future SchemaStore URL (the LSP bundle uses the hoverfly-lsp.dev URL).
  *   2. `definitions.field-matchers.properties.matcher.examples` -> the 14 matcher names

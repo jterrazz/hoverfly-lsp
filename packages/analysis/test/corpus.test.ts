@@ -6,7 +6,7 @@ import { describe, expect, test } from 'vitest';
 
 import { isHoverflySimulation } from '../src/fingerprint.js';
 
-// Repo root is four levels up from this file: packages/core/test/ -> repo root.
+// Repo root is four levels up from this file: packages/analysis/test/ -> repo root.
 const repoRoot = fileURLToPath(new URL('../../../', import.meta.url));
 
 const validFiles = await glob('testdata/valid/**/*.hoverfly.json', { cwd: repoRoot });

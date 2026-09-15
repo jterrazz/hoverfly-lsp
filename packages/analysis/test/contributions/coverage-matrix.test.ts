@@ -20,7 +20,7 @@ import { expectCompletions } from '../fourslash/harness.js';
  * The server advertises `"`, `{`, `.`, `#`, `@`, `'`, `(` as triggers (capabilities.ts), which is
  * exactly the set that reaches these positions, so trigger-vs-manual is behaviourally identical.
  *
- * The truth table this encodes is documented in packages/core/src/contributions/README.md.
+ * The truth table this encodes is documented in packages/analysis/src/contributions/README.md.
  */
 
 const NAMED_MATCHERS = REGISTRY_MATCHER_NAMES.filter((name) => name !== '');

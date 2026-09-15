@@ -1,4 +1,4 @@
-import { SEMANTIC_TOKEN_MODIFIERS, SEMANTIC_TOKEN_TYPES } from '@hoverfly-lsp/core';
+import { SEMANTIC_TOKEN_MODIFIERS, SEMANTIC_TOKEN_TYPES } from '@hoverfly-lsp/analysis';
 import {
     type ClientCapabilities,
     type SemanticTokensLegend,
@@ -16,7 +16,7 @@ const COMPLETION_TRIGGER_CHARACTERS = ['"', '{', '.', '#', '@', "'", '('] as con
 
 /**
  * The semantic-tokens legend advertised during `initialize`, sourced VERBATIM and in order from
- * core's frozen {@link SEMANTIC_TOKEN_TYPES} / {@link SEMANTIC_TOKEN_MODIFIERS}. The wire protocol
+ * the analysis library's frozen {@link SEMANTIC_TOKEN_TYPES} / {@link SEMANTIC_TOKEN_MODIFIERS}. The wire protocol
  * carries integer INDICES into these arrays, so the server must advertise the exact arrays the
  * producer emits indices against — never a hand-retyped copy. Modifiers are empty in v1.
  */

@@ -6,7 +6,7 @@ Every diagnostic the Hoverfly LSP emits carries a stable `HFxxx` code, `source: 
 
 Severity policy (architect decision D4): **Error** = Hoverfly would reject the import or the pair could silently never match; **Warning** = legal but almost certainly a mistake; **Information** = style/upgrade hints; **Hint** = optional niceties.
 
-> Generated from `packages/core/src/semantic/catalog.ts` (code, severity, message) plus the trigger/range prose from `research/11-diagnostic-catalog.md`. Regenerate with `npm run docs:diagnostics`.
+> Generated from `packages/analysis/src/semantic/catalog.ts` (code, severity, message) plus the trigger/range prose from `research/11-diagnostic-catalog.md`. Regenerate with `npm run docs:diagnostics`.
 
 There are **56 codes** across 6 families.
 

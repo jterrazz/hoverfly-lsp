@@ -7,7 +7,7 @@ name: Release
 # this workflow), exactly as for @jterrazz/logger et al.
 #
 # This is a monorepo, so it can't use the single-package `jterrazz-actions/release-npm.yaml`
-# reusable directly: it publishes ONE npm package (@jterrazz/hoverfly-lsp) — core is private and
+# reusable directly: it publishes ONE npm package (@jterrazz/hoverfly-lsp) — the analysis package is private and
 # bundled into the server by esbuild — and uploads the bundled VS Code `.vsix` to the release.
 # Cut a release with:
 #
@@ -30,7 +30,7 @@ jobs:
         with:
             node-version: '24'
 
-    # Publish the one npm package (@jterrazz/hoverfly-lsp; core is private and bundled in), then
+    # Publish the one npm package (@jterrazz/hoverfly-lsp; the analysis package is private and bundled in), then
     # attach the bundled VS Code extension to the release. Auth is tokenless via OIDC trusted
     # publishing.
     publish:
@@ -57,7 +57,7 @@ jobs:
             - name: Build
               run: npm run build
 
-            # Guard: the release tag must match the npm package versions (core + server) — those are what
+            # Guard: the release tag must match the npm package versions (analysis + server) — those are what
             # this workflow publishes to npm. Editor artifacts (VS Code / Zed / Claude Code) live on their
             # own registries with IMMUTABLE versions, so they version INDEPENDENTLY (e.g. a Marketplace-only
             # icon fix bumps the extension without an npm release). They are not checked here.
@@ -78,11 +78,11 @@ jobs:
                       echo "ok: $file @ $actual"
                     fi
                   }
-                  check packages/core/package.json
+                  check packages/analysis/package.json
                   check packages/server/package.json
                   exit $fail
 
-            # The only published package. core stays private (devDependency) and is inlined into the
+            # The only published package. The analysis package stays private (devDependency) and is inlined into the
             # server bundle by esbuild, so the tarball has no runtime dependency on it. --access public
             # is required for the scoped package; --provenance + id-token authenticates via npm trusted
             # publishing (no token). Idempotent: if this exact version is already on npm (e.g. the first

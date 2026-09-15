@@ -12,7 +12,7 @@ build: node_modules/.install
 typecheck: node_modules/.install
 	npm run typecheck
 
-# The pages under docs/reference/ are a projection of the BUILT core, so the gate
+# The pages under docs/reference/ are a projection of the BUILT analysis package, so the gate
 # regenerates them and refuses a tree where the committed copy has drifted. The
 # shared CI runs no such step: it is this repository's own, and `lint` owns it.
 docs: build

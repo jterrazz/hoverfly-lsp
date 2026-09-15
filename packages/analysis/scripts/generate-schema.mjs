@@ -1,8 +1,8 @@
 /*
- * Regenerates packages/core/src/schema/hoverfly.schema.generated.ts from the editable
+ * Regenerates packages/analysis/src/schema/hoverfly.schema.generated.ts from the editable
  * hoverfly.schema.json. Inlining as a .ts module gives the language service zero-runtime-fs
  * access to the schema (tsc + NodeNext does not copy .json into dist/).
- * Run from the repo root or this package: node packages/core/scripts/generate-schema.mjs
+ * Run from the repo root or this package: node packages/analysis/scripts/generate-schema.mjs
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -29,7 +29,7 @@ const contents = `/**
  *
  * Embeds hoverfly.schema.json as a TypeScript module so the language service can resolve it
  * with zero runtime fs/network access (tsc + NodeNext does not copy .json into dist/, so we
- * inline it here). Regenerate with: node packages/core/scripts/generate-schema.mjs
+ * inline it here). Regenerate with: node packages/analysis/scripts/generate-schema.mjs
  *
  * @see ./hoverfly.schema.json — the editable source of truth.
  * @see ./provenance.ts — the upstream Hoverfly commit this mirrors.

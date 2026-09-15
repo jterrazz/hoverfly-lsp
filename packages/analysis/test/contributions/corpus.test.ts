@@ -22,7 +22,7 @@
  * ──────────────────────────────────────────────────────────────────────────────────────────────
  * INSPECT / REGEN HELPER
  *
- *   CORPUS_DUMP=<substr> npx vitest --run packages/core/test/contributions/corpus.test.ts
+ *   CORPUS_DUMP=<substr> npx vitest --run packages/analysis/test/contributions/corpus.test.ts
  *
  * prints (straight to stdout, so no `--disableConsoleIntercept` is needed), for every fixture whose
  * relative path contains <substr> (use `1` / `all` to match all), the ACTUAL completion labels
