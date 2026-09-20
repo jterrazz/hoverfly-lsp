@@ -14,13 +14,8 @@
  * fall back to schema/JSON hover). Never throws. All facts come from the registry / member data.
  */
 
-import {
-    type Hover,
-    type JSONDocument,
-    type Position,
-    type Range,
-} from 'vscode-json-languageservice';
-import { type TextDocument } from 'vscode-languageserver-textdocument';
+import type { Hover, JSONDocument, Position, Range } from 'vscode-json-languageservice';
+import type { TextDocument } from 'vscode-languageserver-textdocument';
 import { MarkupKind } from 'vscode-languageserver-types';
 
 import {
@@ -28,17 +23,18 @@ import {
     FAKER_NAMES,
     FAKER_PARAMETERIZED_PANICS,
     GOFAKEIT_VERSION,
-    type HelperSpec,
 } from '../registry/index.js';
-import {
-    type Expression,
-    type MustacheNode,
-    parse,
-    type PathExpression,
-    type Statement,
-    type SubExpression,
+import type { HelperSpec } from '../registry/index.js';
+import { parse } from '../template/index.js';
+import type {
+    Expression,
+    MustacheNode,
+    PathExpression,
+    Statement,
+    SubExpression,
 } from '../template/index.js';
-import { findTemplateLocation, type TemplateLocation } from './template-location.js';
+import { findTemplateLocation } from './template-location.js';
+import type { TemplateLocation } from './template-location.js';
 import { REQUEST_MEMBERS } from './template-members.js';
 
 const HELPER_BY_NAME: ReadonlyMap<string, HelperSpec> = new Map(

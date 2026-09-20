@@ -28,11 +28,11 @@
  *            family report as a catalog-vs-reality deviation for the integrator to weigh.
  */
 
-import { type ASTNode, type ObjectASTNode } from 'vscode-json-languageservice';
-import { type Diagnostic } from 'vscode-languageserver-types';
+import type { ASTNode, ObjectASTNode } from 'vscode-json-languageservice';
+import type { Diagnostic } from 'vscode-languageserver-types';
 
 import { makeDiagnostic } from '../diagnostics.js';
-import { type ResponseModel, type RuleContext, type SemanticRule } from '../types.js';
+import type { ResponseModel, RuleContext, SemanticRule } from '../types.js';
 
 /** Lowest / highest HTTP status codes Hoverfly treats as in-range (inclusive). */
 const MIN_HTTP_STATUS = 100;

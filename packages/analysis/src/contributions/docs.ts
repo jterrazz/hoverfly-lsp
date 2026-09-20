@@ -14,7 +14,7 @@
  * form's body-only + case-sensitivity (ON form), and negate's vacuous-true footgun (ON negate).
  */
 
-import { type MatcherSpec, type MatcherValueType } from '../registry/index.js';
+import type { MatcherSpec, MatcherValueType } from '../registry/index.js';
 
 /** Human label for a matcher's accepted JSON value types (registry data, formatted). */
 function valueTypeLine(spec: MatcherSpec): string {

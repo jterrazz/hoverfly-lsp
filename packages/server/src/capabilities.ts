@@ -1,9 +1,9 @@
 import { SEMANTIC_TOKEN_MODIFIERS, SEMANTIC_TOKEN_TYPES } from '@hoverfly-lsp/analysis';
-import {
-    type ClientCapabilities,
-    type SemanticTokensLegend,
-    type ServerCapabilities,
-    TextDocumentSyncKind,
+import { TextDocumentSyncKind } from 'vscode-languageserver/node';
+import type {
+    ClientCapabilities,
+    SemanticTokensLegend,
+    ServerCapabilities,
 } from 'vscode-languageserver/node';
 
 /**

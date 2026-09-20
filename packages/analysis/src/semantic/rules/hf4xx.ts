@@ -16,15 +16,15 @@
  * user mistake we should flag.
  */
 
-import { type Diagnostic } from 'vscode-languageserver-types';
+import type { Diagnostic } from 'vscode-languageserver-types';
 
 import { makeDiagnostic } from '../diagnostics.js';
-import {
-    type RemovesStateEntry,
-    type RuleContext,
-    type SemanticRule,
-    type SimulationModel,
-    type StateEntry,
+import type {
+    RemovesStateEntry,
+    RuleContext,
+    SemanticRule,
+    SimulationModel,
+    StateEntry,
 } from '../types.js';
 
 /** Prefix marking Hoverfly's built-in sequencing keys, which are auto-managed. */

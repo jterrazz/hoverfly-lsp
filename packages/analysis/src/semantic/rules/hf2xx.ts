@@ -24,22 +24,13 @@
  * nested objects. It is the only AST re-walk here and is kept minimal.
  */
 
-import { type ASTNode, type ObjectASTNode } from 'vscode-json-languageservice';
-import { type Diagnostic } from 'vscode-languageserver-types';
+import type { ASTNode, ObjectASTNode } from 'vscode-json-languageservice';
+import type { Diagnostic } from 'vscode-languageserver-types';
 
-import {
-    MATCHER_SPECS,
-    type MatcherSpec,
-    type MatcherValueType,
-    TRANSFORMING_MATCHER_NAMES,
-} from '../../registry/index.js';
+import { MATCHER_SPECS, TRANSFORMING_MATCHER_NAMES } from '../../registry/index.js';
+import type { MatcherSpec, MatcherValueType } from '../../registry/index.js';
 import { makeDiagnostic } from '../diagnostics.js';
-import {
-    type FieldContainer,
-    type MatcherModel,
-    type RuleContext,
-    type SemanticRule,
-} from '../types.js';
+import type { FieldContainer, MatcherModel, RuleContext, SemanticRule } from '../types.js';
 
 /* ------------------------------------ registry lookup ------------------------------------ */
 

@@ -18,7 +18,7 @@
  * treating the final `"matcher"` segment as optional.
  */
 
-import { type JSONPath, type Segment } from 'vscode-json-languageservice';
+import type { JSONPath, Segment } from 'vscode-json-languageservice';
 
 /** Top-level request fields whose value is a matcher array (the only places matchers live). */
 const DIRECT_MATCHER_FIELDS: ReadonlySet<string> = new Set([

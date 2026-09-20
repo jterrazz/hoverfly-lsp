@@ -1,25 +1,23 @@
-import {
-    createHoverflyLanguageService,
-    getSemanticTokens,
-    type HoverflyLanguageService,
-    type HoverflyServiceSettings,
-} from '@hoverfly-lsp/analysis';
+import { createHoverflyLanguageService, getSemanticTokens } from '@hoverfly-lsp/analysis';
+import type { HoverflyLanguageService, HoverflyServiceSettings } from '@hoverfly-lsp/analysis';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import {
-    type ClientCapabilities,
-    type Connection,
     createConnection,
-    type DiagnosticServerCancellationData,
     DidChangeConfigurationNotification,
     ErrorCodes,
-    type InitializeError,
-    type InitializeParams,
-    type InitializeResult,
     ProposedFeatures,
     ResponseError,
-    type SemanticTokens,
     SemanticTokensBuilder,
     TextDocuments,
+} from 'vscode-languageserver/node';
+import type {
+    ClientCapabilities,
+    Connection,
+    DiagnosticServerCancellationData,
+    InitializeError,
+    InitializeParams,
+    InitializeResult,
+    SemanticTokens,
 } from 'vscode-languageserver/node';
 
 import {

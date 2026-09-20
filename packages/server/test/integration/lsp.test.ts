@@ -1,13 +1,12 @@
-import { type ChildProcessWithoutNullStreams, spawn } from 'node:child_process';
+import { spawn } from 'node:child_process';
+import type { ChildProcessWithoutNullStreams } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 import {
-    type CompletionList,
     CompletionRequest,
     createProtocolConnection,
-    type Diagnostic,
     DidChangeTextDocumentNotification,
     DidOpenTextDocumentNotification,
     DocumentDiagnosticRequest,
@@ -15,15 +14,19 @@ import {
     HoverRequest,
     InitializedNotification,
     InitializeRequest,
-    type InitializeResult,
-    type ProtocolConnection,
     PublishDiagnosticsNotification,
-    type PublishDiagnosticsParams,
     ResponseError,
-    type SemanticTokens,
     SemanticTokensRequest,
     StreamMessageReader,
     StreamMessageWriter,
+} from 'vscode-languageserver-protocol/node';
+import type {
+    CompletionList,
+    Diagnostic,
+    InitializeResult,
+    ProtocolConnection,
+    PublishDiagnosticsParams,
+    SemanticTokens,
 } from 'vscode-languageserver-protocol/node';
 
 /** The frozen legend the server must advertise verbatim, in order (research/16 §3.1). */

@@ -12,17 +12,17 @@
  *      {@link VALUE_SHAPE_SUPPRESSORS}).
  */
 
-import { type JSONDocument } from 'vscode-json-languageservice';
-import { type TextDocument } from 'vscode-languageserver-textdocument';
-import { type Diagnostic, type Range } from 'vscode-languageserver-types';
+import type { JSONDocument } from 'vscode-json-languageservice';
+import type { TextDocument } from 'vscode-languageserver-textdocument';
+import type { Diagnostic, Range } from 'vscode-languageserver-types';
 
 import { DIAGNOSTIC_CATALOG, DIAGNOSTIC_SOURCE } from './catalog.js';
 import { buildSimulationModel } from './model.js';
-import {
-    type HoverflyServiceSettings,
-    type RuleContext,
-    type SemanticRule,
-    type SimulationModel,
+import type {
+    HoverflyServiceSettings,
+    RuleContext,
+    SemanticRule,
+    SimulationModel,
 } from './types.js';
 
 const HF102_HREF = DIAGNOSTIC_CATALOG.HF102.href;

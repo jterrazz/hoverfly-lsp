@@ -7,28 +7,28 @@
  * the raw AST shape; rules consume the typed model.
  */
 
-import {
-    type ASTNode,
-    type JSONDocument,
-    type ObjectASTNode,
-    type PropertyASTNode,
+import type {
+    ASTNode,
+    JSONDocument,
+    ObjectASTNode,
+    PropertyASTNode,
 } from 'vscode-json-languageservice';
 
-import {
-    type DelayModel,
-    type FieldContainer,
-    type GlobalActionsModel,
-    type HeaderEntry,
-    type MatcherModel,
-    type MetaModel,
-    type PairModel,
-    type RemovesStateEntry,
-    type RequestField,
-    type RequestModel,
-    type ResponseField,
-    type ResponseModel,
-    type SimulationModel,
-    type StateEntry,
+import type {
+    DelayModel,
+    FieldContainer,
+    GlobalActionsModel,
+    HeaderEntry,
+    MatcherModel,
+    MetaModel,
+    PairModel,
+    RemovesStateEntry,
+    RequestField,
+    RequestModel,
+    ResponseField,
+    ResponseModel,
+    SimulationModel,
+    StateEntry,
 } from './types.js';
 
 /* ----------------------------------- AST helpers ----------------------------------------- */

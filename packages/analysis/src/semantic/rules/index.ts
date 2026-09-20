@@ -6,7 +6,7 @@
  * — final diagnostics are re-sorted by range, so this order is only a tie-break aid.
  */
 
-import { type SemanticRule } from '../types.js';
+import type { SemanticRule } from '../types.js';
 import { HF1XX_RULES } from './hf1xx.js';
 import { HF2XX_VALUE_RULES } from './hf2xx-values.js';
 import { HF2XX_RULES } from './hf2xx.js';
