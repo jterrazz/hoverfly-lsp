@@ -38,19 +38,20 @@ import {
     FAKER_NAMES,
     FAKER_PARAMETERIZED_PANICS,
     GOFAKEIT_VERSION,
-    type HelperSpec,
     NOW_OFFSET_UNITS,
 } from '../registry/index.js';
-import {
-    type BlockNode,
-    type Expression,
-    type MustacheNode,
-    type PathExpression,
-    type Statement,
-    type StringLiteral,
-    type SubExpression,
+import type { HelperSpec } from '../registry/index.js';
+import type {
+    BlockNode,
+    Expression,
+    MustacheNode,
+    PathExpression,
+    Statement,
+    StringLiteral,
+    SubExpression,
 } from './ast.js';
-import { parse, type TemplateParseError } from './parser.js';
+import { parse } from './parser.js';
+import type { TemplateParseError } from './parser.js';
 
 /** The HF5xx codes the analyzer emits (HF501/HF510 are emitted by the rule, not here). */
 type TemplateFindingKind =

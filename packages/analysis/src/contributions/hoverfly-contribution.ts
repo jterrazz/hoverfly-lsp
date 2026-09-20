@@ -19,29 +19,26 @@
  * Every matcher fact comes from the registry; nothing about a matcher is hardcoded here.
  */
 
-import {
-    type CompletionsCollector,
-    getLanguageService,
-    type JSONPath,
-    type JSONWorkerContribution,
-    type MarkedString,
+import { getLanguageService } from 'vscode-json-languageservice';
+import type {
+    CompletionsCollector,
+    JSONPath,
+    JSONWorkerContribution,
+    MarkedString,
 } from 'vscode-json-languageservice';
-import { type TextDocument } from 'vscode-languageserver-textdocument';
+import type { TextDocument } from 'vscode-languageserver-textdocument';
 /*
  * Runtime enum VALUES come from vscode-languageserver-types (ESM-friendly named exports). They
  * cannot be imported from vscode-json-languageservice under Node ESM: its CJS lexer fails to
  * detect the enum names re-exported from that package's CJS entry.
  */
-import {
-    type CompletionItem,
-    CompletionItemKind,
-    InsertTextFormat,
-    MarkupKind,
-} from 'vscode-languageserver-types';
+import { CompletionItemKind, InsertTextFormat, MarkupKind } from 'vscode-languageserver-types';
+import type { CompletionItem } from 'vscode-languageserver-types';
 
-import { HTTP_METHODS, MATCHER_SPECS, type MatcherSpec, URI_SCHEMES } from '../registry/index.js';
+import { HTTP_METHODS, MATCHER_SPECS, URI_SCHEMES } from '../registry/index.js';
+import type { MatcherSpec } from '../registry/index.js';
 import { buildSimulationModel } from '../semantic/model.js';
-import { type HoverflyServiceSettings, type SimulationModel } from '../semantic/types.js';
+import type { HoverflyServiceSettings, SimulationModel } from '../semantic/types.js';
 import { matcherDetail, matcherMarkdown } from './docs.js';
 import {
     isPostServeActionPosition,

@@ -20,12 +20,12 @@
  *            the setting is non-empty").
  */
 
-import { type ASTNode } from 'vscode-json-languageservice';
-import { type Diagnostic } from 'vscode-languageserver-types';
+import type { ASTNode } from 'vscode-json-languageservice';
+import type { Diagnostic } from 'vscode-languageserver-types';
 
 import { makeDiagnostic } from '../diagnostics.js';
 import { isValidRe2 } from '../re2.js';
-import { type RuleContext, type SemanticRule } from '../types.js';
+import type { RuleContext, SemanticRule } from '../types.js';
 
 /** First string property value for `key` on an object node, with its node. */
 function stringPropValue(node: ASTNode | undefined, key: string): ASTNode | undefined {

@@ -14,25 +14,15 @@
  * Every helper/faker fact comes from the registry; no helper/faker name is hardcoded here.
  */
 
-import {
-    type ASTNode,
-    type JSONDocument,
-    type ObjectASTNode,
-    type Position,
-} from 'vscode-json-languageservice';
-import { type TextDocument } from 'vscode-languageserver-textdocument';
-import {
-    type CompletionItem,
-    CompletionItemKind,
-    InsertTextFormat,
-    MarkupKind,
-} from 'vscode-languageserver-types';
+import type { ASTNode, JSONDocument, ObjectASTNode, Position } from 'vscode-json-languageservice';
+import type { TextDocument } from 'vscode-languageserver-textdocument';
+import { CompletionItemKind, InsertTextFormat, MarkupKind } from 'vscode-languageserver-types';
+import type { CompletionItem } from 'vscode-languageserver-types';
 
-import { ALL_HELPERS, FAKER_NAMES, type HelperSpec, NOW_FORMAT_NOTES } from '../registry/index.js';
-import {
-    classifyCompletionContext,
-    type TemplateCompletionContext,
-} from '../template/completion-context.js';
+import { ALL_HELPERS, FAKER_NAMES, NOW_FORMAT_NOTES } from '../registry/index.js';
+import type { HelperSpec } from '../registry/index.js';
+import { classifyCompletionContext } from '../template/completion-context.js';
+import type { TemplateCompletionContext } from '../template/completion-context.js';
 import { findTemplateLocation } from './template-location.js';
 import { EACH_DATA_VARIABLES, PATH_ROOTS, REQUEST_MEMBERS } from './template-members.js';
 

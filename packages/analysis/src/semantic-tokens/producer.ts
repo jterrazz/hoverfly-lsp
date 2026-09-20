@@ -18,26 +18,25 @@
  * yield partial tokens (the parser is error-tolerant) and unexpected shapes are skipped.
  */
 
-import { type ASTNode, type JSONDocument } from 'vscode-json-languageservice';
-import { type TextDocument } from 'vscode-languageserver-textdocument';
+import type { ASTNode, JSONDocument } from 'vscode-json-languageservice';
+import type { TextDocument } from 'vscode-languageserver-textdocument';
 
 import { hasHoverflyFilename, isHoverflySimulationAst } from '../fingerprint.js';
 import { ALL_HELPERS, FAKER_NAMES, MATCHER_SPECS } from '../registry/index.js';
 import { buildSimulationModel } from '../semantic/model.js';
-import { type MatcherModel, type SimulationModel } from '../semantic/types.js';
-import {
-    type BlockNode,
-    createStringSourceMap,
-    type Expression,
-    hasTemplateSyntax,
-    type MustacheNode,
-    parse,
-    type PathExpression,
-    type Statement,
-    type StringSourceMap,
-    type SubExpression,
+import type { MatcherModel, SimulationModel } from '../semantic/types.js';
+import { createStringSourceMap, hasTemplateSyntax, parse } from '../template/index.js';
+import type {
+    BlockNode,
+    Expression,
+    MustacheNode,
+    PathExpression,
+    Statement,
+    StringSourceMap,
+    SubExpression,
 } from '../template/index.js';
-import { SEMANTIC_TOKEN_TYPE_INDEX, type SemanticTokenTypeName } from './legend.js';
+import { SEMANTIC_TOKEN_TYPE_INDEX } from './legend.js';
+import type { SemanticTokenTypeName } from './legend.js';
 
 /**
  * One absolute semantic token (research/16 §4). Single line; `tokenType` is an index into

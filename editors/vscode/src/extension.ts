@@ -15,13 +15,10 @@
  */
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { type ExtensionContext, workspace } from 'vscode';
-import {
-    LanguageClient,
-    type LanguageClientOptions,
-    type ServerOptions,
-    TransportKind,
-} from 'vscode-languageclient/node';
+import { workspace } from 'vscode';
+import type { ExtensionContext } from 'vscode';
+import { LanguageClient, TransportKind } from 'vscode-languageclient/node';
+import type { LanguageClientOptions, ServerOptions } from 'vscode-languageclient/node';
 
 import { resolveServer } from './server-resolution.js';
 

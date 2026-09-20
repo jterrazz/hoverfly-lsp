@@ -20,19 +20,19 @@
  * Pure, zero-dependency, zero knowledge of diagnostic codes.
  */
 
-import {
-    type BlockNode,
-    type BooleanLiteral,
-    type ContentNode,
-    type Expression,
-    type MustacheNode,
-    type NumberLiteral,
-    type PathExpression,
-    type Program,
-    type Span,
-    type Statement,
-    type StringLiteral,
-    type SubExpression,
+import type {
+    BlockNode,
+    BooleanLiteral,
+    ContentNode,
+    Expression,
+    MustacheNode,
+    NumberLiteral,
+    PathExpression,
+    Program,
+    Span,
+    Statement,
+    StringLiteral,
+    SubExpression,
 } from './ast.js';
 
 /** A recoverable parse error with an offset range into the decoded source. */

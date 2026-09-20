@@ -36,17 +36,12 @@
  */
 
 import { XMLValidator } from 'fast-xml-parser';
-import { type ASTNode, type ObjectASTNode } from 'vscode-json-languageservice';
-import { type Diagnostic } from 'vscode-languageserver-types';
+import type { ASTNode, ObjectASTNode } from 'vscode-json-languageservice';
+import type { Diagnostic } from 'vscode-languageserver-types';
 
 import { makeDiagnostic } from '../diagnostics.js';
 import { isValidRe2 } from '../re2.js';
-import {
-    type FieldContainer,
-    type MatcherModel,
-    type RuleContext,
-    type SemanticRule,
-} from '../types.js';
+import type { FieldContainer, MatcherModel, RuleContext, SemanticRule } from '../types.js';
 
 /* ------------------------------- matcher-tree walking ------------------------------------ */
 

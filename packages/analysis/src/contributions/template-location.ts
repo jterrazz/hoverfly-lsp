@@ -18,19 +18,16 @@
  * Reuses the parser-owned {@link createStringSourceMap}; adds no template grammar of its own.
  */
 
-import {
-    type ASTNode,
-    type JSONDocument,
-    type ObjectASTNode,
-    type StringASTNode,
+import type {
+    ASTNode,
+    JSONDocument,
+    ObjectASTNode,
+    StringASTNode,
 } from 'vscode-json-languageservice';
-import { type TextDocument } from 'vscode-languageserver-textdocument';
+import type { TextDocument } from 'vscode-languageserver-textdocument';
 
-import {
-    createStringSourceMap,
-    hasTemplateSyntax,
-    type StringSourceMap,
-} from '../template/index.js';
+import { createStringSourceMap, hasTemplateSyntax } from '../template/index.js';
+import type { StringSourceMap } from '../template/index.js';
 
 /** A located templatable string + the cursor mapped into its decoded content. */
 type TemplateLocation = {

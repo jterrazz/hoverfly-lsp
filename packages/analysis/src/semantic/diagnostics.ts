@@ -5,17 +5,12 @@
  * Range), mapped through the document's offset→position conversion.
  */
 
-import { type ASTNode } from 'vscode-json-languageservice';
-import { type TextDocument } from 'vscode-languageserver-textdocument';
-import { type Diagnostic, type Range } from 'vscode-languageserver-types';
+import type { ASTNode } from 'vscode-json-languageservice';
+import type { TextDocument } from 'vscode-languageserver-textdocument';
+import type { Diagnostic, Range } from 'vscode-languageserver-types';
 
-import {
-    type CatalogEntry,
-    DIAGNOSTIC_CATALOG,
-    DIAGNOSTIC_SOURCE,
-    type DiagnosticCode,
-    formatMessage,
-} from './catalog.js';
+import { DIAGNOSTIC_CATALOG, DIAGNOSTIC_SOURCE, formatMessage } from './catalog.js';
+import type { CatalogEntry, DiagnosticCode } from './catalog.js';
 
 function isAstNode(target: ASTNode | Range): target is ASTNode {
     return (

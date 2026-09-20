@@ -40,17 +40,14 @@
  * the {@link STRUCTURE_ALLOWED_KEYS} matrix and stays minimal and defensive (never throws).
  */
 
-import { type ASTNode, type ObjectASTNode } from 'vscode-json-languageservice';
-import { type Diagnostic } from 'vscode-languageserver-types';
+import type { ASTNode, ObjectASTNode } from 'vscode-json-languageservice';
+import type { Diagnostic } from 'vscode-languageserver-types';
 
-import {
-    DID_YOU_MEAN_MAX_DISTANCE,
-    STRUCTURE_ALLOWED_KEYS,
-    type StructureObjectKind,
-} from '../../registry/index.js';
+import { DID_YOU_MEAN_MAX_DISTANCE, STRUCTURE_ALLOWED_KEYS } from '../../registry/index.js';
+import type { StructureObjectKind } from '../../registry/index.js';
 import { makeDiagnostic } from '../diagnostics.js';
 import { levenshtein } from '../levenshtein.js';
-import { type RuleContext, type SemanticRule } from '../types.js';
+import type { RuleContext, SemanticRule } from '../types.js';
 
 /* ----------------------------------- allowed-key lookup ---------------------------------- */
 

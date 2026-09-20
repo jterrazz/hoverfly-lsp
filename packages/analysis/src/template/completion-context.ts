@@ -20,7 +20,7 @@
  * describing the position; `template-completion.ts` turns that into concrete completion items.
  */
 
-import { type BlockNode, type Statement } from './ast.js';
+import type { BlockNode, Statement } from './ast.js';
 import { parse } from './parser.js';
 
 /** Where, structurally, the cursor sits inside a template. */

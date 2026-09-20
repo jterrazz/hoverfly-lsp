@@ -43,11 +43,8 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 import { CompletionItemKind } from 'vscode-languageserver-types';
 
 import { createHoverflyLanguageService } from '../../src/service.js';
-import {
-    type CompletionMarkerExpectation,
-    loadCorpusExpectation,
-    stripMarkersToOffsets,
-} from '../fourslash/harness.js';
+import { loadCorpusExpectation, stripMarkersToOffsets } from '../fourslash/harness.js';
+import type { CompletionMarkerExpectation } from '../fourslash/harness.js';
 
 const repoRoot = fileURLToPath(new URL('../../../../', import.meta.url));
 

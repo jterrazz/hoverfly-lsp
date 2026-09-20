@@ -35,18 +35,14 @@
  * because it needs model/document context the template AST does not carry.
  */
 
-import { type ASTNode, type ObjectASTNode } from 'vscode-json-languageservice';
-import { type Diagnostic, type Range } from 'vscode-languageserver-types';
+import type { ASTNode, ObjectASTNode } from 'vscode-json-languageservice';
+import type { Diagnostic, Range } from 'vscode-languageserver-types';
 
-import {
-    analyze,
-    type AnalyzerContext,
-    createStringSourceMap,
-    hasTemplateSyntax,
-} from '../../template/index.js';
-import { type DiagnosticCode } from '../catalog.js';
+import { analyze, createStringSourceMap, hasTemplateSyntax } from '../../template/index.js';
+import type { AnalyzerContext } from '../../template/index.js';
+import type { DiagnosticCode } from '../catalog.js';
 import { makeDiagnostic } from '../diagnostics.js';
-import { type RuleContext, type SemanticRule, type SimulationModel } from '../types.js';
+import type { RuleContext, SemanticRule, SimulationModel } from '../types.js';
 
 /* --------------------------------- string source mapping --------------------------------- */
 

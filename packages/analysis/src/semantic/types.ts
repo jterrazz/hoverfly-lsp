@@ -12,11 +12,11 @@
  * (see `model.ts`), so any field may be `undefined`. Rules must treat `undefined` as "absent".
  */
 
-import { type ASTNode, type JSONDocument, type ObjectASTNode } from 'vscode-json-languageservice';
-import { type TextDocument } from 'vscode-languageserver-textdocument';
-import { type Diagnostic } from 'vscode-languageserver-types';
+import type { ASTNode, JSONDocument, ObjectASTNode } from 'vscode-json-languageservice';
+import type { TextDocument } from 'vscode-languageserver-textdocument';
+import type { Diagnostic } from 'vscode-languageserver-types';
 
-import { type DiagnosticCode } from './catalog.js';
+import type { DiagnosticCode } from './catalog.js';
 
 /**
  * A semantic rule (or rule family). One file under `rules/` typically exports one rule whose

@@ -1,12 +1,12 @@
-import {
-    type CompletionList,
-    type Diagnostic,
-    getLanguageService,
-    type Hover,
-    type JSONDocument,
-    type JSONWorkerContribution,
-    type LanguageService,
-    type Position,
+import { getLanguageService } from 'vscode-json-languageservice';
+import type {
+    CompletionList,
+    Diagnostic,
+    Hover,
+    JSONDocument,
+    JSONWorkerContribution,
+    LanguageService,
+    Position,
 } from 'vscode-json-languageservice';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
@@ -24,10 +24,10 @@ import {
     applyHF102Layer,
     createRuleContext,
     hf101NotASimulation,
-    type HoverflyServiceSettings,
     runRules,
     sortByRange,
 } from './semantic/index.js';
+import type { HoverflyServiceSettings } from './semantic/index.js';
 
 /** The `$id` of the bundled schema; also the URI it is registered under. */
 const SCHEMA_URI =
