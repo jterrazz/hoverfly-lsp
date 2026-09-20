@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, test } from 'vitest';
+import type { JSONSchema } from 'vscode-json-languageservice';
 
 import { hoverflySchema } from '../../../src/schema/hoverfly.schema.generated.js';
 import {
@@ -13,6 +14,15 @@ import { integration } from '../integration.specification.js';
 const schemaJsonPath = fileURLToPath(
     new URL('../../../src/schema/hoverfly.schema.json', import.meta.url),
 );
+
+/**
+ * A JSON Schema property map holds a schema OR a bare boolean (`JSONSchemaRef`, which the
+ * package's root entry does not export), so a reading narrows before it reads. A
+ * boolean-shaped entry answers `undefined` — what "the schema declares nothing here" means.
+ */
+function asSchema(ref: boolean | JSONSchema | undefined): JSONSchema | undefined {
+    return typeof ref === 'object' ? ref : undefined;
+}
 
 /** The editable schema source, read from disk — the oracle the embedded copy answers to. */
 function schemaFromDisk(): unknown {
@@ -64,11 +74,13 @@ describe('bundled hoverfly schema', () => {
     test('keeps matcher as a free string and carries NO matcher-name examples (D5)', async () => {
         // Given - the field-matcher definition
         const result = await integration.call(() => {
-            const matcher = hoverflySchema.definitions?.['field-matchers']?.properties?.matcher;
+            const matcher = asSchema(
+                hoverflySchema.definitions?.['field-matchers']?.properties?.matcher,
+            );
             return {
                 hasEnum: matcher?.enum !== undefined,
                 hasExamples: matcher?.examples !== undefined,
-                type: String(matcher?.type ?? ''),
+                type: matcher?.type,
             };
         });
 
@@ -88,7 +100,7 @@ describe('bundled hoverfly schema', () => {
     test('adds the request.method property (valid per D5, absent from the official schema)', async () => {
         // Given - the request definition
         const result = await integration.call(() => ({
-            type: String(hoverflySchema.definitions?.request?.properties?.method?.type ?? ''),
+            type: asSchema(hoverflySchema.definitions?.request?.properties?.method)?.type,
         }));
         // Then - method is a field-matcher array
         expect(result.value.value.type).toBe('array');
@@ -97,7 +109,7 @@ describe('bundled hoverfly schema', () => {
     test('types field-matchers as object (official schema does), so an array-shaped doMatch is HF102', async () => {
         // Given - the field-matchers definition (doMatch self-$refs it)
         const result = await integration.call(() => ({
-            type: String(hoverflySchema.definitions?.['field-matchers']?.type ?? ''),
+            type: hoverflySchema.definitions?.['field-matchers']?.type,
         }));
         /*
          * Then - it carries `type: "object"`, mirroring Hoverfly's embedded schema (research/02).
