@@ -5,7 +5,7 @@ diagnostics golden corpus (`testdata/{valid,invalid}` + `.diagnostics.golden`). 
 Hoverfly simulation carrying one or more cursor markers; a sibling `.expect.json` sidecar pins what
 the rendered hover markdown must (and must not) contain at each marker.
 
-Runner: [`packages/analysis/test/contributions/corpus.test.ts`](../../packages/analysis/test/contributions/corpus.test.ts)
+Runner: [`packages/analysis/specs/integration/contributions/corpus.spec.ts`](../../packages/analysis/specs/integration/contributions/corpus.spec.ts)
 (shared with the completion corpus). The completion corpus under
 [`testdata/completion`](../completion/README.md) has the same layout — read it for the full marker
 and validity-invariant explanation; this file documents only the hover-specific sidecar shape.
@@ -71,7 +71,7 @@ start of the token: `"matcher": "⟦⟧jwt"` strips to `"matcher": "jwt"` with t
 ```
 
 TypeScript types: `CorpusExpectation` / `HoverMarkerExpectation` in
-[`test/fourslash/harness.ts`](../../packages/analysis/test/fourslash/harness.ts).
+[`packages/analysis/specs/integration/fourslash/harness.ts`](../../packages/analysis/specs/integration/fourslash/harness.ts).
 
 - **`includes` / `excludes`** are substring assertions against the rendered markdown, sourced from
   the real service (docs come from the registry — never hardcode a string the renderer does not
@@ -85,9 +85,9 @@ TypeScript types: `CorpusExpectation` / `HoverMarkerExpectation` in
 
 1. Write `<context>/<case>.hoverfly.json` with the cursor marker(s) on what you want hover for.
 2. Dump the ground truth:
-   `CORPUS_DUMP=<case> npx vitest --run packages/analysis/test/contributions/corpus.test.ts`
+   `CORPUS_DUMP=<case> npx vitest --run packages/analysis/specs/integration/contributions/corpus.spec.ts`
    (prints the rendered hover markdown at each marker; no `--disableConsoleIntercept` needed).
 3. Write `<case>.expect.json` — pick stable `includes` substrings, and add `excludes` to lock in
    absence (the no-panic-noise policy, or any string that must not leak).
-4. Run `npx vitest --run packages/analysis/test/contributions/corpus.test.ts` — green when the
+4. Run `npx vitest --run packages/analysis/specs/integration/contributions/corpus.spec.ts` — green when the
    stripped fixture validates (unless under `broken/`) and every marker matches its sidecar.

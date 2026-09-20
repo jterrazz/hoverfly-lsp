@@ -12,24 +12,32 @@ npm test        # each workspace member's own `test` script, plus the extension'
 ```
 
 Each member collects its own tests through its own `vitest.config.ts`
-(`@jterrazz/test`'s `defineSpecConfig()`): `packages/analysis` and
-`packages/server` trim the preset's 30-second default to 20 for their
-process- and corpus-spawning suites, `editors/vscode` keeps the default.
+(`@jterrazz/test`'s `defineSpecConfig()`), and a member with both kinds names
+two projects — `unit()` for the `*.test.ts` beside `src/`, `integration()` for
+`specs/integration/**/*.spec.ts`. `packages/analysis` and `packages/server`
+trim the preset's 30-second default to 20 for their process- and
+corpus-spawning suites; `editors/vscode` has only `unit()` and keeps the
+default.
 
 A module test sits beside the module it covers (`<file>.test.ts` next to
 `<file>.ts`, under `src/`) — this is what most of `packages/analysis/src/`
-and all of `packages/server/src/` carry. What does not answer to one module
-alone stays under a package's `test/`:
+carries. What stands on something OUTSIDE its module — the reference corpus, a
+golden on disk, the built binary — is an integration spec: it lives under a
+member's `specs/integration/<domain>/` as `<aspect>.spec.ts`, reaches the
+runner `integration.specification.ts` at that facet root constructs, and runs
+its subject through that runner's `.call()`. The suffix is the fork:
+`.test.ts` is the unit's word, `.spec.ts` the assembled product's
+(`@jterrazz/test`'s conventions).
 
-| Suite                                            | Proves                                                                                                                                             |
-| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/analysis/test/semantic/golden.test.ts` | The full `doValidation` pipeline against every `testdata/{valid,invalid}` fixture and its golden                                                   |
-| `packages/analysis/test/contributions/`          | Hover and completion through the fourslash harness, including the per-context coverage matrix and the on-disk `testdata/{completion,hover}` corpus |
-| `packages/analysis/test/schema/`                 | The bundled schema and the standalone SchemaStore artifact stay in step                                                                            |
-| `packages/analysis/test/corpus.test.ts`          | Corpus-wide structural invariants — naming, pairing, coverage floors                                                                               |
-| `packages/analysis/test/fourslash/`              | The cursor-marker harness itself                                                                                                                   |
-| `packages/server/test/integration/`              | A real `initialize` handshake against the built bin over stdio                                                                                     |
-| `editors/vscode/test/`                           | How the extension resolves the server binary                                                                                                       |
+| Suite                                                            | Proves                                                                                                                                             |
+| ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/analysis/specs/integration/semantic/golden.spec.ts`    | The full `doValidation` pipeline against every `testdata/{valid,invalid}` fixture and its golden                                                   |
+| `packages/analysis/specs/integration/contributions/`             | Hover and completion through the fourslash harness, including the per-context coverage matrix and the on-disk `testdata/{completion,hover}` corpus |
+| `packages/analysis/specs/integration/schema/`                    | The bundled schema and the standalone SchemaStore artifact stay in step                                                                            |
+| `packages/analysis/specs/integration/corpus/fingerprint.spec.ts` | Corpus-wide structural invariants — naming, pairing, coverage floors                                                                               |
+| `packages/analysis/specs/integration/fourslash/`                 | The cursor-marker harness itself                                                                                                                   |
+| `packages/server/specs/integration/lsp/`                         | A real `initialize` handshake against the built bin over stdio                                                                                     |
+| `editors/vscode/test/`                                           | How the extension resolves the server binary                                                                                                       |
 
 ## The reference corpus
 
@@ -50,7 +58,7 @@ check.
 ### Regenerating a golden
 
 ```bash
-env UPDATE_GOLDENS=1 npx vitest --run packages/analysis/test/semantic/golden.test.ts
+env UPDATE_GOLDENS=1 npx vitest --run packages/analysis/specs/integration/semantic/golden.spec.ts
 ```
 
 Review every regenerated golden by hand. It must carry only the codes its
@@ -61,7 +69,7 @@ second problem (fix the fixture), and a missing code means a validator gap
 ### Cursor-marker tests
 
 Completion and hover are tested through a fourslash-style harness
-(`packages/analysis/test/fourslash/harness.ts`). A cursor is written into a fixture
+(`packages/analysis/specs/integration/fourslash/harness.ts`). A cursor is written into a fixture
 as `⟦⟧`, or `⟦name⟧` for several positions in one document — an ordinary
 character inside a JSON string, so the document stays valid JSON once the marker
 is stripped, and one that never appears in real Hoverfly content.

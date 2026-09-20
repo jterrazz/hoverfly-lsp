@@ -3,10 +3,10 @@
 This tree is **the** behavioural contract for the Hoverfly LSP's semantic pipeline
 (`packages/analysis/src/semantic/`). It is exercised by two tests:
 
-- `packages/analysis/test/semantic/golden.test.ts` — every `invalid/` fixture must produce
+- `packages/analysis/specs/integration/semantic/golden.spec.ts` — every `invalid/` fixture must produce
   exactly the diagnostics frozen in its sibling `.diagnostics.golden`; every `valid/`
   fixture must produce **zero** diagnostics end-to-end (parse → schema → template → HFxxx).
-- `packages/analysis/test/corpus.test.ts` — corpus-wide structural invariants.
+- `packages/analysis/specs/integration/corpus/fingerprint.spec.ts` — corpus-wide structural invariants.
 
 ## Layout & conventions
 
@@ -35,7 +35,7 @@ v1.12.8 rejects `"doMatch": [ … ]` with HTTP 400. The entire corpus now uses t
 ## Regenerating goldens
 
 ```bash
-env UPDATE_GOLDENS=1 npx vitest --run packages/analysis/test/semantic/golden.test.ts
+env UPDATE_GOLDENS=1 npx vitest --run packages/analysis/specs/integration/semantic/golden.spec.ts
 ```
 
 Always **review** each regenerated golden: it must contain only the codes the fixture is

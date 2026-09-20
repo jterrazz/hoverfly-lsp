@@ -92,6 +92,6 @@ The bug: the union previously scanned `requiresState` entries only. A key set by
 when the user started typing it into another pair's `requiresState`, so they got **no completion**.
 Including `transitionsState` and `removesState` keys in the union fixes it.
 
-Tests: [`../../test/contributions/coverage-matrix.test.ts`](../../test/contributions/coverage-matrix.test.ts)
+Tests: [`../../specs/integration/contributions/coverage-matrix.spec.ts`](../../specs/integration/contributions/coverage-matrix.spec.ts)
 (per-context matrix), plus a real-server round-trip in
-`packages/server/test/integration/lsp.test.ts`.
+`packages/server/specs/integration/lsp/lsp.spec.ts`.
