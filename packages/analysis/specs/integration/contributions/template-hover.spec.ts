@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
-import { expectHover, getHoverText } from '../fourslash/harness.js';
+import { expectHoverIncludes, hoverAt } from '../fourslash/harness.js';
+import { integration } from '../integration.specification.js';
 
 /**
  * Hover on tokens INSIDE templated strings: helper names, faker type names, and `Request.*`
@@ -18,22 +19,23 @@ describe('template hover — helpers', () => {
         // Given - the cursor on the `replace` helper name
         const doc = templatedBody("{{replac⟦⟧e (Request.Body 'jsonpath' '$.x') 'a' 'b'}}");
         // Then - the hover sources signature + docs + example from the registry
-        await expectHover(doc, '', {
-            includes: ['replace', 'inline helper', 'Arity:', 'Example:'],
-        });
+        const hovered = await integration.call(async () => await hoverAt(doc, ''));
+        expectHoverIncludes(hovered.value.text, ['replace', 'inline helper', 'Arity:', 'Example:']);
     });
 
     test('marks raymond built-ins and block-vs-inline', async () => {
         // Given - the cursor on the `each` block built-in
         const doc = templatedBody('{{#eac⟦⟧h items}}{{this}}{{/each}}');
         // Then - block + builtin are surfaced
-        await expectHover(doc, '', { includes: ['each', 'block helper', 'raymond built-in'] });
+        const hovered = await integration.call(async () => await hoverAt(doc, ''));
+        expectHoverIncludes(hovered.value.text, ['each', 'block helper', 'raymond built-in']);
     });
 
     test('shows zero-arg helpers (no asCall needed) on a bare mustache', async () => {
         // Given - a bare zero-arg helper used inline
         const doc = templatedBody('{{randomUui⟦⟧d}}');
-        await expectHover(doc, '', { includes: ['randomUuid', 'inline helper'] });
+        const hovered = await integration.call(async () => await hoverAt(doc, ''));
+        expectHoverIncludes(hovered.value.text, ['randomUuid', 'inline helper']);
     });
 });
 
@@ -42,14 +44,16 @@ describe('template hover — faker', () => {
         // Given - the cursor inside the faker type string
         const doc = templatedBody("{{faker 'Em⟦⟧ail'}}");
         // Then - the hover names gofakeit + the pinned version
-        await expectHover(doc, '', { includes: ['faker', 'gofakeit', '6.28.0'] });
+        const hovered = await integration.call(async () => await hoverAt(doc, ''));
+        expectHoverIncludes(hovered.value.text, ['faker', 'gofakeit', '6.28.0']);
     });
 
     test('warns when a parameterized faker method is used zero-arg (panics)', async () => {
         // Given - `Number` is a parameterized gofakeit method that panics with no args
         const doc = templatedBody("{{faker 'Num⟦⟧ber'}}");
         // Then - the hover flags the panic risk
-        await expectHover(doc, '', { includes: ['Number', 'panic'] });
+        const hovered = await integration.call(async () => await hoverAt(doc, ''));
+        expectHoverIncludes(hovered.value.text, ['Number', 'panic']);
     });
 });
 
@@ -58,15 +62,15 @@ describe('template hover — Request members', () => {
         // Given - the cursor on the Request.Body method-call form
         const doc = templatedBody("{{Request.Bod⟦⟧y 'jsonpath' '$.id'}}");
         // Then - the hover surfaces the method-call form and the dialect note (report 08 §6)
-        await expectHover(doc, '', {
-            includes: ['Request.Body', 'method call', 'kubectl', 'xsel'],
-        });
+        const hovered = await integration.call(async () => await hoverAt(doc, ''));
+        expectHoverIncludes(hovered.value.text, ['Request.Body', 'method call', 'kubectl', 'xsel']);
     });
 
     test('documents a Request scalar field', async () => {
         // Given - the cursor on Request.Method
         const doc = templatedBody('{{Request.Meth⟦⟧od}}');
-        await expectHover(doc, '', { includes: ['Request.Method', 'field'] });
+        const hovered = await integration.call(async () => await hoverAt(doc, ''));
+        expectHoverIncludes(hovered.value.text, ['Request.Method', 'field']);
     });
 });
 
@@ -76,7 +80,8 @@ describe('template hover — negatives', () => {
         const doc = templatedBody('{{somethingUnknow⟦⟧n}}');
         // Then - no template-specific hover fires (schema hover may still describe the `body` field,
         // But none of the template markers — helper/faker/Request docs — appear)
-        const text = await getHoverText(doc, '');
+        const hovered = await integration.call(async () => await hoverAt(doc, ''));
+        const { text } = hovered.value;
         expect(text).not.toContain('inline helper');
         expect(text).not.toContain('gofakeit');
         expect(text).not.toContain('Request.');
@@ -85,7 +90,8 @@ describe('template hover — negatives', () => {
     test('does not render template hover in a plain non-templated body', async () => {
         // Given - a non-templated body with no `{{` (schema hover still describes the field)
         const doc = `{"data":{"pairs":[{"request":{"path":[]},"response":{"status":200,"body":"plain te⟦⟧xt"}}]},"meta":{"schemaVersion":"v5.3"}}`;
-        const text = await getHoverText(doc, '');
+        const hovered = await integration.call(async () => await hoverAt(doc, ''));
+        const { text } = hovered.value;
         expect(text).not.toContain('inline helper');
         expect(text).not.toContain('gofakeit');
     });

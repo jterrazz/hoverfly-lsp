@@ -21,8 +21,8 @@ import { expect } from 'vitest';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import type { CompletionItem, Hover, MarkupContent, Position } from 'vscode-languageserver-types';
 
-import type { HoverflyServiceSettings } from '../../src/semantic/types.js';
-import { createHoverflyLanguageService } from '../../src/service.js';
+import type { HoverflyServiceSettings } from '../../../src/semantic/types.js';
+import { createHoverflyLanguageService } from '../../../src/service.js';
 
 /* ------------------------------------- marker scanning ----------------------------------- */
 
@@ -153,71 +153,57 @@ function parseMarkedDocument(source: string): MarkedDocument {
     return scan(source);
 }
 
-/** Run completion at `marker` and assert the label expectations. Returns the items for extra checks. */
-async function expectCompletions(
+/**
+ * Run completion at `marker` and answer the items the service produced.
+ *
+ * A READER, not an assertion: a spec hands it to `integration.call()` and asserts on the result,
+ * so the chain is what runs the subject and the expectations stay in the spec that owns them.
+ */
+async function completionsAt(
     doc: MarkedDocument | string,
     marker: string,
-    expectations: CompletionExpectations,
     options: ServiceOptions = {},
 ): Promise<CompletionItem[]> {
     const { service, document, position } = prepare(doc, marker, options);
     const list = await service.doComplete(document, position);
-    const items = list?.items ?? [];
-    const labels = items.map((i) => i.label);
-    if (expectations.contains) {
-        for (const label of expectations.contains) {
-            expect(labels, `expected completion '${label}' at marker '${marker}'`).toContain(label);
-        }
-    }
-    if (expectations.notContains) {
-        for (const label of expectations.notContains) {
-            expect(
-                labels,
-                `did NOT expect completion '${label}' at marker '${marker}'`,
-            ).not.toContain(label);
-        }
-    }
-    if (expectations.exact) {
-        expect([...labels].toSorted()).toEqual([...expectations.exact].toSorted());
-    }
-    return items;
+    return list?.items ?? [];
 }
 
-/** Run completion at `marker` and assert NO completions are produced. */
-async function expectNoCompletions(
-    doc: MarkedDocument | string,
-    marker: string,
-    options: ServiceOptions = {},
-): Promise<void> {
-    const { service, document, position } = prepare(doc, marker, options);
-    const list = await service.doComplete(document, position);
-    expect(list?.items ?? []).toHaveLength(0);
-}
-
-/** Run hover at `marker` and assert the rendered content includes each `includes` substring. */
-async function expectHover(
-    doc: MarkedDocument | string,
-    marker: string,
-    expectations: { readonly includes: readonly string[] },
-    options: ServiceOptions = {},
-): Promise<Hover | null> {
-    const { service, document, position } = prepare(doc, marker, options);
-    const hover = await service.doHover(document, position);
-    const rendered = renderHover(hover);
-    for (const fragment of expectations.includes) {
-        expect(rendered, `hover at '${marker}' should include '${fragment}'`).toContain(fragment);
-    }
-    return hover;
-}
-
-/** Run hover at `marker` and return the rendered text (for negative / custom assertions). */
-async function getHoverText(
+/** Run hover at `marker` and answer the rendered markdown — empty when there is no hover. */
+async function hoverAt(
     doc: MarkedDocument | string,
     marker: string,
     options: ServiceOptions = {},
 ): Promise<string> {
     const { service, document, position } = prepare(doc, marker, options);
     return renderHover(await service.doHover(document, position));
+}
+
+/** Assert the label expectations over what {@link completionsAt} answered. */
+function expectLabels(
+    items: readonly CompletionItem[],
+    expectations: CompletionExpectations,
+    marker = '',
+): void {
+    const labels = items.map((item) => item.label);
+    for (const label of expectations.contains ?? []) {
+        expect(labels, `expected completion '${label}' at marker '${marker}'`).toContain(label);
+    }
+    for (const label of expectations.notContains ?? []) {
+        expect(labels, `did NOT expect completion '${label}' at marker '${marker}'`).not.toContain(
+            label,
+        );
+    }
+    if (expectations.exact) {
+        expect([...labels].toSorted()).toStrictEqual([...expectations.exact].toSorted());
+    }
+}
+
+/** Assert every fragment appears in what {@link hoverAt} answered. */
+function expectHoverIncludes(rendered: string, fragments: readonly string[], marker = ''): void {
+    for (const fragment of fragments) {
+        expect(rendered, `hover at '${marker}' should include '${fragment}'`).toContain(fragment);
+    }
 }
 
 /* -------------------------------- on-disk corpus sidecars -------------------------------- */
@@ -323,11 +309,11 @@ export {
     type CompletionExpectations,
     type CompletionKindName,
     type CompletionMarkerExpectation,
+    completionsAt,
     type CorpusExpectation,
-    expectCompletions,
-    expectHover,
-    expectNoCompletions,
-    getHoverText,
+    expectHoverIncludes,
+    expectLabels,
+    hoverAt,
     type HoverMarkerExpectation,
     loadCorpusExpectation,
     type MarkedDocument,

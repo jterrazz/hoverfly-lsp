@@ -2,7 +2,8 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, test } from 'vitest';
 
-import { HOVERFLY_COMMIT } from '../../src/schema/provenance.js';
+import { HOVERFLY_COMMIT } from '../../../src/schema/provenance.js';
+import { integration } from '../integration.specification.js';
 
 /*
  * Sync guard for the standalone, publishable SchemaStore artifact (TRACK: SchemaStore).
@@ -22,9 +23,9 @@ import { HOVERFLY_COMMIT } from '../../src/schema/provenance.js';
  * This test asserts artifact == bundled + those two deltas, so neither can drift silently.
  */
 
-const repoRoot = fileURLToPath(new URL('../../../../', import.meta.url));
+const repoRoot = fileURLToPath(new URL('../../../../../', import.meta.url));
 const bundledPath = fileURLToPath(
-    new URL('../../src/schema/hoverfly.schema.json', import.meta.url),
+    new URL('../../../src/schema/hoverfly.schema.json', import.meta.url),
 );
 const artifactPath = `${repoRoot}schemas/hoverfly-simulation.json`;
 const baselinePath = `${repoRoot}schemas/upstream-baseline.schema.json`;
@@ -65,88 +66,112 @@ function getMatcherProp(schema: JsonRecord): JsonRecord {
 }
 
 describe('schemaStore artifact: schemas/hoverfly-simulation.json', () => {
-    const bundled = readJson(bundledPath);
-    const artifact = readJson(artifactPath);
-
-    test('keeps $schema at draft-07 (same as the bundled schema)', () => {
-        // Given - the standalone artifact
+    test('keeps $schema at draft-07 (same as the bundled schema)', async () => {
+        // Given - the standalone artifact and the bundle, read from disk
+        const result = await integration.call(() => ({
+            artifact: readJson(artifactPath).$schema,
+            bundled: readJson(bundledPath).$schema,
+        }));
         // Then - it self-declares draft-07, like the bundle
-        expect(artifact.$schema).toBe(DRAFT_07);
-        expect(bundled.$schema).toBe(DRAFT_07);
+        expect(result.value.value.artifact).toBe(DRAFT_07);
+        expect(result.value.value.bundled).toBe(DRAFT_07);
     });
 
-    test('sets $id to the future SchemaStore URL (documented delta 1)', () => {
+    test('sets $id to the future SchemaStore URL (documented delta 1)', async () => {
         // Given - the artifact and the bundle
+        const result = await integration.call(() => ({
+            artifact: readJson(artifactPath).$id,
+            bundled: readJson(bundledPath).$id,
+        }));
         // Then - the artifact points at SchemaStore; the bundle keeps its own LSP $id
-        expect(artifact.$id).toBe(SCHEMASTORE_ID);
-        expect(bundled.$id).not.toBe(SCHEMASTORE_ID);
+        expect(result.value.value.artifact).toBe(SCHEMASTORE_ID);
+        expect(result.value.value.bundled).not.toBe(SCHEMASTORE_ID);
     });
 
-    test('re-adds the 14 matcher-name examples (documented delta 2)', () => {
+    test('re-adds the 14 matcher-name examples (documented delta 2)', async () => {
         // Given - the field-matcher.matcher property in each schema
-        const artifactMatcher = getMatcherProp(artifact);
-        const bundledMatcher = getMatcherProp(bundled);
+        const result = await integration.call(() => ({
+            artifactMatcher: getMatcherProp(readJson(artifactPath)),
+            bundledHasExamples: getMatcherProp(readJson(bundledPath)).examples !== undefined,
+        }));
+        const { artifactMatcher, bundledHasExamples } = result.value.value;
         // Then - the artifact carries the 14 names; the bundle carries none (contribution owns it)
         expect(artifactMatcher.examples).toStrictEqual([...MATCHER_EXAMPLES]);
-        expect(bundledMatcher.examples).toBeUndefined();
+        expect(bundledHasExamples).toBe(false);
         // And - matcher stays a permissive free string in both (never an enum)
         expect(artifactMatcher.type).toBe('string');
         expect(artifactMatcher.enum).toBeUndefined();
     });
 
-    test('is byte-for-byte the bundled schema EXCEPT the two documented deltas (drift guard)', () => {
+    test('is byte-for-byte the bundled schema EXCEPT the two documented deltas (drift guard)', async () => {
         // Given - the bundled schema with the two documented deltas applied
-        const expected = readJson(bundledPath);
-        expected.$id = SCHEMASTORE_ID;
-        getMatcherProp(expected).examples = [...MATCHER_EXAMPLES];
+        const result = await integration.call(() => {
+            const expected = readJson(bundledPath);
+            expected.$id = SCHEMASTORE_ID;
+            getMatcherProp(expected).examples = [...MATCHER_EXAMPLES];
+            return { artifact: readJson(artifactPath), expected };
+        });
         // Then - the artifact equals exactly that — nothing else may diverge
-        expect(artifact).toStrictEqual(expected);
+        expect(result.value.value.artifact).toStrictEqual(result.value.value.expected);
     });
 
-    test('keeps all titles/descriptions from the bundle (the docs investment ships to consumers)', () => {
+    test('keeps all titles/descriptions from the bundle (the docs investment ships to consumers)', async () => {
         // Given - the root + every definition in the artifact
-        expect(artifact.title).toBe(bundled.title);
-        expect(artifact.description).toBe(bundled.description);
-        const definitions = artifact.definitions as JsonRecord;
-        const missing: string[] = [];
-        for (const [defName, def] of Object.entries(definitions)) {
-            const props = (def as { properties?: Record<string, { description?: string }> })
-                .properties;
-            if (!props) {
-                continue;
-            }
-            for (const [propName, prop] of Object.entries(props)) {
-                if (typeof prop.description !== 'string' || prop.description.length === 0) {
-                    missing.push(`${defName}.${propName}`);
+        const result = await integration.call(() => {
+            const artifact = readJson(artifactPath);
+            const bundled = readJson(bundledPath);
+            const definitions = artifact.definitions as JsonRecord;
+            const missing: string[] = [];
+            for (const [defName, def] of Object.entries(definitions)) {
+                const props = (def as { properties?: Record<string, { description?: string }> })
+                    .properties;
+                if (!props) {
+                    continue;
+                }
+                for (const [propName, prop] of Object.entries(props)) {
+                    if (typeof prop.description !== 'string' || prop.description.length === 0) {
+                        missing.push(`${defName}.${propName}`);
+                    }
                 }
             }
-        }
+            return {
+                artifactDescription: artifact.description,
+                artifactTitle: artifact.title,
+                bundledDescription: bundled.description,
+                bundledTitle: bundled.title,
+                missing,
+            };
+        });
+        const read = result.value.value;
+        expect(read.artifactTitle).toBe(read.bundledTitle);
+        expect(read.artifactDescription).toBe(read.bundledDescription);
         // Then - none lost their description
-        expect(missing).toStrictEqual([]);
+        expect(read.missing).toStrictEqual([]);
     });
 });
 
 describe('upstream drift baseline: schemas/upstream-*', () => {
-    test('stores a verbatim official baseline that is well-formed JSON', () => {
+    test('stores a verbatim official baseline that is well-formed JSON', async () => {
         // Given - the verbatim official schema fetched at the pinned commit
-        const text = readFileSync(baselinePath, 'utf8');
+        const result = await integration.call(() => readJson(baselinePath));
         // Then - it parses (the CI job diffs the live upstream against this byte baseline)
-        expect(() => JSON.parse(text)).not.toThrow();
+        await expect(result.error).toBeEmpty();
     });
 
-    test('the source-hash manifest commit AGREES with provenance.HOVERFLY_COMMIT', () => {
+    test('the source-hash manifest commit AGREES with provenance.HOVERFLY_COMMIT', async () => {
         // Given - the baseline source-hash manifest the drift job compares against
-        const manifest = readJson(sourceHashesPath);
+        const result = await integration.call(() => readJson(sourceHashesPath));
+        const manifest = result.value.value;
         // Then - it is pinned to the exact same commit the bundled schema was derived from,
         // So the drift job can never silently compare against a different revision
         expect(manifest.commit).toBe(HOVERFLY_COMMIT);
         expect(manifest.algorithm).toBe('sha256');
     });
 
-    test('the manifest hashes every Go source file the matcher/templating catalogs cite', () => {
+    test('the manifest hashes every Go source file the matcher/templating catalogs cite', async () => {
         // Given - the source-hash manifest
-        const manifest = readJson(sourceHashesPath);
-        const files = manifest.files as Record<string, string>;
+        const result = await integration.call(() => readJson(sourceHashesPath));
+        const files = result.value.value.files as Record<string, string>;
         // Then - it covers the research/07 matcher sources and research/08 templating sources
         const expectedFiles = [
             'core/handlers/v2/schema.json',
