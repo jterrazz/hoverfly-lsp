@@ -41,7 +41,7 @@ describe('mATCHER_SPECS', () => {
         // Then - all present
         const names = new Set(MATCHER_SPECS.map((spec) => spec.name));
         for (const name of expected) {
-            expect(names.has(name)).toBeTruthy();
+            expect(names.has(name)).toBe(true);
         }
     });
 

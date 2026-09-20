@@ -343,8 +343,7 @@ describe('parse — error recovery (exact offsets)', () => {
     test('records an unclosed string literal', () => {
         // Given - `'abc` never closes inside a mustache
         const { errors } = parse("{{x 'abc}}");
-        // Then - an unclosed string is reported (the `}}` is treated as inside the string by findClose,
-        // So the mustache itself is unclosed; either way an error is recorded)
+        // Then - an unclosed string is reported: findClose treats the `}}` as inside the string, so the mustache is unclosed too, and either way an error is recorded
         expect(errors.length).toBeGreaterThanOrEqual(1);
     });
 

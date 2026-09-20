@@ -10,7 +10,7 @@ describe('isHoverflySimulation', () => {
             meta: { schemaVersion: 'v5.3' },
         });
         // Then - it is recognised as a Hoverfly simulation
-        expect(isHoverflySimulation(text)).toBeTruthy();
+        expect(isHoverflySimulation(text)).toBe(true);
     });
 
     test('accepts a simulation without data.pairs (pairs is optional per D3)', () => {
@@ -20,7 +20,7 @@ describe('isHoverflySimulation', () => {
             meta: { schemaVersion: 'v5' },
         });
         // Then - still recognised
-        expect(isHoverflySimulation(text)).toBeTruthy();
+        expect(isHoverflySimulation(text)).toBe(true);
     });
 
     test('rejects when meta is missing', () => {
@@ -47,7 +47,7 @@ describe('isHoverflySimulation', () => {
             meta: { schemaVersion: 'v5.3' },
         });
         // Then - accepted
-        expect(isHoverflySimulation(text)).toBeTruthy();
+        expect(isHoverflySimulation(text)).toBe(true);
     });
 
     test('rejects a non-object root (array)', () => {

@@ -48,8 +48,7 @@ describe('template completion — helper/path start', () => {
         const items = completions.value.value;
         expectLabels(items, { contains: ['replace'] });
         const replace = items.find((i) => i.label === 'replace');
-        // Then - the snippet carries the three argument placeholders (built via concatenation so the
-        // Test source does not contain a literal `${…}` template placeholder)
+        // Then - the snippet carries the three argument placeholders, built by concatenation so this source holds no literal `${…}` placeholder
         const open = '$'.concat('{');
         expect(replace?.insertText).toContain('replace ');
         expect(replace?.insertText).toContain(`${open}1:target}`);

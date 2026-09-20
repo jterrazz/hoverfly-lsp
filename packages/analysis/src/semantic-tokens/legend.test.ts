@@ -61,7 +61,7 @@ describe('semantic-tokens legend', () => {
             'operator',
         ]);
         for (const type of SEMANTIC_TOKEN_TYPES) {
-            expect(standard.has(type)).toBeTruthy();
+            expect(standard.has(type)).toBe(true);
         }
     });
 

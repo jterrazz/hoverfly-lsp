@@ -105,7 +105,7 @@ describe("getSemanticTokens — the user's example body", () => {
             }
             const before =
                 prev.line < cur.line || (prev.line === cur.line && prev.startChar <= cur.startChar);
-            expect(before).toBeTruthy();
+            expect(before).toBe(true);
         }
     });
 });
@@ -199,14 +199,14 @@ describe('getSemanticTokens — gating', () => {
             sim({ status: 200, body: '{{ now }}', templated: true }),
             'file:///api.hoverfly.json',
         );
-        expect(resolved.some((t) => t.text === 'now' && t.type === 'function')).toBeTruthy();
+        expect(resolved.some((t) => t.text === 'now' && t.type === 'function')).toBe(true);
     });
 
     test('colors a body with {{ even when templated is false (HF501 scope)', () => {
         // Given - template syntax in a non-templated body
         const { resolved } = tokensOf(sim({ status: 200, body: '{{ now }}' }));
         // Then - the template is still tokenized (so editors color what the user is writing)
-        expect(resolved.some((t) => t.text === 'now')).toBeTruthy();
+        expect(resolved.some((t) => t.text === 'now')).toBe(true);
     });
 
     test('does NOT throw on a malformed template (partial tokens)', () => {
