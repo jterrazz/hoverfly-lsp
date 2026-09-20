@@ -15,7 +15,6 @@
     "import/no-unassigned-import": 1,
     "jterrazz/b4-given-then": 240,
     "jterrazz/d16w-ambient-value": 2,
-    "jterrazz/d8w-text-bypass": 2,
     "jterrazz/i2-sibling-test-naming": 1,
     "jterrazz/j6w-given-in-the-test": 14,
     "promise/avoid-new": 1,
