@@ -17,13 +17,14 @@
     "scripts": {
         "build": "npm run build --workspaces --if-present",
         "docs:diagnostics": "node scripts/generate-diagnostic-docs.mjs",
-        "test": "vitest --run",
+        "test": "npm run test --workspaces --if-present",
         "typecheck": "tsc --build",
         "lint": "typescript check --ignore-pattern 'research/**'",
         "lint:fix": "typescript fix"
     },
     "devDependencies": {
-        "@jterrazz/typescript": "^10.0.0",
+        "@jterrazz/test": "^15.3.0",
+        "@jterrazz/typescript": "^10.2.2",
         "@types/node": "^25.5.0",
         "glob": "^13.0.6",
         "vitest": "^4.1.8",

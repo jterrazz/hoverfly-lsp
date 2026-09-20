@@ -18,7 +18,8 @@
     },
     "scripts": {
         "build": "tsc --build && npm run build:bundle",
-        "build:bundle": "node esbuild.config.js"
+        "build:bundle": "node esbuild.config.js",
+        "test": "vitest --run"
     },
     "dependencies": {
         "vscode-languageserver": "^10.0.0",
