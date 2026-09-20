@@ -44,7 +44,7 @@ npm run typecheck
 npm run lint           # typescript check — the full gate
 npm run lint:fix
 npm run docs:diagnostics   # regenerate docs/reference/ (needs a build first)
-env UPDATE_GOLDENS=1 npx vitest --run packages/analysis/test/semantic/golden.test.ts
+env UPDATE_GOLDENS=1 npx vitest --run packages/analysis/specs/integration/semantic/golden.spec.ts
 ```
 
 ## Standing rules

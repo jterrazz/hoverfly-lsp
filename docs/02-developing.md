@@ -14,7 +14,7 @@ npm install            # or: make install (npm ci, lockfile-pinned)
 npm run build          # tsc --build across analysis, server and the extension
 npm test               # vitest --run
 npm run typecheck      # tsc --build
-npm run lint           # typescript check: tsc, oxlint, oxfmt, knip, artefacts, docs layout
+npm run lint           # typescript check: tsc, oxlint, oxfmt, knip, test conventions, artefacts, docs
 npm run lint:fix       # autofix format and lint
 ```
 
@@ -131,6 +131,10 @@ Four divergences are deliberate and each has a reason.
 - **`knip.json` declares entry points per workspace.** A workspace member's real
   entry is not its `main`, and a few dependencies are reached through configs
   rather than imports; both are declared there rather than silenced case by case.
+- **`oxlint.config.ts` widens one rule rather than recording it.**
+  `vitest/consistent-test-filename` ships on `.test.ts` alone, which every
+  `.spec.ts` under `specs/` fails; the config states both sanctioned suffixes so
+  the rule keeps judging instead of becoming a permanent baseline entry.
 
 ## What a change owes
 

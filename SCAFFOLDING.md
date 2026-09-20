@@ -47,8 +47,9 @@ decisions in `research/03-lsp-architecture.md` and `research/10-architect-decisi
   oxfmt + knip** in parallel, exactly as in `package-test`. It works in the workspace
   setup because `@jterrazz/typescript` resolves tool bins from the hoisted root
   `node_modules/.bin`.
-- `oxlint.config.ts` extends the `node` profile and ignores `testdata/**` — the corpus
-  is deliberately malformed, and `dist/**` is the profile's own business.
+- `oxlint.config.ts` composes the `node` profile with `@jterrazz/test`'s `testing`
+  fragment and ignores `testdata/**` — the corpus is deliberately malformed, and
+  `dist/**` is the profile's own business.
 - Added a root **`knip.json`** declaring per-workspace entry points (analysis `src/index.ts`;
   server `src/cli.ts` + `packages/server/bin/hoverfly-lsp.js`; root `oxfmt.config.ts` + `oxlint.config.ts` +
   `vitest.config.ts`) and a few `ignoreDependencies`:

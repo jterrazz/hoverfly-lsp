@@ -24,7 +24,7 @@ what Hoverfly accepts at import. It is byte-identical to the LSP's bundled schem
    LSP's completion contribution owns matcher-name completion (and gates `form` to the request
    body); schema-only consumers have no such contribution, so they need the examples here.
 
-A test (`packages/analysis/test/schema/schemastore-artifact.test.ts`) asserts this relationship so
+A test (`packages/analysis/specs/integration/schema/schemastore-artifact.spec.ts`) asserts this relationship so
 the artifact and the bundle can never drift apart silently.
 
 > The `matcher` field is intentionally a free `string` (not an `enum`). Hoverfly's matcher
