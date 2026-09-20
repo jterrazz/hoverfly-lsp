@@ -162,8 +162,7 @@ describe('upstream drift baseline: schemas/upstream-*', () => {
         // Given - the baseline source-hash manifest the drift job compares against
         const result = await integration.call(() => readJson(sourceHashesPath));
         const manifest = result.value.value;
-        // Then - it is pinned to the exact same commit the bundled schema was derived from,
-        // So the drift job can never silently compare against a different revision
+        // Then - it is pinned to the commit the bundled schema was derived from, so the drift job can never silently compare against a different revision
         expect(manifest.commit).toBe(HOVERFLY_COMMIT);
         expect(manifest.algorithm).toBe('sha256');
     });

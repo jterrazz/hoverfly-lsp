@@ -70,7 +70,7 @@ describe('hOVERFLY_HELPERS', () => {
         // Given - the now spec
         const now = byName(HOVERFLY_HELPERS, 'now');
         // Then - offset and format are optional
-        expect(now?.args.every((arg) => arg.optional)).toBeTruthy();
+        expect(now?.args.every((arg) => arg.optional)).toBe(true);
     });
 
     test('multiply is subexpression-friendly (3 string args, format last)', () => {
@@ -170,8 +170,7 @@ describe('nOW_OFFSET_UNITS', () => {
     });
 
     test('includes both Unicode micro symbols (U+00B5 and U+03BC) as distinct entries', () => {
-        // Then - the two spellings differ at the codepoint level
-        // U+00B5 (micro sign) = 181; U+03BC (Greek small letter mu) = 956.
+        // Then - the two spellings differ at the codepoint level: U+00B5 (micro sign) = 181, U+03BC (Greek small mu) = 956
         expect('µs'.codePointAt(0)).toBe(181);
         expect('μs'.codePointAt(0)).toBe(956);
         expect(NOW_OFFSET_UNITS).toContain('µs');

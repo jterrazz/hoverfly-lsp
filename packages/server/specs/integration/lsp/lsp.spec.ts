@@ -407,8 +407,7 @@ describe('hoverfly-lsp — push diagnostics (client without pull)', () => {
         expect(first?.range.start.character).toBe(valueStart);
         expect(first?.range.end.character).toBe(valueStart + `"frobnicate"`.length);
 
-        // Then - the matcher name with an astral emoji is measured in UTF-16 units (2 per emoji), so "😊exact" spans 9, not 8 codepoints
-        // Width breakdown: quote(1) + 😊(2 UTF-16 units) + exact(5) + quote(1) = 9 (codepoints = 8).
+        // Then - the matcher name is measured in UTF-16 units: quote(1) + 😊(2) + exact(5) + quote(1) = 9, where codepoints would give 8
         expect(second).toBeDefined();
         expect((second?.range.end.character ?? 0) - (second?.range.start.character ?? 0)).toBe(9);
     });
@@ -552,8 +551,7 @@ describe('hoverfly-lsp — completion & hover', () => {
     });
 
     test('completes a requiresState KEY cross-referenced from another pair (state-key round-trip)', async () => {
-        // Given - a producer sets `authenticated` via transitionsState; a consumer types a new key.
-        // This is the real-server path for the originally-reported requiresState cross-ref gap.
+        // Given - a producer sets `authenticated` via transitionsState and a consumer types a new key: the real-server path for the reported requiresState cross-ref gap
         const uri = 'file:///complete-state-key.hoverfly.json';
         const producer = `{"request":{"path":[{"matcher":"exact","value":"/login"}]},"response":{"status":200,"transitionsState":{"authenticated":"yes"}}}`;
         const consumer = `{"request":{"path":[{"matcher":"exact","value":"/me"}],"requiresState":{"":""}},"response":{"status":200}}`;
@@ -746,8 +744,7 @@ describe('hoverfly-lsp — semantic tokens', () => {
             expect(data.length).toBeGreaterThan(0);
             expect(data.length % 5).toBe(0);
 
-            // Then - decoding back to absolute tokens, the `{{` operator and `faker` function land
-            // On the document characters they color.
+            // Then - decoded back to absolute tokens, the `{{` operator and the `faker` function land on the document characters they color
             const decoded = decodeSemanticTokens(data);
 
             // The body is on line 0 (single-line doc), so startChar is the absolute column.
@@ -815,9 +812,7 @@ describe('hoverfly-lsp — semantic tokens', () => {
             });
             const decoded = decodeSemanticTokens(result.value.value.data);
 
-            // Then - the `{{` operator starts exactly 2 UTF-16 units past the body start (the emoji),
-            // Proving the offset is measured in code units, not codepoints (which would give +1).
-            // `text.indexOf("{{")` uses UTF-16 semantics, matching the protocol's column unit.
+            // Then - the `{{` operator starts 2 UTF-16 units past the body start (the emoji), proving code units rather than codepoints, which would give +1
             const openCol = text.indexOf('{{');
             const open = decoded.find((t) => t.startChar === openCol);
             expect(open).toBeDefined();

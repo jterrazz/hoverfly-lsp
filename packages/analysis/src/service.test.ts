@@ -43,9 +43,7 @@ describe('createHoverflyLanguageService — schema-driven validation', () => {
     );
 
     test('flags a structurally-broken simulation with HF102 schema diagnostics', async () => {
-        // Given - a fingerprint-passing simulation (valid meta.schemaVersion) with pairs as an
-        // Object and a root extra property. (A doc that fails the D3 fingerprint is gated to
-        // HF101/[] instead — see the gate tests below.)
+        // Given - a fingerprint-passing simulation with pairs as an object and a root extra property; a doc that fails the D3 fingerprint is gated to HF101/[] instead, in the gate tests below
         const text = `{"data":{"pairs":{}},"meta":{"schemaVersion":"v5.3"},"extra":1}`;
         // When - validated
         const diagnostics = await service.doValidation(doc(text));
@@ -169,8 +167,7 @@ describe('createHoverflyLanguageService — hover', () => {
         const offset = text.indexOf('schemaVersion') + 2;
         // When - hover is requested
         const hover = await service.doHover(document, document.positionAt(offset));
-        // Then - it surfaces the bundled schema's schemaVersion description
-        // Markdown rendering escapes the dot (v5\.3), so assert on the un-escaped fragment.
+        // Then - it surfaces the bundled schema's schemaVersion description; markdown escapes the dot (v5\.3), so the assertion reads the un-escaped fragment
         const rendered = JSON.stringify(hover?.contents);
         expect(rendered).toContain('Simulation schema version');
         expect(rendered).toContain('current default is v5');

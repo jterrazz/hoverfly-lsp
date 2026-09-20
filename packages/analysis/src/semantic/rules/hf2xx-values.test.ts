@@ -91,8 +91,7 @@ describe('hF216 — scheme value did-you-mean', () => {
     });
 
     test('is SILENT on a custom scheme like ftp (distance 2 from http — a legal scheme)', () => {
-        // Given - ftp: a real scheme that lies within edit-distance 2 of http (the very reason the
-        // Value-domain threshold is tightened to 1)
+        // Given - ftp, a real scheme within edit-distance 2 of http: the reason the value-domain threshold is tightened to 1
         const diags = runOnRequest({ scheme: [{ matcher: 'exact', value: 'ftp' }] });
         // Then - no false positive
         expect(diags).toStrictEqual([]);

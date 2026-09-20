@@ -21,7 +21,7 @@ describe('matchMatcherNamePosition', () => {
 
     test('marks request.body as the only body matcher field', () => {
         const path = ['data', 'pairs', 1, 'request', 'body', 0, 'matcher'];
-        expect(matchMatcherNamePosition(path, { requireMatcherKey: true })?.isBody).toBeTruthy();
+        expect(matchMatcherNamePosition(path, { requireMatcherKey: true })?.isBody).toBe(true);
     });
 
     test('recognises a header matcher field (nested map)', () => {

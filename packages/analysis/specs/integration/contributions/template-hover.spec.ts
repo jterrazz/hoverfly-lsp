@@ -78,8 +78,7 @@ describe('template hover — negatives', () => {
     test('does not render template hover for a token that is not a known helper/member', async () => {
         // Given - a bare unknown single-segment lookup (could be a context var; not a helper)
         const doc = templatedBody('{{somethingUnknow⟦⟧n}}');
-        // Then - no template-specific hover fires (schema hover may still describe the `body` field,
-        // But none of the template markers — helper/faker/Request docs — appear)
+        // Then - no template-specific hover fires: schema hover may still describe `body`, but none of the template markers — helper/faker/Request docs — appear
         const hovered = await integration.call(async () => await hoverAt(doc, ''));
         const { text } = hovered.value;
         expect(text).not.toContain('inline helper');

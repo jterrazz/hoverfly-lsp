@@ -117,8 +117,7 @@ describe('matcher-name completions — negative contexts', () => {
         // Given - a structurally broken document with a dangling matcher value
         const doc = `{"data":{"pairs":[{"request":{"path":[{"matcher":"⟦⟧"`;
         const result = await integration.call(async () => await completionsAt(doc, ''));
-        // Then - the service stays alive: matcher completion may or may not fire, but the call
-        // Answered a list rather than refusing.
+        // Then - the service stays alive: completion may or may not fire, but the call answered a list rather than refusing
         await expect(result.error).toBeEmpty();
         expect(Array.isArray(result.value.value)).toBe(true);
     });
@@ -183,8 +182,7 @@ describe('schemaVersion completions', () => {
     test('offers v5.3 (preferred) plus v5/v5.1/v5.2', async () => {
         // Given - a cursor in the meta.schemaVersion value
         const doc = `{"data":{"pairs":[]},"meta":{"schemaVersion":"⟦⟧"}}`;
-        // Then - the four version values are offered (the contribution's labels are unquoted; the
-        // Schema's `examples` add quoted-label duplicates, which is harmless)
+        // Then - the four version values are offered: the contribution's labels are unquoted, and the schema's `examples` add harmless quoted-label duplicates
         const completions = await integration.call(async () => await completionsAt(doc, ''));
         const items = completions.value.value;
         expectLabels(items, {
