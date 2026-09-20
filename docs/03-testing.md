@@ -8,26 +8,28 @@ mechanical proof stops.
 ## The run
 
 ```bash
-npm test        # vitest --run, the whole workspace
+npm test        # each workspace member's own `test` script, plus the extension's
 ```
 
-One root `vitest.config.ts` collects `packages/*/test/**/*.test.ts` and
-`editors/vscode/test/**/*.test.ts`. The timeout is 20 seconds because the server
-integration test spawns the built binary; everything else finishes in
-milliseconds.
+Each member collects its own tests through its own `vitest.config.ts`
+(`@jterrazz/test`'s `defineSpecConfig()`): `packages/analysis` and
+`packages/server` trim the preset's 30-second default to 20 for their
+process- and corpus-spawning suites, `editors/vscode` keeps the default.
 
-The suites, by what they stand on:
+A module test sits beside the module it covers (`<file>.test.ts` next to
+`<file>.ts`, under `src/`) — this is what most of `packages/analysis/src/`
+and all of `packages/server/src/` carry. What does not answer to one module
+alone stays under a package's `test/`:
 
-| Suite                                   | Proves                                                                  |
-| --------------------------------------- | ----------------------------------------------------------------------- |
-| `packages/analysis/test/semantic/`      | Each rule family in isolation, plus the corpus goldens                  |
-| `packages/analysis/test/contributions/` | Hover and completion, including the per-context coverage matrix         |
-| `packages/analysis/test/template/`      | The Handlebars-subset parser, analyzer, source map and cursor context   |
-| `packages/analysis/test/registry/`      | The transcribed matcher, helper and faker tables                        |
-| `packages/analysis/test/schema/`        | The bundled schema and the standalone SchemaStore artifact stay in step |
-| `packages/analysis/test/corpus.test.ts` | Corpus-wide structural invariants — naming, pairing, coverage floors    |
-| `packages/server/test/integration/`     | A real `initialize` handshake against the built bin over stdio          |
-| `editors/vscode/test/`                  | How the extension resolves the server binary                            |
+| Suite                                            | Proves                                                                                                                                             |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/analysis/test/semantic/golden.test.ts` | The full `doValidation` pipeline against every `testdata/{valid,invalid}` fixture and its golden                                                   |
+| `packages/analysis/test/contributions/`          | Hover and completion through the fourslash harness, including the per-context coverage matrix and the on-disk `testdata/{completion,hover}` corpus |
+| `packages/analysis/test/schema/`                 | The bundled schema and the standalone SchemaStore artifact stay in step                                                                            |
+| `packages/analysis/test/corpus.test.ts`          | Corpus-wide structural invariants — naming, pairing, coverage floors                                                                               |
+| `packages/analysis/test/fourslash/`              | The cursor-marker harness itself                                                                                                                   |
+| `packages/server/test/integration/`              | A real `initialize` handshake against the built bin over stdio                                                                                     |
+| `editors/vscode/test/`                           | How the extension resolves the server binary                                                                                                       |
 
 ## The reference corpus
 
