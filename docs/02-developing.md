@@ -54,7 +54,7 @@ The five steps, in order — the last two are not optional, and CI enforces both
    The full recipe is `packages/analysis/src/semantic/README.md`.
 3. Add at least one `invalid/` fixture (and ideally a `valid/` counterpart) to
    `testdata/`, then regenerate its golden — see [03-testing.md](03-testing.md).
-4. Add a focused unit test under `packages/analysis/test/semantic/`.
+4. Add a focused unit test beside the rule, `packages/analysis/src/semantic/rules/<rule>.test.ts`.
 5. Add the code's trigger/range prose to `DIAGNOSTIC_PROSE` in
    `scripts/generate-diagnostic-docs.mjs` and regenerate the reference; the
    generator aborts loudly on a code with no prose entry.
