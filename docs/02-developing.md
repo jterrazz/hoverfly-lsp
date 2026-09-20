@@ -107,7 +107,7 @@ Decisions taken after this manual exists are recorded as ADRs in
 ## Where this repository diverges from the house preset
 
 The `@jterrazz` conventions were followed wherever the monorepo shape allowed.
-Four divergences are deliberate and each has a reason.
+Each divergence below is deliberate and has a reason.
 
 - **`tsconfig.base.json` adds an emitting half to the house preset.** It extends
   `@jterrazz/typescript/tsconfig/node` and keeps only what the preset cannot
