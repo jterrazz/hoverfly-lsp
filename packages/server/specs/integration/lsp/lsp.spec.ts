@@ -29,6 +29,8 @@ import type {
     SemanticTokens,
 } from 'vscode-languageserver-protocol/node';
 
+import { integration } from '../integration.specification.js';
+
 /** The frozen legend the server must advertise verbatim, in order (research/16 §3.1). */
 const EXPECTED_LEGEND_TYPES = [
     'namespace',
@@ -88,8 +90,8 @@ function decodeSemanticTokens(data: readonly number[]): AbsoluteToken[] {
     return out;
 }
 
-const binPath = fileURLToPath(new URL('../../bin/hoverfly-lsp.js', import.meta.url));
-const repoRoot = fileURLToPath(new URL('../../../../', import.meta.url));
+const binPath = fileURLToPath(new URL('../../../bin/hoverfly-lsp.js', import.meta.url));
+const repoRoot = fileURLToPath(new URL('../../../../../', import.meta.url));
 
 function readFixture(relativePath: string): string {
     return readFileSync(join(repoRoot, relativePath), 'utf8');
@@ -169,13 +171,16 @@ describe('hoverfly-lsp — initialize handshake', () => {
     });
 
     test('advertises completion (with triggers), hover, and a pull diagnostic provider', async () => {
-        // Given - a standard initialize
-        const result: InitializeResult = await connection.sendRequest(InitializeRequest.type, {
-            processId: process.pid,
-            rootUri: null,
-            capabilities: {},
-        });
-        const caps = result.capabilities;
+        // Given - a standard initialize over the spawned binary
+        const result = await integration.call(
+            async (): Promise<InitializeResult> =>
+                await connection.sendRequest(InitializeRequest.type, {
+                    capabilities: {},
+                    processId: process.pid,
+                    rootUri: null,
+                }),
+        );
+        const caps = result.value.value.capabilities;
 
         // Then - completion advertises the Hoverfly + Handlebars trigger characters
         expect(caps.completionProvider).toBeDefined();
@@ -193,83 +198,89 @@ describe('hoverfly-lsp — initialize handshake', () => {
         expect(diag.interFileDependencies).toBeFalsy();
         expect(diag.workspaceDiagnostics).toBeFalsy();
         // Then - incremental open/close sync
-        expect(result.serverInfo?.name).toBe('hoverfly-lsp');
+        expect(result.value.value.serverInfo?.name).toBe('hoverfly-lsp');
     });
 });
 
 describe('hoverfly-lsp — $/lifecycle conformance', () => {
     test('rejects a feature request sent BEFORE initialize with ServerNotInitialized (-32002)', async () => {
-        // Given - a freshly spawned server that has NOT been initialized
-        const { child, connection } = spawnServer();
-        try {
-            // When - a hover request is sent before `initialize`
-            const code = await errorCodeOf(
-                connection.sendRequest(HoverRequest.type, {
-                    textDocument: { uri: 'file:///before-init.hoverfly.json' },
-                    position: { line: 0, character: 0 },
-                }),
-            );
-            // Then - the spec-mandated -32002 is returned (not a benign null result)
-            expect(code).toBe(ErrorCodes.ServerNotInitialized);
-        } finally {
-            connection.dispose();
-            child.kill();
-        }
+        // Given - a freshly spawned server that has NOT been initialized, asked to hover
+        const result = await integration.call(async () => {
+            const { child, connection } = spawnServer();
+            try {
+                return {
+                    code: await errorCodeOf(
+                        connection.sendRequest(HoverRequest.type, {
+                            position: { character: 0, line: 0 },
+                            textDocument: { uri: 'file:///before-init.hoverfly.json' },
+                        }),
+                    ),
+                };
+            } finally {
+                connection.dispose();
+                child.kill();
+            }
+        });
+        // Then - the spec-mandated -32002 is returned (not a benign null result)
+        expect(result.value.value.code).toBe(ErrorCodes.ServerNotInitialized);
     });
 
     test('rejects a SECOND initialize with InvalidRequest (-32600)', async () => {
-        // Given - a server that has already completed one initialize
-        const { child, connection } = spawnServer();
-        try {
-            const first: InitializeResult = await connection.sendRequest(InitializeRequest.type, {
-                processId: process.pid,
-                rootUri: null,
-                capabilities: {},
-            });
-            expect(first.capabilities).toBeDefined();
-
-            // When - a second initialize is sent on the same connection
-            const code = await errorCodeOf(
-                connection.sendRequest(InitializeRequest.type, {
-                    processId: process.pid,
-                    rootUri: null,
-                    capabilities: {},
-                }),
-            );
-            // Then - it is refused with -32600 (the first result still stands)
-            expect(code).toBe(ErrorCodes.InvalidRequest);
-        } finally {
-            connection.dispose();
-            child.kill();
-        }
+        // Given - a server that has already completed one initialize, asked to initialize again
+        const result = await integration.call(async () => {
+            const { child, connection } = spawnServer();
+            try {
+                const first: InitializeResult = await connection.sendRequest(
+                    InitializeRequest.type,
+                    { capabilities: {}, processId: process.pid, rootUri: null },
+                );
+                return {
+                    firstCapabilities: first.capabilities,
+                    secondCode: await errorCodeOf(
+                        connection.sendRequest(InitializeRequest.type, {
+                            capabilities: {},
+                            processId: process.pid,
+                            rootUri: null,
+                        }),
+                    ),
+                };
+            } finally {
+                connection.dispose();
+                child.kill();
+            }
+        });
+        // Then - it is refused with -32600 (the first result still stands)
+        expect(result.value.value.firstCapabilities).toBeDefined();
+        expect(result.value.value.secondCode).toBe(ErrorCodes.InvalidRequest);
     });
 
     test('classifies a BOM-prefixed valid simulation as a simulation (no spurious HF101)', async () => {
         // Given - an initialized push-client and a valid simulation saved with a leading UTF-8 BOM
-        const { child, connection } = spawnServer();
-        try {
-            await connection.sendRequest(InitializeRequest.type, {
-                processId: process.pid,
-                rootUri: null,
-                capabilities: PUSH_CLIENT_CAPABILITIES,
-            });
-            void connection.sendNotification(InitializedNotification.type, {});
+        const result = await integration.call(async () => {
+            const { child, connection } = spawnServer();
+            try {
+                await connection.sendRequest(InitializeRequest.type, {
+                    capabilities: PUSH_CLIENT_CAPABILITIES,
+                    processId: process.pid,
+                    rootUri: null,
+                });
+                void connection.sendNotification(InitializedNotification.type, {});
 
-            const uri = 'file:///bom.hoverfly.json';
-            const valid = `{"data":{"pairs":[]},"meta":{"schemaVersion":"v5.3"}}`;
-            const diagnostics = nextDiagnostics(connection, uri);
-            // When - the BOM-prefixed document is opened
-            void connection.sendNotification(DidOpenTextDocumentNotification.type, {
-                textDocument: { uri, languageId: 'json', version: 1, text: `﻿${valid}` },
-            });
-
-            // Then - zero diagnostics (the BOM is transparent; no HF101)
-            const published = await diagnostics;
-            expect(published.diagnostics).toStrictEqual([]);
-        } finally {
-            connection.dispose();
-            child.kill();
-        }
+                const uri = 'file:///bom.hoverfly.json';
+                const valid = `{"data":{"pairs":[]},"meta":{"schemaVersion":"v5.3"}}`;
+                const diagnostics = nextDiagnostics(connection, uri);
+                void connection.sendNotification(DidOpenTextDocumentNotification.type, {
+                    textDocument: { languageId: 'json', text: `﻿${valid}`, uri, version: 1 },
+                });
+                const published = await diagnostics;
+                return { codes: codesOf(published.diagnostics) };
+            } finally {
+                connection.dispose();
+                child.kill();
+            }
+        });
+        // Then - zero diagnostics (the BOM is transparent; no HF101)
+        expect(result.value.value.codes).toStrictEqual([]);
     });
 });
 
@@ -296,63 +307,67 @@ describe('hoverfly-lsp — push diagnostics (client without pull)', () => {
         // Given - a fixture that produces three distinct HF codes (HF401/HF402/HF403)
         const uri = 'file:///dangling-states.hoverfly.json';
         const text = readFixture('testdata/invalid/hf4xx/dangling-states.hoverfly.json');
-        const diagnostics = nextDiagnostics(connection, uri);
-
-        // When - the document is opened
-        void connection.sendNotification(DidOpenTextDocumentNotification.type, {
-            textDocument: { uri, languageId: 'json', version: 1, text },
+        const result = await integration.call(async () => {
+            const diagnostics = nextDiagnostics(connection, uri);
+            void connection.sendNotification(DidOpenTextDocumentNotification.type, {
+                textDocument: { languageId: 'json', text, uri, version: 1 },
+            });
+            const published = await diagnostics;
+            return { codes: codesOf(published.diagnostics) };
         });
 
         // Then - the published codes contain all three dangling-state diagnostics
-        const published = await diagnostics;
-        const codes = codesOf(published.diagnostics);
-        expect(codes).toStrictEqual(expect.arrayContaining(['HF401', 'HF402', 'HF403']));
+        expect(result.value.value.codes).toStrictEqual(
+            expect.arrayContaining(['HF401', 'HF402', 'HF403']),
+        );
     });
 
     test('re-pushes updated diagnostics after an incremental edit breaks the doc', async () => {
         // Given - a valid simulation is open with empty diagnostics
         const uri = 'file:///edit.hoverfly.json';
         const valid = `{\n  "data": { "pairs": [] },\n  "meta": { "schemaVersion": "v5.3" }\n}`;
-        const opened = nextDiagnostics(connection, uri);
-        void connection.sendNotification(DidOpenTextDocumentNotification.type, {
-            textDocument: { uri, languageId: 'json', version: 1, text: valid },
-        });
-        const initial = await opened;
-        expect(initial.diagnostics).toStrictEqual([]);
+        const result = await integration.call(async () => {
+            const opened = nextDiagnostics(connection, uri);
+            void connection.sendNotification(DidOpenTextDocumentNotification.type, {
+                textDocument: { languageId: 'json', text: valid, uri, version: 1 },
+            });
+            const first = await opened;
+            const initial = codesOf(first.diagnostics);
 
-        // When - an incremental change replaces "pairs" with a structurally-invalid object
-        const updated = nextDiagnostics(connection, uri);
-        void connection.sendNotification(DidChangeTextDocumentNotification.type, {
-            textDocument: { uri, version: 2 },
-            contentChanges: [
-                {
-                    // Replace the whole document (range omitted = full-document change).
-                    text: `{\n  "data": { "pairs": {} },\n  "meta": { "schemaVersion": "v5.3" }\n}`,
-                },
-            ],
+            // An incremental change replaces "pairs" with a structurally-invalid object.
+            const updated = nextDiagnostics(connection, uri);
+            void connection.sendNotification(DidChangeTextDocumentNotification.type, {
+                contentChanges: [
+                    {
+                        // Replace the whole document (range omitted = full-document change).
+                        text: `{\n  "data": { "pairs": {} },\n  "meta": { "schemaVersion": "v5.3" }\n}`,
+                    },
+                ],
+                textDocument: { uri, version: 2 },
+            });
+            const second = await updated;
+            return { after: codesOf(second.diagnostics), initial };
         });
 
-        // Then - the schema error surfaces as HF102 (re-tagged schema diagnostic)
-        const published = await updated;
-        expect(codesOf(published.diagnostics)).toContain('HF102');
+        // Then - the document opened clean, and the schema error surfaces as HF102 after the edit
+        expect(result.value.value.initial).toStrictEqual([]);
+        expect(result.value.value.after).toContain('HF102');
     });
 
     test('publishes zero diagnostics for a non-simulation .json without crashing', async () => {
         // Given - arbitrary JSON in a plainly-named file (D3 gate -> [])
         const uri = 'file:///config.json';
-        const diagnostics = nextDiagnostics(connection, uri);
-        void connection.sendNotification(DidOpenTextDocumentNotification.type, {
-            textDocument: {
-                uri,
-                languageId: 'json',
-                version: 1,
-                text: `{ "hello": "world" }`,
-            },
+        const result = await integration.call(async () => {
+            const diagnostics = nextDiagnostics(connection, uri);
+            void connection.sendNotification(DidOpenTextDocumentNotification.type, {
+                textDocument: { languageId: 'json', text: `{ "hello": "world" }`, uri, version: 1 },
+            });
+            const published = await diagnostics;
+            return { codes: codesOf(published.diagnostics) };
         });
 
         // Then - empty diagnostics, server alive
-        const published = await diagnostics;
-        expect(published.diagnostics).toStrictEqual([]);
+        expect(result.value.value.codes).toStrictEqual([]);
     });
 
     test('places diagnostic ranges at UTF-16 code-unit offsets across an astral emoji', async () => {
@@ -362,34 +377,40 @@ describe('hoverfly-lsp — push diagnostics (client without pull)', () => {
         const line1 = `"request": { "path": [ { "matcher": "frobnicate", "value": "v" } ] },`;
         const line2 = `"response": { "status": 200 } } ] }, "meta": { "schemaVersion": "v5.3" } }`;
         const text = `${line0}\n${line1}\n${line2}`;
-        const diagnostics = nextDiagnostics(connection, uri);
-        void connection.sendNotification(DidOpenTextDocumentNotification.type, {
-            textDocument: { uri, languageId: 'json', version: 1, text },
-        });
-
-        // Then - an HF201 unknown-matcher diagnostic lands on line 1 at the matcher value.
-        const published = await diagnostics;
-        const hf201 = published.diagnostics.find((d) => String(d.code) === 'HF201');
-        expect(hf201).toBeDefined();
-        // Line 1 is pure ASCII; its columns are unaffected by the astral emoji on line 0 (per-line UTF-16 offsetting, not global byte/codepoint)
-        const valueStart = line1.indexOf(`"frobnicate"`);
-        expect(hf201?.range.start.line).toBe(1);
-        expect(hf201?.range.start.character).toBe(valueStart);
-        expect(hf201?.range.end.character).toBe(valueStart + `"frobnicate"`.length);
-
-        // Then - a second doc proves UTF-16 WIDTH: a matcher name with an astral emoji is measured in UTF-16 units (2 per emoji), so "😊exact" spans 9, not 8 codepoints
         const uri2 = 'file:///emoji2.hoverfly.json';
         const prefix = `{"data":{"pairs":[{"request":{"path":[{"matcher":"😊exact",`;
         const text2 = `${prefix}"value":"x"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
-        const diag2 = nextDiagnostics(connection, uri2);
-        void connection.sendNotification(DidOpenTextDocumentNotification.type, {
-            textDocument: { uri: uri2, languageId: 'json', version: 1, text: text2 },
+        const result = await integration.call(async () => {
+            const diagnostics = nextDiagnostics(connection, uri);
+            void connection.sendNotification(DidOpenTextDocumentNotification.type, {
+                textDocument: { languageId: 'json', text, uri, version: 1 },
+            });
+            const published = await diagnostics;
+            const first = published.diagnostics.find((d) => String(d.code) === 'HF201');
+
+            // A second doc proves UTF-16 WIDTH on the matcher name itself.
+            const diag2 = nextDiagnostics(connection, uri2);
+            void connection.sendNotification(DidOpenTextDocumentNotification.type, {
+                textDocument: { languageId: 'json', text: text2, uri: uri2, version: 1 },
+            });
+            const published2 = await diag2;
+            const second = published2.diagnostics.find((d) => String(d.code) === 'HF201');
+            return { first, second };
         });
-        const published2 = await diag2;
-        const hf = published2.diagnostics.find((d) => String(d.code) === 'HF201');
+
+        // Then - an HF201 unknown-matcher diagnostic lands on line 1 at the matcher value.
+        const { first, second } = result.value.value;
+        expect(first).toBeDefined();
+        // Line 1 is pure ASCII; its columns are unaffected by the astral emoji on line 0 (per-line UTF-16 offsetting, not global byte/codepoint)
+        const valueStart = line1.indexOf(`"frobnicate"`);
+        expect(first?.range.start.line).toBe(1);
+        expect(first?.range.start.character).toBe(valueStart);
+        expect(first?.range.end.character).toBe(valueStart + `"frobnicate"`.length);
+
+        // Then - the matcher name with an astral emoji is measured in UTF-16 units (2 per emoji), so "😊exact" spans 9, not 8 codepoints
         // Width breakdown: quote(1) + 😊(2 UTF-16 units) + exact(5) + quote(1) = 9 (codepoints = 8).
-        expect(hf).toBeDefined();
-        expect((hf?.range.end.character ?? 0) - (hf?.range.start.character ?? 0)).toBe(9);
+        expect(second).toBeDefined();
+        expect((second?.range.end.character ?? 0) - (second?.range.start.character ?? 0)).toBe(9);
     });
 });
 
@@ -423,14 +444,17 @@ describe('hoverfly-lsp — pull diagnostics (client with pull)', () => {
     });
 
     test('textDocument/diagnostic returns a full report with the same HF codes', async () => {
-        // When - the client pulls diagnostics
-        const report = (await connection.sendRequest(DocumentDiagnosticRequest.type, {
-            textDocument: { uri },
-        })) as { kind: string; items: Diagnostic[] };
+        // Given - the client pulls diagnostics over the wire
+        const result = await integration.call(
+            async () =>
+                (await connection.sendRequest(DocumentDiagnosticRequest.type, {
+                    textDocument: { uri },
+                })) as { items: Diagnostic[]; kind: string },
+        );
 
         // Then - a full report carrying the multi-code set
-        expect(report.kind).toBe('full');
-        expect(codesOf(report.items)).toStrictEqual(
+        expect(result.value.value.kind).toBe('full');
+        expect(codesOf(result.value.value.items)).toStrictEqual(
             expect.arrayContaining(['HF401', 'HF402', 'HF403']),
         );
     });
@@ -460,18 +484,21 @@ describe('hoverfly-lsp — completion & hover', () => {
         const uri = 'file:///complete-template.hoverfly.json';
         const body = '{{fa';
         const text = `{"data":{"pairs":[{"request":{"path":[]},"response":{"status":200,"templated":true,"body":"${body}"}}]},"meta":{"schemaVersion":"v5.3"}}`;
-        void connection.sendNotification(DidOpenTextDocumentNotification.type, {
-            textDocument: { uri, languageId: 'json', version: 1, text },
-        });
 
         // When - completion is requested at the cursor immediately after `{{fa`
         const cursor = text.indexOf(body) + body.length;
         // Position is line 0 (single line); character == offset since the doc is ASCII before cursor.
-        const completions = (await connection.sendRequest(CompletionRequest.type, {
-            textDocument: { uri },
-            position: { line: 0, character: cursor },
-        })) as CompletionList | null;
-        const labels = (completions?.items ?? []).map((i) => i.label);
+        const result = await integration.call(async () => {
+            void connection.sendNotification(DidOpenTextDocumentNotification.type, {
+                textDocument: { languageId: 'json', text, uri, version: 1 },
+            });
+            const completions = (await connection.sendRequest(CompletionRequest.type, {
+                position: { character: cursor, line: 0 },
+                textDocument: { uri },
+            })) as CompletionList | null;
+            return { labels: (completions?.items ?? []).map((i) => i.label) };
+        });
+        const { labels } = result.value.value;
 
         // Then - faker and a helper are offered
         expect(labels).toContain('faker');
@@ -482,17 +509,20 @@ describe('hoverfly-lsp — completion & hover', () => {
         // Given - an empty matcher value on request.path
         const uri = 'file:///complete-matcher.hoverfly.json';
         const text = `{"data":{"pairs":[{"request":{"path":[{"matcher":""}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
-        void connection.sendNotification(DidOpenTextDocumentNotification.type, {
-            textDocument: { uri, languageId: 'json', version: 1, text },
-        });
 
         // When - completion inside the empty quotes
         const cursor = text.indexOf(`"matcher":""`) + `"matcher":"`.length;
-        const completions = (await connection.sendRequest(CompletionRequest.type, {
-            textDocument: { uri },
-            position: { line: 0, character: cursor },
-        })) as CompletionList | null;
-        const labels = (completions?.items ?? []).map((i) => i.label);
+        const result = await integration.call(async () => {
+            void connection.sendNotification(DidOpenTextDocumentNotification.type, {
+                textDocument: { languageId: 'json', text, uri, version: 1 },
+            });
+            const completions = (await connection.sendRequest(CompletionRequest.type, {
+                position: { character: cursor, line: 0 },
+                textDocument: { uri },
+            })) as CompletionList | null;
+            return { labels: (completions?.items ?? []).map((i) => i.label) };
+        });
+        const { labels } = result.value.value;
 
         // Then - registry matcher names are offered
         expect(labels).toStrictEqual(expect.arrayContaining(['exact', 'regex', 'jsonpath']));
@@ -502,17 +532,20 @@ describe('hoverfly-lsp — completion & hover', () => {
         // Given - an empty value on an exact request.method matcher (the originally-reported gap)
         const uri = 'file:///complete-method.hoverfly.json';
         const text = `{"data":{"pairs":[{"request":{"method":[{"matcher":"exact","value":""}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
-        void connection.sendNotification(DidOpenTextDocumentNotification.type, {
-            textDocument: { uri, languageId: 'json', version: 1, text },
-        });
 
         // When - completion inside the empty value quotes
         const cursor = text.indexOf(`"value":""`) + `"value":"`.length;
-        const completions = (await connection.sendRequest(CompletionRequest.type, {
-            textDocument: { uri },
-            position: { line: 0, character: cursor },
-        })) as CompletionList | null;
-        const labels = (completions?.items ?? []).map((i) => i.label);
+        const result = await integration.call(async () => {
+            void connection.sendNotification(DidOpenTextDocumentNotification.type, {
+                textDocument: { languageId: 'json', text, uri, version: 1 },
+            });
+            const completions = (await connection.sendRequest(CompletionRequest.type, {
+                position: { character: cursor, line: 0 },
+                textDocument: { uri },
+            })) as CompletionList | null;
+            return { labels: (completions?.items ?? []).map((i) => i.label) };
+        });
+        const { labels } = result.value.value;
 
         // Then - the standard HTTP methods are offered through the full server
         expect(labels).toStrictEqual(expect.arrayContaining(['GET', 'POST', 'DELETE']));
@@ -525,17 +558,20 @@ describe('hoverfly-lsp — completion & hover', () => {
         const producer = `{"request":{"path":[{"matcher":"exact","value":"/login"}]},"response":{"status":200,"transitionsState":{"authenticated":"yes"}}}`;
         const consumer = `{"request":{"path":[{"matcher":"exact","value":"/me"}],"requiresState":{"":""}},"response":{"status":200}}`;
         const text = `{"data":{"pairs":[${producer},${consumer}]},"meta":{"schemaVersion":"v5.3"}}`;
-        void connection.sendNotification(DidOpenTextDocumentNotification.type, {
-            textDocument: { uri, languageId: 'json', version: 1, text },
-        });
 
         // When - completion is requested inside the consumer's empty requiresState key quotes
         const cursor = text.indexOf(`"requiresState":{""`) + `"requiresState":{"`.length;
-        const completions = (await connection.sendRequest(CompletionRequest.type, {
-            textDocument: { uri },
-            position: { line: 0, character: cursor },
-        })) as CompletionList | null;
-        const labels = (completions?.items ?? []).map((i) => i.label);
+        const result = await integration.call(async () => {
+            void connection.sendNotification(DidOpenTextDocumentNotification.type, {
+                textDocument: { languageId: 'json', text, uri, version: 1 },
+            });
+            const completions = (await connection.sendRequest(CompletionRequest.type, {
+                position: { character: cursor, line: 0 },
+                textDocument: { uri },
+            })) as CompletionList | null;
+            return { labels: (completions?.items ?? []).map((i) => i.label) };
+        });
+        const { labels } = result.value.value;
 
         // Then - the producer's state key is offered for the requiring side, plus the sequence: snippet
         expect(labels).toContain('authenticated');
@@ -546,19 +582,20 @@ describe('hoverfly-lsp — completion & hover', () => {
         // Given - a "glob" matcher name on request.path
         const uri = 'file:///hover-matcher.hoverfly.json';
         const text = `{"data":{"pairs":[{"request":{"path":[{"matcher":"glob","value":"x"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
-        void connection.sendNotification(DidOpenTextDocumentNotification.type, {
-            textDocument: { uri, languageId: 'json', version: 1, text },
-        });
-
-        // When - hover on the matcher name
         const cursor = text.indexOf(`"glob"`) + 2;
-        const hover = await connection.sendRequest(HoverRequest.type, {
-            textDocument: { uri },
-            position: { line: 0, character: cursor },
+        const result = await integration.call(async () => {
+            void connection.sendNotification(DidOpenTextDocumentNotification.type, {
+                textDocument: { languageId: 'json', text, uri, version: 1 },
+            });
+            const hover = await connection.sendRequest(HoverRequest.type, {
+                position: { character: cursor, line: 0 },
+                textDocument: { uri },
+            });
+            return { rendered: JSON.stringify(hover?.contents) };
         });
 
         // Then - the registry markdown is rendered
-        const rendered = JSON.stringify(hover?.contents);
+        const { rendered } = result.value.value;
         expect(rendered).toContain('Glob (wildcard) match');
         expect(rendered).toContain('docs.hoverfly.io');
     });
@@ -591,63 +628,82 @@ describe('hoverfly-lsp — initializationOptions settings', () => {
         const text = readFixture(
             'testdata/invalid/globalactions/hf602-postserveaction-silent-without-settings.hoverfly.json',
         );
-        const diagnostics = nextDiagnostics(connection, uri);
-        void connection.sendNotification(DidOpenTextDocumentNotification.type, {
-            textDocument: { uri, languageId: 'json', version: 1, text },
+        const result = await integration.call(async () => {
+            const diagnostics = nextDiagnostics(connection, uri);
+            void connection.sendNotification(DidOpenTextDocumentNotification.type, {
+                textDocument: { languageId: 'json', text, uri, version: 1 },
+            });
+            const published = await diagnostics;
+            return { codes: codesOf(published.diagnostics) };
         });
 
         // Then - HF602 fires because registeredActions is configured and the action is unknown
-        const published = await diagnostics;
-        expect(codesOf(published.diagnostics)).toContain('HF602');
+        expect(result.value.value.codes).toContain('HF602');
     });
 });
 
 describe('hoverfly-lsp — semantic tokens', () => {
     test('advertises a semanticTokensProvider with the exact frozen legend (full, no range)', async () => {
         // Given - a client that advertises semantic-tokens support
-        const { child, connection } = spawnServer();
-        try {
-            const result: InitializeResult = await connection.sendRequest(InitializeRequest.type, {
-                processId: process.pid,
-                rootUri: null,
-                capabilities: SEMANTIC_TOKENS_CLIENT_CAPABILITIES,
-            });
-            const provider = result.capabilities.semanticTokensProvider as
-                | undefined
-                | {
-                      full?: boolean | object;
-                      legend: { tokenModifiers: string[]; tokenTypes: string[] };
-                      range?: boolean;
-                  };
+        const result = await integration.call(async () => {
+            const { child, connection } = spawnServer();
+            try {
+                const initialized: InitializeResult = await connection.sendRequest(
+                    InitializeRequest.type,
+                    {
+                        capabilities: SEMANTIC_TOKENS_CLIENT_CAPABILITIES,
+                        processId: process.pid,
+                        rootUri: null,
+                    },
+                );
+                return {
+                    provider: initialized.capabilities.semanticTokensProvider as
+                        | undefined
+                        | {
+                              full?: boolean | object;
+                              legend: { tokenModifiers: string[]; tokenTypes: string[] };
+                              range?: boolean;
+                          },
+                };
+            } finally {
+                connection.dispose();
+                child.kill();
+            }
+        });
 
-            // Then - the provider is advertised with the legend verbatim and in order
-            expect(provider).toBeDefined();
-            expect(provider?.legend.tokenTypes).toStrictEqual([...EXPECTED_LEGEND_TYPES]);
-            expect(provider?.legend.tokenModifiers).toStrictEqual([]);
-            // Then - full pass on, range deliberately off (documented decision)
-            expect(provider?.full).toBeTruthy();
-            expect(provider?.range).toBeFalsy();
-        } finally {
-            connection.dispose();
-            child.kill();
-        }
+        // Then - the provider is advertised with the legend verbatim and in order
+        const { provider } = result.value.value;
+        expect(provider).toBeDefined();
+        expect(provider?.legend.tokenTypes).toStrictEqual([...EXPECTED_LEGEND_TYPES]);
+        expect(provider?.legend.tokenModifiers).toStrictEqual([]);
+        // Then - full pass on, range deliberately off (documented decision)
+        expect(provider?.full).toBeTruthy();
+        expect(provider?.range).toBeFalsy();
     });
 
     test('does NOT advertise the provider to a client without semantic-tokens support', async () => {
         // Given - a push client with no textDocument.semanticTokens capability
-        const { child, connection } = spawnServer();
-        try {
-            const result: InitializeResult = await connection.sendRequest(InitializeRequest.type, {
-                processId: process.pid,
-                rootUri: null,
-                capabilities: PUSH_CLIENT_CAPABILITIES,
-            });
-            // Then - the provider capability is absent (client cannot consume it)
-            expect(result.capabilities.semanticTokensProvider).toBeUndefined();
-        } finally {
-            connection.dispose();
-            child.kill();
-        }
+        const result = await integration.call(async () => {
+            const { child, connection } = spawnServer();
+            try {
+                const initialized: InitializeResult = await connection.sendRequest(
+                    InitializeRequest.type,
+                    {
+                        capabilities: PUSH_CLIENT_CAPABILITIES,
+                        processId: process.pid,
+                        rootUri: null,
+                    },
+                );
+                return {
+                    advertised: initialized.capabilities.semanticTokensProvider !== undefined,
+                };
+            } finally {
+                connection.dispose();
+                child.kill();
+            }
+        });
+        // Then - the provider capability is absent (client cannot consume it)
+        expect(result.value.value.advertised).toBe(false);
     });
 
     describe('with an initialized semantic-tokens client', () => {
@@ -675,22 +731,24 @@ describe('hoverfly-lsp — semantic tokens', () => {
             const prefix = `{"data":{"pairs":[{"request":{"path":[]},"response":{"status":200,"templated":true,"body":"`;
             const body = `{{ faker 'Name' }}`;
             const text = `${prefix}${body}"}}]},"meta":{"schemaVersion":"v5.3"}}`;
-            void connection.sendNotification(DidOpenTextDocumentNotification.type, {
-                textDocument: { uri, languageId: 'json', version: 1, text },
+            const result = await integration.call(async () => {
+                void connection.sendNotification(DidOpenTextDocumentNotification.type, {
+                    textDocument: { languageId: 'json', text, uri, version: 1 },
+                });
+                const tokens = (await connection.sendRequest(SemanticTokensRequest.type, {
+                    textDocument: { uri },
+                })) as SemanticTokens;
+                return { data: tokens.data };
             });
-
-            // When - the client requests full semantic tokens
-            const tokens = (await connection.sendRequest(SemanticTokensRequest.type, {
-                textDocument: { uri },
-            })) as SemanticTokens;
+            const { data } = result.value.value;
 
             // Then - the wire array is non-empty and a clean multiple of 5
-            expect(tokens.data.length).toBeGreaterThan(0);
-            expect(tokens.data.length % 5).toBe(0);
+            expect(data.length).toBeGreaterThan(0);
+            expect(data.length % 5).toBe(0);
 
             // Then - decoding back to absolute tokens, the `{{` operator and `faker` function land
             // On the document characters they color.
-            const decoded = decodeSemanticTokens(tokens.data);
+            const decoded = decodeSemanticTokens(data);
 
             // The body is on line 0 (single-line doc), so startChar is the absolute column.
             const bodyStart = text.indexOf(body);
@@ -721,17 +779,23 @@ describe('hoverfly-lsp — semantic tokens', () => {
         test('returns an empty data array for a non-simulation .json', async () => {
             // Given - arbitrary JSON in a plainly-named file (D3 gate -> no tokens)
             const uri = 'file:///tokens-config.json';
-            void connection.sendNotification(DidOpenTextDocumentNotification.type, {
-                textDocument: { uri, languageId: 'json', version: 1, text: `{ "hello": "world" }` },
+            const result = await integration.call(async () => {
+                void connection.sendNotification(DidOpenTextDocumentNotification.type, {
+                    textDocument: {
+                        languageId: 'json',
+                        text: `{ "hello": "world" }`,
+                        uri,
+                        version: 1,
+                    },
+                });
+                const tokens = (await connection.sendRequest(SemanticTokensRequest.type, {
+                    textDocument: { uri },
+                })) as SemanticTokens;
+                return { data: tokens.data };
             });
 
-            // When - full tokens are requested
-            const tokens = (await connection.sendRequest(SemanticTokensRequest.type, {
-                textDocument: { uri },
-            })) as SemanticTokens;
-
             // Then - the data array is empty (gate honored end-to-end)
-            expect(tokens.data).toStrictEqual([]);
+            expect(result.value.value.data).toStrictEqual([]);
         });
 
         test('places token startChar at UTF-16 offsets across an astral emoji before the template', async () => {
@@ -740,15 +804,16 @@ describe('hoverfly-lsp — semantic tokens', () => {
             const prefix = `{"data":{"pairs":[{"request":{"path":[]},"response":{"status":200,"templated":true,"body":"`;
             const body = `😊{{ faker 'Name' }}`;
             const text = `${prefix}${body}"}}]},"meta":{"schemaVersion":"v5.3"}}`;
-            void connection.sendNotification(DidOpenTextDocumentNotification.type, {
-                textDocument: { uri, languageId: 'json', version: 1, text },
+            const result = await integration.call(async () => {
+                void connection.sendNotification(DidOpenTextDocumentNotification.type, {
+                    textDocument: { languageId: 'json', text, uri, version: 1 },
+                });
+                const tokens = (await connection.sendRequest(SemanticTokensRequest.type, {
+                    textDocument: { uri },
+                })) as SemanticTokens;
+                return { data: tokens.data };
             });
-
-            // When - full tokens are requested
-            const tokens = (await connection.sendRequest(SemanticTokensRequest.type, {
-                textDocument: { uri },
-            })) as SemanticTokens;
-            const decoded = decodeSemanticTokens(tokens.data);
+            const decoded = decodeSemanticTokens(result.value.value.data);
 
             // Then - the `{{` operator starts exactly 2 UTF-16 units past the body start (the emoji),
             // Proving the offset is measured in code units, not codepoints (which would give +1).
@@ -793,15 +858,17 @@ describe('hoverfly-lsp — performance sanity', () => {
     });
 
     test('pull round-trip on the 30+ pair realworld file completes under 2s', async () => {
-        // When - the diagnostic pull round-trips over the wire
-        const start = performance.now();
-        const report = (await connection.sendRequest(DocumentDiagnosticRequest.type, {
-            textDocument: { uri },
-        })) as { kind: string; items: Diagnostic[] };
-        const elapsed = performance.now() - start;
+        // Given - the diagnostic pull round-trips over the wire, timed
+        const result = await integration.call(async () => {
+            const start = performance.now();
+            const report = (await connection.sendRequest(DocumentDiagnosticRequest.type, {
+                textDocument: { uri },
+            })) as { items: Diagnostic[]; kind: string };
+            return { elapsed: performance.now() - start, kind: report.kind };
+        });
 
         // Then - it returns a report well within a loose CI bound
-        expect(report.kind).toBe('full');
-        expect(elapsed).toBeLessThan(2000);
+        expect(result.value.value.kind).toBe('full');
+        expect(result.value.value.elapsed).toBeLessThan(2000);
     });
 });

@@ -42,11 +42,12 @@ import { describe, expect, test } from 'vitest';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { CompletionItemKind } from 'vscode-languageserver-types';
 
-import { createHoverflyLanguageService } from '../../src/service.js';
+import { createHoverflyLanguageService } from '../../../src/service.js';
 import { loadCorpusExpectation, stripMarkersToOffsets } from '../fourslash/harness.js';
 import type { CompletionMarkerExpectation } from '../fourslash/harness.js';
+import { integration } from '../integration.specification.js';
 
-const repoRoot = fileURLToPath(new URL('../../../../', import.meta.url));
+const repoRoot = fileURLToPath(new URL('../../../../../', import.meta.url));
 
 /** When set, dump actual results for fixtures whose relpath contains this substring (`1`/`all` = every fixture). */
 const DUMP = process.env.CORPUS_DUMP;
@@ -120,37 +121,50 @@ describe('corpus: testdata/completion', () => {
     });
 
     test.each(completionFixtures)('%s', async (relPath) => {
-        const { text, offsets, settings, markers } = prepare(relPath);
-        const service = createHoverflyLanguageService([], settings ?? {});
-        const document = TextDocument.create(fixtureUri(relPath), 'json', 1, text);
+        // Given - the fixture's markers, read through the real service
+        const prepared = prepare(relPath);
+        const result = await integration.call(async () => {
+            const service = createHoverflyLanguageService([], prepared.settings ?? {});
+            const document = TextDocument.create(fixtureUri(relPath), 'json', 1, prepared.text);
+            const produced = isBroken(relPath) ? [] : await service.doValidation(document);
+            const diagnostics = produced.map((d) => `${String(d.code)}: ${d.message}`);
+            const readings = [];
+            for (const marker of Object.keys(prepared.markers)) {
+                const offset = prepared.offsets.get(marker)!;
+                const list = await service.doComplete(document, document.positionAt(offset));
+                const items = list?.items ?? [];
+                readings.push({
+                    items: items.map((i) => ({
+                        kind: i.kind === undefined ? '(none)' : (KIND_NAMES[i.kind] ?? i.kind),
+                        label: i.label,
+                    })),
+                    marker,
+                });
+            }
+            return { diagnostics, readings };
+        });
+        const { diagnostics, readings } = result.value.value;
 
-        // Marker-stripped fixture must be a valid simulation unless it lives under `broken/`.
-        if (!isBroken(relPath)) {
-            const diagnostics = await service.doValidation(document);
-            expect(
-                diagnostics.map((d) => `${String(d.code)}: ${d.message}`),
-                `${relPath}: marker-stripped fixture must be a VALID simulation (zero diagnostics). ` +
-                    `Place it under a .../broken/ subdir if it is intentionally mid-typing/invalid.`,
-            ).toStrictEqual([]);
-        }
+        // Then - the marker-stripped fixture is a valid simulation unless it lives under `broken/`
+        expect(
+            diagnostics,
+            `${relPath}: marker-stripped fixture must be a VALID simulation (zero diagnostics). ` +
+                `Place it under a .../broken/ subdir if it is intentionally mid-typing/invalid.`,
+        ).toStrictEqual([]);
 
-        for (const [marker, expectation] of Object.entries(markers)) {
-            const offset = offsets.get(marker)!;
-            const list = await service.doComplete(document, document.positionAt(offset));
-            const items = list?.items ?? [];
+        // Then - every marker's sidecar expectation holds
+        for (const { items, marker } of readings) {
             const labels = items.map((i) => i.label);
             const where = `${relPath} @ marker '${marker || '(default)'}'`;
 
             if (shouldDump(relPath)) {
-                const rows = items
-                    .map((i) => `  ${i.label}  [${KIND_NAMES[i.kind ?? -1] ?? i.kind ?? '?'}]`)
-                    .join('\n');
+                const rows = items.map((i) => `  ${i.label}  [${i.kind}]`).join('\n');
                 process.stdout.write(
                     `\n[CORPUS_DUMP] completion ${where} (${labels.length})\n${rows}\n`,
                 );
             }
 
-            const exp = expectation as CompletionMarkerExpectation;
+            const exp = prepared.markers[marker] as CompletionMarkerExpectation;
             for (const label of exp.includes ?? []) {
                 expect(labels, `${where}: missing completion '${label}'`).toContain(label);
             }
@@ -163,9 +177,7 @@ describe('corpus: testdata/completion', () => {
             for (const [label, kindName] of Object.entries(exp.kindOf ?? {})) {
                 const item = items.find((i) => i.label === label);
                 expect(item, `${where}: no completion '${label}' to check kind`).toBeDefined();
-                const actual =
-                    item?.kind === undefined ? '(none)' : (KIND_NAMES[item.kind] ?? item.kind);
-                expect(actual, `${where}: completion '${label}' kind`).toBe(kindName);
+                expect(item?.kind, `${where}: completion '${label}' kind`).toBe(kindName);
             }
         }
     });
@@ -196,23 +208,32 @@ describe('corpus: testdata/hover', () => {
     });
 
     test.each(hoverFixtures)('%s', async (relPath) => {
-        const { text, offsets, settings, markers } = prepare(relPath);
-        const service = createHoverflyLanguageService([], settings ?? {});
-        const document = TextDocument.create(fixtureUri(relPath), 'json', 1, text);
+        // Given - the fixture's markers, hovered through the real service
+        const prepared = prepare(relPath);
+        const result = await integration.call(async () => {
+            const service = createHoverflyLanguageService([], prepared.settings ?? {});
+            const document = TextDocument.create(fixtureUri(relPath), 'json', 1, prepared.text);
+            const produced = isBroken(relPath) ? [] : await service.doValidation(document);
+            const diagnostics = produced.map((d) => `${String(d.code)}: ${d.message}`);
+            const readings = [];
+            for (const marker of Object.keys(prepared.markers)) {
+                const offset = prepared.offsets.get(marker)!;
+                const hover = await service.doHover(document, document.positionAt(offset));
+                readings.push({ marker, rendered: renderHover(hover) });
+            }
+            return { diagnostics, readings };
+        });
+        const { diagnostics, readings } = result.value.value;
 
-        if (!isBroken(relPath)) {
-            const diagnostics = await service.doValidation(document);
-            expect(
-                diagnostics.map((d) => `${String(d.code)}: ${d.message}`),
-                `${relPath}: marker-stripped fixture must be a VALID simulation (zero diagnostics). ` +
-                    `Place it under a .../broken/ subdir if it is intentionally mid-typing/invalid.`,
-            ).toStrictEqual([]);
-        }
+        // Then - the marker-stripped fixture is a valid simulation unless it lives under `broken/`
+        expect(
+            diagnostics,
+            `${relPath}: marker-stripped fixture must be a VALID simulation (zero diagnostics). ` +
+                `Place it under a .../broken/ subdir if it is intentionally mid-typing/invalid.`,
+        ).toStrictEqual([]);
 
-        for (const [marker, expectation] of Object.entries(markers)) {
-            const offset = offsets.get(marker)!;
-            const hover = await service.doHover(document, document.positionAt(offset));
-            const rendered = renderHover(hover);
+        // Then - every marker's sidecar expectation holds
+        for (const { marker, rendered } of readings) {
             const where = `${relPath} @ marker '${marker || '(default)'}'`;
 
             if (shouldDump(relPath)) {
@@ -221,7 +242,7 @@ describe('corpus: testdata/hover', () => {
                 );
             }
 
-            const exp = expectation;
+            const exp = prepared.markers[marker] as CompletionMarkerExpectation;
             for (const fragment of exp.includes ?? []) {
                 expect(rendered, `${where}: hover should include '${fragment}'`).toContain(
                     fragment,

@@ -9,7 +9,7 @@
  * Plain file compare (not toMatchFileSnapshot) is used so diffs read as plain JSON and
  * regeneration is a single explicit step.
  *
- *   Regenerate goldens:  UPDATE_GOLDENS=1 npx vitest --run packages/analysis/test/semantic/golden.test.ts
+ *   Regenerate goldens:  UPDATE_GOLDENS=1 npx vitest --run packages/analysis/specs/integration/semantic/golden.spec.ts
  *
  * Review the regenerated `.diagnostics.golden` files before committing — they are the frozen
  * contract for the HFxxx catalog.
@@ -23,9 +23,10 @@ import { describe, expect, test } from 'vitest';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DiagnosticSeverity } from 'vscode-languageserver-types';
 
-import { createHoverflyLanguageService } from '../../src/service.js';
+import { createHoverflyLanguageService } from '../../../src/service.js';
+import { integration } from '../integration.specification.js';
 
-const repoRoot = fileURLToPath(new URL('../../../../', import.meta.url));
+const repoRoot = fileURLToPath(new URL('../../../../../', import.meta.url));
 const UPDATE = process.env.UPDATE_GOLDENS === '1';
 
 const service = createHoverflyLanguageService();
@@ -77,13 +78,13 @@ describe('golden: testdata/invalid', () => {
     });
 
     test.each(invalidFixtures)('%s matches its .diagnostics.golden', async (relPath) => {
-        // Given - an invalid fixture and its sibling golden file
+        // Given - an invalid fixture put through the full pipeline
+        const result = await integration.call(async () => await diagnose(relPath));
+        const actual = result.value.value;
         const goldenPath = join(repoRoot, `${relPath}.diagnostics.golden`);
-        const actual = await diagnose(relPath);
-        const serialized = `${JSON.stringify(actual, null, 2)}\n`;
 
         if (UPDATE) {
-            writeFileSync(goldenPath, serialized);
+            writeFileSync(goldenPath, `${JSON.stringify(actual, null, 2)}\n`);
             return;
         }
 
@@ -105,9 +106,9 @@ describe('golden: testdata/valid produces zero diagnostics', () => {
     });
 
     test.each(validFixtures)('%s yields zero diagnostics end-to-end', async (relPath) => {
-        // Given - a committed valid fixture
-        const actual = await diagnose(relPath);
+        // Given - a committed valid fixture put through the full pipeline
+        const result = await integration.call(async () => await diagnose(relPath));
         // Then - the full pipeline reports nothing
-        expect(actual).toStrictEqual([]);
+        expect(result.value.value).toStrictEqual([]);
     });
 });

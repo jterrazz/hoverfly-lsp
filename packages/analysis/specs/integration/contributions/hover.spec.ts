@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
-import { expectHover, getHoverText } from '../fourslash/harness.js';
+import { expectHoverIncludes, hoverAt } from '../fourslash/harness.js';
+import { integration } from '../integration.specification.js';
 
 /*
  * Hover content policy (issue: hover noise). A matcher hover describes THAT matcher only — its
@@ -15,23 +16,23 @@ describe('matcher-name hover', () => {
         // Given - the cursor on a "glob" matcher name string
         const doc = `{"data":{"pairs":[{"request":{"path":[{"matcher":"⟦⟧glob","value":"x"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
         // Then - the hover surfaces the registry-sourced docs and metadata lines
-        await expectHover(doc, '', {
-            includes: [
-                'glob',
-                'Glob (wildcard) match',
-                'Value type:',
-                'Config:',
-                'doMatch:',
-                'docs.hoverfly.io',
-            ],
-        });
+        const hovered = await integration.call(async () => await hoverAt(doc, ''));
+        expectHoverIncludes(hovered.value.text, [
+            'glob',
+            'Glob (wildcard) match',
+            'Value type:',
+            'Config:',
+            'doMatch:',
+            'docs.hoverfly.io',
+        ]);
     });
 
     test('does NOT append the generic unknown-matcher panic warning to a valid matcher hover', async () => {
         // Given - a perfectly valid "regex" matcher name (the user's reported scenario)
         const doc = `{"data":{"pairs":[{"request":{"path":[{"matcher":"⟦⟧regex","value":"x"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
         // When - the matcher hover renders
-        const text = await getHoverText(doc, '');
+        const hovered = await integration.call(async () => await hoverAt(doc, ''));
+        const { text } = hovered.value;
         // Then - the registry docs are present, but neither generic panic note appears
         expect(text).toContain('Regular-expression match');
         expect(text).not.toContain('Unknown matcher name');
@@ -48,7 +49,8 @@ describe('matcher-name hover', () => {
         // Given - the cursor on an "array" matcher name (the only config-bearing matcher)
         const doc = `{"data":{"pairs":[{"request":{"path":[{"matcher":"⟦⟧array","value":[]}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
         // When
-        const text = await getHoverText(doc, '');
+        const hovered = await integration.call(async () => await hoverAt(doc, ''));
+        const { text } = hovered.value;
         // Then - config support, its keys, and the array-specific non-bool footgun appear...
         expect(text).toContain('Config:** supported');
         expect(text).toContain('ignoreOrder');
@@ -62,7 +64,8 @@ describe('matcher-name hover', () => {
         // Given - a "form" matcher name on request.body
         const doc = `{"data":{"pairs":[{"request":{"body":[{"matcher":"⟦⟧form","value":{}}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
         // When
-        const text = await getHoverText(doc, '');
+        const hovered = await integration.call(async () => await hoverAt(doc, ''));
+        const { text } = hovered.value;
         // Then - the body-only form docs and its OWN placement/case note appear (no generic panic)
         expect(text).toContain('Body-layer pseudo-matcher');
         expect(text).toContain('⚠️');
@@ -74,7 +77,8 @@ describe('matcher-name hover', () => {
         // Given - a "negate" matcher name (the only vacuous-true matcher)
         const doc = `{"data":{"pairs":[{"request":{"path":[{"matcher":"⟦⟧negate","value":"x"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
         // When
-        const text = await getHoverText(doc, '');
+        const hovered = await integration.call(async () => await hoverAt(doc, ''));
+        const { text } = hovered.value;
         // Then - the negate-specific vacuous-true note appears
         expect(text).toContain('⚠️');
         expect(text).toContain('matches vacuously');
@@ -85,7 +89,8 @@ describe('matcher-name hover', () => {
         // Given - the cursor on the schemaVersion key (a schema-documented field, not a matcher)
         const doc = `{"data":{"pairs":[]},"meta":{"schemaVersion":"⟦⟧v5.3"}}`;
         // Then - the schema-driven hover content (not matcher docs) is rendered
-        const text = await getHoverText(doc, '');
+        const hovered = await integration.call(async () => await hoverAt(doc, ''));
+        const { text } = hovered.value;
         expect(text).toContain('schema version');
         expect(text).not.toContain('Value type:');
     });
@@ -94,7 +99,8 @@ describe('matcher-name hover', () => {
         // Given - arbitrary JSON with a coincidental matcher key, no simulation fingerprint
         const doc = `{"foo":{"matcher":"⟦⟧glob"}}`;
         // Then - no matcher-docs hover is injected
-        const text = await getHoverText(doc, '');
+        const hovered = await integration.call(async () => await hoverAt(doc, ''));
+        const { text } = hovered.value;
         expect(text).not.toContain('Glob (wildcard) match');
     });
 });

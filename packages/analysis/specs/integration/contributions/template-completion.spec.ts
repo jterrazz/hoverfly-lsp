@@ -1,7 +1,8 @@
 import { describe, expect, test } from 'vitest';
 
-import { ALL_HELPERS, FAKER_NAMES } from '../../src/registry/index.js';
-import { expectCompletions, expectNoCompletions } from '../fourslash/harness.js';
+import { ALL_HELPERS, FAKER_NAMES } from '../../../src/registry/index.js';
+import { completionsAt, expectLabels } from '../fourslash/harness.js';
+import { integration } from '../integration.specification.js';
 
 /**
  * IntelliSense INSIDE templated strings — the flagship feature. These cursor-marker tests drive
@@ -25,7 +26,8 @@ describe('template completion — helper/path start', () => {
         // Given - a just-opened mustache in a templated body
         const doc = templatedBody('{{⟦⟧}}');
         // Then - every helper plus the data roots are offered; faker/Request both present
-        await expectCompletions(doc, '', {
+        const completions = await integration.call(async () => await completionsAt(doc, ''));
+        expectLabels(completions.value.value, {
             contains: [...HELPER_NAMES, 'Request', 'State', 'Vars', 'Literals'],
         });
     });
@@ -34,14 +36,17 @@ describe('template completion — helper/path start', () => {
         // Given - a half-typed helper name with no closing braces (MID-TYPING)
         const doc = templatedBody('{{fa⟦⟧');
         // Then - completions still fire (the client filters by the typed prefix)
-        await expectCompletions(doc, '', { contains: ['faker', 'randomFloat'] });
+        const completions = await integration.call(async () => await completionsAt(doc, ''));
+        expectLabels(completions.value.value, { contains: ['faker', 'randomFloat'] });
     });
 
     test('inserts helper arguments as a snippet placeholder', async () => {
         // Given - a mustache head
         const doc = templatedBody('{{⟦⟧}}');
         // When
-        const items = await expectCompletions(doc, '', { contains: ['replace'] });
+        const completions = await integration.call(async () => await completionsAt(doc, ''));
+        const items = completions.value.value;
+        expectLabels(items, { contains: ['replace'] });
         const replace = items.find((i) => i.label === 'replace');
         // Then - the snippet carries the three argument placeholders (built via concatenation so the
         // Test source does not contain a literal `${…}` template placeholder)
@@ -57,7 +62,8 @@ describe('template completion — path continuation', () => {
         // Given - a dotted Request path being continued
         const doc = templatedBody('{{Request.⟦⟧}}');
         // Then - the documented members appear (report 08 §6)
-        await expectCompletions(doc, '', {
+        const completions = await integration.call(async () => await completionsAt(doc, ''));
+        expectLabels(completions.value.value, {
             contains: [
                 'Scheme',
                 'Method',
@@ -79,7 +85,8 @@ describe('template completion — path continuation', () => {
       {"request":{"path":[]},"response":{"status":200,"templated":true,"body":"{{State.⟦⟧}}"}}
     ]},"meta":{"schemaVersion":"v5.3"}}`;
         // Then - both the requiresState and transitionsState keys are cross-referenced
-        await expectCompletions(doc, '', { contains: ['cart', 'checkout'] });
+        const completions = await integration.call(async () => await completionsAt(doc, ''));
+        expectLabels(completions.value.value, { contains: ['cart', 'checkout'] });
     });
 
     test('offers declared Vars names after `Vars.`', async () => {
@@ -88,7 +95,8 @@ describe('template completion — path continuation', () => {
       {"request":{"path":[]},"response":{"status":200,"templated":true,"body":"{{Vars.⟦⟧}}"}}
     ]},"meta":{"schemaVersion":"v5.3"}}`;
         // Then
-        await expectCompletions(doc, '', { contains: ['token'] });
+        const completions = await integration.call(async () => await completionsAt(doc, ''));
+        expectLabels(completions.value.value, { contains: ['token'] });
     });
 
     test('offers declared Literals names after `Literals.`', async () => {
@@ -96,7 +104,8 @@ describe('template completion — path continuation', () => {
         const doc = `{"data":{"literals":[{"name":"apiBase","value":"https://x"}],"pairs":[
       {"request":{"path":[]},"response":{"status":200,"templated":true,"body":"{{Literals.⟦⟧}}"}}
     ]},"meta":{"schemaVersion":"v5.3"}}`;
-        await expectCompletions(doc, '', { contains: ['apiBase'] });
+        const completions = await integration.call(async () => await completionsAt(doc, ''));
+        expectLabels(completions.value.value, { contains: ['apiBase'] });
     });
 });
 
@@ -105,7 +114,9 @@ describe('template completion — faker context', () => {
         // Given - inside the faker string arg
         const doc = templatedBody("{{faker '⟦⟧'}}");
         // Then - the zero-arg names are offered; Email present, the parameterized Number absent
-        const items = await expectCompletions(doc, '', {
+        const completions = await integration.call(async () => await completionsAt(doc, ''));
+        const items = completions.value.value;
+        expectLabels(items, {
             contains: ['Email'],
             notContains: ['Number'],
         });
@@ -118,14 +129,16 @@ describe('template completion — now args', () => {
         // Given - cursor in the first now arg (offset)
         const doc = templatedBody("{{now '⟦⟧'}}");
         // Then - offset examples are offered
-        await expectCompletions(doc, '', { contains: ['-1d', '+1h'] });
+        const completions = await integration.call(async () => await completionsAt(doc, ''));
+        expectLabels(completions.value.value, { contains: ['-1d', '+1h'] });
     });
 
     test('offers format strings in the now format slot', async () => {
         // Given - cursor in the second now arg (format)
         const doc = templatedBody("{{now '-1d' '⟦⟧'}}");
         // Then - the format examples (unix / epoch / Go layout) are offered
-        await expectCompletions(doc, '', { contains: ['unix', 'epoch', '2006-01-02'] });
+        const completions = await integration.call(async () => await completionsAt(doc, ''));
+        expectLabels(completions.value.value, { contains: ['unix', 'epoch', '2006-01-02'] });
     });
 });
 
@@ -134,7 +147,8 @@ describe('template completion — #each scope', () => {
         // Given - a mustache head inside an (unclosed) #each block
         const doc = templatedBody('{{#each items}}{{⟦⟧');
         // Then - the each data variables and `this` are offered alongside helpers
-        await expectCompletions(doc, '', {
+        const completions = await integration.call(async () => await completionsAt(doc, ''));
+        expectLabels(completions.value.value, {
             contains: ['@index', '@first', '@last', '@key', 'this'],
         });
     });
@@ -142,13 +156,15 @@ describe('template completion — #each scope', () => {
     test('offers @-vars after `{{@` inside #each (nested mid-typing)', async () => {
         // Given - nested: a `{{@` continuation inside #each
         const doc = templatedBody('{{#each items}}{{@⟦⟧');
-        await expectCompletions(doc, '', { contains: ['@index', '@key'] });
+        const completions = await integration.call(async () => await completionsAt(doc, ''));
+        expectLabels(completions.value.value, { contains: ['@index', '@key'] });
     });
 
     test('does NOT offer @-vars outside an #each scope', async () => {
         // Given - a top-level mustache head (no enclosing block)
         const doc = templatedBody('{{⟦⟧}}');
-        await expectCompletions(doc, '', { notContains: ['@index', 'this'] });
+        const completions = await integration.call(async () => await completionsAt(doc, ''));
+        expectLabels(completions.value.value, { notContains: ['@index', 'this'] });
     });
 });
 
@@ -157,7 +173,8 @@ describe('template completion — block close', () => {
         // Given - typing a block close inside an open #each
         const doc = templatedBody('{{#each items}}{{/⟦⟧');
         // Then - `each` is offered to close the block
-        await expectCompletions(doc, '', { contains: ['each'] });
+        const completions = await integration.call(async () => await completionsAt(doc, ''));
+        expectLabels(completions.value.value, { contains: ['each'] });
     });
 });
 
@@ -166,7 +183,8 @@ describe('template completion — header values', () => {
         // Given - templated:true and a header value containing a mustache head
         const doc = `{"data":{"pairs":[{"request":{"path":[]},"response":{"status":200,"templated":true,"headers":{"X-Trace":["{{⟦⟧}}"]}}}]},"meta":{"schemaVersion":"v5.3"}}`;
         // Then - helper completions fire in the header value too
-        await expectCompletions(doc, '', { contains: ['randomUuid'] });
+        const completions = await integration.call(async () => await completionsAt(doc, ''));
+        expectLabels(completions.value.value, { contains: ['randomUuid'] });
     });
 });
 
@@ -175,7 +193,8 @@ describe('template completion — mid-typing without templated flag', () => {
         // Given - no `templated` key, but the body is clearly a template in progress
         const doc = `{"data":{"pairs":[{"request":{"path":[]},"response":{"status":200,"body":"{{fa⟦⟧"}}]},"meta":{"schemaVersion":"v5.3"}}`;
         // Then - completions still fire (HF501 diagnostic separately nudges them to set templated)
-        await expectCompletions(doc, '', { contains: ['faker'] });
+        const completions = await integration.call(async () => await completionsAt(doc, ''));
+        expectLabels(completions.value.value, { contains: ['faker'] });
     });
 });
 
@@ -184,7 +203,11 @@ describe('template completion — escape-heavy position mapping', () => {
         // Given - the body has a `\n` escape before the mustache; the marker sits after `Request.`
         const doc = templatedBody(String.raw`line1\n{{Request.⟦⟧}}`);
         // Then - despite the 2-char escape, the cursor resolves to the Request continuation
-        await expectCompletions(doc, '', { contains: ['Method', 'Path'], notContains: ['faker'] });
+        const completions = await integration.call(async () => await completionsAt(doc, ''));
+        expectLabels(completions.value.value, {
+            contains: ['Method', 'Path'],
+            notContains: ['faker'],
+        });
     });
 });
 
@@ -193,20 +216,23 @@ describe('template completion — negatives', () => {
         // Given - a body with no template syntax and templated absent
         const doc = `{"data":{"pairs":[{"request":{"path":[]},"response":{"status":200,"body":"plain ⟦⟧text"}}]},"meta":{"schemaVersion":"v5.3"}}`;
         // Then - no template completions (and no helper noise leaks)
-        await expectNoCompletions(doc, '');
+        const completions = await integration.call(async () => await completionsAt(doc, ''));
+        expect(completions.value.value).toHaveLength(0);
     });
 
     test('offers NO template completions in a requiresState value', async () => {
         // Given - a cursor in a requiresState value (not a templatable string)
         const doc = `{"data":{"pairs":[{"request":{"path":[],"requiresState":{"k":"⟦⟧"}},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
         // Then - no helper/faker completions appear here
-        await expectCompletions(doc, '', { notContains: [...HELPER_NAMES, 'Request'] });
+        const completions = await integration.call(async () => await completionsAt(doc, ''));
+        expectLabels(completions.value.value, { notContains: [...HELPER_NAMES, 'Request'] });
     });
 
     test('offers NO template completions in plain literal text inside a templated body', async () => {
         // Given - the cursor is in literal text (outside any mustache) of a templated body
         const doc = templatedBody('hello ⟦⟧ world');
         // Then - none (the cursor is not inside a `{{ }}`)
-        await expectNoCompletions(doc, '');
+        const completions = await integration.call(async () => await completionsAt(doc, ''));
+        expect(completions.value.value).toHaveLength(0);
     });
 });
