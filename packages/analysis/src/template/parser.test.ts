@@ -1,17 +1,17 @@
 import { describe, expect, test } from 'vitest';
 
-import {
-    type BlockNode,
-    type ContentNode,
-    type Expression,
-    type MustacheNode,
-    parse,
-    type PathExpression,
-    type Statement,
-    type SubExpression,
-    type TemplateNode,
-    type TemplateParseError,
-} from '../../src/template/index.js';
+import type {
+    BlockNode,
+    ContentNode,
+    Expression,
+    MustacheNode,
+    PathExpression,
+    Statement,
+    SubExpression,
+    TemplateNode,
+} from './ast.js';
+import { parse } from './parser.js';
+import type { TemplateParseError } from './parser.js';
 
 /**
  * Golden-ish unit tests for the hand-rolled Handlebars parser. Constructs are drawn from

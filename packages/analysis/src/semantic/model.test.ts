@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { getLanguageService } from 'vscode-json-languageservice';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
-import { buildSimulationModel } from '../../src/semantic/model.js';
+import { buildSimulationModel } from './model.js';
 
 const ls = getLanguageService({});
 
@@ -46,6 +46,9 @@ describe('buildSimulationModel', () => {
         // Then - the pair and its matcher fields are exposed with AST nodes
         expect(model.pairs).toHaveLength(1);
         const pair = model.pairs[0];
+        if (pair === undefined) {
+            throw new Error('expected exactly one pair');
+        }
         const path = pair.request.fields.find((f) => f.fieldName === 'path');
         expect(path?.container).toBe('request');
         expect(path?.matchers[0]?.matcherName).toBe('exact');

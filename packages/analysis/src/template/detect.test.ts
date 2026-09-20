@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { hasTemplateSyntax } from '../../src/template/index.js';
+import { hasTemplateSyntax } from './detect.js';
 
 describe('hasTemplateSyntax', () => {
     test('detects a mustache opener', () => {

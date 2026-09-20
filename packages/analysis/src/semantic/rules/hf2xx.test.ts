@@ -8,8 +8,8 @@ import { describe, expect, test } from 'vitest';
 import { getLanguageService } from 'vscode-json-languageservice';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
-import { createRuleContext } from '../../src/semantic/engine.js';
-import { hf2xxMatcherRule } from '../../src/semantic/rules/hf2xx.js';
+import { createRuleContext } from '../engine.js';
+import { hf2xxMatcherRule } from './hf2xx.js';
 
 const ls = getLanguageService({});
 

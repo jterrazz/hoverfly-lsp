@@ -3,8 +3,9 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, test } from 'vitest';
 import { TextDocument } from 'vscode-languageserver-textdocument';
+import { Diagnostic } from 'vscode-languageserver-types';
 
-import { createHoverflyLanguageService } from '../src/service.js';
+import { createHoverflyLanguageService } from './service.js';
 
 const repoRoot = fileURLToPath(new URL('../../../', import.meta.url));
 
@@ -48,7 +49,7 @@ describe('createHoverflyLanguageService — schema-driven validation', () => {
         const text = `{"data":{"pairs":{}},"meta":{"schemaVersion":"v5.3"},"extra":1}`;
         // When - validated
         const diagnostics = await service.doValidation(doc(text));
-        const messages = diagnostics.map((d) => d.message);
+        const messages = diagnostics.map((d) => Diagnostic.getMessageString(d));
         // Then - each structural problem is reported, re-tagged as HF102
         expect(messages).toContain('Incorrect type. Expected "array".');
         expect(messages.some((m) => m.includes('extra') && m.includes('not allowed'))).toBeTruthy();

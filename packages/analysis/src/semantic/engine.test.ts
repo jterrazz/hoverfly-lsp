@@ -1,8 +1,9 @@
 import { describe, expect, test } from 'vitest';
-import { type Diagnostic, DiagnosticSeverity } from 'vscode-languageserver-types';
+import { DiagnosticSeverity } from 'vscode-languageserver-types';
+import type { Diagnostic } from 'vscode-languageserver-types';
 
-import { applyHF102Layer, runRules, sortByRange } from '../../src/semantic/engine.js';
-import { type RuleContext, type SemanticRule } from '../../src/semantic/types.js';
+import { applyHF102Layer, runRules, sortByRange } from './engine.js';
+import type { RuleContext, SemanticRule } from './types.js';
 
 function range(line: number, startChar: number, endChar: number): Diagnostic['range'] {
     return { start: { line, character: startChar }, end: { line, character: endChar } };

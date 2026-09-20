@@ -1,10 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import {
-    FAKER_NAMES,
-    FAKER_PARAMETERIZED_PANICS,
-    GOFAKEIT_VERSION,
-} from '../../src/registry/faker.js';
+import { FAKER_NAMES, FAKER_PARAMETERIZED_PANICS, GOFAKEIT_VERSION } from './faker.js';
 
 describe('fAKER_NAMES', () => {
     test('has exactly 210 names (gofakeit v6.28.0 zero-arg methods)', () => {

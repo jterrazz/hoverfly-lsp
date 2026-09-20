@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'vitest';
 import { getLanguageService } from 'vscode-json-languageservice';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { DiagnosticSeverity } from 'vscode-languageserver-types';
+import { Diagnostic, DiagnosticSeverity } from 'vscode-languageserver-types';
 
-import { createRuleContext } from '../../src/semantic/engine.js';
-import { hf3xxResponseRule } from '../../src/semantic/rules/hf3xx.js';
+import { createRuleContext } from '../engine.js';
+import { hf3xxResponseRule } from './hf3xx.js';
 
 const ls = getLanguageService({});
 
@@ -24,6 +24,12 @@ function diagnoseResponse(response: Record<string, unknown>) {
 }
 
 const codes = (diags: { code?: unknown }[]) => diags.map((d) => String(d.code));
+
+/** The message of the first diagnostic, as plain text — `undefined` when there is none. */
+const firstMessage = (diags: Diagnostic[]) => {
+    const first = diags[0];
+    return first === undefined ? undefined : Diagnostic.getMessageString(first);
+};
 
 describe('hF301 — body and bodyFile both set', () => {
     test('warns and points at the bodyFile key', () => {
@@ -177,7 +183,7 @@ describe('hF307 — logNormalDelay constraints', () => {
         // Given - mean 0 (Go: mean <= 0 fails)
         const diags = diagnoseResponse({ status: 200, logNormalDelay: { mean: 0, median: 5 } });
         expect(codes(diags)).toStrictEqual(['HF307']);
-        expect(diags[0]?.message.toLowerCase()).toContain('mean');
+        expect(firstMessage(diags)?.toLowerCase()).toContain('mean');
     });
 
     test('warns when min is negative', () => {
@@ -205,7 +211,7 @@ describe('hF307 — logNormalDelay constraints', () => {
             logNormalDelay: { mean: 30, median: 50 },
         });
         expect(codes(diags)).toStrictEqual(['HF307']);
-        expect(diags[0]?.message.toLowerCase()).toContain('median');
+        expect(firstMessage(diags)?.toLowerCase()).toContain('median');
     });
 });
 

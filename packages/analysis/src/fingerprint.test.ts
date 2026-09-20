@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { hasHoverflyFilename, isHoverflySimulation } from '../src/fingerprint.js';
+import { hasHoverflyFilename, isHoverflySimulation } from './fingerprint.js';
 
 describe('isHoverflySimulation', () => {
     test('accepts a minimal valid v5.3 simulation', () => {

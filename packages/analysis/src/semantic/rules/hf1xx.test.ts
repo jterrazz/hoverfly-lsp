@@ -2,8 +2,8 @@ import { describe, expect, test } from 'vitest';
 import { getLanguageService } from 'vscode-json-languageservice';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
-import { createRuleContext } from '../../src/semantic/engine.js';
-import { hf1xxSchemaVersionRule, hf101NotASimulation } from '../../src/semantic/rules/hf1xx.js';
+import { createRuleContext } from '../engine.js';
+import { hf1xxSchemaVersionRule, hf101NotASimulation } from './hf1xx.js';
 
 const ls = getLanguageService({});
 

@@ -6,7 +6,7 @@ import {
     isSchemaVersionPosition,
     isTransitionsStateKeyPosition,
     matchMatcherNamePosition,
-} from '../../src/contributions/paths.js';
+} from './paths.js';
 
 describe('matchMatcherNamePosition', () => {
     test('recognises a top-level request matcher field (hover form, matcher key present)', () => {

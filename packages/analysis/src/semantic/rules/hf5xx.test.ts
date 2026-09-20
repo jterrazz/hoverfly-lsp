@@ -9,8 +9,8 @@ import { describe, expect, test } from 'vitest';
 import { getLanguageService } from 'vscode-json-languageservice';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
-import { createRuleContext } from '../../src/semantic/engine.js';
-import { hf5xxTemplateRule } from '../../src/semantic/rules/hf5xx.js';
+import { createRuleContext } from '../engine.js';
+import { hf5xxTemplateRule } from './hf5xx.js';
 
 const ls = getLanguageService({});
 

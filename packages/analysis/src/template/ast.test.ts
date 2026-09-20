@@ -1,14 +1,8 @@
 import { describe, expect, test } from 'vitest';
 
-import {
-    type BooleanLiteral,
-    type NumberLiteral,
-    parse,
-    type ParseResult,
-    type Program,
-    type Span,
-    type StringLiteral,
-} from '../../src/template/index.js';
+import type { BooleanLiteral, NumberLiteral, Program, Span, StringLiteral } from './ast.js';
+import { parse } from './parser.js';
+import type { ParseResult } from './parser.js';
 
 /**
  * Type-anchored assertions over the AST the parser produces: every node is a {@link Span}
