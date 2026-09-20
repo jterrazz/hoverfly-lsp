@@ -10,8 +10,8 @@ import { getLanguageService } from 'vscode-json-languageservice';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DiagnosticSeverity } from 'vscode-languageserver-types';
 
-import { createRuleContext } from '../../src/semantic/engine.js';
-import { methodSchemeValueRule } from '../../src/semantic/rules/hf2xx-values.js';
+import { createRuleContext } from '../engine.js';
+import { methodSchemeValueRule } from './hf2xx-values.js';
 
 const ls = getLanguageService({});
 

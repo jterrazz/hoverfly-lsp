@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
-import { createStringSourceMap, type StringSourceMap } from '../../src/template/index.js';
+import { createStringSourceMap } from './source-map.js';
+import type { StringSourceMap } from './source-map.js';
 
 /**
  * The JSON-escape-aware source map is the load-bearing piece for HF5xx ranges: it maps an

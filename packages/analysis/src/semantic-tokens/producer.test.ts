@@ -9,8 +9,9 @@ import { describe, expect, test } from 'vitest';
 import { getLanguageService } from 'vscode-json-languageservice';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
-import { SEMANTIC_TOKEN_TYPES } from '../../src/semantic-tokens/legend.js';
-import { getSemanticTokens, type SemanticToken } from '../../src/semantic-tokens/producer.js';
+import { SEMANTIC_TOKEN_TYPES } from './legend.js';
+import { getSemanticTokens } from './producer.js';
+import type { SemanticToken } from './producer.js';
 
 const ls = getLanguageService({});
 

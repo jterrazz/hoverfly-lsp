@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { classifyCompletionContext } from '../../src/template/completion-context.js';
+import { classifyCompletionContext } from './completion-context.js';
 
 /**
  * The cursor-context classifier underpins template IntelliSense. It must be error-tolerant: the

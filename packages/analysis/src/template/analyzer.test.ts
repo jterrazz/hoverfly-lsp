@@ -7,11 +7,8 @@
 
 import { describe, expect, test } from 'vitest';
 
-import {
-    analyze,
-    type AnalyzerContext,
-    type TemplateFinding,
-} from '../../src/template/analyzer.js';
+import { analyze } from './analyzer.js';
+import type { AnalyzerContext, TemplateFinding } from './analyzer.js';
 
 /** A context with the given variable/literal names declared. */
 function ctx(variables: string[] = [], literals: string[] = []): AnalyzerContext {

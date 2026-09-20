@@ -2,13 +2,13 @@ import { describe, expect, test } from 'vitest';
 
 import {
     ALL_HELPERS,
-    type HelperSpec,
     HOVERFLY_HELPERS,
     NOW_FORMAT_NOTES,
     NOW_OFFSET_UNITS,
     RAYMOND_BUILTINS,
     VARIABLE_FUNCTION_NAMES,
-} from '../../src/registry/templating.js';
+} from './templating.js';
+import type { HelperSpec } from './templating.js';
 
 function byName(specs: readonly HelperSpec[], name: string): HelperSpec | undefined {
     return specs.find((spec) => spec.name === name);

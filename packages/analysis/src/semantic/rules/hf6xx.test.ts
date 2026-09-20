@@ -3,9 +3,9 @@ import { getLanguageService } from 'vscode-json-languageservice';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DiagnosticSeverity } from 'vscode-languageserver-types';
 
-import { createRuleContext } from '../../src/semantic/engine.js';
-import { hf601DelayPatternRule, hf602PostServeActionRule } from '../../src/semantic/rules/hf6xx.js';
-import { type HoverflyServiceSettings } from '../../src/semantic/types.js';
+import { createRuleContext } from '../engine.js';
+import type { HoverflyServiceSettings } from '../types.js';
+import { hf601DelayPatternRule, hf602PostServeActionRule } from './hf6xx.js';
 
 const ls = getLanguageService({});
 

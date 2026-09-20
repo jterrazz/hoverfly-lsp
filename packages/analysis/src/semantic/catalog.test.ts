@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { DiagnosticSeverity } from 'vscode-languageserver-types';
 
-import { DIAGNOSTIC_CATALOG, formatMessage } from '../../src/semantic/catalog.js';
+import { DIAGNOSTIC_CATALOG, formatMessage } from './catalog.js';
 
 describe('diagnostic catalog', () => {
     test('keys every entry by its own code', () => {

@@ -8,8 +8,8 @@ import { describe, expect, test } from 'vitest';
 import { getLanguageService } from 'vscode-json-languageservice';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
-import { createRuleContext } from '../../src/semantic/engine.js';
-import { matcherSyntaxRule } from '../../src/semantic/rules/matcher-syntax.js';
+import { createRuleContext } from '../engine.js';
+import { matcherSyntaxRule } from './matcher-syntax.js';
 
 const ls = getLanguageService({});
 

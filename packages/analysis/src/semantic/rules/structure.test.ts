@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'vitest';
 import { getLanguageService } from 'vscode-json-languageservice';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { DiagnosticSeverity } from 'vscode-languageserver-types';
+import { Diagnostic, DiagnosticSeverity } from 'vscode-languageserver-types';
 
-import { createRuleContext } from '../../src/semantic/engine.js';
-import { structureRule } from '../../src/semantic/rules/structure.js';
+import { createRuleContext } from '../engine.js';
+import { structureRule } from './structure.js';
 
 const ls = getLanguageService({});
 
@@ -47,7 +47,9 @@ describe('hF603 — unknown key (silent drop) with did-you-mean', () => {
             ),
         );
         // Then - HF603 fires for each (machter, transitionState, urlPatter, values)
-        const messages = diags.filter((d) => d.code === 'HF603').map((d) => d.message);
+        const messages = diags
+            .filter((d) => d.code === 'HF603')
+            .map((d) => Diagnostic.getMessageString(d));
         expect(messages).toHaveLength(4);
         expect(messages.some((m) => m.includes('"machter"') && m.includes('matcher'))).toBeTruthy();
         expect(messages.some((m) => m.includes('"transitionState"'))).toBeTruthy();

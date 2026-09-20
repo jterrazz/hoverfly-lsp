@@ -10,7 +10,7 @@ import {
     SEMANTIC_TOKEN_MODIFIERS,
     SEMANTIC_TOKEN_TYPE_INDEX,
     SEMANTIC_TOKEN_TYPES,
-} from '../../src/semantic-tokens/legend.js';
+} from './legend.js';
 
 describe('semantic-tokens legend', () => {
     test('freezes the exact ordered token-type array (research/16 §3.1)', () => {

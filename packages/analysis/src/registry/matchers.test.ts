@@ -5,7 +5,7 @@ import {
     MATCHER_SPECS,
     REGISTRY_MATCHER_NAMES,
     TRANSFORMING_MATCHER_NAMES,
-} from '../../src/registry/matchers.js';
+} from './matchers.js';
 
 describe('mATCHER_SPECS', () => {
     test('has exactly 15 specs (14 registry matchers + the form pseudo-matcher)', () => {

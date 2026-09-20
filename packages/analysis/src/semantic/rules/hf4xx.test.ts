@@ -2,13 +2,13 @@ import { describe, expect, test } from 'vitest';
 import { getLanguageService } from 'vscode-json-languageservice';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
-import { createRuleContext } from '../../src/semantic/engine.js';
+import { createRuleContext } from '../engine.js';
+import type { RuleContext } from '../types.js';
 import {
     hf401RequiresNeverSet,
     hf402TransitionsNeverRequired,
     hf403RemovesNeverSet,
-} from '../../src/semantic/rules/hf4xx.js';
-import { type RuleContext } from '../../src/semantic/types.js';
+} from './hf4xx.js';
 
 const ls = getLanguageService({});
 
