@@ -22,19 +22,23 @@ import type { ASTNode, JSONDocument } from 'vscode-json-languageservice';
 import type { TextDocument } from 'vscode-languageserver-textdocument';
 
 import { hasHoverflyFilename, isHoverflySimulationAst } from '../fingerprint.js';
-import { ALL_HELPERS, FAKER_NAMES, MATCHER_SPECS } from '../registry/index.js';
+import { FAKER_NAMES } from '../registry/faker.js';
+import { MATCHER_SPECS } from '../registry/matchers.js';
+import { ALL_HELPERS } from '../registry/templating.js';
 import { buildSimulationModel } from '../semantic/model.js';
-import type { MatcherModel, SimulationModel } from '../semantic/types.js';
-import { createStringSourceMap, hasTemplateSyntax, parse } from '../template/index.js';
+import type { MatcherModel, SimulationModel } from '../semantic/rule.js';
 import type {
     BlockNode,
     Expression,
     MustacheNode,
     PathExpression,
     Statement,
-    StringSourceMap,
     SubExpression,
-} from '../template/index.js';
+} from '../template/ast.js';
+import { hasTemplateSyntax } from '../template/detect.js';
+import { parse } from '../template/parser.js';
+import { createStringSourceMap } from '../template/source-map.js';
+import type { StringSourceMap } from '../template/source-map.js';
 import { SEMANTIC_TOKEN_TYPE_INDEX } from './legend.js';
 import type { SemanticTokenTypeName } from './legend.js';
 

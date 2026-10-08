@@ -41,7 +41,7 @@ import type { Diagnostic } from 'vscode-languageserver-types';
 
 import { makeDiagnostic } from '../diagnostics.js';
 import { isValidRe2 } from '../re2.js';
-import type { FieldContainer, MatcherModel, RuleContext, SemanticRule } from '../types.js';
+import type { FieldContainer, MatcherModel, RuleContext, SemanticRule } from '../rule.js';
 
 /* ------------------------------- matcher-tree walking ------------------------------------ */
 

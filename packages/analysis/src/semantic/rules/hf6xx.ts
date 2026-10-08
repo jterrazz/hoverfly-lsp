@@ -25,7 +25,7 @@ import type { Diagnostic } from 'vscode-languageserver-types';
 
 import { makeDiagnostic } from '../diagnostics.js';
 import { isValidRe2 } from '../re2.js';
-import type { RuleContext, SemanticRule } from '../types.js';
+import type { RuleContext, SemanticRule } from '../rule.js';
 
 /** First string property value for `key` on an object node, with its node. */
 function stringPropValue(node: ASTNode | undefined, key: string): ASTNode | undefined {
@@ -96,7 +96,7 @@ export const hf602PostServeActionRule: SemanticRule = {
     run: hf602,
 };
 
-/** All HF6xx rules. The integrator spreads this into `rules/index.ts#ALL_RULES`. */
+/** All HF6xx rules. The integrator spreads this into `rules/families.ts#ALL_RULES`. */
 export const HF6XX_RULES: readonly SemanticRule[] = [
     hf601DelayPatternRule,
     hf602PostServeActionRule,

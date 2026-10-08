@@ -32,7 +32,7 @@ import type { ASTNode, ObjectASTNode } from 'vscode-json-languageservice';
 import type { Diagnostic } from 'vscode-languageserver-types';
 
 import { makeDiagnostic } from '../diagnostics.js';
-import type { ResponseModel, RuleContext, SemanticRule } from '../types.js';
+import type { ResponseModel, RuleContext, SemanticRule } from '../rule.js';
 
 /** Lowest / highest HTTP status codes Hoverfly treats as in-range (inclusive). */
 const MIN_HTTP_STATUS = 100;
@@ -334,5 +334,5 @@ export const hf3xxResponseRule: SemanticRule = {
     },
 };
 
-/** All HF3xx rules. The integrator spreads this into `rules/index.ts#ALL_RULES`. */
+/** All HF3xx rules. The integrator spreads this into `rules/families.ts#ALL_RULES`. */
 export const HF3XX_RULES: readonly SemanticRule[] = [hf3xxResponseRule];

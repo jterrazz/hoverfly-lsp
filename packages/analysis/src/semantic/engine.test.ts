@@ -3,7 +3,7 @@ import { DiagnosticSeverity } from 'vscode-languageserver-types';
 import type { Diagnostic } from 'vscode-languageserver-types';
 
 import { applyHF102Layer, runRules, sortByRange } from './engine.js';
-import type { RuleContext, SemanticRule } from './types.js';
+import type { RuleContext, SemanticRule } from './rule.js';
 
 function range(line: number, startChar: number, endChar: number): Diagnostic['range'] {
     return { start: { line, character: startChar }, end: { line, character: endChar } };

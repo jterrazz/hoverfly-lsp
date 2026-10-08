@@ -25,15 +25,11 @@
 
 import type { Diagnostic } from 'vscode-languageserver-types';
 
-import {
-    HTTP_METHODS,
-    URI_SCHEMES,
-    VALUE_DID_YOU_MEAN_MAX_DISTANCE,
-} from '../../registry/index.js';
+import { HTTP_METHODS, URI_SCHEMES, VALUE_DID_YOU_MEAN_MAX_DISTANCE } from '../../registry/http.js';
 import type { DiagnosticCode } from '../catalog.js';
 import { makeDiagnostic } from '../diagnostics.js';
 import { nearestWithin } from '../levenshtein.js';
-import type { MatcherModel, RuleContext, SemanticRule } from '../types.js';
+import type { MatcherModel, RuleContext, SemanticRule } from '../rule.js';
 
 /** A field's well-known-value contract: which code fires and against which standard set. */
 type ValueDomain = {

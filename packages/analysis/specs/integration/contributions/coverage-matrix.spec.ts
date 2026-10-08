@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { REGISTRY_MATCHER_NAMES } from '../../../src/registry/index.js';
+import { REGISTRY_MATCHER_NAMES } from '../../../src/registry/matchers.js';
 import { completionsAt, expectLabels } from '../fourslash/harness.js';
 import { integration } from '../integration.specification.js';
 

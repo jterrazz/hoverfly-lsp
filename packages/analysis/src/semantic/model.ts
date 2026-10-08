@@ -29,7 +29,7 @@ import type {
     ResponseModel,
     SimulationModel,
     StateEntry,
-} from './types.js';
+} from './rule.js';
 
 /* ----------------------------------- AST helpers ----------------------------------------- */
 

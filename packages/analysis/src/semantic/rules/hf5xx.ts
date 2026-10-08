@@ -38,11 +38,13 @@
 import type { ASTNode, ObjectASTNode } from 'vscode-json-languageservice';
 import type { Diagnostic, Range } from 'vscode-languageserver-types';
 
-import { analyze, createStringSourceMap, hasTemplateSyntax } from '../../template/index.js';
-import type { AnalyzerContext } from '../../template/index.js';
+import { analyze } from '../../template/analyzer.js';
+import type { AnalyzerContext } from '../../template/analyzer.js';
+import { hasTemplateSyntax } from '../../template/detect.js';
+import { createStringSourceMap } from '../../template/source-map.js';
 import type { DiagnosticCode } from '../catalog.js';
 import { makeDiagnostic } from '../diagnostics.js';
-import type { RuleContext, SemanticRule, SimulationModel } from '../types.js';
+import type { RuleContext, SemanticRule, SimulationModel } from '../rule.js';
 
 /* --------------------------------- string source mapping --------------------------------- */
 

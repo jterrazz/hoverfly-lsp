@@ -43,11 +43,11 @@
 import type { ASTNode, ObjectASTNode } from 'vscode-json-languageservice';
 import type { Diagnostic } from 'vscode-languageserver-types';
 
-import { DID_YOU_MEAN_MAX_DISTANCE, STRUCTURE_ALLOWED_KEYS } from '../../registry/index.js';
-import type { StructureObjectKind } from '../../registry/index.js';
+import { DID_YOU_MEAN_MAX_DISTANCE, STRUCTURE_ALLOWED_KEYS } from '../../registry/structure.js';
+import type { StructureObjectKind } from '../../registry/structure.js';
 import { makeDiagnostic } from '../diagnostics.js';
 import { levenshtein } from '../levenshtein.js';
-import type { RuleContext, SemanticRule } from '../types.js';
+import type { RuleContext, SemanticRule } from '../rule.js';
 
 /* ----------------------------------- allowed-key lookup ---------------------------------- */
 
@@ -418,7 +418,7 @@ const structureRule: SemanticRule = {
     },
 };
 
-/** All structure rules. The integrator spreads this into `rules/index.ts#ALL_RULES`. */
+/** All structure rules. The integrator spreads this into `rules/families.ts#ALL_RULES`. */
 export const STRUCTURE_RULES: readonly SemanticRule[] = [structureRule];
 
 export { structureRule };

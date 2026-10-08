@@ -26,8 +26,9 @@ import type {
 } from 'vscode-json-languageservice';
 import type { TextDocument } from 'vscode-languageserver-textdocument';
 
-import { createStringSourceMap, hasTemplateSyntax } from '../template/index.js';
-import type { StringSourceMap } from '../template/index.js';
+import { hasTemplateSyntax } from '../template/detect.js';
+import { createStringSourceMap } from '../template/source-map.js';
+import type { StringSourceMap } from '../template/source-map.js';
 
 /** A located templatable string + the cursor mapped into its decoded content. */
 type TemplateLocation = {

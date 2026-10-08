@@ -19,8 +19,9 @@ import type { TextDocument } from 'vscode-languageserver-textdocument';
 import { CompletionItemKind, InsertTextFormat, MarkupKind } from 'vscode-languageserver-types';
 import type { CompletionItem } from 'vscode-languageserver-types';
 
-import { ALL_HELPERS, FAKER_NAMES, NOW_FORMAT_NOTES } from '../registry/index.js';
-import type { HelperSpec } from '../registry/index.js';
+import { FAKER_NAMES } from '../registry/faker.js';
+import { ALL_HELPERS, NOW_FORMAT_NOTES } from '../registry/templating.js';
+import type { HelperSpec } from '../registry/templating.js';
 import { classifyCompletionContext } from '../template/completion-context.js';
 import type { TemplateCompletionContext } from '../template/completion-context.js';
 import { findTemplateLocation } from './template-location.js';

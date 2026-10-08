@@ -25,7 +25,7 @@ import type {
     SemanticRule,
     SimulationModel,
     StateEntry,
-} from '../types.js';
+} from '../rule.js';
 
 /** Prefix marking Hoverfly's built-in sequencing keys, which are auto-managed. */
 const SEQUENCE_PREFIX = 'sequence:';

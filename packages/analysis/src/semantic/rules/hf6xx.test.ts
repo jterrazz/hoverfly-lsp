@@ -4,7 +4,7 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DiagnosticSeverity } from 'vscode-languageserver-types';
 
 import { createRuleContext } from '../engine.js';
-import type { HoverflyServiceSettings } from '../types.js';
+import type { HoverflyServiceSettings } from '../rule.js';
 import { hf601DelayPatternRule, hf602PostServeActionRule } from './hf6xx.js';
 
 const ls = getLanguageService({});

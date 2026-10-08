@@ -27,10 +27,10 @@
 import type { ASTNode, ObjectASTNode } from 'vscode-json-languageservice';
 import type { Diagnostic } from 'vscode-languageserver-types';
 
-import { MATCHER_SPECS, TRANSFORMING_MATCHER_NAMES } from '../../registry/index.js';
-import type { MatcherSpec, MatcherValueType } from '../../registry/index.js';
+import { MATCHER_SPECS, TRANSFORMING_MATCHER_NAMES } from '../../registry/matchers.js';
+import type { MatcherSpec, MatcherValueType } from '../../registry/matchers.js';
 import { makeDiagnostic } from '../diagnostics.js';
-import type { FieldContainer, MatcherModel, RuleContext, SemanticRule } from '../types.js';
+import type { FieldContainer, MatcherModel, RuleContext, SemanticRule } from '../rule.js';
 
 /* ------------------------------------ registry lookup ------------------------------------ */
 

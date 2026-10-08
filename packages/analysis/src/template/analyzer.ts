@@ -33,14 +33,9 @@
  * which is recognised and validated like the `requestBody` helper (report 08 §6).
  */
 
-import {
-    ALL_HELPERS,
-    FAKER_NAMES,
-    FAKER_PARAMETERIZED_PANICS,
-    GOFAKEIT_VERSION,
-    NOW_OFFSET_UNITS,
-} from '../registry/index.js';
-import type { HelperSpec } from '../registry/index.js';
+import { FAKER_NAMES, FAKER_PARAMETERIZED_PANICS, GOFAKEIT_VERSION } from '../registry/faker.js';
+import { ALL_HELPERS, NOW_OFFSET_UNITS } from '../registry/templating.js';
+import type { HelperSpec } from '../registry/templating.js';
 import type {
     BlockNode,
     Expression,

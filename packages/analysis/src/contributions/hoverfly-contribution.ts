@@ -35,10 +35,11 @@ import type { TextDocument } from 'vscode-languageserver-textdocument';
 import { CompletionItemKind, InsertTextFormat, MarkupKind } from 'vscode-languageserver-types';
 import type { CompletionItem } from 'vscode-languageserver-types';
 
-import { HTTP_METHODS, MATCHER_SPECS, URI_SCHEMES } from '../registry/index.js';
-import type { MatcherSpec } from '../registry/index.js';
+import { HTTP_METHODS, URI_SCHEMES } from '../registry/http.js';
+import { MATCHER_SPECS } from '../registry/matchers.js';
+import type { MatcherSpec } from '../registry/matchers.js';
 import { buildSimulationModel } from '../semantic/model.js';
-import type { HoverflyServiceSettings, SimulationModel } from '../semantic/types.js';
+import type { HoverflyServiceSettings, SimulationModel } from '../semantic/rule.js';
 import { matcherDetail, matcherMarkdown } from './docs.js';
 import {
     isPostServeActionPosition,

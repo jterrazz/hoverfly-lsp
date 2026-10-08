@@ -3,7 +3,7 @@ import { getLanguageService } from 'vscode-json-languageservice';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
 import { createRuleContext } from '../engine.js';
-import type { RuleContext } from '../types.js';
+import type { RuleContext } from '../rule.js';
 import {
     hf401RequiresNeverSet,
     hf402TransitionsNeverRequired,

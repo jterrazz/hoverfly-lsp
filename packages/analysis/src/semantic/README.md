@@ -3,13 +3,13 @@
 A rule family lives in `rules/hfNxx.ts` and exports `HFNXX_RULES: readonly SemanticRule[]`.
 Each `SemanticRule` is `{ codes, run(ctx) }` — `run` returns `Diagnostic[]` and MUST NOT throw.
 
-1. Read everything from `ctx.model` (a typed, AST-anchored `SimulationModel` — see `types.ts`).
+1. Read everything from `ctx.model` (a typed, AST-anchored `SimulationModel` — see `rule.ts`).
    Never re-walk the raw AST or hardcode matcher/helper facts; consume `../registry/*`.
 2. Build diagnostics ONLY via `makeDiagnostic(ctx.textDocument, code, nodeOrRange, args)`
    (`diagnostics.ts`). Severity, message template, source, and docs href come from the frozen
    `catalog.ts` — never inline a severity or message string.
 3. Range = the smallest node the user must change; pass the model's `*Node` directly.
-4. Register: import your array in `rules/index.ts` and spread it into `ALL_RULES`.
+4. Register: import your array in `rules/families.ts` and spread it into `ALL_RULES`.
 5. Coverage (house rule): add a fixture `testdata/invalid/hfNxx/*.hoverfly.json` + run
    `UPDATE_GOLDENS=1 npx vitest --run packages/analysis/specs/integration/semantic/golden.spec.ts` to emit the
    sibling `.diagnostics.golden`, AND a focused unit test beside the rule, `rules/hfNxx.test.ts`.

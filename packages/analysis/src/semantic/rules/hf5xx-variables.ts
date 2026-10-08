@@ -35,10 +35,10 @@ import {
     HOVERFLY_HELPERS,
     RAYMOND_BUILTINS,
     VARIABLE_FUNCTION_NAMES,
-} from '../../registry/index.js';
-import type { HelperSpec } from '../../registry/index.js';
+} from '../../registry/templating.js';
+import type { HelperSpec } from '../../registry/templating.js';
 import { makeDiagnostic } from '../diagnostics.js';
-import type { MatcherModel, RuleContext, SemanticRule } from '../types.js';
+import type { MatcherModel, RuleContext, SemanticRule } from '../rule.js';
 
 /** The 52 Hoverfly helper names valid in `data.variables[].function`. */
 const VALID_VARIABLE_FUNCTIONS: ReadonlySet<string> = new Set(VARIABLE_FUNCTION_NAMES);

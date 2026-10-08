@@ -10,7 +10,7 @@ import type {
 } from 'vscode-json-languageservice';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
-import { createHoverflyContribution } from './contributions/index.js';
+import { createHoverflyContribution } from './contributions/hoverfly-contribution.js';
 import { getTemplateCompletions } from './contributions/template-completion.js';
 import { getTemplateHover } from './contributions/template-hover.js';
 import {
@@ -19,15 +19,10 @@ import {
     isHoverflySimulationAst,
 } from './fingerprint.js';
 import { hoverflySchema } from './schema/hoverfly.schema.generated.js';
-import {
-    ALL_RULES,
-    applyHF102Layer,
-    createRuleContext,
-    hf101NotASimulation,
-    runRules,
-    sortByRange,
-} from './semantic/index.js';
-import type { HoverflyServiceSettings } from './semantic/index.js';
+import { applyHF102Layer, createRuleContext, runRules, sortByRange } from './semantic/engine.js';
+import type { HoverflyServiceSettings } from './semantic/rule.js';
+import { ALL_RULES } from './semantic/rules/families.js';
+import { hf101NotASimulation } from './semantic/rules/hf1xx.js';
 
 /** The `$id` of the bundled schema; also the URI it is registered under. */
 const SCHEMA_URI =

@@ -21,7 +21,7 @@ import { expect } from 'vitest';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import type { CompletionItem, Hover, MarkupContent, Position } from 'vscode-languageserver-types';
 
-import type { HoverflyServiceSettings } from '../../../src/semantic/types.js';
+import type { HoverflyServiceSettings } from '../../../src/semantic/rule.js';
 import { createHoverflyLanguageService } from '../../../src/service.js';
 
 /* ------------------------------------- marker scanning ----------------------------------- */

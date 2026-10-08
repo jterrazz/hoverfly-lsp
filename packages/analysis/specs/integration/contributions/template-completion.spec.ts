@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
-import { ALL_HELPERS, FAKER_NAMES } from '../../../src/registry/index.js';
+import { FAKER_NAMES } from '../../../src/registry/faker.js';
+import { ALL_HELPERS } from '../../../src/registry/templating.js';
 import { completionsAt, expectLabels } from '../fourslash/harness.js';
 import { integration } from '../integration.specification.js';
 

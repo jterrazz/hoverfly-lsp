@@ -18,21 +18,17 @@ import type { Hover, JSONDocument, Position, Range } from 'vscode-json-languages
 import type { TextDocument } from 'vscode-languageserver-textdocument';
 import { MarkupKind } from 'vscode-languageserver-types';
 
-import {
-    ALL_HELPERS,
-    FAKER_NAMES,
-    FAKER_PARAMETERIZED_PANICS,
-    GOFAKEIT_VERSION,
-} from '../registry/index.js';
-import type { HelperSpec } from '../registry/index.js';
-import { parse } from '../template/index.js';
+import { FAKER_NAMES, FAKER_PARAMETERIZED_PANICS, GOFAKEIT_VERSION } from '../registry/faker.js';
+import { ALL_HELPERS } from '../registry/templating.js';
+import type { HelperSpec } from '../registry/templating.js';
 import type {
     Expression,
     MustacheNode,
     PathExpression,
     Statement,
     SubExpression,
-} from '../template/index.js';
+} from '../template/ast.js';
+import { parse } from '../template/parser.js';
 import { findTemplateLocation } from './template-location.js';
 import type { TemplateLocation } from './template-location.js';
 import { REQUEST_MEMBERS } from './template-members.js';

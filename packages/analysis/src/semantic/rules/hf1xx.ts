@@ -15,7 +15,7 @@ import type { TextDocument } from 'vscode-languageserver-textdocument';
 import type { Diagnostic, Range } from 'vscode-languageserver-types';
 
 import { makeDiagnostic } from '../diagnostics.js';
-import type { SemanticRule } from '../types.js';
+import type { SemanticRule } from '../rule.js';
 
 /** Syntactically-valid schema version (decision C4): `v` then digits, optional `.digits`. */
 const SCHEMA_VERSION_PATTERN = /^v\d+(?:\.\d+)?$/u;

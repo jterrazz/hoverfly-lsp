@@ -23,7 +23,7 @@ import type {
     RuleContext,
     SemanticRule,
     SimulationModel,
-} from './types.js';
+} from './rule.js';
 
 const HF102_HREF = DIAGNOSTIC_CATALOG.HF102.href;
 
