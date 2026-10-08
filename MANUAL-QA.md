@@ -154,7 +154,7 @@ No editor dir: the client is configured by hand (`nvim-lspconfig` snippet in the
 
 ## Claude Code (`editors/claude-code/`)
 
-The launcher contract was verified headlessly: `node bin/launch.cjs --stdio` performs a correct
+The launcher contract was verified headlessly: `node bin/launch.mjs --stdio` performs a correct
 LSP `initialize` handshake (returns `serverInfo.name = "hoverfly-lsp"`), via both the
 repo-relative dev bundle and the `HOVERFLY_LSP_PATH` override (file and directory). The two items
 below need a real Claude Code install / a second `.json` plugin and could not be exercised here.
@@ -202,7 +202,7 @@ below need a real Claude Code install / a second `.json` plugin and could not be
   against `zed_extension_api 0.7.0` (native target).
 - IntelliJ: `template.json` + `initializationOptions.json` are valid JSON and match the live
   LSP4IJ template schema.
-- Claude Code: `.lsp.json`, `plugin.json` valid JSON; `launch.cjs` drives a full `initialize`
+- Claude Code: `.lsp.json`, `plugin.json` valid JSON; `launch.mjs` drives a full `initialize`
   handshake over stdio (dev bundle + `HOVERFLY_LSP_PATH` override).
 - Cross-track consistency: canonical filenames (`*.hoverfly.json`, `hoverfly-simulation.json`),
   bin name (`hoverfly-lsp`), transport flag (`--stdio`), and the `hoverfly.registeredActions`

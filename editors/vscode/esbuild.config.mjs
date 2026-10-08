@@ -1,7 +1,7 @@
 /*
  * Build the VS Code extension.
  *
- *   1. Bundle `src/extension.ts` -> `dist/extension.cjs` (CommonJS; VS Code loads extensions as
+ *   1. Bundle `src/index.ts` -> `dist/extension.cjs` (CommonJS; VS Code loads extensions as
  *      CJS). `vscode` is marked external — it is provided by the host at runtime, never bundled.
  *   2. Copy the published `hoverfly-lsp` server (its `bin/` launcher + `dist/cli.cjs` bundle) into
  *      `server/` inside the extension, so the `.vsix` is fully self-contained (zero-install).
@@ -27,7 +27,7 @@ function copyBundledServer() {
 }
 
 const buildOptions = {
-    entryPoints: [join(here, 'src', 'extension.ts')],
+    entryPoints: [join(here, 'src', 'index.ts')],
     outfile: join(here, 'dist', 'extension.cjs'),
     bundle: true,
     platform: 'node',

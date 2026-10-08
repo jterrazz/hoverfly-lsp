@@ -5,6 +5,12 @@ export default defineConfig({
     kind: 'workspace',
     presets: [test()],
     typescript: {
+        knip: {
+            entry: {
+                'editors/claude-code/bin/launch.mjs':
+                    "Claude Code runs it by the path the plugin's .lsp.json names",
+            },
+        },
         oxfmt: {
             ignore: {
                 'schemas/schemastore-submission/**':

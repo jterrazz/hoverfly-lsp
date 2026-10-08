@@ -1,7 +1,7 @@
 {
     "hoverfly": {
         "command": "node",
-        "args": ["${CLAUDE_PLUGIN_ROOT}/bin/launch.cjs", "--stdio"],
+        "args": ["${CLAUDE_PLUGIN_ROOT}/bin/launch.mjs", "--stdio"],
         "extensionToLanguage": {
             ".json": "json",
             ".hfy": "hoverfly"

@@ -13,15 +13,15 @@ editors/claude-code/
 │   └── plugin.json     Plugin manifest (name, version, author, lspServers pointer)
 ├── .lsp.json           LSP server config consumed by Claude Code
 ├── bin/
-│   └── launch.cjs      Launcher that locates and runs the hoverfly-lsp server bundle
+│   └── launch.mjs      Launcher that locates and runs the hoverfly-lsp server bundle
 └── README.md
 ```
 
 `.lsp.json` registers one server (`hoverfly`) on the `.json` extension and runs
-`node ${CLAUDE_PLUGIN_ROOT}/bin/launch.cjs --stdio`. `${CLAUDE_PLUGIN_ROOT}` is substituted by
+`node ${CLAUDE_PLUGIN_ROOT}/bin/launch.mjs --stdio`. `${CLAUDE_PLUGIN_ROOT}` is substituted by
 Claude Code to the plugin's install directory and is also exported to the LSP subprocess.
 
-The launcher (`launch.cjs`) resolves the server bundle in this order:
+The launcher (`launch.mjs`) resolves the server bundle in this order:
 
 1. **`$HOVERFLY_LSP_PATH`**: explicit override. Either the bundle (`dist/cli.cjs`) directly or
    a directory containing it. Use this for dev or to pin a specific build.
@@ -30,7 +30,7 @@ The launcher (`launch.cjs`) resolves the server bundle in this order:
 3. **Repo-relative dev bundle**: `../../../packages/server/dist/cli.cjs`, for running straight
    from a hoverfly-lsp checkout.
 
-`launch.cjs` is `.cjs` on purpose: it must be CommonJS whether it runs from the ESM-typed repo
+`launch.mjs` is `.mjs` on purpose: it must be an ES module whether it runs from the ESM-typed repo
 (`"type": "module"`) or from Claude Code's plugin cache (no enclosing `package.json`).
 
 > **Note on distribution.** A marketplace install **copies** the plugin into Claude Code's
@@ -99,7 +99,7 @@ claude plugin validate ./editors/claude-code --strict
 
 ### 2. Server-side contract over the launcher (no Claude needed)
 
-Drive the launcher exactly as Claude Code does (`node bin/launch.cjs --stdio`) with an LSP
+Drive the launcher exactly as Claude Code does (`node bin/launch.mjs --stdio`) with an LSP
 `didOpen` for a broken simulation and for a non-simulation `.json`. Expect diagnostics on the
 first, none on the second:
 
@@ -141,7 +141,7 @@ the edit. The same prompt against `notes.json` surfaced **NONE**; fingerprint co
 - [x] `claude plugin validate ./editors/claude-code --strict` passes.
 - [x] `claude plugin install` reports the plugin enabled; `claude plugin details` lists
       `LSP servers (1) hoverfly`.
-- [x] Launcher (`node bin/launch.cjs --stdio`) starts the server and reports diagnostics on a
+- [x] Launcher (`node bin/launch.mjs --stdio`) starts the server and reports diagnostics on a
       broken `*.hoverfly.json` (HF201, Error).
 - [x] Launcher reports **0** diagnostics on a non-simulation `.json` (fingerprint declines).
 - [x] `HOVERFLY_LSP_PATH` override works as both a file path and a directory path.
