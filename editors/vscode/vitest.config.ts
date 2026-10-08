@@ -1,3 +1,3 @@
-import { defineSpecConfig, unit } from '@jterrazz/test/vitest';
+import { vitestConfig } from '@jterrazz/test/vitest';
 
-export default defineSpecConfig({ test: { projects: [unit()] } });
+export default await vitestConfig(import.meta.url);

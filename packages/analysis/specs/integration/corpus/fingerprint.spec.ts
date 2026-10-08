@@ -28,7 +28,7 @@ describe('reference corpus: testdata/valid', () => {
         });
 
         // Then - reading it threw nothing: it is valid JSON
-        await expect(result.error).toBeEmpty();
+        expect(result.error.text).toBe('');
         // Then - and it is recognised as a Hoverfly simulation
         expect(result.value.value.fingerprinted).toBe(true);
     });

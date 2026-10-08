@@ -118,7 +118,7 @@ describe('matcher-name completions — negative contexts', () => {
         const doc = `{"data":{"pairs":[{"request":{"path":[{"matcher":"⟦⟧"`;
         const result = await integration.call(async () => await completionsAt(doc, ''));
         // Then - the service stays alive: completion may or may not fire, but the call answered a list rather than refusing
-        await expect(result.error).toBeEmpty();
+        expect(result.error.text).toBe('');
         expect(Array.isArray(result.value.value)).toBe(true);
     });
 });

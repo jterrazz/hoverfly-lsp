@@ -16,15 +16,14 @@
     "type": "module",
     "scripts": {
         "build": "npm run build --workspaces --if-present",
-        "docs:diagnostics": "node scripts/generate-diagnostic-docs.mjs",
+        "docs:diagnostics": "node scripts/generate-diagnostic-docs.mjs && oxfmt docs/reference",
         "test": "npm run test --workspaces --if-present",
-        "typecheck": "tsc --build",
-        "lint": "typescript check --ignore-pattern 'research/**'",
+        "lint": "typescript check",
         "lint:fix": "typescript fix"
     },
     "devDependencies": {
-        "@jterrazz/test": "^16.1.0",
-        "@jterrazz/typescript": "^10.3.1",
+        "@jterrazz/test": "file:../package-test",
+        "@jterrazz/typescript": "file:../package-typescript",
         "@types/node": "^25.5.0",
         "glob": "^13.0.6",
         "vitest": "^5.0.1",
@@ -32,5 +31,8 @@
     },
     "engines": {
         "node": ">=24"
+    },
+    "packages/analysis:scripts": {
+        "build": "typescript build"
     }
 }

@@ -54,7 +54,7 @@ jobs:
                   set -euo pipefail
                   url="https://raw.githubusercontent.com/SpectoLabs/hoverfly/master/core/handlers/v2/schema.json"
                   curl -fsSL "$url" -o /tmp/upstream-live-schema.json
-                  if diff -u schemas/upstream-baseline.schema.json /tmp/upstream-live-schema.json > /tmp/schema.diff; then
+                  if diff -u schemas/upstream/schema.json /tmp/upstream-live-schema.json > /tmp/schema.diff; then
                     echo "drift=false" >> "$GITHUB_OUTPUT"
                     echo "Official schema unchanged since baseline."
                   else
@@ -96,7 +96,7 @@ jobs:
                     echo
                     echo "## What to do"
                     echo "1. Review the diff(s) below against \`research/07-matcher-value-types.md\` and \`research/08-templating-spec.md\`."
-                    echo "2. If the change is meaningful, update the bundled schema / matcher registry / templating catalog, then re-pin \`HOVERFLY_COMMIT\`, refresh \`schemas/upstream-baseline.schema.json\` and \`schemas/upstream-source-hashes.json\`, and re-run the standalone artifact generation."
+                    echo "2. If the change is meaningful, update the bundled schema / matcher registry / templating catalog, then re-pin \`HOVERFLY_COMMIT\`, refresh \`schemas/upstream/schema.json\` and \`schemas/upstream-source-hashes.json\`, and re-run the standalone artifact generation."
                     echo "3. This job NEVER auto-updates anything — the pin bump is a deliberate, reviewed change."
                     echo
                     if [ "${{ steps.schema.outputs.drift }}" = "true" ]; then

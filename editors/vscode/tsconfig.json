@@ -1,9 +1,1 @@
-{
-    "extends": "../../tsconfig.base.json",
-    "compilerOptions": {
-        "noEmit": true,
-        "rootDir": ".",
-        "types": ["node", "vscode"]
-    },
-    "include": ["src/**/*.ts", "test/**/*.ts"]
-}
+{ "extends": "@jterrazz/typescript/tsconfig/node" }

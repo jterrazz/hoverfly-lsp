@@ -3,11 +3,11 @@
 This directory holds the **standalone, publishable JSON Schema** for [Hoverfly](https://hoverfly.io)
 v5 simulation files, plus the baselines the drift CI uses to know when upstream Hoverfly moves.
 
-| File                                                               | What it is                                                                                                                                                                                                          |
-| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`hoverfly-simulation.json`](./hoverfly-simulation.json)           | The publishable schema (JSON Schema draft-07). This is what you point editors at and what we submit to SchemaStore.                                                                                                 |
-| [`upstream-baseline.schema.json`](./upstream-baseline.schema.json) | A **verbatim copy** of Hoverfly's official `core/handlers/v2/schema.json` at the pinned `HOVERFLY_COMMIT`. The drift job diffs live upstream against this.                                                          |
-| [`upstream-source-hashes.json`](./upstream-source-hashes.json)     | SHA-256 of the Go source files our matcher registry (research/07) and templating spec (research/08) were transcribed from. The drift job re-hashes them to detect behavioural drift the schema alone wouldn't show. |
+| File                                                           | What it is                                                                                                                                                                                                          |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`hoverfly-simulation.json`](./hoverfly-simulation.json)       | The publishable schema (JSON Schema draft-07). This is what you point editors at and what we submit to SchemaStore.                                                                                                 |
+| [`upstream/schema.json`](./upstream/schema.json)               | A **verbatim copy** of Hoverfly's official `core/handlers/v2/schema.json` at the pinned `HOVERFLY_COMMIT`. The drift job diffs live upstream against this.                                                          |
+| [`upstream-source-hashes.json`](./upstream-source-hashes.json) | SHA-256 of the Go source files our matcher registry (research/07) and templating spec (research/08) were transcribed from. The drift job re-hashes them to detect behavioural drift the schema alone wouldn't show. |
 
 ## What `hoverfly-simulation.json` is
 

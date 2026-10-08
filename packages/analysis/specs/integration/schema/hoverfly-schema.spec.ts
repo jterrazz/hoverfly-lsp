@@ -34,7 +34,7 @@ describe('bundled hoverfly schema', () => {
         // Given - the editable schema source on disk
         const result = await integration.call(schemaFromDisk);
         // Then - reading it threw nothing: it parses as JSON
-        await expect(result.error).toBeEmpty();
+        expect(result.error.text).toBe('');
     });
 
     test('the generated module matches the source JSON byte-for-byte (regenerate if this fails)', async () => {
@@ -124,7 +124,7 @@ describe('bundled hoverfly schema', () => {
         // Given - a definition the official schema leaves untyped
         const result = await integration.call(() => ({
             typed:
-                hoverflySchema.definitions?.response?.properties?.logNormalDelay?.type !==
+                asSchema(hoverflySchema.definitions?.response?.properties?.logNormalDelay)?.type !==
                 undefined,
         }));
         // Then - we do not add a `type` it lacks (never stricter than official)

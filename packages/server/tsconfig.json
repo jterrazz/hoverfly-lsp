@@ -1,9 +1,1 @@
-{
-    "extends": ["@jterrazz/typescript/tsconfig/library", "../../tsconfig.base.json"],
-    "compilerOptions": {
-        "rootDir": "src",
-        "outDir": "dist"
-    },
-    "include": ["src/**/*.ts"],
-    "references": [{ "path": "../analysis" }]
-}
+{ "extends": "@jterrazz/typescript/tsconfig/node" }

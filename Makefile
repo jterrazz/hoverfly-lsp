@@ -1,4 +1,4 @@
-.PHONY: build lint test typecheck install docs
+.PHONY: install build lint fix test mutation check docs
 
 node_modules/.install: package-lock.json
 	npm ci
@@ -9,12 +9,8 @@ install: node_modules/.install
 build: node_modules/.install
 	npm run build
 
-typecheck: node_modules/.install
-	npm run typecheck
-
-# The pages under docs/reference/ are a projection of the BUILT analysis package, so the gate
-# regenerates them and refuses a tree where the committed copy has drifted. The
-# shared CI runs no such step: it is this repository's own, and `lint` owns it.
+# invariant: docs/reference/ is a projection of the BUILT analysis package, so the gate
+# regenerates it and refuses a tree where the committed copy has drifted.
 docs: build
 	@tmp=$$(mktemp -d); cp -R docs/reference "$$tmp/reference"; \
 	npm run docs:diagnostics; \
@@ -24,8 +20,18 @@ docs: build
 		exit 1; \
 	fi
 
+# invariant: the server's type check reads the analysis package's built declarations, and its
+# spec spawns the built binary, so both gates read the build.
 lint: node_modules/.install docs
 	npm run lint
 
-test: node_modules/.install
+fix: build
+	npx typescript fix
+
+test: build
 	npm test
+
+mutation: build
+	npx typescript mutation
+
+check: lint test mutation

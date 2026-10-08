@@ -17,8 +17,7 @@
         "registry": "https://registry.npmjs.org/"
     },
     "scripts": {
-        "build": "tsc --build && npm run build:bundle",
-        "build:bundle": "node esbuild.config.js",
+        "build": "node esbuild.config.js",
         "test": "vitest --run"
     },
     "dependencies": {

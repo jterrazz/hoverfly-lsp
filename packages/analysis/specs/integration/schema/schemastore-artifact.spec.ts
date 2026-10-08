@@ -28,7 +28,7 @@ const bundledPath = fileURLToPath(
     new URL('../../../src/schema/hoverfly.schema.json', import.meta.url),
 );
 const artifactPath = `${repoRoot}schemas/hoverfly-simulation.json`;
-const baselinePath = `${repoRoot}schemas/upstream-baseline.schema.json`;
+const baselinePath = `${repoRoot}schemas/upstream/schema.json`;
 const sourceHashesPath = `${repoRoot}schemas/upstream-source-hashes.json`;
 
 const SCHEMASTORE_ID = 'https://json.schemastore.org/hoverfly-simulation.json';
@@ -155,7 +155,7 @@ describe('upstream drift baseline: schemas/upstream-*', () => {
         // Given - the verbatim official schema fetched at the pinned commit
         const result = await integration.call(() => readJson(baselinePath));
         // Then - it parses (the CI job diffs the live upstream against this byte baseline)
-        await expect(result.error).toBeEmpty();
+        expect(result.error.text).toBe('');
     });
 
     test('the source-hash manifest commit AGREES with provenance.HOVERFLY_COMMIT', async () => {

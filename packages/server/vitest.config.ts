@@ -1,6 +1,3 @@
-import { defineSpecConfig, integration, unit } from '@jterrazz/test/vitest';
+import { vitestConfig } from '@jterrazz/test/vitest';
 
-export default defineSpecConfig({
-    // The integration spec spawns the built binary over stdio; keep generous headroom.
-    test: { projects: [unit({ timeout: 20_000 }), integration({ timeout: 20_000 })] },
-});
+export default await vitestConfig(import.meta.url);

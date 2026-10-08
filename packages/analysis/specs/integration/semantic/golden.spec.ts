@@ -63,7 +63,7 @@ async function diagnose(relPath: string): Promise<GoldenDiagnostic[]> {
             start: [d.range.start.line, d.range.start.character],
             end: [d.range.end.line, d.range.end.character],
         },
-        message: d.message,
+        message: typeof d.message === 'string' ? d.message : d.message.value,
     }));
 }
 

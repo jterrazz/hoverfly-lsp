@@ -21,6 +21,7 @@ import {
     StreamMessageWriter,
 } from 'vscode-languageserver-protocol/node';
 import type {
+    ClientCapabilities,
     CompletionList,
     Diagnostic,
     InitializeResult,
@@ -46,7 +47,7 @@ const EXPECTED_LEGEND_TYPES = [
 ] as const;
 
 /** Client capabilities that advertise semantic-tokens support (full request). */
-const SEMANTIC_TOKENS_CLIENT_CAPABILITIES = {
+const SEMANTIC_TOKENS_CLIENT_CAPABILITIES: ClientCapabilities = {
     textDocument: {
         semanticTokens: {
             dynamicRegistration: false,
