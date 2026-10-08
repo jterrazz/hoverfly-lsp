@@ -25,9 +25,9 @@ Marketplace-only fix must be able to move without an npm release.
 
 ## Cutting a release
 
-1. Walk the parts of [MANUAL-QA.md](../MANUAL-QA.md) that need a real editor —
+1. Walk the parts of [MANUAL-QA.md](../../MANUAL-QA.md) that need a real editor —
    in practice VS Code and IntelliJ. Once a version is on npm it cannot be
-   replaced ([03-testing.md](03-testing.md) says why this step is not optional).
+   replaced ([Test](test.md) says why this step is not optional).
 2. Bump the version in every manifest that ships: `packages/analysis`,
    `packages/server`, the root `package.json`, and — when they move —
    `editors/vscode`, `editors/zed/extension.toml`,

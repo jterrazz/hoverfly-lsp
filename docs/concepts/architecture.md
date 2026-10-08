@@ -106,7 +106,7 @@ and an editor integration only has to find it and start it with `--stdio`.
 | `editors/vscode`      | Bundles it: esbuild copies the server into the extension before `vsce package`  |
 | `editors/zed`         | Rust/WASM extension; resolves project-local, then `$PATH`, then Zed-managed npm |
 | `editors/intellij`    | LSP4IJ plugin; Gradle copies the server bundle into the plugin resources        |
-| `editors/claude-code` | A plugin whose `launch.cjs` starts the globally installed npm package           |
+| `editors/claude-code` | A plugin whose `launch.mjs` starts the globally installed npm package           |
 
 The Zed extension is also mirrored into the Zed registry through a separate
 fork; `editors/zed/registry-submission/` holds what that submission carries.
@@ -115,7 +115,7 @@ fork; `editors/zed/registry-submission/` holds what that submission carries.
 
 `testdata/` is the reference corpus — the behavioural contract the semantic
 pipeline is judged against, not a source layer
-([03-testing.md](03-testing.md)).
+([Test](../guides/test.md)).
 
 `schemas/` holds the standalone SchemaStore artifact and the upstream baseline
 the drift watcher compares against; it is a distribution of the same schema the analysis
@@ -123,7 +123,7 @@ library bundles, kept separate because SchemaStore consumes a plain file.
 
 `docs/reference/` is a projection of the analysis library, written by
 `scripts/generate-diagnostic-docs.mjs` and never by hand
-([02-developing.md](02-developing.md)).
+([Develop](../guides/develop.md)).
 
 `research/` is the provenance trail: the two multi-agent research rounds against
 the Hoverfly Go source, the ground-truth run against a real Hoverfly v1.12.8, and

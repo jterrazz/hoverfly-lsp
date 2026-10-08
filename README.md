@@ -259,7 +259,7 @@ npm run lint           # tsc + oxlint + oxfmt + knip + the repo gates
 
 The manual for everyone who changes this repository is **[docs/](./docs/README.md)**: the
 architecture, the development loop, what proves a change, and how a release is cut. Adding a
-diagnostic is a five-step recipe in [docs/02-developing.md](./docs/02-developing.md).
+diagnostic is a five-step recipe in [docs/guides/develop.md](./docs/guides/develop.md).
 
 ## License
 

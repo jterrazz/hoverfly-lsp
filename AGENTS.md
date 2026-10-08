@@ -25,10 +25,10 @@ one stdio server, four thin editor launchers. This file **routes**; the manual i
 
 | Working on…                                               | Read                                      |
 | --------------------------------------------------------- | ----------------------------------------- |
-| Layers, the analysis library's directories, the launchers | `docs/01-architecture.md`                 |
-| The toolchain, and which file a change opens              | `docs/02-developing.md`                   |
-| The suites, the corpus, regenerating goldens              | `docs/03-testing.md`                      |
-| Releasing to npm and the extension registries             | `docs/04-operating.md`                    |
+| Layers, the analysis library's directories, the launchers | `docs/concepts/architecture.md`           |
+| The toolchain, and which file a change opens              | `docs/guides/develop.md`                  |
+| The suites, the corpus, regenerating goldens              | `docs/guides/test.md`                     |
+| Releasing to npm and the extension registries             | `docs/guides/release.md`                  |
 | The `HFxxx` catalog, helpers, faker types                 | `docs/reference/` (generated)             |
 | Why a behaviour is what it is                             | `research/10-architect-decisions.md`      |
 | Corpus conventions and per-domain counts                  | `testdata/README.md`                      |
@@ -52,7 +52,7 @@ env UPDATE_GOLDENS=1 npx vitest --run packages/analysis/specs/integration/semant
 - **Never edit a generated file.** `docs/reference/*` and
   `packages/analysis/src/schema/hoverfly.schema.generated.ts` come from their
   generators; change the source and regenerate.
-- **A new code owes five things**, listed once in `docs/02-developing.md` under
+- **A new code owes five things**, listed once in `docs/guides/develop.md` under
   "Adding a diagnostic" — catalog entry, rule, fixture and golden, unit test,
   generator prose. CI fails on the last two being skipped.
 - **Cite the decision.** A behavioural change names the `D1`–`D9` decision or the

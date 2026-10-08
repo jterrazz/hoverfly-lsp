@@ -53,14 +53,14 @@ The five steps, in order — the last two are not optional, and CI enforces both
    `makeDiagnostic()` only, ranged at the smallest node the user must change.
    The full recipe is `packages/analysis/src/semantic/README.md`.
 3. Add at least one `invalid/` fixture (and ideally a `valid/` counterpart) to
-   `testdata/`, then regenerate its golden — see [03-testing.md](03-testing.md).
+   `testdata/`, then regenerate its golden — see [Test](test.md).
 4. Add a focused unit test beside the rule, `packages/analysis/src/semantic/rules/<rule>.test.ts`.
 5. Add the code's trigger/range prose to `DIAGNOSTIC_PROSE` in
    `scripts/generate-diagnostic-docs.mjs` and regenerate the reference; the
    generator aborts loudly on a code with no prose entry.
 
 Diagnostic codes are **append-only**: never reuse or repurpose one. A code's
-meaning is a published contract ([01-architecture.md](01-architecture.md)).
+meaning is a published contract ([Architecture](../concepts/architecture.md)).
 
 ## Regenerating the reference
 
@@ -102,7 +102,7 @@ the decision or report that motivates it, and ideally the Go source path, so the
 provenance chain stays intact.
 
 Decisions taken after this manual exists are recorded as ADRs in
-[decisions/](decisions/).
+[decisions/](../decisions/).
 
 ## Where this repository diverges from the house preset
 

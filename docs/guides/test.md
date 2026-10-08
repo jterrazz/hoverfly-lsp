@@ -42,7 +42,7 @@ its subject through that runner's `.call()`. The suffix is the fork:
 ## The reference corpus
 
 `testdata/` is **the** behavioural contract for the semantic pipeline. Its rules
-are owned by [testdata/README.md](../testdata/README.md) — the layout, the
+are owned by [testdata/README.md](../../testdata/README.md) — the layout, the
 per-domain counts and the coverage matrix live there, not here. What matters to
 a change is the two-sided invariant it enforces:
 
@@ -94,7 +94,7 @@ Code, Zed, IntelliJ or Claude Code session. What has been verified without one �
 that every manifest parses, that the extension bundles and `vsce package`
 succeeds, that the Zed crate compiles, and that each launcher completes an
 `initialize` handshake — is listed under "Verified automatically" in
-[MANUAL-QA.md](../MANUAL-QA.md), and of it only the vitest suites run on every
+[MANUAL-QA.md](../../MANUAL-QA.md), and of it only the vitest suites run on every
 commit. The behaviour above that line is checked by a human against the rest of
 that same checklist, which is why it is walked before a release
-([04-operating.md](04-operating.md)).
+([Release](release.md)).
