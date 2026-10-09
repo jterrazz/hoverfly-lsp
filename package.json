@@ -11,7 +11,8 @@
     },
     "workspaces": [
         "packages/*",
-        "editors/vscode"
+        "editors/vscode",
+        "specs"
     ],
     "type": "module",
     "scripts": {
