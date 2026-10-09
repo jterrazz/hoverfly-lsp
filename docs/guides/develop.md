@@ -120,9 +120,10 @@ each with its reason beside it.
 - **`make lint` carries one gate of its own.** The reference under `docs/` is
   projected from the BUILT analysis package, and no pass of the toolchain
   regenerates it, so the `docs` target does.
-- **The formatter leaves three trees as written.** `schemas/upstream/`,
-  `schemas/schemastore-submission/` and `testdata/` are compared byte for byte
-  against something outside this tree, and the root configuration names why.
+- **The formatter and the Markdown pass leave four trees as written.**
+  `schemas/upstream/`, `schemas/schemastore-submission/` and `testdata/` are
+  compared byte for byte against something outside this tree, and `research/`
+  quotes upstream source verbatim; the root configuration names why.
 - **Members depend on each other by `*`.** npm workspaces have no `workspace:*`
   protocol, so `packages/server` names `@hoverfly-lsp/analysis` at `"*"` and npm
   links the workspace copy.

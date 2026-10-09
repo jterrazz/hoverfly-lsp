@@ -168,7 +168,6 @@ Hoverfly Cloud is a SaaS built on top of open-source Hoverfly. It uses the same 
     "description": "Hoverfly simulation schema",
     "required": ["data", "meta"],
     "type": "object",
-
     "properties": {
         "data": {
             "type": "object",
@@ -184,7 +183,6 @@ Hoverfly Cloud is a SaaS built on top of open-source Hoverfly. It uses the same 
                     }
                 },
                 "literals": { "type": "array", "items": { "$ref": "#/definitions/literals" } },
-
                 "pairs": {
                     "type": "array",
                     "items": { "$ref": "#/definitions/request-response-pair" }
@@ -194,7 +192,6 @@ Hoverfly Cloud is a SaaS built on top of open-source Hoverfly. It uses the same 
         },
         "meta": { "$ref": "#/definitions/meta" }
     },
-
     "definitions": {
         "delay": {
             "type": "object",
@@ -204,7 +201,6 @@ Hoverfly Cloud is a SaaS built on top of open-source Hoverfly. It uses the same 
                 "urlPattern": { "type": "string" }
             }
         },
-
         "delay-log-normal": {
             "type": "object",
             "properties": {
@@ -216,7 +212,6 @@ Hoverfly Cloud is a SaaS built on top of open-source Hoverfly. It uses the same 
                 "urlPattern": { "type": "string" }
             }
         },
-
         "field-matchers": {
             "type": "object",
             "properties": {
@@ -230,7 +225,6 @@ Hoverfly Cloud is a SaaS built on top of open-source Hoverfly. It uses the same 
                         "ignoreOccurrences": { "type": "boolean" }
                     }
                 },
-
                 "doMatch": { "$ref": "#/definitions/field-matchers" }
             }
         },
@@ -246,7 +240,6 @@ Hoverfly Cloud is a SaaS built on top of open-source Hoverfly. It uses the same 
                 "value": {}
             }
         },
-
         "meta": {
             "type": "object",
             "required": ["schemaVersion"],
@@ -256,7 +249,6 @@ Hoverfly Cloud is a SaaS built on top of open-source Hoverfly. It uses the same 
                 "timeExported": { "type": "string" }
             }
         },
-
         "request": {
             "type": "object",
             "properties": {
@@ -272,7 +264,6 @@ Hoverfly Cloud is a SaaS built on top of open-source Hoverfly. It uses the same 
                     "type": "object",
                     "patternProperties": { ".{1,}": { "type": "string" } }
                 },
-
                 "scheme": { "type": "array", "items": { "$ref": "#/definitions/field-matchers" } }
             }
         },
@@ -283,7 +274,6 @@ Hoverfly Cloud is a SaaS built on top of open-source Hoverfly. It uses the same 
                 "items": { "$ref": "#/definitions/field-matchers" }
             }
         },
-
         "request-queries": {
             "type": "object",
             "additionalProperties": {
@@ -291,7 +281,6 @@ Hoverfly Cloud is a SaaS built on top of open-source Hoverfly. It uses the same 
                 "items": { "$ref": "#/definitions/field-matchers" }
             }
         },
-
         "request-response-pair": {
             "type": "object",
             "required": ["request", "response"],
@@ -301,7 +290,6 @@ Hoverfly Cloud is a SaaS built on top of open-source Hoverfly. It uses the same 
                 "response": { "$ref": "#/definitions/response" }
             }
         },
-
         "response": {
             "type": "object",
             "properties": {
@@ -315,7 +303,6 @@ Hoverfly Cloud is a SaaS built on top of open-source Hoverfly. It uses the same 
                         "max": { "type": "integer" },
                         "mean": { "type": "integer" },
                         "median": { "type": "integer" },
-
                         "min": { "type": "integer" }
                     }
                 },
@@ -329,7 +316,6 @@ Hoverfly Cloud is a SaaS built on top of open-source Hoverfly. It uses the same 
                 }
             }
         },
-
         "variables": {
             "type": "object",
             "required": ["name", "function"],

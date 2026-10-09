@@ -48,7 +48,6 @@ var Matchers = map[string]MatcherDetails{
 	Array:        {MatcherFunction: ArrayMatchWithoutConfig, MatchValueGenerator: IdentityValueGenerator},
 	JWT:          {MatcherFunction: JwtMatcher,        MatchValueGenerator: JwtMatchValueGenerator},
 	JWTJsonPath:  {MatcherFunction: JwtJsonPathMatch,  MatchValueGenerator: JwtJsonPathMatchValueGenerator},
-
 	Negation:     {MatcherFunction: NegationMatch,     MatchValueGenerator: IdentityValueGenerator},
 }
 
@@ -102,7 +101,6 @@ func isMatching(field models.RequestFieldMatchers, toMatch string) bool {
 			matcherDetails = matchers.MatchersWithConfig[strings.ToLower(currentMatcher.Matcher)]
 			isMatched = matcherDetails.MatcherFunction.(func(interface{}, string, map[string]interface{}) bool)(currentMatcher.Value, actual, currentMatcher.Config)
 		}
-
 		if !isMatched {
 			return false
 		}

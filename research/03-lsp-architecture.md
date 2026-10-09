@@ -119,7 +119,6 @@ export interface LanguageService {
     newJSONDocument(
         rootNode: ASTNode | undefined,
         syntaxDiagnostics?: Diagnostic[],
-
         comments?: Range[],
     ): JSONDocument;
     resetSchema(uri: string): boolean;
@@ -135,7 +134,6 @@ export interface LanguageService {
         position: Position,
         doc: JSONDocument,
     ): PromiseLike<CompletionList | null>;
-
     findDocumentSymbols(
         document: TextDocument,
         doc: JSONDocument,
@@ -148,7 +146,6 @@ export interface LanguageService {
     ): DocumentSymbol[];
     findDocumentColors(document, doc, context?): PromiseLike<ColorInformation[]>;
     getColorPresentations(document, doc, color, range): ColorPresentation[];
-
     doHover(
         document: TextDocument,
         position: Position,
@@ -163,7 +160,6 @@ export interface LanguageService {
         range: Range | undefined,
         options: FormattingOptions,
     ): TextEdit[];
-
     sort(document: TextDocument, options: SortOptions): TextEdit[];
 }
 ```
@@ -225,7 +221,6 @@ export interface JSONWorkerContribution {
         isLast: boolean,
         result: CompletionsCollector,
     ): PromiseLike<any>;
-
     collectValueCompletions(
         uri: string,
         location: JSONPath,
@@ -406,7 +401,6 @@ hoverfly-lsp/
 │  │  │  ├─ schema/
 │  │  │  │  ├─ hoverfly.schema.ts    # the inlined JSON Schema (draft-07) as a TS const
 │  │  │  │  └─ hoverfly.schema.json  # canonical artifact (also published for external use)
-
 │  │  │  ├─ semantic/                # <-- "type checking" beyond schema
 │  │  │  │  ├─ index.ts              # SemanticValidator[] registry
 │  │  │  │  ├─ matcher-kinds.ts      # matcher type must be one of the known kinds
@@ -421,7 +415,6 @@ hoverfly-lsp/
 │  │  │  │  └─ nav.ts                # ASTNode helpers: findNodeAtPath, rangeOf(node), jsonPathOf(node)
 │  │  │  └─ docs/
 │  │  │     └─ field-docs.ts         # hover markdown per JSONPath (matcher kinds, response fields...)
-
 │  │  └─ test/
 │  │     └─ ...                      # see §6
 │  └─ server/                        # @hoverfly-lsp/server — THIN LSP WRAPPER (the npm bin)
@@ -436,7 +429,6 @@ hoverfly-lsp/
 │     │  └─ capabilities.ts          # InitializeResult capability object
 │     └─ test/
 │        └─ integration/             # full stdio round-trip tests (see §6.4)
-
 ├─ editors/
 │  ├─ vscode/                        # the .vsix; client only
 │  │  ├─ package.json                # contributes.languages + activationEvents; bundles server
@@ -452,7 +444,6 @@ hoverfly-lsp/
 ├─ testdata/                         # SHARED CORPUS (see §6.1) — consumed by core tests
 │  ├─ valid/
 │  ├─ invalid/
-
 │  ├─ completion/
 │  └─ hover/
 └─ scripts/                          # release, schema-export, bundle
@@ -499,7 +490,6 @@ testdata/
 │  ├─ missing-meta-schemaversion.json
 │  └─ missing-meta-schemaversion.golden
 ├─ completion/                       # cursor-marker files (see §6.3)
-
 │  ├─ matcher-kind.json              # contains the |  cursor marker
 │  ├─ matcher-kind.expected          # expected completion labels (ordered or as a set)
 │  └─ response-status.json
@@ -558,7 +548,6 @@ test('completes matcher kinds', async () => {
     const doc = TextDocument.create('file://t.json', 'json', 1, text);
     const list = await svc.complete(doc, pos);
     const labels = list!.items.map((i) => i.label).sort();
-
     expect(labels).toEqual([
         'exact',
         'form',

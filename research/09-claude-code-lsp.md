@@ -556,7 +556,6 @@ Claude Code (2026) LSP plugin mechanism is **fully documented, standardized, and
             // Optional: environment vars
             "KEY": "value"
         },
-
         "initializationOptions": {}, // Optional: init-time config
         "settings": {}, // Optional: workspace settings
         "workspaceFolder": "/path", // Optional: workspace path

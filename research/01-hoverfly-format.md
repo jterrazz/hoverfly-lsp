@@ -164,7 +164,6 @@ The authoritative schema (`core/handlers/v2/schema.json`) for the root:
         "ignoreOccurrences": { "type": "boolean" }
       }
     },
-
     "doMatch": { "$ref": "#/definitions/field-matchers" }   // recursive — matcher chaining
   }
 }
@@ -294,7 +293,6 @@ JWT + chaining inside a header matcher:
     "headers":      { "$ref": "#/definitions/headers" },
     "templated":    { "type": "boolean" },
     "fixedDelay":   { "type": "integer" },
-
     "logNormalDelay": {
       "properties": {
         "min":    { "type": "integer" },
@@ -305,7 +303,6 @@ JWT + chaining inside a header matcher:
     },
     "postServeAction":  { "type": "string" },
     "removesState":     { "type": "array" },
-
     "transitionsState": {
       "type": "object",
       "patternProperties": { ".{1,}": { "type": "string" } }
@@ -420,7 +417,6 @@ Sequences let identical requests return _different_ responses in order. Conventi
             },
             {
                 "request": { "requiresState": { "sequence:1": "2" } },
-
                 "response": { "status": 200, "body": "Second response" }
             }
         ]
@@ -682,7 +678,6 @@ The loader validates ALL v5.x against ONE schema, so versions are documentation/
                     "headers": {},
                     "query": {}
                 },
-
                 "response": {
                     "status": 200,
                     "body": "<h1>Matched on recording</h1>",
@@ -694,7 +689,6 @@ The loader validates ALL v5.x against ONE schema, so versions are documentation/
         ],
         "globalActions": { "delays": [], "delaysLogNormal": [] }
     },
-
     "meta": {
         "schemaVersion": "v5",
         "hoverflyVersion": "v1.0.0",

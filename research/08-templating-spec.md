@@ -69,7 +69,6 @@ helperMethodMap["randomUuid"] = t.randomUuid
 helperMethodMap["replace"] = t.replace
 helperMethodMap["split"] = t.split
 helperMethodMap["concat"] = t.concat
-
 helperMethodMap["length"] = t.length
 helperMethodMap["substring"] = t.substring
 helperMethodMap["rightmostCharacters"] = t.rightmostCharacters
@@ -85,7 +84,6 @@ helperMethodMap["matchesRegex"] = t.matchesRegex
 helperMethodMap["faker"] = t.faker
 helperMethodMap["requestBody"] = t.requestBody
 helperMethodMap["csv"] = t.fetchSingleFieldCsv
-
 helperMethodMap["csvMatchingRows"] = t.fetchMatchingRowsCsv
 helperMethodMap["csvAsArray"] = t.csvAsArray
 helperMethodMap["csvAsMap"] = t.csvAsMap
@@ -101,7 +99,6 @@ helperMethodMap["sum"] = t.sum
 helperMethodMap["add"] = t.add
 helperMethodMap["subtract"] = t.subtract
 helperMethodMap["multiply"] = t.multiply
-
 helperMethodMap["divide"] = t.divide
 helperMethodMap["initArray"] = t.initArray
 helperMethodMap["addToArray"] = t.addToArray
@@ -352,7 +349,6 @@ HackerAbbreviation, HackerAdjective, HackeringVerb, HackerNoun, HackerPhrase, Ha
 HexColor, HexUint128, HexUint16, HexUint256, HexUint32, HexUint64, HexUint8, Hobby, Hour,
 HTTPMethod, HTTPStatusCode, HTTPStatusCodeSimple, HTTPVersion, InputName, Int16, Int32, Int64,
 Int8, IPv4Address, IPv6Address, Isin, Job, JobDescriptor, JobLevel, JobTitle, Language,
-
 LanguageAbbreviation, LanguageBCP, LastName, Latitude, Letter, Longitude, LoremIpsumWord, Lunch,
 MacAddress, Map, MiddleName, MinecraftAnimal, MinecraftArmorPart, MinecraftArmorTier,
 MinecraftBiome, MinecraftDye, MinecraftFood, MinecraftMobBoss, MinecraftMobHostile,
@@ -604,7 +600,6 @@ func FetchFromRequestBody(queryType, query, toMatch string) interface{} {
 		return jsonPath(query, jsonBytes.String())
 	}
 	log.Errorf("Unknown query type \"%s\" for templating Request.Body", queryType)
-
 	return ""
 }
 ```

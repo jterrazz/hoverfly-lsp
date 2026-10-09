@@ -13,6 +13,8 @@ export default defineConfig({
         },
         oxfmt: {
             ignore: {
+                'research/**':
+                    'the research reports decisions D1–D9 were taken from, kept as written: their fences quote upstream Go source, schema and payloads verbatim',
                 'schemas/schemastore-submission/**':
                     "the ready-to-submit SchemaStore bundle, byte-identical to what SchemaStore's own checks run",
                 'schemas/upstream/**':
