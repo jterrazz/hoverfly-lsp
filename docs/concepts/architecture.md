@@ -53,7 +53,7 @@ the completion coverage matrix).
 ### The catalog is the single source of truth
 
 Every diagnostic's severity, message template and documentation href come from
-`packages/analysis/src/semantic/catalog.ts`, and a rule reaches them only through
+`packages/analysis/src/semantic/catalog.data.ts`, and a rule reaches them only through
 `makeDiagnostic()` (`packages/analysis/src/semantic/diagnostics.ts:65`). A rule never
 inlines a severity or a message string, so a code's meaning is defined in exactly
 one place and the golden snapshots stay stable.
@@ -61,7 +61,7 @@ one place and the golden snapshots stay stable.
 Codes are a **stable API**: once a code is frozen its meaning never changes, new
 codes may be added, and a deprecated code is never reused. The href each code
 carries resolves to `https://hoverfly-lsp.dev/diagnostics/<code>`
-(`packages/analysis/src/semantic/catalog.ts:21`) — a published address, not a path in
+(`diagnosticHref` in `packages/analysis/src/semantic/diagnostics.ts`) — a published address, not a path in
 this tree, so moving a page in this repository never moves a diagnostic's link.
 
 ### The registries are transcribed and pinned

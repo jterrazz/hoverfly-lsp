@@ -18,7 +18,7 @@ docs **and** the Hoverfly Go source). Binding decisions: `research/10-architect-
 
 ## Architecture (decided)
 
-```
+```text
 hoverfly-lsp/
 ├── packages/
 │   ├── analysis/              # pure analysis library — ZERO LSP transport deps
@@ -110,11 +110,11 @@ Cloud-only extensions.
 ## Testing pyramid (decided)
 
 - **Bulk at analysis**: golden diagnostics (`testdata/invalid/**/*.hoverfly.json` + sibling
-  `.diagnostics.golden`), fixture validity (`testdata/valid/**` must produce zero diagnostics),
+  `<case>.diagnostics.json`), fixture validity (`testdata/valid/**` must produce zero diagnostics),
   cursor-marker completion/hover tests (tsgo-fourslash style).
 - **Thin at server**: full stdio JSON-RPC round-trips (initialize → didOpen → diagnostics → completion).
 - **Edge**: each editor extension gets a minimal smoke test / documented manual verification.
-- Tooling: Vitest (`toMatchFileSnapshot` for goldens).
+- Tooling: Vitest with `@jterrazz/test`'s `file()` goldens, recorded by `TEST_UPDATE=1`.
 
 ## Key risks & mitigations
 

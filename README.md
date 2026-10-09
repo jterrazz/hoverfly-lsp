@@ -230,7 +230,7 @@ A single TypeScript stdio server wraps a pure analysis library, built on
 error-recovering JSON engine VS Code itself uses) with Hoverfly-specific validators and a
 Handlebars-subset template engine on top. Dependency direction is strictly `editors -> server -> analysis`.
 
-```
+```text
 packages/analysis  @hoverfly-lsp/analysis  pure analysis library (private; bundled into the server)
 packages/server    @jterrazz/hoverfly-lsp  stdio LSP server (the published package; bin: hoverfly-lsp)
 editors/           vscode, zed, intellij, claude-code   thin per-editor launchers
@@ -248,13 +248,13 @@ to confirm the corpus is ground truth, not just self-consistent. The decision lo
 
 ## Contributing
 
-Node >= 20, npm-workspaces monorepo.
+Node 24 to develop (the published server runs on Node 20 and later), npm-workspaces monorepo.
 
 ```bash
-npm install
-npm run build          # tsc across workspaces
-npm test               # vitest
-npm run lint           # tsc + oxlint + oxfmt + knip + the repo gates
+make install
+make build
+make test
+make check             # lint, test and mutation: the whole verdict
 ```
 
 The manual for everyone who changes this repository is **[docs/](./docs/README.md)**: the

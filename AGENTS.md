@@ -9,8 +9,8 @@ one stdio server, four thin editor launchers. This file **routes**; the manual i
 - **Dependency direction is one-way**: `editors → server → analysis`. `packages/analysis`
   carries no LSP transport dependency, and adding one is the regression to catch
   in review.
-- **The catalog is the single source of truth.** A diagnostic's severity, message
-  and href are written once in `packages/analysis/src/semantic/catalog.ts` and reach a
+- **The catalog is the single source of truth.** A diagnostic's severity and message
+  are written once in `packages/analysis/src/semantic/catalog.data.ts` and reach a
   rule only through `makeDiagnostic()`. Never inline a severity or a message.
 - **Facts come from the registries, and the registries come from Go.** Matchers,
   helpers and faker types are transcribed from a pinned Hoverfly commit; a rule
@@ -37,14 +37,13 @@ one stdio server, four thin editor launchers. This file **routes**; the manual i
 ## Commands
 
 ```bash
-npm install            # or: make install
-npm run build          # tsc --build across the workspaces, then the esbuild bundles
-npm test               # vitest --run
-npm run typecheck
-npm run lint           # typescript check — the full gate
-npm run lint:fix
-npm run docs:diagnostics   # regenerate docs/reference/ (needs a build first)
-env UPDATE_GOLDENS=1 npx vitest --run packages/analysis/specs/integration/semantic/golden.spec.ts
+make install           # npm ci, lockfile-pinned, behind an install sentinel
+make build             # every member: the analysis library, the server bin, the extension
+make test              # build, then each member's vitest run
+make lint              # build, regenerate docs/reference/, then typescript check
+make fix               # typescript fix: format, autofixable lint, Markdown
+make check             # lint, test and mutation: the whole verdict
+TEST_UPDATE=1 make test # record the goldens a change moved; review each by hand
 ```
 
 ## Standing rules

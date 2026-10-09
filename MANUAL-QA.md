@@ -67,7 +67,7 @@ work until it is published.
 > component and will fail the Zed build; `brew uninstall rust` or make `~/.cargo/bin` win on
 > `$PATH` so `which cargo` is rustup's. And a Zed launched from Finder/Dock does not inherit
 > `~/.cargo/bin`: launch it from a terminal (`zed .`) or add `~/.cargo/bin` to the GUI `$PATH`.
-
+>
 > **No zero-setup bundling.** The server file cannot be shipped inside the extension: Zed's wasm
 > sandbox preopens only the extension _work_ dir as cwd (`crates/extension_host/.../wasm_host.rs`),
 > so committed files (in the _installed_ dir) are unreachable at runtime, and the published archive
@@ -192,8 +192,7 @@ below need a real Claude Code install / a second `.json` plugin and could not be
 
 ## Verified automatically (do not re-check)
 
-- Repo gates at root: `npm run build`, `npm run test` (608 passing), `npm run typecheck`,
-  `npm run lint` (oxlint + oxfmt + tsc + knip): all green with the editor dirs in place.
+- Repo gates at root: `make check` (lint, test, mutation) green with the editor dirs in place.
 - VS Code: `npm run build --workspace=hoverfly-lsp-vscode` bundles `dist/extension.cjs` and copies
   the server into `server/`; `vsce package` produces the `.vsix` (9 files, includes the bundled
   server); the bundled `server/bin/hoverfly-lsp.js` answers `initialize` with

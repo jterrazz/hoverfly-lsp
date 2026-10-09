@@ -89,7 +89,7 @@ npm run build --workspace=hoverfly-lsp-vscode
 ls editors/vscode/dist/extension.cjs editors/vscode/server/bin/hoverfly-lsp.js editors/vscode/server/dist/cli.cjs
 
 # 2. Unit-test the server-resolution logic.
-npx vitest --run editors/vscode/test
+npm test --workspace editors/vscode
 
 # 3. Produce a .vsix (no Marketplace account needed).
 npm run package --workspace=hoverfly-lsp-vscode
