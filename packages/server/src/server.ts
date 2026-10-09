@@ -13,6 +13,7 @@ import {
 import type {
     ClientCapabilities,
     Connection,
+    Diagnostic,
     DiagnosticServerCancellationData,
     InitializeError,
     InitializeParams,
@@ -56,214 +57,234 @@ function notInitialized<E>(): ResponseError<E> {
     );
 }
 
-function createServer(connection: Connection): void {
-    const documents = new TextDocuments(TextDocument);
-
+class HoverflyServer {
+    private readonly connection: Connection;
+    private readonly documents = new TextDocuments(TextDocument);
+    private readonly pushTimers = new Map<string, ReturnType<typeof setTimeout>>();
     // value: the service is rebuilt on every settings change, so each rule context reads the new
     // values; it reads no file, the schema being bundled.
-    let settings: HoverflyServiceSettings = {};
-    let service: HoverflyLanguageService = createHoverflyLanguageService([], settings);
+    private settings: HoverflyServiceSettings = {};
+    private service: HoverflyLanguageService = createHoverflyLanguageService([], {});
+    private clientCapabilities: ClientCapabilities = {};
+    private usePull = false;
+    private hasConfigurationCapability = false;
+    private useSemanticTokens = false;
+    private hasInitialized = false;
 
-    let clientCapabilities: ClientCapabilities = {};
-    let usePull = false;
-    let hasConfigurationCapability = false;
-    let useSemanticTokens = false;
-    let hasInitialized = false;
+    constructor(connection: Connection) {
+        this.connection = connection;
+    }
 
-    const rebuildService = (): void => {
-        service = createHoverflyLanguageService([], settings);
-    };
-
-    const pushTimers = new Map<string, ReturnType<typeof setTimeout>>();
-
-    const cancelPush = (uri: string): void => {
-        const pending = pushTimers.get(uri);
-        if (pending !== undefined) {
-            clearTimeout(pending);
-            pushTimers.delete(uri);
-        }
-    };
-
-    const schedulePush = (document: TextDocument): void => {
-        // invariant: a client advertising pull asks for its diagnostics, any other gets them pushed
-        // — never both (decision D1).
-        if (usePull) {
-            return;
-        }
-        const { uri } = document;
-        const { version } = document;
-        cancelPush(uri);
-        const timer = setTimeout(() => {
-            pushTimers.delete(uri);
-            // invariant: a newer version may have arrived while the timer waited; its own push
-            // supersedes this one.
-            const current = documents.get(uri);
-            if (current !== undefined && current.version !== version) {
-                return;
+    listen(): void {
+        const { connection, documents } = this;
+        connection.onInitialize((params) => this.initialize(params));
+        connection.onInitialized(() => {
+            void this.initialized();
+        });
+        connection.onDidChangeConfiguration((change) => {
+            void this.configurationChanged(change.settings);
+        });
+        connection.languages.diagnostics.on(
+            async (params) => await this.pulled(params.textDocument.uri),
+        );
+        connection.onCompletion(
+            async (params) =>
+                await this.answer(
+                    params.textDocument.uri,
+                    async (document) => await this.service.doComplete(document, params.position),
+                ),
+        );
+        connection.onHover(
+            async (params) =>
+                await this.answer(
+                    params.textDocument.uri,
+                    async (document) => await this.service.doHover(document, params.position),
+                ),
+        );
+        connection.languages.semanticTokens.on((params) => this.tokens(params.textDocument.uri));
+        documents.onDidChangeContent(({ document }) => {
+            this.schedulePush(document);
+        });
+        documents.onDidClose(({ document }) => {
+            this.cancelPush(document.uri);
+            if (!this.usePull) {
+                void connection.sendDiagnostics({ uri: document.uri, diagnostics: [] });
             }
-            void service
-                .doValidation(document)
-                .then((diagnostics) => {
-                    connection.sendDiagnostics({ uri, version, diagnostics });
-                })
-                .catch((error: unknown) => {
-                    connection.console.error(
-                        `hoverfly-lsp: validation failed for ${uri}: ${String(error)}`,
-                    );
-                });
-        }, PUSH_DEBOUNCE_MS);
-        pushTimers.set(uri, timer);
-    };
+        });
+        documents.listen(connection);
+    }
 
-    const refreshConfiguration = async (): Promise<void> => {
-        if (!hasConfigurationCapability) {
+    private initialize(
+        params: InitializeParams,
+    ): InitializeResult | ResponseError<InitializeError> {
+        if (this.hasInitialized) {
+            return new ResponseError<InitializeError>(
+                ErrorCodes.InvalidRequest,
+                'Server already initialized; a second initialize request is not allowed.',
+            );
+        }
+        this.clientCapabilities = params.capabilities;
+        this.usePull = clientSupportsPullDiagnostics(params.capabilities);
+        this.hasConfigurationCapability = clientSupportsConfiguration(params.capabilities);
+        this.useSemanticTokens = clientSupportsSemanticTokens(params.capabilities);
+        // outside: initializationOptions carry the settings of a client without
+        // workspace/configuration; one with it overrides them once initialized.
+        this.configure(pickSettings(params.initializationOptions));
+        this.hasInitialized = true;
+        return {
+            capabilities: buildServerCapabilities(params.capabilities),
+            serverInfo: { name: 'hoverfly-lsp' },
+        };
+    }
+
+    private async initialized(): Promise<void> {
+        if (clientSupportsDidChangeConfiguration(this.clientCapabilities)) {
+            await this.connection.client.register(DidChangeConfigurationNotification.type, {
+                section: CONFIGURATION_SECTION,
+            });
+        }
+        await this.refreshConfiguration();
+        this.revalidateOpenDocuments();
+    }
+
+    private async configurationChanged(pushed: unknown): Promise<void> {
+        if (this.hasConfigurationCapability) {
+            await this.refreshConfiguration();
+        } else {
+            this.configure(
+                pickSettings(
+                    typeof pushed === 'object' && pushed !== null && 'hoverfly' in pushed
+                        ? pushed.hoverfly
+                        : undefined,
+                ),
+            );
+        }
+        this.revalidateOpenDocuments();
+    }
+
+    private configure(settings: HoverflyServiceSettings): void {
+        this.settings = settings;
+        this.service = createHoverflyLanguageService([], this.settings);
+    }
+
+    private async refreshConfiguration(): Promise<void> {
+        if (!this.hasConfigurationCapability) {
             return;
         }
         try {
             const result: unknown =
-                await connection.workspace.getConfiguration(CONFIGURATION_SECTION);
-            settings = pickSettings(result);
-            rebuildService();
+                await this.connection.workspace.getConfiguration(CONFIGURATION_SECTION);
+            this.configure(pickSettings(result));
         } catch (error: unknown) {
-            connection.console.error(
+            this.connection.console.error(
                 `hoverfly-lsp: failed to read configuration: ${String(error)}`,
             );
         }
-    };
+    }
 
-    const revalidateOpenDocuments = (): void => {
-        for (const document of documents.all()) {
-            schedulePush(document);
+    private revalidateOpenDocuments(): void {
+        for (const document of this.documents.all()) {
+            this.schedulePush(document);
         }
-    };
+    }
 
-    connection.onInitialize(
-        (params: InitializeParams): InitializeResult | ResponseError<InitializeError> => {
-            if (hasInitialized) {
-                return new ResponseError<InitializeError>(
-                    ErrorCodes.InvalidRequest,
-                    'Server already initialized; a second initialize request is not allowed.',
-                );
-            }
-            clientCapabilities = params.capabilities;
-            usePull = clientSupportsPullDiagnostics(clientCapabilities);
-            hasConfigurationCapability = clientSupportsConfiguration(clientCapabilities);
-            useSemanticTokens = clientSupportsSemanticTokens(clientCapabilities);
-
-            // outside: initializationOptions carry the settings of a client without
-            // workspace/configuration; one with it overrides them once initialized.
-            settings = pickSettings(params.initializationOptions);
-            rebuildService();
-
-            hasInitialized = true;
-            return {
-                capabilities: buildServerCapabilities(clientCapabilities),
-                serverInfo: { name: 'hoverfly-lsp' },
-            };
-        },
-    );
-
-    connection.onInitialized(() => {
-        if (clientSupportsDidChangeConfiguration(clientCapabilities)) {
-            void connection.client.register(DidChangeConfigurationNotification.type, {
-                section: CONFIGURATION_SECTION,
-            });
+    private async answer<T>(
+        uri: string,
+        read: (document: TextDocument) => Promise<T>,
+    ): Promise<null | ResponseError | T> {
+        const document = this.opened(uri);
+        if (document === undefined) {
+            return null;
         }
-        void refreshConfiguration().then(() => {
-            revalidateOpenDocuments();
-        });
-    });
+        return document instanceof ResponseError ? document : await read(document);
+    }
 
-    connection.onDidChangeConfiguration((change) => {
-        if (hasConfigurationCapability) {
-            void refreshConfiguration().then(() => {
-                revalidateOpenDocuments();
-            });
-            return;
-        }
-        settings = pickSettings((change.settings as null | { hoverfly?: unknown })?.hoverfly);
-        rebuildService();
-        revalidateOpenDocuments();
-    });
+    private opened(uri: string): ResponseError | TextDocument | undefined {
+        return this.hasInitialized ? this.documents.get(uri) : notInitialized<undefined>();
+    }
 
-    connection.languages.diagnostics.on(async (params) => {
-        if (!hasInitialized) {
+    private async pulled(
+        uri: string,
+    ): Promise<
+        ResponseError<DiagnosticServerCancellationData> | { items: Diagnostic[]; kind: 'full' }
+    > {
+        if (!this.hasInitialized) {
             return notInitialized<DiagnosticServerCancellationData>();
         }
-        const document = documents.get(params.textDocument.uri);
+        const document = this.documents.get(uri);
         return {
+            items: document === undefined ? [] : await this.service.doValidation(document),
             kind: 'full',
-            items: document === undefined ? [] : await service.doValidation(document),
         };
-    });
-
-    connection.onCompletion((params) => {
-        if (!hasInitialized) {
-            return notInitialized<void>();
-        }
-        const document = documents.get(params.textDocument.uri);
-        if (document === undefined) {
-            return null;
-        }
-        return service.doComplete(document, params.position);
-    });
-
-    connection.onHover((params) => {
-        if (!hasInitialized) {
-            return notInitialized<void>();
-        }
-        const document = documents.get(params.textDocument.uri);
-        if (document === undefined) {
-            return null;
-        }
-        return service.doHover(document, params.position);
-    });
+    }
 
     // invariant: the handler exists before initialize, as every handler must, yet answers no token
     // to a client that did not advertise semantic tokens; the tokens already carry legend indices,
     // and the D3 gate is getSemanticTokens'.
-    connection.languages.semanticTokens.on((params): ResponseError | SemanticTokens => {
-        if (!hasInitialized) {
-            return notInitialized<void>();
+    private tokens(uri: string): ResponseError | SemanticTokens {
+        const document = this.opened(uri);
+        if (document instanceof ResponseError) {
+            return document;
         }
         const builder = new SemanticTokensBuilder();
-        if (!useSemanticTokens) {
-            return builder.build();
-        }
-        const document = documents.get(params.textDocument.uri);
-        if (document === undefined) {
-            return builder.build();
-        }
-        const jsonDocument = service.parse(document);
-        for (const token of getSemanticTokens(document, jsonDocument)) {
-            builder.push(
-                token.line,
-                token.startChar,
-                token.length,
-                token.tokenType,
-                token.tokenModifiers,
-            );
+        if (this.useSemanticTokens && document !== undefined) {
+            for (const token of getSemanticTokens(document, this.service.parse(document))) {
+                builder.push(
+                    token.line,
+                    token.startChar,
+                    token.length,
+                    token.tokenType,
+                    token.tokenModifiers,
+                );
+            }
         }
         return builder.build();
-    });
+    }
 
-    documents.onDidChangeContent(({ document }) => {
-        schedulePush(document);
-    });
-
-    documents.onDidClose(({ document }) => {
-        cancelPush(document.uri);
-        if (!usePull) {
-            connection.sendDiagnostics({ uri: document.uri, diagnostics: [] });
+    private cancelPush(uri: string): void {
+        const pending = this.pushTimers.get(uri);
+        if (pending !== undefined) {
+            clearTimeout(pending);
+            this.pushTimers.delete(uri);
         }
-    });
+    }
 
-    documents.listen(connection);
+    // invariant: a client advertising pull asks for its diagnostics, any other gets them pushed —
+    // never both (decision D1).
+    private schedulePush(document: TextDocument): void {
+        if (this.usePull) {
+            return;
+        }
+        this.cancelPush(document.uri);
+        const timer = setTimeout(() => {
+            this.pushTimers.delete(document.uri);
+            void this.push(document);
+        }, PUSH_DEBOUNCE_MS);
+        this.pushTimers.set(document.uri, timer);
+    }
+
+    private async push(document: TextDocument): Promise<void> {
+        const { uri, version } = document;
+        // invariant: a newer version may have arrived while the timer waited; its own push
+        // supersedes this one.
+        const current = this.documents.get(uri);
+        if (current !== undefined && current.version !== version) {
+            return;
+        }
+        try {
+            const diagnostics = await this.service.doValidation(document);
+            await this.connection.sendDiagnostics({ uri, version, diagnostics });
+        } catch (error: unknown) {
+            this.connection.console.error(
+                `hoverfly-lsp: validation failed for ${uri}: ${String(error)}`,
+            );
+        }
+    }
 }
 
 /** Starts the server; vscode-languageserver/node picks the transport from process.argv, which the command validated. */
 export function startServer(): void {
     const connection = createConnection(ProposedFeatures.all);
-    createServer(connection);
+    new HoverflyServer(connection).listen();
     connection.listen();
 }

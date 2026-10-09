@@ -1,23 +1,7 @@
-import { createRequire } from 'node:module';
-
 import { startServer } from './server.js';
 
-// value: esbuild defines HOVERFLY_LSP_VERSION in the bundle; unbundled, the version is read from
-// package.json.
-declare const HOVERFLY_LSP_VERSION: string | undefined;
-
-function readVersion(): string {
-    if (typeof HOVERFLY_LSP_VERSION === 'string') {
-        return HOVERFLY_LSP_VERSION;
-    }
-    try {
-        const require = createRequire(import.meta.url);
-        const pkg = require('../package.json') as { version?: string };
-        return pkg.version ?? '0.0.0';
-    } catch {
-        return '0.0.0';
-    }
-}
+// outside: esbuild defines the manifest's version at build time, so the bundle reads no package.json.
+declare const HOVERFLY_LSP_VERSION: string;
 
 const HELP = `hoverfly-lsp — Language Server for Hoverfly JSON simulation files
 
@@ -53,7 +37,7 @@ function isAcceptedArg(arg: string): boolean {
 /** The command: `--version` and `--help` answer, an unknown flag is refused with the usage, and the transport is left to vscode-languageserver/node, which reads process.argv. */
 export function main(argv: readonly string[] = process.argv.slice(2)): void {
     if (argv.includes('--version') || argv.includes('-v')) {
-        process.stdout.write(`${readVersion()}\n`);
+        process.stdout.write(`${HOVERFLY_LSP_VERSION}\n`);
         return;
     }
     if (argv.includes('--help') || argv.includes('-h')) {
