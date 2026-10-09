@@ -136,7 +136,7 @@ describe('structure', () => {
             expected: [
                 'HF603 warning 8:12-8:17 Unknown key "mix" (did you mean "max"?); silently ignored by Hoverfly',
             ],
-            label: 'unknown key (silent drop) with did-you-mean — on a tie, suggests the alphabetically first key',
+            label: 'unknown key (silent drop) with did-you-mean — on a tie, suggests the first key in code-unit order',
             input: [{}, { status: 200, logNormalDelay: { mix: 1 } }],
         },
         {

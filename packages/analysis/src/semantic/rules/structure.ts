@@ -13,12 +13,18 @@ import { levenshtein } from '../levenshtein.js';
 import type { RuleContext, SemanticRule } from '../rule.js';
 import { checkRemovesState, checkResponseHeaders, checkStateValues } from './value-shapes.js';
 
-// value: the nearest allowed key within the distance, the alphabetically first on a tie.
+// value: the nearest allowed key within the distance, the first in code-unit order on a tie — a
+// comparison no locale can reorder.
 function didYouMean(key: string, allowed: readonly string[]): string {
     const [nearest] = allowed
         .map((candidate) => ({ candidate, distance: levenshtein(key, candidate) }))
         .filter(({ distance }) => distance <= DID_YOU_MEAN_MAX_DISTANCE)
-        .toSorted((a, b) => a.distance - b.distance || a.candidate.localeCompare(b.candidate));
+        .toSorted(
+            (a, b) =>
+                a.distance - b.distance ||
+                // Stryker disable next-line EqualityOperator: equivalent — the allowed keys of a kind are distinct, so two candidates are never equal
+                (a.candidate < b.candidate ? -1 : 1),
+        );
     return nearest === undefined ? '' : ` (did you mean "${nearest.candidate}"?)`;
 }
 
