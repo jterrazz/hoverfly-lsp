@@ -22,10 +22,14 @@ make check             # lint, test and mutation: the whole verdict
 is the one gate the toolchain does not carry — `make lint` runs it first, and
 the section below says what it refuses.
 
-Every pull request keeps `build`, `lint` and `test` green.
+Every pull request keeps `build`, `lint`, `test` and `mutation` green.
 `.github/workflows/validate.yaml` calls the house reusable
-(`jterrazz/jterrazz-actions`) on Node 24, which runs exactly
-`make build && make lint && make test`.
+(`jterrazz/jterrazz-actions`) on Node 24, which runs `make build`, `make lint`
+and `make test`, then `make mutation` over what changed since the base branch
+(`TYPESCRIPT_MUTATION_SINCE`). A change therefore leaves no surviving mutant in
+the lines it touches. Locally, `make check` on a clean tree measures only the
+last commit, so before a branch is handed over, `npx typescript mutation --since
+main` in each member it touched gives the verdict CI will give.
 
 ## Which file a change opens
 
@@ -119,6 +123,9 @@ each with its reason beside it.
 - **The formatter leaves three trees as written.** `schemas/upstream/`,
   `schemas/schemastore-submission/` and `testdata/` are compared byte for byte
   against something outside this tree, and the root configuration names why.
+- **Members depend on each other by `*`.** npm workspaces have no `workspace:*`
+  protocol, so `packages/server` names `@hoverfly-lsp/analysis` at `"*"` and npm
+  links the workspace copy.
 - **One entry knip cannot trace.** Claude Code runs
   `editors/claude-code/bin/launch.mjs` by the path its `.lsp.json` names.
 
