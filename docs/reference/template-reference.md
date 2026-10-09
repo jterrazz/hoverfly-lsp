@@ -4,7 +4,7 @@
 
 Hoverfly response bodies marked `"templated": true` are rendered through [SpectoLabs/raymond](https://github.com/SpectoLabs/raymond) (a Handlebars fork). The LSP validates template syntax, helper names, helper arity, `Vars`/`Literals` resolution, `faker` types, and `now` offsets (see the HF5xx codes in [diagnostics.md](./diagnostics.md)).
 
-> Generated from `packages/analysis/src/registry/templating.ts` and `registry/faker.ts`. Regenerate with `npm run docs:diagnostics`.
+> Generated from `packages/analysis/src/registry/templating.data.ts` and `registry/faker.ts`. Regenerate with `npm run docs:diagnostics`.
 
 There are **52 Hoverfly helpers** plus **8 raymond built-ins** (60 total).
 
@@ -45,7 +45,7 @@ The 52 helpers registered in Hoverfly's `helperMethodMap`. These, and **only** t
 | `requestBody`          | inline | queryType: string, query: string                                                                   | `{{requestBody 'jsonpath' '$.x'}}`                                               | Extract from the request body. queryType in {jsonpath, xpath, jsonpathfromxml}. Equivalent to the {{Request.Body ...}} method-call form.           |
 | `csv`                  | inline | dataSourceName: string, searchFieldName: string, searchFieldValue: string, returnFieldName: string | `{{csv 'pets' 'id' '1' 'name'}}`                                                 | Look up a single field in a CSV data source.                                                                                                       |
 | `csvMatchingRows`      | inline | dataSourceName: string, searchFieldName: string, searchFieldValue: string                          | `{{#each (csvMatchingRows 'pets' 'category' 'dogs')}}…{{/each}}`                 | Return all matching CSV rows ([]RowMap); iterate with #each.                                                                                       |
-| `csvAsArray`           | inline | dataSourceName: string                                                                             | `{{#each (csvAsArray 'pets')}}…{{/each}}`                                        | Return the CSV as [][]string; iterate with #each.                                                                                                  |
+| `csvAsArray`           | inline | dataSourceName: string                                                                             | `{{#each (csvAsArray 'pets')}}…{{/each}}`                                        | Return the CSV as `[][]string`; iterate with #each.                                                                                                |
 | `csvAsMap`             | inline | dataSourceName: string                                                                             | `{{#each (csvAsMap 'pets')}}{{this.name}}{{/each}}`                              | Return the CSV as []RowMap; iterate with #each and access this.field.                                                                              |
 | `csvAddRow`            | inline | dataSourceName: string, newRow: array                                                              | `{{csvAddRow 'pets' (split 'a,b' ',')}}`                                         | Append a row to a CSV data source (side effect).                                                                                                   |
 | `csvDeleteRows`        | inline | dataSourceName: string, searchFieldName: string, searchFieldValue: string, output: bool            | `{{csvDeleteRows 'pets' 'category' 'cats' true}}`                                | Delete matching CSV rows; optionally output the deleted count.                                                                                     |
@@ -91,7 +91,7 @@ The 8 Handlebars built-ins usable in any templated body. `first` and `equal` are
 
 ## `faker` types
 
-Hoverfly's `{{faker 'X'}}` dispatches by reflection over `*gofakeit.Faker` (pinned to gofakeit **v6.28.0**). Only the **210 zero-argument** method names below are valid, and they are **case-sensitive**. Parameterized methods (`Number`, `Sentence`, `Password`, `Regex`, …) panic at render time when called with no arguments; the LSP flags those (HF508). The authoritative list lives in [`packages/analysis/src/registry/faker.ts`](../packages/analysis/src/registry/faker.ts).
+Hoverfly's `{{faker 'X'}}` dispatches by reflection over `*gofakeit.Faker` (pinned to gofakeit **v6.28.0**). Only the **210 zero-argument** method names below are valid, and they are **case-sensitive**. Parameterized methods (`Number`, `Sentence`, `Password`, `Regex`, …) panic at render time when called with no arguments; the LSP flags those (HF508). The authoritative list lives in [`packages/analysis/src/registry/faker.ts`](../../packages/analysis/src/registry/faker.ts).
 
 <details><summary>All 210 faker type names</summary>
 
