@@ -23,7 +23,6 @@ export async function activate(context: ExtensionContext): Promise<void> {
         workspaceRoot: workspace.workspaceFolders?.[0]?.uri.fsPath,
         bundledModule: context.asAbsolutePath(BUNDLED_SERVER_MODULE),
         exists: existsSync,
-        join,
     });
 
     const serverOptions: ServerOptions = {

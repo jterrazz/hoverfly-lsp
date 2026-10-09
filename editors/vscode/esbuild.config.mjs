@@ -2,10 +2,13 @@
 // and bundle are copied into server/, so the .vsix runs with nothing installed.
 import { build, context } from 'esbuild';
 import { cpSync, mkdirSync, rmSync } from 'node:fs';
-import { join } from 'node:path';
+import { createRequire } from 'node:module';
+import { dirname, join } from 'node:path';
 
 const here = import.meta.dirname;
-const serverPkg = join(here, '..', '..', 'packages', 'server');
+const serverPkg = dirname(
+    createRequire(import.meta.url).resolve('@jterrazz/hoverfly-lsp/package.json'),
+);
 const serverDest = join(here, 'server');
 
 function copyBundledServer() {

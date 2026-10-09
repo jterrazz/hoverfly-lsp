@@ -1,3 +1,5 @@
+import { join } from 'node:path';
+
 // invariant: the server is always launched as `node <module> --stdio`, so a bundled .cjs, an npm
 // bin shim and a launcher all run without an executable bit.
 
@@ -11,11 +13,7 @@ type ResolveServerInput = {
     readonly workspaceRoot: string | undefined;
     readonly bundledModule: string;
     readonly exists: (path: string) => boolean;
-    readonly join?: (...segments: string[]) => string;
 };
-
-const defaultJoin = (...segments: string[]): string =>
-    segments.join('/').replaceAll(/\/{2,}/gu, '/');
 
 function normalizeConfigured(value: string | undefined): string | undefined {
     if (typeof value !== 'string') {
@@ -28,8 +26,6 @@ function normalizeConfigured(value: string | undefined): string | undefined {
 // invariant: always answers — the bundled server is the fallback, so the extension never fails to
 // find one to launch.
 function resolveServer(input: ResolveServerInput): ResolvedServer {
-    const join = input.join ?? defaultJoin;
-
     const configured = normalizeConfigured(input.configuredPath);
     if (configured !== undefined) {
         return { module: configured, source: 'configuredPath' };
