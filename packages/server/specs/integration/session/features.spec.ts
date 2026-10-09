@@ -6,9 +6,9 @@ import {
 } from 'vscode-languageserver-protocol/node';
 import type { ClientCapabilities } from 'vscode-languageserver-protocol/node';
 
-import { initialized } from '../__setup__/server.js';
-import type { Session } from '../__setup__/server.js';
 import { integration } from '../integration.specification.js';
+import { initialized } from './__setup__/server.js';
+import type { Session } from './__setup__/server.js';
 
 const PUSH = { capabilities: { textDocument: {}, workspace: {} } };
 

@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest';
 
-import { hoverflySchema } from '../../packages/analysis/src/schema/bundled-schema.js';
+import { hoverflySchema } from '../../../packages/analysis/src/schema/bundled-schema.js';
 
-describe('bundled schema', () => {
+describe('bundled-schema', () => {
     test('describes every property of every definition', () => {
         // Given - the properties the schema-driven hover and completion read their text from
         const undescribed = Object.entries(hoverflySchema.definitions ?? {}).flatMap(

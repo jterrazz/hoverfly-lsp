@@ -13,12 +13,25 @@ import { integration } from '../integration.specification.js';
 const repoRoot = fileURLToPath(new URL('../../../../../', import.meta.url));
 const fixtures = await glob('testdata/completion/**/*.hoverfly.json', { cwd: repoRoot });
 
+function settingsIn(text: string): HoverflyServiceSettings {
+    const parsed: unknown = JSON.parse(text);
+    const actions: unknown =
+        typeof parsed === 'object' && parsed !== null && 'registeredActions' in parsed
+            ? parsed.registeredActions
+            : undefined;
+    return Array.isArray(actions)
+        ? {
+              registeredActions: actions.filter(
+                  (action): action is string => typeof action === 'string',
+              ),
+          }
+        : {};
+}
+
 async function completionsOf(fixture: string): Promise<unknown> {
     const marked = parseMarkedDocument(readFileSync(`${repoRoot}${fixture}`, 'utf8'));
     const settingsPath = `${repoRoot}${fixture.replace(/\.hoverfly\.json$/u, '.settings.json')}`;
-    const settings = existsSync(settingsPath)
-        ? (JSON.parse(readFileSync(settingsPath, 'utf8')) as HoverflyServiceSettings)
-        : {};
+    const settings = existsSync(settingsPath) ? settingsIn(readFileSync(settingsPath, 'utf8')) : {};
     const uri = `file:///${fixture}`;
     const markers: Record<string, unknown> = {};
     for (const marker of marked.offsets.keys()) {
@@ -32,22 +45,25 @@ async function completionsOf(fixture: string): Promise<unknown> {
     return { diagnostics, markers };
 }
 
-describe('completion corpus', () => {
-    test('holds the fixtures of testdata/completion', async () => {
+describe('completion', () => {
+    test('completion-corpus — holds the fixtures of testdata/completion', async () => {
         // Given - the corpus as the glob finds it
         const result = await integration.call(() => fixtures.toSorted());
 
         // Then - every fixture, so a broken glob runs nothing silently
-        expect(result.value).toMatch(file('./__expected__/completion-corpus.json'));
+        expect(result.value).toMatch(file('./__expected__/completion.json'));
     });
 
-    test.each(fixtures)('%s answers the completions its golden holds', async (fixture) => {
-        // Given - a marked fixture, completed at each of its markers through the language service
-        const result = await integration.call(async () => await completionsOf(fixture));
+    test.each(fixtures)(
+        'completion-corpus — %s answers the completions its golden holds',
+        async (fixture) => {
+            // Given - a marked fixture, completed at each of its markers through the language service
+            const result = await integration.call(async () => await completionsOf(fixture));
 
-        // Then - the list at every marker, and no diagnostic for a fixture outside broken/
-        expect(result.value).toMatch(
-            file(`../../../../../${fixture.replace(/\.hoverfly\.json$/u, '.golden.json')}`),
-        );
-    });
+            // Then - the list at every marker, and no diagnostic for a fixture outside broken/
+            expect(result.value).toMatch(
+                file(`../../../../../${fixture.replace(/\.hoverfly\.json$/u, '.golden.json')}`),
+            );
+        },
+    );
 });

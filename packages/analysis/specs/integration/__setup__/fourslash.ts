@@ -51,7 +51,7 @@ export function parseMarkedDocument(source: string): MarkedDocument {
     return { offsets, text: text + source.slice(consumed) };
 }
 
-function opened(
+function openedAt(
     marked: MarkedDocument,
     marker: string,
     options: ServiceOptions,
@@ -84,8 +84,9 @@ export async function completionsAt(
     options: ServiceOptions = {},
 ): Promise<CompletionItem[]> {
     const marked = typeof source === 'string' ? parseMarkedDocument(source) : source;
-    const { document, position, service } = opened(marked, marker, options);
-    return (await service.doComplete(document, position))?.items ?? [];
+    const { document, position, service } = openedAt(marked, marker, options);
+    const list = await service.doComplete(document, position);
+    return list?.items ?? [];
 }
 
 /** The completion list at `marker` as an editor shows it, in the service's order. */
@@ -94,10 +95,21 @@ export async function entriesAt(
     marker = '',
     options: ServiceOptions = {},
 ): Promise<CompletionEntry[]> {
-    return (await completionsAt(source, marker, options)).map((item) => ({
+    const items = await completionsAt(source, marker, options);
+    return items.map((item) => ({
         kind: item.kind === undefined ? '(none)' : (KIND_NAMES.get(item.kind) ?? String(item.kind)),
         label: item.label,
     }));
+}
+
+/** Each completion at `marker` as its label and the text it inserts, in the service's order. */
+export async function insertionsAt(
+    source: MarkedDocument | string,
+    marker = '',
+    options: ServiceOptions = {},
+): Promise<{ insertText: string | undefined; label: string }[]> {
+    const items = await completionsAt(source, marker, options);
+    return items.map(({ insertText, label }) => ({ insertText, label }));
 }
 
 /** The labels of the completion list at `marker`, in the service's order. */
@@ -106,7 +118,8 @@ export async function labelsAt(
     marker = '',
     options: ServiceOptions = {},
 ): Promise<string[]> {
-    return (await completionsAt(source, marker, options)).map((item) => item.label);
+    const items = await completionsAt(source, marker, options);
+    return items.map((item) => item.label);
 }
 
 function rendered(hover: Hover | null): string {
@@ -130,6 +143,6 @@ export async function hoverAt(
     options: ServiceOptions = {},
 ): Promise<string> {
     const marked = typeof source === 'string' ? parseMarkedDocument(source) : source;
-    const { document, position, service } = opened(marked, marker, options);
+    const { document, position, service } = openedAt(marked, marker, options);
     return rendered(await service.doHover(document, position));
 }

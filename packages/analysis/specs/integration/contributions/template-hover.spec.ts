@@ -7,7 +7,7 @@ function templatedBody(body: string): string {
     return `{"data":{"pairs":[{"request":{"path":[]},"response":{"status":200,"templated":true,"body":"${body}"}}]},"meta":{"schemaVersion":"v5.3"}}`;
 }
 
-describe('template hover', () => {
+describe('template-hover', () => {
     test('renders the signature, arity, kind and example of an inline helper', async () => {
         // Given - the cursor on the replace helper
         const doc = templatedBody("{{replac⟦⟧e (Request.Body 'jsonpath' '$.x') 'a' 'b'}}");

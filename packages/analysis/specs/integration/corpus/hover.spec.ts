@@ -27,22 +27,25 @@ async function hoversOf(fixture: string): Promise<unknown> {
     return { diagnostics, markers };
 }
 
-describe('hover corpus', () => {
-    test('holds the fixtures of testdata/hover', async () => {
+describe('hover', () => {
+    test('hover-corpus — holds the fixtures of testdata/hover', async () => {
         // Given - the corpus as the glob finds it
         const result = await integration.call(() => fixtures.toSorted());
 
         // Then - every fixture, so a broken glob runs nothing silently
-        expect(result.value).toMatch(file('./__expected__/hover-corpus.json'));
+        expect(result.value).toMatch(file('./__expected__/hover.json'));
     });
 
-    test.each(fixtures)('%s answers the hovers its golden holds', async (fixture) => {
-        // Given - a marked fixture, hovered at each of its markers through the language service
-        const result = await integration.call(async () => await hoversOf(fixture));
+    test.each(fixtures)(
+        'hover-corpus — %s answers the hovers its golden holds',
+        async (fixture) => {
+            // Given - a marked fixture, hovered at each of its markers through the language service
+            const result = await integration.call(async () => await hoversOf(fixture));
 
-        // Then - the Markdown at every marker, and no diagnostic for a fixture outside broken/
-        expect(result.value).toMatch(
-            file(`../../../../../${fixture.replace(/\.hoverfly\.json$/u, '.golden.json')}`),
-        );
-    });
+            // Then - the Markdown at every marker, and no diagnostic for a fixture outside broken/
+            expect(result.value).toMatch(
+                file(`../../../../../${fixture.replace(/\.hoverfly\.json$/u, '.golden.json')}`),
+            );
+        },
+    );
 });

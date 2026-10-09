@@ -40,8 +40,8 @@ async function diagnosticsOf(fixture: string): Promise<unknown[]> {
     }));
 }
 
-describe('diagnostics corpus', () => {
-    test('holds the fixtures of testdata/invalid and testdata/valid', async () => {
+describe('diagnostics', () => {
+    test('diagnostics-corpus — holds the fixtures of testdata/invalid and testdata/valid', async () => {
         // Given - the corpus as the glob finds it
         const result = await integration.call(() => ({
             invalid: invalid.toSorted(),
@@ -49,20 +49,25 @@ describe('diagnostics corpus', () => {
         }));
 
         // Then - every fixture, so a broken glob runs nothing silently
-        expect(result.value).toMatch(file('./__expected__/diagnostics-corpus.json'));
+        expect(result.value).toMatch(file('./__expected__/diagnostics.json'));
     });
 
-    test.each(invalid)('%s answers the diagnostics its golden holds', async (fixture) => {
-        // Given - an invalid fixture, validated through the language service
-        const result = await integration.call(async () => await diagnosticsOf(fixture));
+    test.each(invalid)(
+        'diagnostics-corpus — %s answers the diagnostics its golden holds',
+        async (fixture) => {
+            // Given - an invalid fixture, validated through the language service
+            const result = await integration.call(async () => await diagnosticsOf(fixture));
 
-        // Then - the diagnostics beside it, whole
-        expect(result.value).toMatch(
-            file(`../../../../../${fixture.replace(/\.hoverfly\.json$/u, '.diagnostics.json')}`),
-        );
-    });
+            // Then - the diagnostics beside it, whole
+            expect(result.value).toMatch(
+                file(
+                    `../../../../../${fixture.replace(/\.hoverfly\.json$/u, '.diagnostics.json')}`,
+                ),
+            );
+        },
+    );
 
-    test.each(valid)('%s answers no diagnostic', async (fixture) => {
+    test.each(valid)('diagnostics-corpus — %s answers no diagnostic', async (fixture) => {
         // Given - a valid fixture, validated through the language service
         const result = await integration.call(async () => await diagnosticsOf(fixture));
 

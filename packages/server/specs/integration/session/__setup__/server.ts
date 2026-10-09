@@ -1,9 +1,8 @@
-import { execFile, spawn } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import { mkdtemp, readdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { promisify } from 'node:util';
 import {
     createProtocolConnection,
     InitializedNotification,
@@ -19,23 +18,25 @@ import type {
     PublishDiagnosticsParams,
 } from 'vscode-languageserver-protocol/node';
 
-const run = promisify(execFile);
-const PACKAGE = fileURLToPath(new URL('../../../', import.meta.url));
+const PACKAGE = fileURLToPath(new URL('../../../..', import.meta.url));
 
 // outside: a stdio language server has no specification of @jterrazz/test — `packed()` lays a tarball
 // only for a cli chain, whose one-shot `.exec()` cannot hold an LSP conversation — so the spec packs
 // the package once per test process, from what its build left in dist/, and runs the bin a consumer gets.
 const installed = (async (): Promise<string> => {
     const destination = await mkdtemp(join(tmpdir(), 'hoverfly-lsp-packed-'));
-    await run('npm', ['pack', '--pack-destination', destination], { cwd: PACKAGE });
+    execFileSync('npm', ['pack', '--pack-destination', destination], {
+        cwd: PACKAGE,
+        stdio: 'ignore',
+    });
     const [tarball = ''] = await readdir(destination);
-    await run('tar', ['-xzf', join(destination, tarball), '-C', destination]);
+    execFileSync('tar', ['-xzf', join(destination, tarball), '-C', destination]);
     return join(destination, 'package', 'bin', 'hoverfly-lsp.js');
 })();
 
 /** What one run of the packed bin printed, and how it ended. */
 export type Run = {
-    readonly exitCode: number | null;
+    readonly exitCode: null | number;
     readonly stderr: string;
     readonly stdout: string;
 };
@@ -51,7 +52,7 @@ export async function hoverflyLsp(args: readonly string[]): Promise<Run> {
     child.stderr.on('data', (chunk: Buffer) => {
         stderr += chunk.toString();
     });
-    const exitCode = await new Promise<number | null>((resolve) => {
+    const exitCode = await new Promise<null | number>((resolve) => {
         child.on('close', resolve);
     });
     return { exitCode, stderr, stdout };
@@ -131,6 +132,7 @@ export async function initialized(
     const answer = await connection.sendRequest(InitializeRequest.type, {
         capabilities: {},
         processId: process.pid,
+        // oxlint-disable-next-line typescript/no-deprecated -- LSP 3.17 still requires rootUri in initialize, null when no folder is open
         rootUri: null,
         ...params,
     });

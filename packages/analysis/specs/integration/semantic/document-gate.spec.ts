@@ -12,7 +12,7 @@ async function validated(uri: string, text: string): Promise<unknown> {
     );
 }
 
-describe('document gate', () => {
+describe('document-gate', () => {
     test('stays silent on JSON that is no simulation in a file not named for Hoverfly', async () => {
         // Given - arbitrary JSON in config.json
         const result = await integration.call(

@@ -6,8 +6,8 @@ import {
 } from 'vscode-languageserver-protocol/node';
 import type { ClientCapabilities } from 'vscode-languageserver-protocol/node';
 
-import { hoverflyLsp, initialized, uninitialized } from '../__setup__/server.js';
 import { integration } from '../integration.specification.js';
+import { hoverflyLsp, initialized, uninitialized } from './__setup__/server.js';
 
 const SEMANTIC_TOKENS_CLIENT: ClientCapabilities = {
     textDocument: {
@@ -166,6 +166,7 @@ describe('lifecycle', () => {
                 lsp.connection.sendRequest(InitializeRequest.type, {
                     capabilities: {},
                     processId: process.pid,
+                    // oxlint-disable-next-line typescript/no-deprecated -- LSP 3.17 still requires rootUri in initialize, null when no folder is open
                     rootUri: null,
                 }),
             );
