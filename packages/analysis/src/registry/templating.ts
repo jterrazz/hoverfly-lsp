@@ -1,24 +1,8 @@
-/**
- * Authoritative templating-helper catalog (architect decision D8).
- *
- * Transcribed from `research/08-templating-spec.md`, verified against the SpectoLabs/hoverfly
- * Go source (`core/templating/templating.go` `helperMethodMap`, `template_helpers.go`) and the
- * SpectoLabs/raymond fork (`helper.go`). Engine = SpectoLabs/raymond (a Handlebars fork).
- *
- * Two universes:
- *   - 52 Hoverfly helpers registered in `helperMethodMap` (all inline); see HOVERFLY_HELPERS.
- *   - 8 raymond built-ins (`if/unless/with/each/first/log/lookup/equal`); see RAYMOND_BUILTINS.
- *     `first` and `equal` are SpectoLabs-fork additions a generic Handlebars LS would not know.
- *
- * `data.variables[].function` accepts ONLY the 52 Hoverfly helpers (built-ins are not in
- * `SupportedMethodMap`); see VARIABLE_FUNCTION_NAMES.
- *
- * Arity notes (report 08 §1): a trailing `*raymond.Options` param is supplied by raymond and
- * is NOT a user-typed argument, so it is excluded from `args` here. raymond does not enforce
- * arity at call time, so the validators should warn (not hard-fail) on mismatch.
- *
- * This module is pure data + types; the HF5xx template validators consume it later.
- */
+// outside: transcribed from research/08, verified against Hoverfly's helperMethodMap
+// (core/templating/templating.go, template_helpers.go) and the SpectoLabs/raymond fork (helper.go)
+// — 52 inline Hoverfly helpers and 8 raymond built-ins, `first` and `equal` the fork's own; raymond
+// supplies a trailing *raymond.Options itself and never enforces arity, so `args` leaves it out and
+// a mismatch is a warning.
 
 const DOCS_TEMPLATING =
     'https://docs.hoverfly.io/en/latest/pages/keyconcepts/templating/templating.html';
@@ -51,10 +35,7 @@ export type HelperSpec = {
     example: string;
 };
 
-/**
- * The 52 Hoverfly helpers (verbatim from `helperMethodMap`, report 08 §1). All inline.
- * Arities from the Go signatures in `template_helpers.go`.
- */
+/** The 52 Hoverfly helpers of helperMethodMap (report 08 §1), all inline, their arities from template_helpers.go. */
 export const HOVERFLY_HELPERS: readonly HelperSpec[] = [
     {
         name: 'now',
@@ -579,11 +560,7 @@ export const HOVERFLY_HELPERS: readonly HelperSpec[] = [
     },
 ];
 
-/**
- * The 8 raymond built-in helpers (report 08 §4). NOT in `helperMethodMap`, but usable in any
- * templated body. `first` and `equal` are SpectoLabs-fork extras. These are NOT valid in
- * `data.variables[].function`.
- */
+/** The 8 raymond built-ins (report 08 §4), usable in any templated body but never in data.variables[].function. */
 export const RAYMOND_BUILTINS: readonly HelperSpec[] = [
     {
         name: 'if',
@@ -660,19 +637,14 @@ export const RAYMOND_BUILTINS: readonly HelperSpec[] = [
 /** All recognised helper names: the 52 Hoverfly helpers plus the 8 raymond built-ins. */
 export const ALL_HELPERS: readonly HelperSpec[] = [...HOVERFLY_HELPERS, ...RAYMOND_BUILTINS];
 
-/**
- * The 52 helper names valid in `data.variables[].function` (the Hoverfly helpers ONLY;
- * raymond built-ins like `if`/`each` are not consulted by `SupportedMethodMap`).
- */
+/** The helper names data.variables[].function accepts: the 52 Hoverfly helpers alone, SupportedMethodMap consulting no built-in. */
 export const VARIABLE_FUNCTION_NAMES: readonly string[] = HOVERFLY_HELPERS.map(
     (helper) => helper.name,
 );
 
-/**
- * Accepted `now` offset units (report 08 §2, from `parse_duration.go` `unitMap`). Includes
- * both Unicode micro-symbol spellings (`µs` U+00B5, `μs` U+03BC). NO `w` (week), no `mo`/`M`.
- * Optional leading +/-; fractional values allowed; an invalid offset is silently ignored.
- */
+// outside: parse_duration.go's unitMap — both micro signs (µs U+00B5, μs U+03BC), no week, no
+// month; Hoverfly silently ignores an invalid offset (report 08 §2).
+/** The units a `now` offset accepts. */
 export const NOW_OFFSET_UNITS: readonly string[] = [
     'ns',
     'us',

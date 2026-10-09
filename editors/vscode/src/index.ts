@@ -1,18 +1,5 @@
-/*
- * VS Code extension entry point for Hoverfly simulation files.
- *
- * Responsibilities:
- *   - Resolve which `hoverfly-lsp` server to launch (see `server-resolution.ts`).
- *   - Start a `vscode-languageclient` (LSP 3.18 / v10) over stdio, launched as `node <module>
- *     --stdio` so the resolved path can be a plain `.js` entry without an executable bit.
- *   - Scope the client to Hoverfly documents (custom language id + a `*.hoverfly.json` fallback).
- *   - Surface the `hoverfly` config section to the server via workspace/configuration so settings
- *     like `hoverfly.registeredActions` reach the analyzer.
- *
- * Activation is automatic: `contributes.languages.filenamePatterns` assigns the
- * `hoverfly-simulation` language id to matching files, which activates the extension (VS Code
- * 1.74+), so `activationEvents` is left empty in package.json.
- */
+// outside: VS Code activates the extension from `contributes.languages.filenamePatterns` (1.74+),
+// so `activationEvents` stays empty.
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { workspace } from 'vscode';
@@ -24,13 +11,9 @@ import { resolveServer } from './server-resolution.js';
 
 let client: LanguageClient | undefined;
 
-/**
- * Bundled server entry, relative to the extension root (populated by the build's copy step).
- * Point at the `.cjs` bundle directly (not the `bin/*.js` ESM launcher): vscode-languageclient
- * `fork()`s this under the editor's Node runtime, and a `.cjs` is unambiguously CommonJS in any
- * surrounding package — the `.js` launcher relies on the enclosing `"type": "module"` and can fail
- * to load when forked by the editor's Electron-based Node.
- */
+// hazard: the .cjs bundle, never the bin launcher — vscode-languageclient forks the module under
+// the editor's Electron Node, where the `.js` launcher's reliance on `"type": "module"` can fail to
+// load.
 const BUNDLED_SERVER_MODULE = join('server', 'dist', 'cli.cjs');
 
 export async function activate(context: ExtensionContext): Promise<void> {
@@ -43,8 +26,6 @@ export async function activate(context: ExtensionContext): Promise<void> {
         join,
     });
 
-    // Launch the server as a Node module over stdio. Using TransportKind.stdio keeps parity with the
-    // `--stdio` default the bin advertises; `module` is run with the editor's Node runtime.
     const serverOptions: ServerOptions = {
         run: {
             module: resolved.module,
@@ -61,17 +42,14 @@ export async function activate(context: ExtensionContext): Promise<void> {
 
     const clientOptions: LanguageClientOptions = {
         documentSelector: [
-            // Primary selector: files VS Code tagged with our custom language id (via filenamePatterns).
             { language: 'hoverfly-simulation' },
-            // Fallback selector: catches a *.hoverfly.json left on the built-in json language id.
-            // Content-fingerprinting in the server keeps this safe — it never steals plain .json files.
+            // invariant: a *.hoverfly.json left on the built-in json language id is caught too; the
+            // server's content fingerprint keeps it from claiming plain .json files.
             { language: 'json', pattern: '**/*.hoverfly.json' },
         ],
         synchronize: {
-            // Re-validate when simulation files change on disk outside the open editor.
             fileEvents: workspace.createFileSystemWatcher('**/*.hoverfly.json'),
         },
-        // Passed for clients that read config at startup; the server also pulls "hoverfly" live.
         initializationOptions: {
             registeredActions: config.get<string[]>('registeredActions') ?? [],
         },

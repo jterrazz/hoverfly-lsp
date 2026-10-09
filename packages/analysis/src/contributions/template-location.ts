@@ -1,22 +1,5 @@
-/**
- * Locate whether a document position sits inside a TEMPLATABLE Hoverfly string, and if so build
- * the bridge the template completion/hover providers need: the decoded template text, a
- * source-map (document↔decoded offsets), and the decoded-offset cursor.
- *
- * A string is templatable when it is one of:
- *   - a response `body` whose sibling `templated` is `true`, OR
- *   - a response header value (a string inside `response.headers.<name>[]`) when `templated` is
- *     `true` (Hoverfly templates header values too), OR
- *   - ANY response `body`/header string that already contains `{{` even though `templated` is
- *     absent/false — the author is clearly mid-typing a template; we still offer completions and
- *     let the HF501 diagnostic nudge them to set `templated: true`.
- *
- * Crucially, `template-completion.ts`/`template-hover.ts` are driven from `service.ts`, which has
- * the cursor {@link Position} (the `JSONWorkerContribution` API does not expose it). This module
- * walks the parsed AST to find the enclosing string node and classify its role.
- *
- * Reuses the parser-owned {@link createStringSourceMap}; adds no template grammar of its own.
- */
+// invariant: a string is templatable when it is a response body or header value and `templated` is
+// true, or when it already holds `{{` — the author is mid-typing, and HF501 asks for `templated`.
 
 import type {
     ASTNode,
@@ -44,10 +27,6 @@ type TemplateLocation = {
     readonly templatedEnabled: boolean;
 };
 
-/**
- * If `offset` (a document offset) is inside a templatable string of `jsonDocument`, return the
- * {@link TemplateLocation}; otherwise `undefined`. Never throws.
- */
 function findTemplateLocation(
     document: TextDocument,
     jsonDocument: JSONDocument,
@@ -71,7 +50,6 @@ function findTemplateLocation(
     return undefined;
 }
 
-/** Search a single response object for a templatable string containing `offset`. */
 function locateInResponse(
     document: TextDocument,
     response: ObjectASTNode,
@@ -79,13 +57,11 @@ function locateInResponse(
 ): TemplateLocation | undefined {
     const templatedEnabled = boolValue(propValue(response, 'templated')) === true;
 
-    // Body: a single string.
     const bodyNode = propValue(response, 'body');
     if (isStringNode(bodyNode) && containsOffset(bodyNode, offset)) {
         return buildLocation(document, bodyNode, templatedEnabled, offset);
     }
 
-    // Header values: response.headers.<name> is an array of strings.
     const headers = asObject(propValue(response, 'headers'));
     if (headers) {
         for (const property of headers.properties) {
@@ -102,11 +78,6 @@ function locateInResponse(
     return undefined;
 }
 
-/**
- * Build a {@link TemplateLocation} for `node`, but only when the string is actually templatable:
- * `templated: true`, OR the string already contains `{{` (mid-typing). Returns `undefined`
- * otherwise so a plain non-templated body gets NO template completions/hover.
- */
 function buildLocation(
     document: TextDocument,
     node: StringASTNode,
@@ -120,7 +91,6 @@ function buildLocation(
         return undefined;
     }
 
-    // `offset` was validated by containsOffset; map it into the decoded content.
     const decodedCursor = sourceMap.toDecodedOffset(offset);
     return {
         decoded: sourceMap.decoded,
@@ -130,8 +100,6 @@ function buildLocation(
         templatedEnabled,
     };
 }
-
-/* --------------------------------------- AST helpers ------------------------------------- */
 
 function asObject(node: ASTNode | undefined): ObjectASTNode | undefined {
     return node?.type === 'object' ? node : undefined;
@@ -154,15 +122,10 @@ function isStringNode(node: ASTNode | undefined): node is StringASTNode {
     return node?.type === 'string';
 }
 
-/**
- * Whether `offset` lies within the CONTENT of a string node — between its opening and closing
- * quotes (inclusive of both ends so a cursor right after the opening quote or just before the
- * closing quote both count). The node's `offset`/`length` cover the quotes.
- */
+// invariant: a string node's offset and length cover its quotes; a cursor just inside either quote
+// counts as inside the content.
 function containsOffset(node: StringASTNode, offset: number): boolean {
-    // Just after opening quote
     const start = node.offset + 1;
-    // The closing quote
     const end = node.offset + node.length - 1;
     return offset >= start && offset <= end;
 }

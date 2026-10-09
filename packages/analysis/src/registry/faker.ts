@@ -1,27 +1,12 @@
-/**
- * Authoritative `{{faker 'X'}}` type catalog (architect decision D8).
- *
- * Transcribed from `research/08-templating-spec.md` §3, which enumerated the zero-argument
- * exported methods on `*gofakeit.Faker` in the pinned `brianvoe/gofakeit/v6 v6.28.0`. Hoverfly
- * dispatches `faker` by reflection (`MethodByName(fakerType).Call([]reflect.Value{})`), so
- * only zero-arg method names are valid; the names are CASE-SENSITIVE and must match exactly.
- *
- * Parameterized gofakeit methods (`Number`, `Sentence`, `Password`, `Regex`, …) PANIC when
- * called with no arguments, they are NOT valid faker types and must not be offered. See
- * FAKER_PARAMETERIZED_PANICS. An unknown name renders to empty (information-only diagnostic).
- *
- * This module is pure data; the template/completion phases consume it. Regenerate against a
- * new gofakeit tag if Hoverfly bumps the pin (see report 08 §8 for the command).
- */
+// outside: Hoverfly dispatches `faker` by reflection with no argument
+// (MethodByName(fakerType).Call), so only a zero-argument method of the pinned gofakeit v6.28.0 is
+// valid, spelled case-sensitively; a parameterized one panics at render and an unknown name renders
+// empty (report 08 §3).
 
 /** The gofakeit version this list is pinned to (report 08 §3.1). */
 export const GOFAKEIT_VERSION = '6.28.0';
 
-/**
- * The 210 valid zero-arg `{{faker 'X'}}` names (gofakeit v6.28.0, report 08 §3.3), exact
- * case-sensitive spellings. Includes `Email`, `UUID`, `Name`, etc.; does NOT include
- * parameterized methods such as `Number`.
- */
+/** The 210 zero-argument faker types of gofakeit v6.28.0 (report 08 §3.3), spelled case-sensitively. */
 export const FAKER_NAMES: readonly string[] = [
     'AchAccount',
     'AchRouting',
@@ -235,12 +220,7 @@ export const FAKER_NAMES: readonly string[] = [
     'Zip',
 ];
 
-/**
- * Known parameterized gofakeit methods that PANIC if used as a zero-arg `{{faker 'X'}}` type
- * (report 08 §3.2/§3.3). The template validators warn when one of these is used. This is a
- * representative set of common offenders, not an exhaustive enumeration of every
- * parameterized method in gofakeit.
- */
+/** Parameterized gofakeit methods that panic as a zero-argument faker type (report 08 §3.2) — the common offenders, not every one. */
 export const FAKER_PARAMETERIZED_PANICS: readonly string[] = [
     'Number',
     'Sentence',

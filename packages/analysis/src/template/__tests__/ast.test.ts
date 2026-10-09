@@ -4,13 +4,6 @@ import type { BooleanLiteral, NumberLiteral, Program, Span, StringLiteral } from
 import { parse } from '../parser.js';
 import type { ParseResult } from '../parser.js';
 
-/**
- * Type-anchored assertions over the AST the parser produces: every node is a {@link Span}
- * (`start`/`end` offsets), the {@link Program} root and {@link ParseResult} shape are stable,
- * and the three literal node kinds ({@link StringLiteral}, {@link NumberLiteral},
- * {@link BooleanLiteral}) carry their parsed values. These pin the public AST surface the HF5xx
- * rules consume.
- */
 describe('aST shapes', () => {
     test('produces a Program root carrying a full-source span', () => {
         // Given - a small template

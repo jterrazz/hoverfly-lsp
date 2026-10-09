@@ -1,17 +1,5 @@
-/**
- * Handlebars AST for the Hoverfly response-templating layer (architect decision D8: a real
- * nested, block-aware parser, not a flat tokenizer).
- *
- * The engine is the SpectoLabs/raymond fork (a Handlebars implementation), so the grammar is
- * Handlebars: `{{...}}` escaped mustaches, `{{{...}}}` triple/unescaped mustaches, block
- * helpers `{{#each xs}}…{{else}}…{{/each}}`, subexpressions `(helper 'a' 'b')`, path
- * expressions (`Request.QueryParam.foo`, `this.price`, `@index`), and string/number/boolean
- * literals. See `research/08-templating-spec.md` §5 for the constructs Hoverfly exercises.
- *
- * Pure types — this module has ZERO knowledge of diagnostic codes or rules. Every node carries
- * `{ start, end }` byte offsets relative to the DECODED template source string the parser was
- * given (the HF5xx source-map layer maps those offsets back to document positions).
- */
+// outside: the engine is SpectoLabs/raymond, a Handlebars fork, so the grammar is Handlebars
+// (research/08 §5); every node's offsets are into the decoded template string.
 
 /** A half-open `[start, end)` offset span into the decoded template source string. */
 export type Span = {
@@ -21,15 +9,7 @@ export type Span = {
     readonly end: number;
 };
 
-/* -------------------------------------- expressions -------------------------------------- */
-
-/**
- * A path expression: a dotted/indexed chain of parts (`Request.QueryParam.foo`, `this.price`,
- * `@index`, `Vars.x`). `parts` are the segment strings in order (with the `@`/`this` markers
- * stripped: `@index` => `{ data: true, parts: ["index"] }`, `this.price` =>
- * `{ thisRef: true, parts: ["price"] }`). Bracketed segments (`Path.[2]`) contribute the inner
- * token as a part (`"2"`).
- */
+/** A dotted or indexed path; `parts` drops the `@` and `this` markers and keeps a bracketed segment's inner token. */
 export type PathExpression = Span & {
     readonly type: 'PathExpression';
     /** Segment names in order, markers stripped (e.g. `["Request", "QueryParam", "foo"]`). */
@@ -63,10 +43,7 @@ export type BooleanLiteral = Span & {
     readonly value: boolean;
 };
 
-/**
- * A parenthesised subexpression — a helper call used as an argument:
- * `(multiply (this.price) (this.qty) '')`. Structurally a helper call, but never standalone.
- */
+/** A parenthesised helper call used as an argument, never standalone. */
 export type SubExpression = Span & {
     readonly type: 'SubExpression';
     /** The path naming the helper (e.g. `multiply`, or `Request.Body`). */
@@ -83,18 +60,13 @@ export type Expression =
     | StringLiteral
     | SubExpression;
 
-/* ----------------------------------------- nodes ----------------------------------------- */
-
 /** Literal template text between mustaches. */
 export type ContentNode = Span & {
     readonly type: 'ContentNode';
     readonly value: string;
 };
 
-/**
- * A mustache statement: `{{path arg...}}`. `escaped` is `false` for the triple-stache
- * unescaped form `{{{...}}}` (raymond/Handlebars HTML-escape the double-stache form).
- */
+/** A mustache `{{path arg…}}`; `escaped` is false for the triple-stache `{{{…}}}` raymond leaves unescaped. */
 export type MustacheNode = Span & {
     readonly type: 'MustacheNode';
     /** The leading path (helper name or path lookup). */
@@ -105,11 +77,7 @@ export type MustacheNode = Span & {
     readonly escaped: boolean;
 };
 
-/**
- * A block statement: `{{#helper params}} program {{else}} inverse {{/helper}}`. `program` is
- * the body, `inverse` the optional `{{else}}` branch. The open/close tag spans cover the
- * literal `{{#…}}` / `{{/…}}` mustaches (for bracket-matching & "unclosed block" diagnostics).
- */
+/** A block `{{#helper params}} program {{else}} inverse {{/helper}}`; its tag spans cover the literal open and close mustaches. */
 export type BlockNode = {
     readonly type: 'BlockNode';
     /** The block-helper path (`each`, `if`, `equal`, …). */

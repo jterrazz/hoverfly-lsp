@@ -1,10 +1,3 @@
-/**
- * Producer tests. They drive `getSemanticTokens` over real documents (built like the server will:
- * a TextDocument + a parsed JSONDocument) and assert the EXACT document text each token covers and
- * its type name — including the escape-torture case that proves the source-map reuse lands tokens on
- * the right characters through `\n`/`\uXXXX` escapes.
- */
-
 import { describe, expect, test } from 'vitest';
 import { getLanguageService } from 'vscode-json-languageservice';
 import { TextDocument } from 'vscode-languageserver-textdocument';
@@ -16,15 +9,12 @@ import type { SemanticToken } from '../producer.js';
 const ls = getLanguageService({});
 
 type ResolvedToken = {
-    /** The exact document text the token covers. */
     text: string;
-    /** The token-type NAME (resolved from the index). */
     type: string;
     line: number;
     startChar: number;
 };
 
-/** Run the producer and resolve each token to {text, type, line, startChar} for assertions. */
 function tokensOf(
     text: string,
     uri = 'file:///s.hoverfly.json',
@@ -45,7 +35,6 @@ function tokensOf(
     return { doc, raw, resolved };
 }
 
-/** Build a one-pair simulation around a response. */
 function sim(response: unknown, request: unknown = { path: [{ matcher: 'exact', value: '/x' }] }) {
     return JSON.stringify(
         {
@@ -57,13 +46,11 @@ function sim(response: unknown, request: unknown = { path: [{ matcher: 'exact', 
     );
 }
 
-/** The (text, type) pairs of resolved tokens, for compact set-style assertions. */
 function pairs(resolved: ResolvedToken[]): [string, string][] {
     return resolved.map((t) => [t.text, t.type]);
 }
 
 describe("getSemanticTokens — the user's example body", () => {
-    // The exact body from the task: id path, now '', faker 'Name'.
     const body =
         '{"id":"{{ Request.Path.[1] }}","now":"{{ now \'\' }}","name":"{{ faker \'Name\' }}"}';
 
@@ -75,16 +62,12 @@ describe("getSemanticTokens — the user's example body", () => {
         // Then - delimiters are operators
         expect(p).toContainEqual(['{{', 'operator']);
         expect(p).toContainEqual(['}}', 'operator']);
-        // Path root / segment / index
         expect(p).toContainEqual(['Request', 'variable']);
         expect(p).toContainEqual(['Path', 'property']);
         expect(p).toContainEqual(['[1]', 'number']);
-        // Inline helpers
         expect(p).toContainEqual(['now', 'function']);
         expect(p).toContainEqual(['faker', 'function']);
-        // Empty string arg to now → string
         expect(p).toContainEqual(["''", 'string']);
-        // Known faker type → enumMember
         expect(p).toContainEqual(["'Name'", 'enumMember']);
     });
 
@@ -119,10 +102,8 @@ describe('getSemanticTokens — escape torture (source-map credibility)', () => 
         // Then - the `now` token resolves to exactly the text "now" at its real document offset
         const now = resolved.find((t) => t.text === 'now');
         expect(now?.type).toBe('function');
-        // And the `{{` operator sits exactly on the two-brace opener in the SOURCE document
         const open = resolved.find((t) => t.type === 'operator' && t.text === '{{');
         expect(open).toBeDefined();
-        // Sanity: the resolved document text really is "{{" (not "\\n" or shifted by the escape).
         const offset = doc.offsetAt({ line: open!.line, character: open!.startChar });
         expect(doc.getText().slice(offset, offset + 2)).toBe('{{');
     });
@@ -175,9 +156,7 @@ describe('getSemanticTokens — block helpers', () => {
         expect(p).toContainEqual(['each', 'keyword']);
         expect(p).toContainEqual(['Request', 'variable']);
         expect(p).toContainEqual(['Body', 'property']);
-        // This.name → parameter (context-injected `this` root)
         expect(p).toContainEqual(['this.name', 'parameter']);
-        // Block markers are operators
         expect(resolved.some((t) => t.type === 'operator' && t.text === '{{#')).toBeTruthy();
         expect(resolved.some((t) => t.type === 'operator' && t.text === '{{/')).toBeTruthy();
     });

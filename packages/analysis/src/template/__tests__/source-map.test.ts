@@ -3,25 +3,15 @@ import { describe, expect, test } from 'vitest';
 import { createStringSourceMap } from '../source-map.js';
 import type { StringSourceMap } from '../source-map.js';
 
-/**
- * The JSON-escape-aware source map is the load-bearing piece for HF5xx ranges: it maps an
- * offset in the DECODED template string back to the document offset of the source character.
- * These tests exercise identity runs, every simple escape, `\uXXXX`, surrogate pairs/emoji, and
- * the realistic case of a mustache that lives after escapes inside a JSON string.
- */
 describe('createStringSourceMap', () => {
     test('decodes a plain unescaped string and maps offsets through the quote at +1', () => {
         // Given - a JSON token `"hello"` placed at document offset 10
         const map: StringSourceMap = createStringSourceMap('"hello"', 10);
         // Then - content is decoded, and offset 0 maps to the first content char (doc 11)
         expect(map.decoded).toBe('hello');
-        // 'h'
         expect(map.toDocOffset(0)).toBe(11);
-        // 'e'
         expect(map.toDocOffset(1)).toBe(12);
-        // 'o'
         expect(map.toDocOffset(4)).toBe(15);
-        // End sentinel maps to the closing quote position.
         expect(map.toDocOffset(5)).toBe(16);
     });
 
@@ -42,11 +32,8 @@ describe('createStringSourceMap', () => {
             const map = createStringSourceMap(String.raw`"a\nb"`, 0);
             // Then - decoded is "a\nb"; 'b' (decoded index 2) sits at the source 'b' (doc 4)
             expect(map.decoded).toBe('a\nb');
-            // 'a'
             expect(map.toDocOffset(0)).toBe(1);
-            // '\n' -> the backslash
             expect(map.toDocOffset(1)).toBe(2);
-            // 'b'
             expect(map.toDocOffset(2)).toBe(4);
         },
     );
@@ -56,7 +43,6 @@ describe('createStringSourceMap', () => {
         const map = createStringSourceMap(String.raw`"\"\\\/\b\f\n\r\t"`, 0);
         // Then - decoded has the eight resolved chars
         expect(map.decoded).toBe('"\\/\b\f\n\r\t');
-        // Each decoded char originates from a 2-char escape; offsets step by 2 from doc 1.
         expect(map.toDocOffset(0)).toBe(1);
         expect(map.toDocOffset(1)).toBe(3);
         expect(map.toDocOffset(2)).toBe(5);
@@ -68,11 +54,8 @@ describe('createStringSourceMap', () => {
         const map = createStringSourceMap(String.raw`"\u0041Z"`, 0);
         // Then
         expect(map.decoded).toBe('AZ');
-        // 'A' from the backslash at doc 1
         expect(map.toDocOffset(0)).toBe(1);
-        // 'Z' after the 6-char escape
         expect(map.toDocOffset(1)).toBe(7);
-        // End sentinel -> closing quote
         expect(map.toDocOffset(2)).toBe(8);
     });
 
@@ -81,12 +64,9 @@ describe('createStringSourceMap', () => {
         const map = createStringSourceMap(String.raw`"\uD83D\uDE00x"`, 0);
         // Then - decoded is the emoji (2 UTF-16 units) + 'x'
         expect(map.decoded).toBe('😀x');
-        // 2 surrogate units + 1
         expect(map.decoded).toHaveLength(3);
-        // High surrogate maps to the first backslash (doc 1), low to the second (doc 7).
         expect(map.toDocOffset(0)).toBe(1);
         expect(map.toDocOffset(1)).toBe(7);
-        // 'x' after both escapes
         expect(map.toDocOffset(2)).toBe(13);
     });
 
@@ -95,11 +75,8 @@ describe('createStringSourceMap', () => {
         const map = createStringSourceMap('"😀y"', 0);
         // Then - each surrogate half maps identity into the source
         expect(map.decoded).toBe('😀y');
-        // High surrogate
         expect(map.toDocOffset(0)).toBe(1);
-        // Low surrogate
         expect(map.toDocOffset(1)).toBe(2);
-        // 'y'
         expect(map.toDocOffset(2)).toBe(3);
     });
 
@@ -109,11 +86,9 @@ describe('createStringSourceMap', () => {
         const map = createStringSourceMap(raw, 100);
         // Then - decoded is "line1\n{{x}}"
         expect(map.decoded).toBe('line1\n{{x}}');
-        // The `{{` begins at decoded index 6; its source position is doc 100 + 8 (quote + 5 chars + 2-char \n).
         const mustacheDecodedStart = map.decoded.indexOf('{{');
         expect(mustacheDecodedStart).toBe(6);
         expect(map.toDocOffset(mustacheDecodedStart)).toBe(108);
-        // The inner 'x' (decoded index 8) is at doc 110.
         expect(map.toDocOffset(8)).toBe(110);
     });
 
@@ -125,7 +100,6 @@ describe('createStringSourceMap', () => {
         expect(map.decoded).toBe('AB{{Vars.x}}');
         const start = map.decoded.indexOf('{{');
         expect(start).toBe(2);
-        // 1 (quote) + 6 + 6
         expect(map.toDocOffset(start)).toBe(13);
     });
 
@@ -134,13 +108,9 @@ describe('createStringSourceMap', () => {
         const map = createStringSourceMap(String.raw`"a\zb"`, 0);
         // Then - the backslash is kept literally; mapping covers every decoded char
         expect(map.decoded).toBe(String.raw`a\zb`);
-        // 'a'
         expect(map.toDocOffset(0)).toBe(1);
-        // '\\'
         expect(map.toDocOffset(1)).toBe(2);
-        // 'z'
         expect(map.toDocOffset(2)).toBe(3);
-        // 'b'
         expect(map.toDocOffset(3)).toBe(4);
     });
 
@@ -149,7 +119,6 @@ describe('createStringSourceMap', () => {
         const map = createStringSourceMap('"hi"', 5);
         // Then - negatives clamp to first char, overshoot clamps to the end sentinel
         expect(map.toDocOffset(-3)).toBe(6);
-        // Closing quote position
         expect(map.toDocOffset(99)).toBe(8);
     });
 
@@ -162,11 +131,6 @@ describe('createStringSourceMap', () => {
     });
 });
 
-/**
- * The inverse mapping (`toDecodedOffset`) drives completion/hover: it takes a DOCUMENT offset
- * (where the cursor sits) and returns the DECODED-string offset to run the template analysis at.
- * It must round-trip with `toDocOffset` on identity runs and stay total across escapes.
- */
 describe('stringSourceMap.toDecodedOffset', () => {
     test('round-trips with toDocOffset on a plain string', () => {
         // Given - `"hello"` at doc 10
@@ -198,7 +162,6 @@ describe('stringSourceMap.toDecodedOffset', () => {
         const map = createStringSourceMap(String.raw`"a\nb"`, 0);
         // Then - a cursor at the 'b' source position (doc 4) is decoded offset 2 (after a, \n)
         expect(map.toDecodedOffset(4)).toBe(2);
-        // A cursor on the backslash (doc 2) lands on the escape's decoded unit (the \n at index 1).
         expect(map.toDecodedOffset(2)).toBe(1);
     });
 
@@ -206,9 +169,7 @@ describe('stringSourceMap.toDecodedOffset', () => {
         // Given - `"line1\n{{Request.x}}"` token at doc 100
         const raw = String.raw`"line1\n{{Request.x}}"`;
         const map = createStringSourceMap(raw, 100);
-        // The `{{` is decoded index 6, at doc 108 (quote + 5 chars + 2-char \n).
         expect(map.toDocOffset(6)).toBe(108);
-        // A cursor just after `Request.` in the document maps back to the matching decoded offset.
         const decodedDot = map.decoded.indexOf('Request.') + 'Request.'.length;
         const docDot = map.toDocOffset(decodedDot);
         expect(map.toDecodedOffset(docDot)).toBe(decodedDot);

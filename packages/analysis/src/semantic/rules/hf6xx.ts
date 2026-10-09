@@ -1,24 +1,7 @@
-/**
- * HF6xx — globalActions & misc.
- *
- *   HF601  W  `globalActions.delays[]` OR `delaysLogNormal[]` `urlPattern` is an invalid regex
- *             (range = the pattern). Both delay arrays share the Go RE2 urlPattern contract.
- *   HF602  I  `response.postServeAction` not in the user-configured `registeredActions`
- *             allowlist — fires ONLY when the allowlist is configured and non-empty.
- *
- * Verified against SpectoLabs/hoverfly master (see this family's report notes):
- *   - HF601: `core/models/delay.go` (and `delay_log_normal.go`) match urlPattern with
- *            `regexp.Compile` / `regexp.MustCompile(...).MatchString(...)` — so urlPattern is a
- *            Go RE2 REGEX, not a glob. It is validated with the SHARED `re2js` engine (the real
- *            RE2 grammar; see `../re2.js`), the same validator HF230 uses for the `regex` matcher
- *            value (research/14 §3.1/§4: one RE2 checker, two call sites). This is sound for RE2 —
- *            `new RegExp` would false-positive `(?P<name>…)` and false-negative lookarounds/backrefs.
- *   - HF602: post-serve actions are registered at Hoverfly runtime and are unknowable from the
- *            file, so the catalog scopes this to a USER-configured allowlist. The allowlist is
- *            read from {@link RuleContext.settings}.registeredActions, threaded through the
- *            service. With no settings, HF602 never fires — matching the catalog ("only when
- *            the setting is non-empty").
- */
+// outside: Hoverfly compiles a delay's urlPattern as a Go RE2 regex (core/models/delay.go,
+// delay_log_normal.go), checked with the shared re2js engine HF230 uses; post-serve actions are
+// registered at runtime, so HF602 reads the allowlist the settings give and stays silent without
+// one.
 
 import type { ASTNode } from 'vscode-json-languageservice';
 import type { Diagnostic } from 'vscode-languageserver-types';
@@ -27,7 +10,6 @@ import { makeDiagnostic } from '../diagnostics.js';
 import { isValidRe2 } from '../re2.js';
 import type { RuleContext, SemanticRule } from '../rule.js';
 
-/** First string property value for `key` on an object node, with its node. */
 function stringPropValue(node: ASTNode | undefined, key: string): ASTNode | undefined {
     if (node?.type !== 'object') {
         return undefined;
@@ -35,13 +17,6 @@ function stringPropValue(node: ASTNode | undefined, key: string): ASTNode | unde
     return node.properties.find((p) => p.keyNode.value === key)?.valueNode;
 }
 
-/* --------------------------------------- HF601 ------------------------------------------- */
-
-/**
- * Each invalid-regex `urlPattern` across BOTH `globalActions.delays[]` and
- * `globalActions.delaysLogNormal[]` — Hoverfly compiles the urlPattern as a Go RE2 regex in
- * both delay paths (`core/models/delay.go` and `delay_log_normal.go`).
- */
 function hf601(context: RuleContext): Diagnostic[] {
     const { delays, delaysLogNormal } = context.model.globalActions;
     const out: Diagnostic[] = [];
@@ -57,9 +32,6 @@ function hf601(context: RuleContext): Diagnostic[] {
     return out;
 }
 
-/* --------------------------------------- HF602 ------------------------------------------- */
-
-/** Each `response.postServeAction` not present in the configured `registeredActions` allowlist. */
 function hf602(context: RuleContext): Diagnostic[] {
     const allow = context.settings.registeredActions;
     if (!allow || allow.length === 0) {
@@ -81,8 +53,6 @@ function hf602(context: RuleContext): Diagnostic[] {
     }
     return out;
 }
-
-/* ----------------------------------------- rules ----------------------------------------- */
 
 /** HF601 — invalid globalActions delay urlPattern. */
 export const hf601DelayPatternRule: SemanticRule = {

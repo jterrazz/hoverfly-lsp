@@ -1,21 +1,12 @@
-/**
- * Unit tests for the template analyzer (`src/template/analyzer.ts`). Pure: they call
- * {@link analyze} on a DECODED template string and assert the HF502–HF509 findings, their
- * template-relative offsets, and — crucially — the no-false-positive precision rules
- * (path lookups are not unknown helpers; dynamic faker args are not flagged; etc.).
- */
-
 import { describe, expect, test } from 'vitest';
 
 import { analyze } from '../analyzer.js';
 import type { AnalyzerContext, TemplateFinding } from '../analyzer.js';
 
-/** A context with the given variable/literal names declared. */
 function ctx(variables: string[] = [], literals: string[] = []): AnalyzerContext {
     return { variableNames: new Set(variables), literalNames: new Set(literals) };
 }
 
-/** The kinds emitted, for terse assertions. */
 function kinds(findings: TemplateFinding[]): string[] {
     return findings.map((f) => f.kind);
 }

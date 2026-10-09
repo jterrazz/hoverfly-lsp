@@ -1,44 +1,6 @@
-/**
- * Structure — structural-key & value-shape rules (the "only allow the strict necessary" family).
- * All FACTS (the allowed-key matrix per object kind, the user-keyed maps to skip, the
- * schema-absent legal keys, the did-you-mean distance) live in `../../registry/structure.ts`;
- * nothing structural is hardcoded here.
- *
- *   HF603 (W)  unknown key on a closed object — no case-fold match against the kind's allowed
- *              set, so Go SILENTLY DROPS it (the user's data vanishes). Carries a did-you-mean
- *              suffix when a Levenshtein≤2 candidate exists. Range = the offending KEY node.
- *   HF604 (I)  case-only variant of an allowed key — Go binds it (case-insensitive) and
- *              normalizes, so it WORKS but is non-canonical. Range = the KEY node.
- *   HF212 (W)  a field-matcher with a `matcher` key (or an empty `{}`) but NO `value` — the
- *              value is nil so the matcher can never match. EXCEPT `negate` (→ HF207 territory)
- *              and `form` (→ HF208, value is an object). Range = the matcher object node.
- *   HF308 (E)  a `response.headers` value that is not an array of strings — Hoverfly 400s on it.
- *              Range = the offending value node.
- *   HF404 (E)  a `requiresState`/`transitionsState` value that is not a string — Hoverfly 400s.
- *              Range = the offending value node.
- *   HF405 (E)  a `removesState[]` entry that is not a string — Hoverfly 400s. Range = the element.
- *
- * ## Where HF603/HF604 run (and where they must NOT)
- * The unknown-key check runs at EVERY closed object level: `data`, each pair, `request`,
- * `response`, every field-matcher (recursing through `doMatch` chains AND through every
- * `headers`/`query` per-key matcher array), `logNormalDelay`, each `delays[]`/`delaysLogNormal[]`
- * item, `globalActions`, each `literals[]`/`variables[]` item, and `meta`. It is DELIBERATELY
- * skipped on:
- *   - the ROOT object — its unknown keys are already an HTTP 400 surfaced as HF102
- *     (`additionalProperties:false`); flagging here would double-report (report 13 §6).
- *   - the OPEN string-keyed maps whose keys are user data: `request.headers`, `request.query`,
- *     `response.headers`, `requiresState`, `transitionsState` (their PROPERTY KEYS are header /
- *     query / state names, never validated). We descend INTO them to reach the closed objects
- *     they contain (each header/query value is a matcher array of closed field-matchers), but we
- *     never treat their own keys as unknown. See {@link USER_KEYED_MAP_PATHS}.
- *   - `request.method` — legal despite being schema-absent (D5); it is in the `request` allowed
- *     set, so it is never flagged.
- *
- * This file is the one structural re-walk of the AST: the typed `SimulationModel` does not carry
- * every closed object (it omits `data`/`pair`/`meta`/`literals`/`variables`/`logNormalDelay`
- * key-shapes), and HF603 needs the raw KEY node of every property. The walk is driven entirely by
- * the {@link STRUCTURE_ALLOWED_KEYS} matrix and stays minimal and defensive (never throws).
- */
+// outside: Go's encoding/json matches a struct field case-insensitively and silently drops an
+// unknown key, so a typo loses the user's data (HF603) and a case variant binds but is not
+// canonical (HF604).
 
 import type { ASTNode, ObjectASTNode } from 'vscode-json-languageservice';
 import type { Diagnostic } from 'vscode-languageserver-types';
@@ -49,14 +11,6 @@ import { makeDiagnostic } from '../diagnostics.js';
 import { levenshtein } from '../levenshtein.js';
 import type { RuleContext, SemanticRule } from '../rule.js';
 
-/* ----------------------------------- allowed-key lookup ---------------------------------- */
-
-/**
- * Per kind: a map from a key's lowercased form to its canonical spelling. HF603/HF604 both work
- * CASE-FOLDED (Go's `encoding/json` matches struct fields case-insensitively), so this drives the
- * "binds vs dropped" decision: a lowercased key present here BINDS (canonical → ok, variant →
- * HF604); absent → dropped → HF603.
- */
 const CANONICAL_BY_LOWER: Readonly<Record<StructureObjectKind, ReadonlyMap<string, string>>> =
     Object.fromEntries(
         (Object.keys(STRUCTURE_ALLOWED_KEYS) as StructureObjectKind[]).map((kind) => [
@@ -64,8 +18,6 @@ const CANONICAL_BY_LOWER: Readonly<Record<StructureObjectKind, ReadonlyMap<strin
             new Map(STRUCTURE_ALLOWED_KEYS[kind].map((key) => [key.toLowerCase(), key])),
         ]),
     ) as unknown as Record<StructureObjectKind, ReadonlyMap<string, string>>;
-
-/* --------------------------------------- AST helpers ------------------------------------- */
 
 function asObject(node: ASTNode | undefined): ObjectASTNode | undefined {
     return node?.type === 'object' ? node : undefined;
@@ -80,13 +32,6 @@ function arrayItems(node: ObjectASTNode | undefined, key: string): readonly ASTN
     return value?.type === 'array' ? value.items : [];
 }
 
-/* ----------------------------------- did-you-mean (HF603) -------------------------------- */
-
-/**
- * The pre-formatted ` (did you mean "x"?)` suffix for an unknown key, or `""` when no allowed key
- * is within {@link DID_YOU_MEAN_MAX_DISTANCE}. Compares case-folded against the canonical set; the
- * nearest (then alphabetically-first on ties) candidate wins.
- */
 function didYouMean(key: string, allowed: readonly string[]): string {
     let best: string | undefined;
     let bestDistance = DID_YOU_MEAN_MAX_DISTANCE + 1;
@@ -102,13 +47,6 @@ function didYouMean(key: string, allowed: readonly string[]): string {
         : '';
 }
 
-/* ------------------------------------ HF603 / HF604 -------------------------------------- */
-
-/**
- * Emit HF603 (dropped typo) / HF604 (case variant) for every property of a closed object whose
- * key is not a canonical allowed key. A key that case-folds to an allowed key but is not the exact
- * spelling → HF604; a key with no case-fold match → HF603 (+ did-you-mean).
- */
 function checkUnknownKeys(
     context: RuleContext,
     object: ObjectASTNode,
@@ -121,7 +59,6 @@ function checkUnknownKeys(
         const key = property.keyNode.value;
         const canonical = canonicalByLower.get(key.toLowerCase());
         if (canonical === undefined) {
-            // HF603 — no case-fold match: Go silently drops it.
             diagnostics.push(
                 makeDiagnostic(context.textDocument, 'HF603', property.keyNode, {
                     key,
@@ -129,7 +66,6 @@ function checkUnknownKeys(
                 }),
             );
         } else if (canonical !== key) {
-            // HF604 — case-only variant: Go binds + normalizes it, but it is non-canonical.
             diagnostics.push(
                 makeDiagnostic(context.textDocument, 'HF604', property.keyNode, { key, canonical }),
             );
@@ -137,16 +73,11 @@ function checkUnknownKeys(
     }
 }
 
-/* ------------------------------------------ HF212 ---------------------------------------- */
-
-/** Matcher names whose missing-value semantics are owned by another code (HF207 / HF208). */
+// value: a negate without a value is HF207's, a form HF208's.
 const HF212_EXEMPT = new Set(['negate', 'form']);
 
-/**
- * HF212 — a field-matcher with a `matcher` key (or an empty `{}`) but NO `value` key can never
- * match (the value is nil). A bare `{value:…}` shorthand is legal (default exact) → not flagged.
- * `negate` (→ HF207) and `form` (→ HF208) are exempt. Range = the matcher object node.
- */
+// outside: a matcher with no value compares against nil and can never match; a bare `{ value }` is
+// the default exact matcher.
 function checkMatcherValuePresence(
     context: RuleContext,
     object: ObjectASTNode,
@@ -157,20 +88,12 @@ function checkMatcherValuePresence(
         return;
     }
     const matcherNode = propValue(object, 'matcher');
-    // A bare `{value:…}` with no matcher is legal shorthand; but here value is ABSENT. The defect is
-    // An empty `{}` OR a `matcher`-only object. Either way the value is nil → never matches.
     if (matcherNode?.type === 'string' && HF212_EXEMPT.has(matcherNode.value.toLowerCase())) {
         return;
     }
     diagnostics.push(makeDiagnostic(context.textDocument, 'HF212', object));
 }
 
-/* -------------------------------------- structural walk ---------------------------------- */
-
-/**
- * Recursively walk a single field-matcher object: its unknown keys (HF603/HF604), its
- * value-presence (HF212), and its `doMatch` chain (one object, or a legacy array of objects).
- */
 function walkFieldMatcher(
     context: RuleContext,
     node: ASTNode | undefined,
@@ -187,14 +110,14 @@ function walkFieldMatcher(
     if (doMatch?.type === 'object') {
         walkFieldMatcher(context, doMatch, diagnostics);
     } else if (doMatch?.type === 'array') {
-        // Legacy/array-shaped doMatch (a schema error) — still recurse so nested matchers are checked.
+        // invariant: a legacy array-shaped doMatch is a schema error, still walked so the matchers
+        // it nests are checked.
         for (const item of doMatch.items) {
             walkFieldMatcher(context, item, diagnostics);
         }
     }
 }
 
-/** Walk every field-matcher in a matcher-array value (a `path`/`body`/header/query field). */
 function walkMatcherArray(
     context: RuleContext,
     value: ASTNode | undefined,
@@ -208,10 +131,8 @@ function walkMatcherArray(
     }
 }
 
-/**
- * Walk a `request.headers`/`request.query` map: SKIP its own (user-defined) keys, but descend into
- * each value, which is a matcher array of closed field-matchers.
- */
+// invariant: headers and query are maps keyed by user data — their keys are never judged, their
+// matcher arrays are.
 function walkRequestMatcherMap(
     context: RuleContext,
     node: ASTNode | undefined,
@@ -237,20 +158,14 @@ function walkRequest(
     }
     checkUnknownKeys(context, object, 'request', diagnostics);
 
-    // Top-level matcher-array fields (path/method/destination/scheme/body) carry field-matchers.
     for (const field of ['path', 'method', 'destination', 'scheme', 'body']) {
         walkMatcherArray(context, propValue(object, field), diagnostics);
     }
-    // Headers/query are user-keyed maps → skip their keys, descend into their matcher arrays.
     walkRequestMatcherMap(context, propValue(object, 'headers'), diagnostics);
     walkRequestMatcherMap(context, propValue(object, 'query'), diagnostics);
-    // RequiresState is a user-keyed map of STRING values (HF404). Keys are state names → not checked.
     checkStateValues(context, propValue(object, 'requiresState'), diagnostics);
 }
 
-/* ----------------------------------- HF308 / HF404 / HF405 ------------------------------- */
-
-/** HF404 — every `requiresState`/`transitionsState` value that is not a string. */
 function checkStateValues(
     context: RuleContext,
     node: ASTNode | undefined,
@@ -268,7 +183,6 @@ function checkStateValues(
     }
 }
 
-/** HF308 — every `response.headers` value that is not an array whose items are all strings. */
 function checkResponseHeaders(
     context: RuleContext,
     node: ASTNode | undefined,
@@ -289,7 +203,6 @@ function checkResponseHeaders(
     }
 }
 
-/** HF405 — every `removesState[]` entry that is not a string. */
 function checkRemovesState(
     context: RuleContext,
     node: ASTNode | undefined,
@@ -339,7 +252,6 @@ function walkPair(
     walkResponse(context, propValue(object, 'response'), diagnostics);
 }
 
-/** Walk every item of a closed-object array (`literals[]`, `variables[]`, `delays[]`, …). */
 function walkClosedItems(
     context: RuleContext,
     items: readonly ASTNode[],
@@ -391,14 +303,6 @@ function walkData(
     walkGlobalActions(context, propValue(object, 'globalActions'), diagnostics);
 }
 
-/* ------------------------------------------ rule ----------------------------------------- */
-
-/**
- * The structure rule: one defensive pass over every CLOSED object in the document (driven by the
- * allowed-key matrix), emitting HF603/HF604 (unknown / case-variant keys), HF212 (matcher with no
- * value), HF308 (response header not array-of-strings), HF404 (non-string state value) and HF405
- * (non-string removesState entry). Skips the root and the user-keyed maps. Never throws.
- */
 const structureRule: SemanticRule = {
     codes: ['HF212', 'HF308', 'HF404', 'HF405', 'HF603', 'HF604'],
     run(context: RuleContext): Diagnostic[] {
@@ -407,7 +311,8 @@ const structureRule: SemanticRule = {
         if (!root) {
             return diagnostics;
         }
-        // ROOT is intentionally NOT checked for unknown keys (already HF102 via additionalProperties).
+        // value: the root is not judged for unknown keys — additionalProperties:false already
+        // reports them as HF102 (report 13 §6).
         walkData(context, propValue(root, 'data'), diagnostics);
 
         const meta = asObject(propValue(root, 'meta'));

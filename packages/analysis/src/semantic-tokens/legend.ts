@@ -1,43 +1,19 @@
-/**
- * The frozen LSP semantic-tokens legend (research/16 §3.1).
- *
- * The legend is an ORDERED array: the wire protocol carries integer INDICES into
- * {@link SEMANTIC_TOKEN_TYPES}, never names, so the server must advertise this exact array in this
- * exact order and the producer must emit the matching indices. Changing the order is a breaking
- * change to the wire contract.
- *
- * Only STANDARD LSP token types are used (research/16 §2): these are the types that default themes
- * across VS Code, Zed, IntelliJ/LSP4IJ and Neovim color WITHOUT any per-user theme configuration.
- * No custom types and no modifiers in v1 (`SEMANTIC_TOKEN_MODIFIERS` is empty; every token's
- * modifier bitset is `0`).
- *
- * Pure data — zero knowledge of the producer, the AST, or LSP transport.
- */
+// invariant: the wire carries indices into SEMANTIC_TOKEN_TYPES, never names, so its order is a
+// published contract; only standard LSP types are used, which default themes color with no
+// configuration (research/16 §2, §3.1).
 
-/**
- * The ordered semantic token types the server advertises verbatim. Index = wire token-type id.
- * See research/16 §3.2 for the construct→type mapping each entry serves.
- */
+/** The ordered token types the server advertises verbatim; an index is a wire token-type id. */
 export const SEMANTIC_TOKEN_TYPES = [
-    // 0 — reserved (unused in v1; keeps indices stable for a future refinement)
+    // value: reserved and unused, so the indices after it stay stable.
     'namespace',
-    // 1 — block-helper keywords (if/unless/each/with/equal/first)
     'keyword',
-    // 2 — inline helper / subexpression-head calls (now, faker, replace, …)
     'function',
-    // 3 — path roots (Request, State, Vars, Literals, Journal, …)
     'variable',
-    // 4 — subsequent path segments (.Path, .Method, field names)
     'property',
-    // 5 — @index/@first/@last/@key and `this`
     'parameter',
-    // 6 — known faker types and matcher names (closed enums)
     'enumMember',
-    // 7 — string-literal arguments
     'string',
-    // 8 — numeric literals and bracket indices ([1])
     'number',
-    // 9 — mustache delimiters {{ }} {{{ }}} and # / block markers
     'operator',
 ] as const;
 
@@ -47,10 +23,7 @@ export const SEMANTIC_TOKEN_MODIFIERS: readonly string[] = [];
 /** A token-type name in the frozen legend. */
 export type SemanticTokenTypeName = (typeof SEMANTIC_TOKEN_TYPES)[number];
 
-/**
- * Token-type name → its index in {@link SEMANTIC_TOKEN_TYPES}. Typed so a typo in a producer
- * lookup is a compile error rather than a wrong color.
- */
+/** Each token type's index in SEMANTIC_TOKEN_TYPES, typed so a misspelt lookup does not compile. */
 export const SEMANTIC_TOKEN_TYPE_INDEX: Readonly<Record<SemanticTokenTypeName, number>> =
     Object.fromEntries(SEMANTIC_TOKEN_TYPES.map((name, index) => [name, index])) as Record<
         SemanticTokenTypeName,

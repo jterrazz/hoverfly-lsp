@@ -1,36 +1,19 @@
-/**
- * The Hoverfly `TemplatingData` member catalog — the `Request.*` accessors, the path roots
- * (`State`/`Vars`/`Literals`), and the `@`-data variables — used for path-continuation
- * completions and hover inside templates.
- *
- * Source of truth: `research/02-hoverfly-source-truth.md` §4.2 (the `TemplatingData`/`Request`
- * Go structs) and `research/08-templating-spec.md` §6 (the `Request.Body` method-call form and
- * the kubectl-JSONPath / xsel-XPath dialect note). This is template-LANGUAGE data, distinct from
- * the matcher/helper/faker registry (which this module does NOT touch).
- */
+// outside: transcribed from Hoverfly's TemplatingData and Request Go structs (research/02 §4.2) and
+// the Request.Body method-call form (research/08 §6).
 
 const DOCS_TEMPLATING =
     'https://docs.hoverfly.io/en/latest/pages/keyconcepts/templating/templating.html';
 
-/** A `Request.<member>` accessor. */
 type RequestMember = {
-    /** The member name as written after `Request.` (`QueryParam`, `Path`, `Body`, …). */
     readonly name: string;
-    /** Whether the accessor is invoked as a function (`Request.Body 'jsonpath' '$.x'`). */
     readonly methodCall: boolean;
-    /** Whether further dotted access follows (`Request.QueryParam.<name>`, `Request.Header.<name>`). */
     readonly indexed: boolean;
-    /** Short doc, including the typical access form. */
     readonly docs: string;
-    /** A representative usage example. */
     readonly example: string;
 };
 
-/**
- * The `Request` accessor members (report 08 §6 + report 02 §4.2). `Body` is the func-typed field
- * invoked with two string args (`queryType` ∈ {jsonpath, xpath, jsonpathfromxml}); the rest are
- * scalar fields or string maps/slices accessed with dotted/indexed paths.
- */
+// outside: Hoverfly's Request.Body is a function field invoked with a query type — jsonpath, xpath
+// or jsonpathfromxml — and an expression; the other members are fields read by path.
 const REQUEST_MEMBERS: readonly RequestMember[] = [
     {
         name: 'Scheme',
@@ -96,7 +79,6 @@ const REQUEST_MEMBERS: readonly RequestMember[] = [
     },
 ];
 
-/** The dotted path roots that begin a `TemplatingData` lookup (report 02 §4.2). */
 type PathRoot = {
     readonly name: string;
     readonly docs: string;
@@ -126,9 +108,7 @@ const PATH_ROOTS: readonly PathRoot[] = [
     },
 ];
 
-/** An `@`-data variable available inside `#each`/`#first` blocks. */
 type DataVariable = {
-    /** The name WITHOUT the leading `@` (`index`, `first`, `last`, `key`). */
     readonly name: string;
     readonly docs: string;
 };

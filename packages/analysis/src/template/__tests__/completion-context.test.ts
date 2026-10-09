@@ -2,15 +2,6 @@ import { describe, expect, test } from 'vitest';
 
 import { classifyCompletionContext } from '../completion-context.js';
 
-/**
- * The cursor-context classifier underpins template IntelliSense. It must be error-tolerant: the
- * document is almost always MID-TYPING (`{{fa`, `{{#each x}}{{`, `{{Request.`), so the classifier
- * works off a focused scan rather than a well-formed AST. These tests pin each context kind, the
- * partial `word`, path roots, `now` slots, and the enclosing block stack — including recovery on
- * unclosed mustaches/blocks and nested `#each` scope.
- *
- * Convention: the marker `|` denotes the cursor; we split on it to get the decoded offset.
- */
 function ctx(marked: string): ReturnType<typeof classifyCompletionContext> {
     const offset = marked.indexOf('|');
     const decoded = marked.replace('|', '');
@@ -88,7 +79,6 @@ describe('classifyCompletionContext — argument contexts', () => {
 
     test('classifies a generic helper arg as helperArg', () => {
         const result = ctx('{{multiply Req|');
-        // `Req` has no dot yet → treated as a helper/value start word inside the arg list
         expect(['helperArg', 'pathContinuation', 'helperOrPathStart']).toContain(result.kind);
     });
 });
@@ -120,7 +110,6 @@ describe('classifyCompletionContext — block stack & scope', () => {
         // Given - a #with nested in a #each, cursor in the inner body
         const result = ctx('{{#each xs}}{{#with this}}{{|');
         expect(result.blockStack).toStrictEqual(['each', 'with']);
-        // `with` is not an each scope but the outer `each` still is
         expect(result.inEachScope).toBeTruthy();
     });
 

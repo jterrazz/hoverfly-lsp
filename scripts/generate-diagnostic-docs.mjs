@@ -1,22 +1,6 @@
-/**
- * Generates docs/reference/diagnostics.md and docs/reference/template-reference.md from the
- * BUILT analysis package (`@hoverfly-lsp/analysis` -> packages/analysis/dist). The catalog, helper, faker
- * and matcher data are the single source of truth; never hand-edit the generated files.
- * `docs/reference/` is the projection half of the manual: the authored chapters are the
- * numbered ones beside it, and nothing under reference/ is written by hand.
- *
- * The catalog object carries code/severity/message/href. The per-code Trigger and Range
- * prose lives in research/11-diagnostic-catalog.md (it is documentation, not runtime data),
- * so it is carried over here in DIAGNOSTIC_PROSE keyed by code. If a new code is added to the
- * catalog without a prose entry, generation FAILS loudly so the table can never silently
- * drift out of sync with the catalog.
- *
- * Usage:
- *   npm run docs:diagnostics            # regenerate both docs from the built analysis package
- *
- * CI asserts the generated files are committed and up to date (see .github/workflows/validate.yml):
- *   npm run build && npm run docs:diagnostics && git diff --quiet docs/
- */
+// outside: the reference pages are generated from the built analysis package, the per-code trigger
+// and range prose carried over from research/11-diagnostic-catalog.md; generation aborts on a
+// catalog code with no prose, so the table never drifts.
 
 import {
     ALL_HELPERS,
@@ -38,7 +22,7 @@ const DOCS_DIR = resolve(ROOT, 'docs/reference');
 const GENERATED_NOTICE =
     '<!-- GENERATED FILE. Do not edit by hand. Run `npm run docs:diagnostics` to regenerate. -->';
 
-// LSP DiagnosticSeverity numeric values (vscode-languageserver-types): the catalog stores these.
+// outside: the LSP DiagnosticSeverity values the catalog stores (vscode-languageserver-types).
 const SEVERITY_LABEL = {
     1: 'Error',
     2: 'Warning',
@@ -46,11 +30,6 @@ const SEVERITY_LABEL = {
     4: 'Hint',
 };
 
-/**
- * Trigger + Range prose per diagnostic code, carried over verbatim from
- * research/11-diagnostic-catalog.md (the authored catalog spec). Keyed by code; every code in
- * DIAGNOSTIC_CATALOG must have an entry here or generation aborts.
- */
 const DIAGNOSTIC_PROSE = {
     HF101: {
         trigger:
@@ -418,7 +397,7 @@ function helperRow(spec) {
                   .map((arg) => `${arg.name}: ${arg.type}${arg.optional ? '?' : ''}`)
                   .join(', ') + (spec.variadic ? ', …' : '');
     const kind = spec.block ? 'block' : 'inline';
-    // Strip the trailing docs URL from the prose; the registry appends a link to every entry.
+    // value: the registry ends every docs string with a link; the page links each entry itself.
     const doc = spec.docs.replace(/\s*https?:\/\/\S+\s*$/u, '').trim();
     return `| \`${spec.name}\` | ${kind} | ${mdEscape(argList)} | \`${mdEscape(spec.example)}\` | ${mdEscape(doc)} |`;
 }
@@ -488,7 +467,6 @@ function renderTemplateReferenceDoc() {
         `<details><summary>All ${FAKER_NAMES.length} faker type names</summary>`,
         '',
     );
-    // Chunk into rows of 6 for a readable table.
     const cols = 6;
     lines.push('| | | | | | |', '| --- | --- | --- | --- | --- | --- |');
     for (let i = 0; i < FAKER_NAMES.length; i += cols) {

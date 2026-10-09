@@ -58,7 +58,6 @@ describe('resolveServer — precedence', () => {
             configuredPath: undefined,
             workspaceRoot: undefined,
             bundledModule: BUNDLED,
-            // Even if exists() would say yes, there is no path to probe
             exists: ALWAYS,
         });
 

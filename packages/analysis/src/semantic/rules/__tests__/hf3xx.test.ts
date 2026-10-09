@@ -8,13 +8,11 @@ import { hf3xxResponseRule } from '../hf3xx.js';
 
 const ls = getLanguageService({});
 
-/** Build a rule context from raw simulation text. */
 function contextOf(text: string) {
     const doc = TextDocument.create('file:///s.hoverfly.json', 'json', 1, text);
     return createRuleContext(doc, ls.parseJSONDocument(doc));
 }
 
-/** Wrap one response object into a single-pair simulation and run HF3xx over it. */
 function diagnoseResponse(response: Record<string, unknown>) {
     const sim = {
         data: { pairs: [{ request: { path: [{ matcher: 'exact', value: '/' }] }, response }] },
@@ -25,7 +23,6 @@ function diagnoseResponse(response: Record<string, unknown>) {
 
 const codes = (diags: { code?: unknown }[]) => diags.map((d) => String(d.code));
 
-/** The message of the first diagnostic, as plain text — `undefined` when there is none. */
 const firstMessage = (diags: Diagnostic[]) => {
     const first = diags[0];
     return first === undefined ? undefined : Diagnostic.getMessageString(first);

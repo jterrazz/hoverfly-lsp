@@ -1,10 +1,3 @@
-/**
- * Diagnostic construction. Every HFxxx diagnostic is built here so that severity, message
- * template, source, and docs href all come from the frozen catalog — rules never assemble a
- * `Diagnostic` by hand. The range is the exact span of the supplied AST node (or an explicit
- * Range), mapped through the document's offset→position conversion.
- */
-
 import type { ASTNode } from 'vscode-json-languageservice';
 import type { TextDocument } from 'vscode-languageserver-textdocument';
 import type { Diagnostic, Range } from 'vscode-languageserver-types';

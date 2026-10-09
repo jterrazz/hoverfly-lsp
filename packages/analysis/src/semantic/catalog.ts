@@ -1,15 +1,6 @@
-/**
- * The frozen HFxxx diagnostic catalog (single source of truth for severity, message
- * template, and docs href). Hand-transcribed EXACTLY from
- * `research/11-diagnostic-catalog.md`; codes are stable API once goldens exist.
- *
- * Rules MUST pull severity/message/href from here via {@link makeDiagnostic}
- * (see `diagnostics.ts`); never inline a severity or message literal in a rule, so the
- * golden snapshots stay stable and a code's meaning is defined in exactly one place.
- *
- * Message templates use `{name}`-style placeholders. {@link formatMessage} substitutes
- * them; placeholder names map to the `args` object passed by each rule.
- */
+// invariant: transcribed from research/11; a rule takes its severity, message and href from here
+// through makeDiagnostic, never a literal of its own, and a code is a published API once its golden
+// exists.
 
 import { DiagnosticSeverity } from 'vscode-languageserver-types';
 
@@ -85,24 +76,15 @@ export type CatalogEntry = {
     readonly code: DiagnosticCode;
     readonly severity: DiagnosticSeverity;
     readonly href: string;
-    /**
-     * Message template with `{placeholder}` slots. For HF102/HF502/HF307 (`passthrough` /
-     * parser-supplied wording), the template is the literal `{message}`/`{explain}` slot:
-     * the rule supplies the full text via that arg.
-     */
+    /** The message, with `{placeholder}` slots; a passthrough code's template is the one slot its rule fills. */
     readonly messageTemplate: string;
 };
 
 /** `source` field stamped on every Hoverfly diagnostic. */
 export const DIAGNOSTIC_SOURCE = 'hoverfly';
 
-/**
- * The catalog table. Keyed by code for O(1) lookup. Severities/messages mirror
- * `11-diagnostic-catalog.md` verbatim; passthrough rows (HF102/HF307/HF502/HF504-ish)
- * carry a single-slot template the rule fills.
- */
+/** The catalog, by code; severities and messages mirror research/11-diagnostic-catalog.md verbatim. */
 export const DIAGNOSTIC_CATALOG: Readonly<Record<DiagnosticCode, CatalogEntry>> = {
-    // HF1xx: structure & meta.
     HF101: {
         code: 'HF101',
         severity: W,
@@ -130,7 +112,6 @@ export const DIAGNOSTIC_CATALOG: Readonly<Record<DiagnosticCode, CatalogEntry>> 
         messageTemplate: 'Unrecognized schema version "{v}"',
     },
 
-    // HF2xx: request matchers.
     HF201: {
         code: 'HF201',
         severity: E,
@@ -201,7 +182,6 @@ export const DIAGNOSTIC_CATALOG: Readonly<Record<DiagnosticCode, CatalogEntry>> 
         href: href('HF211'),
         messageTemplate: 'Empty {name} value never matches',
     },
-    // Additive: structural strictness (report 13 §6); value-syntax (report 14 §4).
     HF212: {
         code: 'HF212',
         severity: W,
@@ -222,12 +202,8 @@ export const DIAGNOSTIC_CATALOG: Readonly<Record<DiagnosticCode, CatalogEntry>> 
         messageTemplate:
             'Name "{n}" contains a character that breaks "{{Literals.{n}}}" / "{{Vars.{n}}}" templating references',
     },
-    /*
-     * Method/scheme well-known-value did-you-mean. HINT-only (D4): both fields are OPEN sets that
-     * Hoverfly compares verbatim and never validates (research/13 §3.1/§3.2, T19), so this can ONLY
-     * fire on a near-miss against the standard set (a typo); a bespoke verb / custom scheme stays
-     * silent. The `{value}`/`{suggestion}` slots are supplied by the rule. See registry/http.ts.
-     */
+    // value: Hint only (D4) — Hoverfly compares method and scheme verbatim and never validates them
+    // (research/13 §3.1, §3.2), so only a near-miss of a standard value fires.
     HF215: {
         code: 'HF215',
         severity: H,
@@ -286,12 +262,11 @@ export const DIAGNOSTIC_CATALOG: Readonly<Record<DiagnosticCode, CatalogEntry>> 
             'array element {i} is not a string; Hoverfly cannot match a non-string element as written',
     },
 
-    // HF3xx: response.
     HF301: {
         code: 'HF301',
         severity: W,
         href: href('HF301'),
-        // Mirrors Hoverfly's BodyAndBodyFileMessage wording (report 05 §2.3).
+        // value: Hoverfly's own BodyAndBodyFileMessage wording (report 05 §2.3).
         messageTemplate:
             'Response contains both body and bodyFile; please remove one of them, otherwise body is used if non-empty',
     },
@@ -299,7 +274,7 @@ export const DIAGNOSTIC_CATALOG: Readonly<Record<DiagnosticCode, CatalogEntry>> 
         code: 'HF302',
         severity: W,
         href: href('HF302'),
-        // Mirrors Hoverfly's ContentLengthAndTransferEncodingMessage wording (report 05 §2.3).
+        // value: Hoverfly's own ContentLengthAndTransferEncodingMessage wording (report 05 §2.3).
         messageTemplate:
             'Response contains both Content-Length and Transfer-Encoding headers; please remove one of these headers',
     },
@@ -340,7 +315,6 @@ export const DIAGNOSTIC_CATALOG: Readonly<Record<DiagnosticCode, CatalogEntry>> 
         messageTemplate: 'Response header values must be an array of strings; wrap it in [ … ]',
     },
 
-    // HF4xx: state.
     HF401: {
         code: 'HF401',
         severity: W,
@@ -373,7 +347,6 @@ export const DIAGNOSTIC_CATALOG: Readonly<Record<DiagnosticCode, CatalogEntry>> 
         messageTemplate: 'removesState entries must be strings; Hoverfly rejects this at import',
     },
 
-    // HF5xx: templating.
     HF501: {
         code: 'HF501',
         severity: W,
@@ -452,7 +425,6 @@ export const DIAGNOSTIC_CATALOG: Readonly<Record<DiagnosticCode, CatalogEntry>> 
         messageTemplate: '"{fn}" expects {sig} arguments, got {n}; the variable renders empty',
     },
 
-    // HF6xx: globalActions & misc.
     HF601: {
         code: 'HF601',
         severity: W,
@@ -465,11 +437,7 @@ export const DIAGNOSTIC_CATALOG: Readonly<Record<DiagnosticCode, CatalogEntry>> 
         href: href('HF602'),
         messageTemplate: 'Action "{a}" is not in your configured registeredActions',
     },
-    /*
-     * The unknown-key flagship. Severity is Warning because the doc still imports; it is a silent
-     * feature loss, not a reject (report 13 §6 false-positive guard (d)). The `{didYouMean}` slot is a
-     * a pre-formatted suffix the rule supplies (e.g. ` (did you mean "status"?)`) or the empty string.
-     */
+    // value: a Warning — the document still imports, and the key is silently lost (report 13 §6).
     HF603: {
         code: 'HF603',
         severity: W,
@@ -485,10 +453,7 @@ export const DIAGNOSTIC_CATALOG: Readonly<Record<DiagnosticCode, CatalogEntry>> 
     },
 };
 
-/**
- * Substitute `{placeholder}` slots in a template from `args`. A missing arg leaves the
- * literal `{slot}` in place (defensive; never throws). All values are stringified.
- */
+/** Fills a template's `{placeholder}` slots from args; a missing one stays as written, and it never throws. */
 export function formatMessage(
     template: string,
     args: Readonly<Record<string, unknown>> = {},

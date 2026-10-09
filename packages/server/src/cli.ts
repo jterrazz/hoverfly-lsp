@@ -2,11 +2,8 @@ import { createRequire } from 'node:module';
 
 import { startServer } from './server.js';
 
-/**
- * The package version. In the esbuild bundle this is replaced at build time via `define`
- * (`HOVERFLY_LSP_VERSION`). In the unbundled tsc output (tests / typecheck) that define is
- * absent, so we fall back to reading package.json relative to this module.
- */
+// value: esbuild defines HOVERFLY_LSP_VERSION in the bundle; unbundled, the version is read from
+// package.json.
 declare const HOVERFLY_LSP_VERSION: string | undefined;
 
 function readVersion(): string {
@@ -37,12 +34,8 @@ Options:
   --help, -h          Print this help and exit
 `;
 
-/**
- * Args we accept and hand off to `vscode-languageserver/node`: the transport flags, plus the
- * bookkeeping args an LSP client injects when it spawns the server. `vscode-languageclient`
- * always appends `--clientProcessId=<pid>` (so the server exits if the editor dies); rejecting it
- * would crash every editor-launched server on startup. Only genuinely unknown flags are an error.
- */
+// outside: vscode-languageclient appends `--clientProcessId=<pid>` to every spawn so the server
+// exits with its editor; refusing it would crash every editor-launched server.
 function isAcceptedArg(arg: string): boolean {
     return (
         arg === '--stdio' ||
@@ -53,19 +46,11 @@ function isAcceptedArg(arg: string): boolean {
         arg.startsWith('--pipe=') ||
         arg === '--clientProcessId' ||
         arg.startsWith('--clientProcessId=') ||
-        // The integer that follows a bare `--socket` / `--pipe` / `--clientProcessId`.
         /^\d+$/u.test(arg)
     );
 }
 
-/**
- * CLI entry point.
- *
- * `--version` / `--help` short-circuit. Otherwise the transport flags are validated here and
- * the actual transport selection is delegated to `vscode-languageserver/node`, which reads
- * `process.argv` (it understands `--stdio`, `--node-ipc`, `--socket[=PORT]`, `--pipe[=NAME]`).
- * An unrecognised flag prints help to stderr and exits 1.
- */
+/** The command: `--version` and `--help` answer, an unknown flag is refused with the usage, and the transport is left to vscode-languageserver/node, which reads process.argv. */
 export function main(argv: readonly string[] = process.argv.slice(2)): void {
     if (argv.includes('--version') || argv.includes('-v')) {
         process.stdout.write(`${readVersion()}\n`);

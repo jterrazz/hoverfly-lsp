@@ -1,37 +1,8 @@
-/**
- * Semantic analysis of a Hoverfly template (the impure-data layer atop the pure parser).
- *
- * `analyze` walks the {@link Program} AST produced by {@link parse} and emits
- * {@link TemplateFinding}s whose `kind` maps 1:1 to the HF5xx catalog codes HF502–HF509. The
- * caller (the HF5xx semantic rule) maps the template-relative offsets back to document
- * positions via the source-map and turns each finding into a catalog diagnostic. HF501 (syntax
- * present while not templated) and HF510 (`variables[].function` built-in misuse) live in the
- * rule, not here, because they need document-level model context, not the template AST.
- *
- * Facts come exclusively from the registries (`../registry/*`) — no helper/faker/now data is
- * hardcoded.
- *
- * ## HF503 ambiguity heuristic (report 08 §4 — raymond resolution order: helpers shadow paths)
- *
- * In raymond a leading token like `Foo` could be a helper call OR a context path lookup; helpers
- * win when one is registered. The parser cannot tell `{{State.foo}}` (a path) from
- * `{{randomString}}` (a zero-arg helper) structurally. To avoid false positives on the very
- * common path forms (`{{Request.Path}}`, `{{State.foo}}`, `{{Vars.x}}`, `{{this.id}}`,
- * `{{@index}}`) we only flag a leading path as an UNKNOWN helper (HF503) when it is
- * unambiguously a *call*:
- *
- *   - it carries arguments (`{{foo 'a'}}` — only helpers take positional args), OR
- *   - it is a block open (`{{#foo}}` — only block helpers open blocks), OR
- *   - it is a subexpression head (`(foo ...)` — subexpressions are always helper calls).
- *
- * A bare, arg-less, single-segment mustache (`{{foo}}`) is treated as a path lookup UNLESS its
- * name matches a known helper (so `{{randomString}}` validates as a helper and a known zero-arg
- * helper used bare is fine). Consequently `{{somethingUnknown}}` with no args is NOT flagged —
- * it is indistinguishable from a context variable and raymond renders it as an empty path
- * lookup rather than panicking. Dotted/`@`/`this` paths are never helper candidates (helpers are
- * single-segment identifiers), with the one exception of the `Request.Body` method-call form,
- * which is recognised and validated like the `requestBody` helper (report 08 §6).
- */
+// outside: raymond reads a leading token as a helper when one is registered and as a context path
+// otherwise (report 08 §4), so a bare argument-less `{{foo}}` is a path — raymond renders it empty,
+// no panic — and only a call with arguments, a block open or a subexpression head is HF503; a
+// dotted, `@` or `this` path is never a helper, but for the Request.Body method call (report 08
+// §6).
 
 import { FAKER_NAMES, FAKER_PARAMETERIZED_PANICS, GOFAKEIT_VERSION } from '../registry/faker.js';
 import { ALL_HELPERS, NOW_OFFSET_UNITS } from '../registry/templating.js';
@@ -48,7 +19,6 @@ import type {
 import { parse } from './parser.js';
 import type { TemplateParseError } from './parser.js';
 
-/** The HF5xx codes the analyzer emits (HF501/HF510 are emitted by the rule, not here). */
 type TemplateFindingKind =
     | 'HF502'
     | 'HF503'
@@ -59,11 +29,6 @@ type TemplateFindingKind =
     | 'HF508'
     | 'HF509';
 
-/**
- * A single template finding. Offsets are relative to the DECODED template string that was
- * analysed; the caller maps them to document positions. `args` carries the catalog message
- * placeholders (e.g. `{ name }` for HF503), so the rule never re-derives wording.
- */
 type TemplateFinding = {
     readonly kind: TemplateFindingKind;
     /** Inclusive start offset into the decoded template. */
@@ -82,9 +47,6 @@ type AnalyzerContext = {
     readonly literalNames: ReadonlySet<string>;
 };
 
-/* ------------------------------------ registry indexes ----------------------------------- */
-
-/** Helper specs keyed by exact (case-sensitive) name; helper names are case-sensitive. */
 const HELPER_BY_NAME: ReadonlyMap<string, HelperSpec> = new Map(
     ALL_HELPERS.map((spec) => [spec.name, spec]),
 );
@@ -92,7 +54,6 @@ const HELPER_BY_NAME: ReadonlyMap<string, HelperSpec> = new Map(
 const FAKER_NAME_SET: ReadonlySet<string> = new Set(FAKER_NAMES);
 const FAKER_PANIC_SET: ReadonlySet<string> = new Set(FAKER_PARAMETERIZED_PANICS);
 
-/** A valid `now` offset: optional sign, then one or more number+unit segments (report 08 §2). */
 const NOW_OFFSET_RE = new RegExp(
     `^[-+]?(?:\\d+(?:\\.\\d+)?(?:${NOW_OFFSET_UNITS.map(escapeRegExp).join('|')}))+$`,
     'u',
@@ -102,12 +63,6 @@ function escapeRegExp(text: string): string {
     return text.replaceAll(/[.*+?^${}()|[\]\\]/gu, String.raw`\$&`);
 }
 
-/* ---------------------------------------- analyze ---------------------------------------- */
-
-/**
- * Analyse a decoded template string and return every HF502–HF509 finding (template-relative
- * offsets). Never throws.
- */
 function analyze(
     decoded: string,
     context: AnalyzerContext = { variableNames: new Set(), literalNames: new Set() },
@@ -115,7 +70,6 @@ function analyze(
     const findings: TemplateFinding[] = [];
     const { ast, errors } = parse(decoded);
 
-    // HF502 — every recovered parse error.
     for (const error of errors) {
         findings.push(parseErrorFinding(error));
     }
@@ -132,8 +86,6 @@ function parseErrorFinding(error: TemplateParseError): TemplateFinding {
         args: { message: error.message },
     };
 }
-
-/* --------------------------------------- AST walk ---------------------------------------- */
 
 function walkStatements(
     statements: readonly Statement[],
@@ -153,7 +105,6 @@ function walkStatements(
                 checkBlock(statement, findings, context);
                 break;
             }
-            // No default — the union is exhaustive.
         }
     }
 }
@@ -163,10 +114,6 @@ function checkMustache(
     findings: TemplateFinding[],
     context: AnalyzerContext,
 ): void {
-    /*
-     * A mustache is a call (helper candidate) when it carries arguments; otherwise it may be a
-     * bare path lookup that only counts as a call when its name is a known helper.
-     */
     checkCall(node.path, node.params, node.params.length > 0, false, findings, context);
     for (const param of node.params) {
         checkExpression(param, findings, context);
@@ -174,7 +121,6 @@ function checkMustache(
 }
 
 function checkBlock(node: BlockNode, findings: TemplateFinding[], context: AnalyzerContext): void {
-    // A block open (`{{#foo}}`) is unambiguously a (block) helper call.
     checkCall(node.path, node.params, true, true, findings, context);
     for (const param of node.params) {
         checkExpression(param, findings, context);
@@ -196,13 +142,10 @@ function checkExpression(
             break;
         }
         case 'PathExpression': {
-            // A path used as an ARGUMENT is a value lookup, never a helper call — only resolve
-            // Vars/Literals references here (no HF503/HF504).
             checkPathReferences(expression, findings, context);
             break;
         }
         default: {
-            // Literals carry nothing to validate at the expression level.
             break;
         }
     }
@@ -213,20 +156,12 @@ function checkSubExpression(
     findings: TemplateFinding[],
     context: AnalyzerContext,
 ): void {
-    // A subexpression head is always a helper call.
     checkCall(node.path, node.params, true, false, findings, context);
     for (const param of node.params) {
         checkExpression(param, findings, context);
     }
 }
 
-/* ----------------------------------- helper-call checks ---------------------------------- */
-
-/**
- * Validate a call header (`path params...`). `isCall` is the disambiguation flag (see the
- * module HF503 heuristic): when false the path is treated as a value lookup and only
- * Vars/Literals references are resolved. `isBlock` selects block-vs-inline arity messaging.
- */
 function checkCall(
     path: PathExpression,
     params: readonly Expression[],
@@ -235,13 +170,10 @@ function checkCall(
     findings: TemplateFinding[],
     context: AnalyzerContext,
 ): void {
-    // The `Request.Body 'jsonpath' '$.x'` method-call form: a dotted path that behaves like the
-    // `requestBody` helper (report 08 §6). Recognised so it is neither a false HF503 nor skipped.
     if (isRequestBodyMethodCall(path)) {
         return;
     }
 
-    // Dotted / @data / this paths are value lookups, never helper calls — resolve references.
     if (path.parts.length !== 1 || path.data || path.thisRef) {
         checkPathReferences(path, findings, context);
         return;
@@ -253,17 +185,12 @@ function checkCall(
     }
     const spec = HELPER_BY_NAME.get(name);
 
-    /*
-     * Bare arg-less mustache whose name is NOT a known helper → treat as a context path lookup,
-     * not an unknown helper (raymond renders it as an empty lookup, no panic). No HF503.
-     */
     if (!isCall && !spec) {
         checkPathReferences(path, findings, context);
         return;
     }
 
     if (!spec) {
-        // HF503 — a call (args / block / subexpression head) to an unregistered helper name.
         findings.push({ kind: 'HF503', start: path.start, end: path.end, args: { name } });
         return;
     }
@@ -272,11 +199,8 @@ function checkCall(
     checkSpecialHelperArgs(spec, params, findings);
 }
 
-/**
- * HF504 — arity / block-vs-inline misuse. raymond does not hard-enforce arity, so this is the
- * intended-contract check (the catalog still rates it an error per D4). The required range is
- * `[min, max]` where max is unbounded for variadic helpers.
- */
+// outside: raymond does not enforce arity, so HF504 checks the intended contract; the catalog still
+// rates it an Error (D4).
 function checkArity(
     spec: HelperSpec,
     path: PathExpression,
@@ -284,7 +208,6 @@ function checkArity(
     isBlock: boolean,
     findings: TemplateFinding[],
 ): void {
-    // Block-vs-inline misuse: a block helper used inline, or an inline helper opened as a block.
     if (spec.block !== isBlock) {
         const wanted = spec.block ? 'a block helper' : 'an inline helper';
         findings.push({
@@ -309,7 +232,6 @@ function checkArity(
     }
 }
 
-/** A human-readable arity phrase for HF504's `{sig}` slot. */
 function describeArity(spec: HelperSpec, required: number, max: number): string {
     if (spec.variadic) {
         return required === 0 ? 'any number of arguments' : `at least ${plural(required)}`;
@@ -324,13 +246,8 @@ function plural(count: number): string {
     return count === 1 ? '1 argument' : `${count} arguments`;
 }
 
-/* -------------------------------- faker / now argument checks ---------------------------- */
-
-/**
- * Per-helper first-argument validation: `faker` (HF507/HF508) and `now` (HF509). Only fires on
- * STRING-LITERAL arguments — a dynamic arg (path/subexpression) is unknowable statically and is
- * never flagged (precision rule).
- */
+// invariant: only a string-literal argument is judged — a path or a subexpression is unknowable
+// statically.
 function checkSpecialHelperArgs(
     spec: HelperSpec,
     params: readonly Expression[],
@@ -353,11 +270,9 @@ function checkFakerArg(arg: Expression | undefined, findings: TemplateFinding[])
         return;
     }
     if (FAKER_PANIC_SET.has(type)) {
-        // HF508 — a known parameterized gofakeit method called with no args panics at render.
         findings.push({ kind: 'HF508', start: literal.start, end: literal.end, args: { t: type } });
         return;
     }
-    // HF507 — unknown faker type for the pinned gofakeit version (renders empty).
     findings.push({
         kind: 'HF507',
         start: literal.start,
@@ -372,10 +287,8 @@ function checkNowOffsetArg(arg: Expression | undefined, findings: TemplateFindin
         return;
     }
     const offset = literal.value;
-    /*
-     * Empty string and "0" are valid (no offset / zero duration); otherwise it must match the
-     * unit grammar. An invalid offset is silently ignored by Hoverfly (HF509).
-     */
+    // outside: an empty offset and `0` are valid; Hoverfly silently ignores any other offset
+    // outside the unit grammar.
     if (offset === '' || offset === '0' || NOW_OFFSET_RE.test(offset)) {
         return;
     }
@@ -386,13 +299,6 @@ function asStringLiteral(expression: Expression | undefined): StringLiteral | un
     return expression?.type === 'StringLiteral' ? expression : undefined;
 }
 
-/* ---------------------------------- Vars / Literals refs --------------------------------- */
-
-/**
- * HF505 / HF506 — resolve `Vars.X` and `Literals.X` path references against the document's
- * declared variable/literal names. Only the two-segment `Vars.<name>` / `Literals.<name>` head
- * is checked; deeper paths (`Vars.x.y`) still key off the first sub-name.
- */
 function checkPathReferences(
     path: PathExpression,
     findings: TemplateFinding[],
@@ -413,7 +319,6 @@ function checkPathReferences(
     }
 }
 
-/** Whether `path` is the `Request.Body` method-call form (`{{Request.Body 'jsonpath' '$.x'}}`). */
 function isRequestBodyMethodCall(path: PathExpression): boolean {
     return (
         !path.data &&

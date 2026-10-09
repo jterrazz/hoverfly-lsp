@@ -1,12 +1,5 @@
-/**
- * Case-insensitive Levenshtein distance + nearest-candidate lookup, shared by the did-you-mean
- * diagnostics: HF603 (unknown structural key) and HF215/HF216 (method/scheme well-known value).
- *
- * Kept tiny and pure (no AST, no catalog). The "case-insensitive" choice mirrors Go's
- * case-folding for keys and the case-insensitive scheme comparison; for method values the
- * comparison is genuinely case-sensitive at runtime, but a near-miss measure that ignores case
- * still only ever fires on a typo, so folding is safe and consistent here.
- */
+// value: case-insensitive — Go folds case for keys and schemes, and for a method a measure that
+// ignores case still fires on a typo alone.
 
 /** Case-insensitive Levenshtein edit distance between `a` and `b`. */
 export function levenshtein(a: string, b: string): number {
@@ -30,12 +23,7 @@ export function levenshtein(a: string, b: string): number {
     return previous[cols - 1] ?? 0;
 }
 
-/**
- * The nearest candidate in `candidates` whose case-insensitive Levenshtein distance to `value` is
- * `<= maxDistance`, or `undefined` when none is close enough. Ties break alphabetically (stable,
- * deterministic golden output). A `value` that case-folds EXACTLY to a candidate has distance 0 and
- * is returned — callers that must exclude an exact match should check membership first.
- */
+/** The nearest candidate within maxDistance, case-insensitively, ties broken alphabetically; an exact case-folded match is distance 0. */
 export function nearestWithin(
     value: string,
     candidates: readonly string[],

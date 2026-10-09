@@ -16,7 +16,6 @@ function run(value: unknown) {
 
 const codes = (diags: { code?: unknown }[]) => diags.map((d) => String(d.code));
 
-/** A one-pair simulation with the given request/response objects. */
 function sim(request: unknown, response: unknown, extra: Record<string, unknown> = {}) {
     return {
         data: { pairs: [{ request, response }], ...extra },

@@ -1,16 +1,5 @@
-/**
- * Core semantic-analysis types: the {@link SemanticRule} interface every rule-family file
- * implements, the {@link RuleContext} passed to each rule, and the {@link SimulationModel}
- * — a typed, AST-anchored view over a Hoverfly simulation that ALL rule families consume.
- *
- * Design goal: rules never re-walk the raw AST or re-derive the simulation shape. The model
- * is built once per validation pass (lazily, via `RuleContext.model`) and exposes typed
- * accessors plus the `ASTNode` for every interesting node, so a rule can point a diagnostic
- * at the exact node it needs without offset arithmetic.
- *
- * Everything is optional/defensive: the model is built from a possibly-malformed document
- * (see `model.ts`), so any field may be `undefined`. Rules must treat `undefined` as "absent".
- */
+// invariant: the model is built once per validation pass and holds the ASTNode of every node a rule
+// points at; any field may be undefined, the document being possibly malformed.
 
 import type { ASTNode, JSONDocument, ObjectASTNode } from 'vscode-json-languageservice';
 import type { TextDocument } from 'vscode-languageserver-textdocument';
@@ -18,11 +7,7 @@ import type { Diagnostic } from 'vscode-languageserver-types';
 
 import type { DiagnosticCode } from './catalog.js';
 
-/**
- * A semantic rule (or rule family). One file under `rules/` typically exports one rule whose
- * `codes` are the HFxxx codes it can emit. The engine runs every registered rule and
- * concatenates the results.
- */
+/** A rule family: the HFxxx codes it can emit, and the pass that emits them. */
 export type SemanticRule = {
     /** Catalog codes this rule may emit (documentation/coverage aid; not enforced). */
     readonly codes: readonly DiagnosticCode[];
@@ -30,17 +15,9 @@ export type SemanticRule = {
     run: (context: RuleContext) => Diagnostic[];
 };
 
-/**
- * Service-level settings carried into every rule. Optional and additive: rules that consult
- * settings (e.g. HF602's `registeredActions` allowlist) read defensively, and the validation
- * pipeline supplies an empty object when none are configured.
- */
+/** The service settings every rule reads; none is configured by default, and a rule reads them defensively. */
 export type HoverflyServiceSettings = {
-    /**
-     * Allowlist of post-serve action names registered with the running Hoverfly instance. When
-     * non-empty, HF602 flags any `postServeAction` not in this list. When absent/empty, HF602 is
-     * silent (the actions are runtime-registered and unknowable from the file alone).
-     */
+    /** The post-serve actions registered with the running Hoverfly; when non-empty, HF602 flags any other. */
     readonly registeredActions?: readonly string[];
 };
 
@@ -56,26 +33,11 @@ export type RuleContext = {
     readonly settings: HoverflyServiceSettings;
 };
 
-/* ------------------------------------------------------------------------------------------ *
- * SimulationModel — the typed, AST-anchored view.
- * ------------------------------------------------------------------------------------------ */
-
-/**
- * The fields on a request that hold matcher arrays (`path`, `method`, `body`, plus dynamic
- * header/query field names). Each maps to the list of matchers declared on it.
- */
+/** A request's matcher fields. */
 export type RequestModel = {
     /** The `request` object node, when present. */
     readonly node: ObjectASTNode | undefined;
-    /**
-     * Matcher fields keyed by field name (`path`, `method`, `body`, `destination`, `scheme`,
-     * `query`, `headers`, ...). Each value is the list of matcher entries on that field.
-     *
-     * NOTE: `headers`/`query` in Hoverfly are objects of `{ name: [matchers] }`, not matcher
-     * arrays. The model flattens those into `requestFields` entries whose `fieldName` is the
-     * header/query key and whose `container` records the parent kind, so matcher rules treat
-     * them uniformly. The raw `headers`/`query` object nodes are also exposed via `node`.
-     */
+    /** Matcher fields by name; a headers or query entry is flattened to its key, its container recorded. */
     readonly fields: readonly RequestField[];
 };
 
@@ -194,10 +156,7 @@ export type GlobalActionsModel = {
     readonly delaysLogNormal: readonly DelayModel[];
 };
 
-/**
- * Typed view of the whole simulation. Built once from the AST; every interesting node carries
- * its `ASTNode` reference so rules can target diagnostics precisely. All fields are defensive.
- */
+/** A typed view of the whole simulation, every interesting node with its ASTNode; every field is defensive. */
 export type SimulationModel = {
     /** Root object node, when the document parsed to an object. */
     readonly root: ObjectASTNode | undefined;

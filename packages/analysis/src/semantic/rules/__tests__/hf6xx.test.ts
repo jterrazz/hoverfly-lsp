@@ -9,10 +9,6 @@ import { hf601DelayPatternRule, hf602PostServeActionRule } from '../hf6xx.js';
 
 const ls = getLanguageService({});
 
-/**
- * Build a rule context, optionally attaching service settings. HF602 reads its allowlist off
- * `RuleContext.settings`, which the framework now plumbs through `createRuleContext`.
- */
 function contextOf(text: string, settings?: HoverflyServiceSettings) {
     const doc = TextDocument.create('file:///s.hoverfly.json', 'json', 1, text);
     return createRuleContext(doc, ls.parseJSONDocument(doc), settings);
@@ -20,7 +16,6 @@ function contextOf(text: string, settings?: HoverflyServiceSettings) {
 
 const codes = (diags: { code?: unknown }[]) => diags.map((d) => String(d.code));
 
-/** A simulation with the given globalActions delays (HF601 fixtures). */
 function withDelays(delays: unknown[]): string {
     return JSON.stringify({
         data: { pairs: [], globalActions: { delays } },
@@ -28,7 +23,6 @@ function withDelays(delays: unknown[]): string {
     });
 }
 
-/** A single-pair simulation whose response carries the given postServeAction (HF602 fixtures). */
 function withAction(action: string): string {
     return JSON.stringify({
         data: {

@@ -1,19 +1,3 @@
-/**
- * Completion provider for positions INSIDE templated Hoverfly strings — the flagship feature.
- *
- * Driven from `service.ts` (which holds the cursor {@link Position}; the `JSONWorkerContribution`
- * API does not expose it). Given a document position, this:
- *
- *   1. asks {@link findTemplateLocation} whether the cursor is inside a templatable body/header
- *      string (templated:true, or already containing `{{` — mid-typing);
- *   2. classifies the decoded-offset cursor with {@link classifyCompletionContext};
- *   3. emits the right completion items for that context, sourcing helper/faker facts from the
- *      registry and `Request.*`/path-root data from {@link template-members}, and cross-referencing
- *      `State`/`Vars`/`Literals` names from the document itself.
- *
- * Every helper/faker fact comes from the registry; no helper/faker name is hardcoded here.
- */
-
 import type { ASTNode, JSONDocument, ObjectASTNode, Position } from 'vscode-json-languageservice';
 import type { TextDocument } from 'vscode-languageserver-textdocument';
 import { CompletionItemKind, InsertTextFormat, MarkupKind } from 'vscode-languageserver-types';
@@ -27,7 +11,6 @@ import type { TemplateCompletionContext } from '../template/completion-context.j
 import { findTemplateLocation } from './template-location.js';
 import { EACH_DATA_VARIABLES, PATH_ROOTS, REQUEST_MEMBERS } from './template-members.js';
 
-/** `now` format examples to surface in the `format` argument slot (registry-derived notes). */
 const NOW_FORMAT_EXAMPLES: readonly { value: string; detail: string }[] = [
     { value: '', detail: 'RFC3339 (default)' },
     { value: 'unix', detail: 'Unix seconds' },
@@ -36,13 +19,8 @@ const NOW_FORMAT_EXAMPLES: readonly { value: string; detail: string }[] = [
     { value: '2006-01-02T15:04:05Z07:00', detail: 'Go layout: RFC3339' },
 ];
 
-/** A few representative `now` OFFSET examples (units come from the registry note). */
 const NOW_OFFSET_EXAMPLES: readonly string[] = ['-1d', '+1h', '-30m', '1y', '-1.5h'];
 
-/**
- * Produce template completion items for `position`, or `undefined` when the cursor is not inside
- * a templatable string (the caller then falls back to schema/JSON completions). Never throws.
- */
 function getTemplateCompletions(
     document: TextDocument,
     jsonDocument: JSONDocument,
@@ -60,8 +38,6 @@ function getTemplateCompletions(
     }
     return itemsForContext(context, jsonDocument);
 }
-
-/* --------------------------------- context → items dispatch ------------------------------ */
 
 function itemsForContext(
     context: TemplateCompletionContext,
@@ -81,7 +57,6 @@ function itemsForContext(
             return context.nowSlot === 'format' ? nowFormatItems() : nowOffsetItems();
         }
         case 'helperArg': {
-            // Inside a generic helper arg: still useful to offer path roots / helpers as values.
             return [...pathRootItems(), ...helperItems(context)];
         }
         case 'blockClose': {
@@ -93,9 +68,6 @@ function itemsForContext(
     }
 }
 
-/* ------------------------------------- item builders ------------------------------------- */
-
-/** Helper names + path roots + (in #each scope) `@`-vars / `this` at a mustache/subexpr head. */
 function startItems(
     context: TemplateCompletionContext,
     jsonDocument: JSONDocument,
@@ -104,12 +76,10 @@ function startItems(
     if (context.inEachScope) {
         items.push(...dataVariableItems(), thisItem());
     }
-    // State/Vars/Literals roots are offered via pathRootItems; their *members* come on continuation.
     void jsonDocument;
     return items;
 }
 
-/** All 52+8 helpers as snippet completions with argument placeholders. */
 function helperItems(context: TemplateCompletionContext): CompletionItem[] {
     return ALL_HELPERS.map((spec) => helperItem(spec, context));
 }
@@ -126,13 +96,11 @@ function helperItem(spec: HelperSpec, context: TemplateCompletionContext): Compl
                 '\n',
             ),
         },
-        // Insert just the name + arg placeholders; the caller already typed `{{`/`(`/`#`.
         insertText: helperInsertText(spec, context),
         insertTextFormat: InsertTextFormat.Snippet,
     };
 }
 
-/** A human-readable helper signature line (`replace target oldValue newValue`). */
 function helperSignature(spec: HelperSpec): string {
     const args = spec.args.map((a) => (a.optional ? `[${a.name}]` : a.name));
     if (spec.variadic) {
@@ -142,10 +110,8 @@ function helperSignature(spec: HelperSpec): string {
     return [`${prefix}${spec.name}`, ...args].join(' ');
 }
 
-/**
- * Snippet insert text for a helper: its name followed by `${n:arg}` placeholders, and — for block
- * helpers — the body + matching `{{/name}}` close so the block is balanced in one keystroke.
- */
+// value: a block helper's snippet carries its body and the matching close, so the block is balanced
+// in one keystroke.
 function helperInsertText(spec: HelperSpec, context: TemplateCompletionContext): string {
     const open = '$'.concat('{');
     const placeholders = spec.args.map((arg, i) => `${open}${i + 1}:${arg.name}}`);
@@ -154,14 +120,11 @@ function helperInsertText(spec: HelperSpec, context: TemplateCompletionContext):
     if (!spec.block) {
         return `${spec.name}${argsPart}`;
     }
-    // Block helper: only complete the full block when starting a fresh mustache head. When the user
-    // Already typed `#`, the head token alone is enough — but we still close the block helpfully.
     const bodyStop = `${open}${spec.args.length + 1}:body}`;
     void context;
     return `${spec.name}${argsPart}}}${bodyStop}{{/${spec.name}`;
 }
 
-/** The dotted path roots (`Request`/`State`/`Vars`/`Literals`). */
 function pathRootItems(): CompletionItem[] {
     return PATH_ROOTS.map((root) => ({
         label: root.name,
@@ -173,7 +136,6 @@ function pathRootItems(): CompletionItem[] {
     }));
 }
 
-/** `@index`/`@first`/`@last`/`@key` items (used in #each scope). */
 function dataVariableItems(): CompletionItem[] {
     return EACH_DATA_VARIABLES.map((variable) => ({
         label: `@${variable.name}`,
@@ -199,7 +161,6 @@ function thisItem(): CompletionItem {
     };
 }
 
-/** Continuation members for a dotted path (`Request.`, `State.`, `Vars.`, `Literals.`, `@`). */
 function pathContinuationItems(
     context: TemplateCompletionContext,
     jsonDocument: JSONDocument,
@@ -223,7 +184,6 @@ function pathContinuationItems(
     return [];
 }
 
-/** The `Request.*` accessor members. */
 function requestMemberItems(): CompletionItem[] {
     return REQUEST_MEMBERS.map((member) => ({
         label: member.name,
@@ -235,7 +195,6 @@ function requestMemberItems(): CompletionItem[] {
     }));
 }
 
-/** Faker type names (the 210 zero-arg gofakeit names) as plain completions. */
 function fakerItems(): CompletionItem[] {
     return FAKER_NAMES.map((name) => ({
         label: name,
@@ -246,7 +205,6 @@ function fakerItems(): CompletionItem[] {
     }));
 }
 
-/** `now` format-string examples (RFC3339 / unix / epoch / Go layouts). */
 function nowFormatItems(): CompletionItem[] {
     const items: CompletionItem[] = NOW_FORMAT_EXAMPLES.map((example) => ({
         label: example.value === '' ? '(empty → RFC3339)' : example.value,
@@ -259,7 +217,6 @@ function nowFormatItems(): CompletionItem[] {
     return items;
 }
 
-/** `now` offset-string examples + the supported-units note (registry-derived). */
 function nowOffsetItems(): CompletionItem[] {
     return NOW_OFFSET_EXAMPLES.map((offset) => ({
         label: offset,
@@ -271,11 +228,9 @@ function nowOffsetItems(): CompletionItem[] {
     }));
 }
 
-/** Matching open-block names for a `{{/<cursor>` close (innermost first). */
 function blockCloseItems(context: TemplateCompletionContext): CompletionItem[] {
     const seen = new Set<string>();
     const items: CompletionItem[] = [];
-    // Innermost block first (so the most likely close sorts first).
     for (let i = context.blockStack.length - 1; i >= 0; i -= 1) {
         const name = context.blockStack[i];
         if (name === undefined || name.length === 0 || seen.has(name)) {
@@ -294,9 +249,6 @@ function blockCloseItems(context: TemplateCompletionContext): CompletionItem[] {
     return items;
 }
 
-/* ------------------------------- document cross-references ------------------------------- */
-
-/** `State.<key>` completions: every state key declared anywhere in the simulation. */
 function stateKeyItems(jsonDocument: JSONDocument): CompletionItem[] {
     const keys = collectStateKeys(jsonDocument);
     return [...keys].toSorted().map((key) => ({
@@ -308,7 +260,6 @@ function stateKeyItems(jsonDocument: JSONDocument): CompletionItem[] {
     }));
 }
 
-/** `Vars.<name>` / `Literals.<name>` completions read from `data.variables`/`data.literals`. */
 function dataNameItems(
     jsonDocument: JSONDocument,
     dataKey: 'literals' | 'variables',
@@ -324,7 +275,6 @@ function dataNameItems(
     }));
 }
 
-/** Every distinct `requiresState`/`transitionsState` key across the file. */
 function collectStateKeys(jsonDocument: JSONDocument): Set<string> {
     const keys = new Set<string>();
     const root = asObject(jsonDocument.root);
@@ -339,7 +289,6 @@ function collectStateKeys(jsonDocument: JSONDocument): Set<string> {
     return keys;
 }
 
-/** Every `name` in `data.<dataKey>[]` (variables/literals). */
 function collectDataNames(
     jsonDocument: JSONDocument,
     dataKey: 'literals' | 'variables',
@@ -356,8 +305,6 @@ function collectDataNames(
     }
     return names;
 }
-
-/* --------------------------------------- AST helpers ------------------------------------- */
 
 function asObject(node: ASTNode | undefined): ObjectASTNode | undefined {
     return node?.type === 'object' ? node : undefined;

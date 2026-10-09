@@ -1,10 +1,3 @@
-/**
- * Focused unit tests for the HF5xx templating rule. They build a {@link RuleContext} via the
- * framework helper and run the exported rule directly. Coverage spans every code, the
- * source-map-into-document mapping, the body-vs-headers templated scope, and the precision
- * rules (HF501 only when not templated; HF510 for variables[].function built-ins; etc.).
- */
-
 import { describe, expect, test } from 'vitest';
 import { getLanguageService } from 'vscode-json-languageservice';
 import { TextDocument } from 'vscode-languageserver-textdocument';
@@ -14,7 +7,6 @@ import { hf5xxTemplateRule } from '../hf5xx.js';
 
 const ls = getLanguageService({});
 
-/** Run the HF5xx rule over a full simulation object. */
 function run(sim: unknown) {
     const text = JSON.stringify(sim, null, 2);
     const doc = TextDocument.create('file:///s.hoverfly.json', 'json', 1, text);
@@ -22,7 +14,6 @@ function run(sim: unknown) {
     return hf5xxTemplateRule.run(context);
 }
 
-/** Run with a single pair whose response is `response`, plus optional top-level `data` extras. */
 function runResponse(response: unknown, dataExtras: Record<string, unknown> = {}) {
     return run({
         data: {

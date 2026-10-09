@@ -10,7 +10,6 @@ import { pathToFileURL } from 'node:url';
 
 const BUNDLE_RELATIVE = join('dist', 'cli.cjs');
 
-/** The server bundle at `candidate` — the file itself, or the one inside that directory. */
 function bundleAt(candidate) {
     if (candidate === undefined || candidate === '' || !existsSync(candidate)) {
         return undefined;
@@ -22,7 +21,6 @@ function bundleAt(candidate) {
     return existsSync(inside) ? inside : undefined;
 }
 
-/** The bundle of an `@jterrazz/hoverfly-lsp` install reachable from the project or from the plugin. */
 function installedBundle() {
     for (const base of [process.cwd(), import.meta.dirname]) {
         try {

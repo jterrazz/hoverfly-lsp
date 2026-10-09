@@ -1,9 +1,3 @@
-/**
- * Focused unit tests for the HF2xx matcher rule. They construct a {@link RuleContext} via the
- * framework helper and run the exported rule directly, so they pass before the integrator wires
- * `HF2XX_RULES` into `ALL_RULES` (the golden runner stays red until then).
- */
-
 import { describe, expect, test } from 'vitest';
 import { getLanguageService } from 'vscode-json-languageservice';
 import { TextDocument } from 'vscode-languageserver-textdocument';
@@ -13,7 +7,6 @@ import { hf2xxMatcherRule } from '../hf2xx.js';
 
 const ls = getLanguageService({});
 
-/** Run the HF2xx rule over a simulation whose single pair has the given `request` object. */
 function runOnRequest(request: unknown) {
     const sim = {
         data: { pairs: [{ request, response: { status: 200 } }] },
@@ -25,7 +18,6 @@ function runOnRequest(request: unknown) {
     return hf2xxMatcherRule.run(context);
 }
 
-/** The set of codes emitted by a run, for terse assertions. */
 function codes(diagnostics: ReturnType<typeof runOnRequest>): string[] {
     return diagnostics.map((d) => String(d.code));
 }

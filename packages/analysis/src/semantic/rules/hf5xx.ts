@@ -1,39 +1,5 @@
-/**
- * HF5xx — response-templating rules. The pure template parser + analyzer (`../../template/*`)
- * does the grammar/semantic work on the DECODED template string; this file is the glue that:
- *
- *   1. finds every templatable string in the model,
- *   2. decodes it through an escape-aware source map (`createStringSourceMap`),
- *   3. runs {@link analyze} with the document's `Vars`/`Literals` names in context, and
- *   4. maps each template-relative finding back to a document range and emits a catalog
- *      diagnostic via {@link makeDiagnostic}.
- *
- * Codes:
- *   HF501 (W)  `{{…}}` in a response `body` while `templated` is absent/false — sent literally.
- *   HF502 (E)  template parse error (unclosed `{{`, unclosed/mismatched block) — parser message.
- *   HF503 (E)  unknown helper name (helper-position calls AND subexpression heads).
- *   HF504 (E)  helper arity / block-vs-inline misuse (per `registry/templating.ts`).
- *   HF505 (E)  `Vars.X` not in `data.variables[].name`.
- *   HF506 (E)  `Literals.X` not in `data.literals[].name`.
- *   HF507 (I)  unknown `faker '<Type>'` (string literal only) for the pinned gofakeit version.
- *   HF508 (W)  parameterized gofakeit method used as `faker '<Type>'` — panics at render.
- *   HF509 (W)  invalid `now` offset token (unit not in ns/us/µs/μs/ms/s/m/h/d/y).
- *
- * NOTE: `data.variables[].function` validation (HF510/HF511) and `arguments` arity (HF512) live
- * in `hf5xx-variables.ts`, not here — those check the STRUCTURED variable inputs, while this file
- * checks `{{ … }}` template syntax inside response bodies/headers.
- *
- * ## Which strings are templated?
- * Per report 01 §8 (`templated: true` enables `{{ }}` in `body` AND `headers`) and §10, this
- * rule analyses, when `response.templated === true`, the response **`body`** string and every
- * response **header value** string. `transitionsState`/`requiresState` values are NOT templated
- * by Hoverfly (report 01 lists only body/headers), so they are deliberately left untouched.
- * HF501 (syntax-while-not-templated) is checked on the `body` only — that is the catalog's
- * trigger ("Body contains template syntax…").
- *
- * The HF502–HF509 finding `kind` maps 1:1 to the catalog code; HF501 is emitted here directly
- * because it needs model/document context the template AST does not carry.
- */
+// outside: Hoverfly templates a response's body and header values when `templated` is true (report
+// 01 §8, §10), never a state value; HF501 reads the body alone, as the catalog's trigger says.
 
 import type { ASTNode, ObjectASTNode } from 'vscode-json-languageservice';
 import type { Diagnostic, Range } from 'vscode-languageserver-types';
@@ -46,12 +12,6 @@ import type { DiagnosticCode } from '../catalog.js';
 import { makeDiagnostic } from '../diagnostics.js';
 import type { RuleContext, SemanticRule, SimulationModel } from '../rule.js';
 
-/* --------------------------------- string source mapping --------------------------------- */
-
-/**
- * Run the analyzer on one templatable string node and emit its HF502–HF509 diagnostics, mapped
- * from template-relative offsets back to document ranges through the JSON-escape source map.
- */
 function analyzeStringNode(
     context: RuleContext,
     node: ASTNode,
@@ -73,7 +33,6 @@ function analyzeStringNode(
     }
 }
 
-/** Emit HF501 at the first `{{` in a non-templated body, source-mapped to its document range. */
 function emitHf501(context: RuleContext, node: ASTNode, diagnostics: Diagnostic[]): void {
     if (node.type !== 'string' || !hasTemplateSyntax(node.value)) {
         return;
@@ -90,14 +49,10 @@ function emitHf501(context: RuleContext, node: ASTNode, diagnostics: Diagnostic[
     diagnostics.push(makeDiagnostic(context.textDocument, 'HF501', range));
 }
 
-/* ---------------------------------- data.variables/literals ------------------------------ */
-
-/** The value node for a property `key` on an object node, if present. */
 function propValue(object: ObjectASTNode | undefined, key: string): ASTNode | undefined {
     return object?.properties.find((p) => p.keyNode.value === key)?.valueNode;
 }
 
-/** String items of a `data.<key>[].<field>` (e.g. every `variables[].name`). */
 function collectNames(
     dataNode: ObjectASTNode | undefined,
     key: string,
@@ -120,9 +75,6 @@ function collectNames(
     return names;
 }
 
-/* ------------------------------------------ rule ----------------------------------------- */
-
-/** Whether a `templated` field node is the JSON boolean `true`. */
 function isTemplated(node: ASTNode | undefined): boolean {
     return node?.type === 'boolean' && node.value;
 }
@@ -139,10 +91,6 @@ const HF5XX_CODES: readonly DiagnosticCode[] = [
     'HF509',
 ];
 
-/**
- * A response header value is `string | string[]` in Hoverfly. Analyse a string directly, or
- * each string element of an array; ignore other shapes (a schema concern).
- */
 function analyzeHeaderValue(
     context: RuleContext,
     node: ASTNode | undefined,
@@ -163,10 +111,6 @@ function analyzeHeaderValue(
     }
 }
 
-/**
- * The HF5xx templating rule: analyses every templated response body/header value and validates
- * `data.variables[].function` names. Never throws; absent/wrong-shaped nodes degrade to no-ops.
- */
 const hf5xxTemplateRule: SemanticRule = {
     codes: HF5XX_CODES,
     run(context: RuleContext): Diagnostic[] {
@@ -187,12 +131,10 @@ const hf5xxTemplateRule: SemanticRule = {
                 if (templated) {
                     analyzeStringNode(context, bodyNode, analyzerContext, diagnostics);
                 } else {
-                    // HF501 — template syntax in a body that is not templated; sent literally.
                     emitHf501(context, bodyNode, diagnostics);
                 }
             }
 
-            // Header values are templated too (report 01 §8) — but only when templated === true.
             if (templated) {
                 for (const header of response.headers) {
                     analyzeHeaderValue(context, header.valueNode, analyzerContext, diagnostics);

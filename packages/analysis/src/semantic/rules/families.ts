@@ -1,10 +1,5 @@
-/**
- * Registry of all semantic rule families. The engine runs every rule in {@link ALL_RULES}.
- *
- * To add a rule family: create `rules/hfNxx.ts` exporting a `HFNXX_RULES: SemanticRule[]`
- * array, import it here, and spread it into {@link ALL_RULES}. Keep families ordered by code
- * — final diagnostics are re-sorted by range, so this order is only a tie-break aid.
- */
+// invariant: the families' order is a tie-break only — the engine re-sorts the diagnostics by
+// range.
 
 import type { SemanticRule } from '../rule.js';
 import { HF1XX_RULES } from './hf1xx.js';

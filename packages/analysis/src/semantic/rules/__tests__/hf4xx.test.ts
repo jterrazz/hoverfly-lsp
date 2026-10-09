@@ -18,7 +18,6 @@ function contextOf(value: unknown): RuleContext {
     return createRuleContext(doc, ls.parseJSONDocument(doc));
 }
 
-/** A single request/response pair carrying optional state maps. */
 type StatePair = {
     requiresState?: Record<string, string>;
     transitionsState?: Record<string, string>;
@@ -28,8 +27,6 @@ type StatePair = {
 function sim(...pairs: StatePair[]): unknown {
     return {
         data: {
-            // Schema-correct placement per Hoverfly source truth (see the hf4xx.ts workaround note):
-            // `requiresState` sits in the request node; `transitionsState`/`removesState` in response.
             pairs: pairs.map((pair) => ({
                 request: {
                     path: [{ matcher: 'exact', value: '/x' }],

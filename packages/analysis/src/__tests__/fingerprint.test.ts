@@ -122,9 +122,7 @@ describe('hasHoverflyFilename', () => {
     test('matches the .hfy extension', () => {
         expect(hasHoverflyFilename('api.hfy')).toBeTruthy();
         expect(hasHoverflyFilename('file:///some/dir/login.hfy')).toBeTruthy();
-        // Case-insensitive
         expect(hasHoverflyFilename('API.HFY')).toBeTruthy();
-        // URI query stripped
         expect(hasHoverflyFilename('login.hfy?version=2')).toBeTruthy();
     });
 

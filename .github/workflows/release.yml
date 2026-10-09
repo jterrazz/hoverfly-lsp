@@ -1,38 +1,24 @@
 name: Release
 
-# House release flow (same as the other @jterrazz packages): publish by CREATING a GitHub
-# Release. That fires this workflow, which validates, then publishes to npm tokenlessly via
-# OIDC trusted publishing (`--provenance` + `id-token: write`, no NPM_TOKEN). Configure the
-# trusted publisher once per package on npmjs.com (Settings → Trusted Publishing → this repo +
-# this workflow), exactly as for @jterrazz/logger et al.
-#
-# This is a monorepo, so it can't use the single-package `jterrazz-actions/release-npm.yaml`
-# reusable directly: it publishes ONE npm package (@jterrazz/hoverfly-lsp) — the analysis package is private and
-# bundled into the server by esbuild — and uploads the bundled VS Code `.vsix` to the release.
-# Cut a release with:
-#
-#   gh release create v0.1.0 --generate-notes      # or via the GitHub UI
-#
-# Marketplace / Open VSX / Zed registry / Claude Code submissions stay manual — see
-# docs/guides/release.md.
+# outside: creating a GitHub Release publishes — npm tokenlessly, through OIDC trusted publishing
+# (`--provenance` and `id-token: write`, configured once on npmjs.com for this repository and this
+# workflow). The single-package release-npm workflow cannot serve a monorepo: this one publishes
+# @jterrazz/hoverfly-lsp alone and attaches the .vsix; the editor registries stay manual
+# (docs/guides/release.md).
 
 on:
     release:
-        # `published` is the canonical "a release went live" trigger — it fires whether the release
-        # is published directly (gh release create / UI) or saved as a draft first, unlike `created`.
+        # outside: `published` fires for a release published at once or saved as a draft first;
+        # `created` misses the draft.
         types: [published]
 
 jobs:
-    # The shared house gate: `make build && make lint && make test` on node 24. A release
-    # whose commit fails it never publishes.
+    # invariant: a release whose commit fails the shared gate never publishes.
     validate:
         uses: jterrazz/jterrazz-actions/.github/workflows/validate.yaml@main
         with:
             node-version: '24'
 
-    # Publish the one npm package (@jterrazz/hoverfly-lsp; the analysis package is private and bundled in), then
-    # attach the bundled VS Code extension to the release. Auth is tokenless via OIDC trusted
-    # publishing.
     publish:
         name: Publish
         needs: validate
@@ -57,10 +43,8 @@ jobs:
             - name: Build
               run: npm run build
 
-            # Guard: the release tag must match the npm package versions (analysis + server) — those are what
-            # this workflow publishes to npm. Editor artifacts (VS Code / Zed / Claude Code) live on their
-            # own registries with IMMUTABLE versions, so they version INDEPENDENTLY (e.g. a Marketplace-only
-            # icon fix bumps the extension without an npm release). They are not checked here.
+            # invariant: the tag names the npm version; the editor artefacts version on their own
+            # registries, whose versions are immutable, so they are not checked here.
             - name: Verify release tag matches the npm package versions
               env:
                   TAG_NAME: ${{ github.event.release.tag_name }}
@@ -82,12 +66,8 @@ jobs:
                   check packages/server/package.json
                   exit $fail
 
-            # The only published package. The analysis package stays private (devDependency) and is inlined into the
-            # server bundle by esbuild, so the tarball has no runtime dependency on it. --access public
-            # is required for the scoped package; --provenance + id-token authenticates via npm trusted
-            # publishing (no token). Idempotent: if this exact version is already on npm (e.g. the first
-            # release was published manually), skip rather than fail — so cutting the GitHub release still
-            # attaches the .vsix without a duplicate-publish error.
+            # value: idempotent — a version already on npm is skipped, so cutting the GitHub release still
+            # attaches the .vsix; the analysis package is private and inlined in the server's bundle.
             - name: Publish @jterrazz/hoverfly-lsp (skip if already on npm)
               run: |
                   VER="$(node -p "require('./packages/server/package.json').version")"
@@ -97,8 +77,6 @@ jobs:
                     npm publish --workspace @jterrazz/hoverfly-lsp --access public --provenance
                   fi
 
-            # Package the VS Code extension (server bundle is copied in by esbuild during build) and
-            # attach it to the release the user just created. Marketplace/Open VSX publish stays manual.
             - name: Package VS Code extension
               run: npm run package --workspace hoverfly-lsp-vscode
 

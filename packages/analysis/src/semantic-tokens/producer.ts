@@ -1,22 +1,6 @@
-/**
- * Pure semantic-tokens producer (research/16 §4).
- *
- * Emits LSP semantic tokens for the Hoverfly-specific constructs a stock JSON grammar cannot color:
- *
- *   1. the Handlebars-subset TEMPLATE syntax inside every templatable string (templated response
- *      body/header values, plus any body that merely contains `{{` — the HF501 scope), and
- *   2. matcher-NAME enum values (`exact`, `regex`, `jwt`, …) wherever a matcher object appears.
- *
- * Template tokens are produced by parsing the DECODED template (`../template/parser`) and mapping
- * every node's decoded offset back to a DOCUMENT offset through the SAME escape-aware source map the
- * HF5xx diagnostics use (`createStringSourceMap`) — so a `\n`/`\uXXXX`/surrogate escape before a
- * `{{…}}` still lands the token on the exact right document characters. Document offsets become
- * `{line, char}` via `TextDocument.positionAt`.
- *
- * Transport-free by design: returns an absolute, (line, startChar)-sorted, single-line-per-token
- * list; the SERVER delta-encodes it into the 5-int wire array. Never throws — malformed templates
- * yield partial tokens (the parser is error-tolerant) and unexpected shapes are skipped.
- */
+// invariant: template tokens map each decoded offset back to the document through the escape-aware
+// source map the HF5xx diagnostics use, so an escape before `{{` still lands each token on its
+// characters; the server delta-encodes the sorted, single-line list.
 
 import type { ASTNode, JSONDocument } from 'vscode-json-languageservice';
 import type { TextDocument } from 'vscode-languageserver-textdocument';
@@ -42,10 +26,7 @@ import type { StringSourceMap } from '../template/source-map.js';
 import { SEMANTIC_TOKEN_TYPE_INDEX } from './legend.js';
 import type { SemanticTokenTypeName } from './legend.js';
 
-/**
- * One absolute semantic token (research/16 §4). Single line; `tokenType` is an index into
- * `SEMANTIC_TOKEN_TYPES`; `tokenModifiers` is a bitset (always `0` in v1).
- */
+/** One absolute, single-line token; its type an index into SEMANTIC_TOKEN_TYPES, its modifiers always 0. */
 type SemanticToken = {
     /** 0-based line. */
     readonly line: number;
@@ -59,28 +40,16 @@ type SemanticToken = {
     readonly tokenModifiers: number;
 };
 
-/* ---------------------------------------- name sets -------------------------------------- */
-
-/** Block-helper names (`if`, `each`, `with`, `unless`, `equal`, `first`) → `keyword`. */
 const BLOCK_HELPER_NAMES: ReadonlySet<string> = new Set(
     ALL_HELPERS.filter((helper) => helper.block).map((helper) => helper.name),
 );
 
-/** Every recognised helper name (inline + block) — heads that are real helper CALLS. */
 const ALL_HELPER_NAMES: ReadonlySet<string> = new Set(ALL_HELPERS.map((helper) => helper.name));
 
-/** Known zero-arg faker type names — only these become `enumMember` as a `faker` argument. */
 const FAKER_NAME_SET: ReadonlySet<string> = new Set(FAKER_NAMES);
 
-/** Every matcher name (incl. the `form` pseudo-matcher) recognised as an enum value. */
 const MATCHER_NAME_SET: ReadonlySet<string> = new Set(MATCHER_SPECS.map((spec) => spec.name));
 
-/* ----------------------------------- low-level emission ---------------------------------- */
-
-/**
- * A sink that turns a DECODED-offset span into one or more single-line document tokens, mapping
- * through the active source map and splitting at line boundaries.
- */
 class TokenEmitter {
     private readonly tokens: SemanticToken[] = [];
     private readonly document: TextDocument;
@@ -89,7 +58,6 @@ class TokenEmitter {
         this.document = document;
     }
 
-    /** Emit a token for an absolute DOCUMENT `[startOffset, endOffset)` span, split per line. */
     emitDocSpan(startOffset: number, endOffset: number, type: SemanticTokenTypeName): void {
         if (endOffset <= startOffset) {
             return;
@@ -98,11 +66,9 @@ class TokenEmitter {
         let cursor = startOffset;
         while (cursor < endOffset) {
             const start = this.document.positionAt(cursor);
-            // The document offset of the start of the NEXT line, to clamp a multi-line span.
             const lineEndOffset = this.document.offsetAt({ line: start.line + 1, character: 0 });
             const segmentEnd = Math.min(endOffset, lineEndOffset);
             const end = this.document.positionAt(segmentEnd);
-            // `end` may sit at the start of the next line (trailing newline); use the start line length.
             const length =
                 end.line === start.line
                     ? end.character - start.character
@@ -120,7 +86,6 @@ class TokenEmitter {
         }
     }
 
-    /** Emit a token for a DECODED `[start, end)` span via the given source map. */
     emitDecoded(
         sourceMap: StringSourceMap,
         start: number,
@@ -130,15 +95,11 @@ class TokenEmitter {
         this.emitDocSpan(sourceMap.toDocOffset(start), sourceMap.toDocOffset(end), type);
     }
 
-    /** The collected tokens, sorted by (line, startChar). */
     result(): SemanticToken[] {
         return this.tokens.toSorted((a, b) => a.line - b.line || a.startChar - b.startChar);
     }
 }
 
-/* -------------------------------------- template walk ------------------------------------ */
-
-/** Emit tokens for a path expression's root + segments + bracket indices. */
 function emitPath(
     emitter: TokenEmitter,
     sourceMap: StringSourceMap,
@@ -153,14 +114,11 @@ function emitPath(
         return;
     }
 
-    // `@index`/`this` and their `.field` tails → parameter (context-injected vars).
     if (path.data || path.thisRef) {
         emitter.emitDecoded(sourceMap, path.start, path.end, 'parameter');
         return;
     }
 
-    // Walk the original text segment by segment so each lands on its real document characters.
-    // `original` looks like `Request.Path.[1]`; split on dots, keep offsets via running cursor.
     const segments = splitPathSegments(path.original);
     let cursor = path.start;
     for (let i = 0; i < segments.length; i += 1) {
@@ -176,29 +134,23 @@ function emitPath(
 
         let type: SemanticTokenTypeName;
         if (i === 0) {
-            // Path root (Request, State, Vars, …)
             type = 'variable';
         } else if (isBracketIndex && isNumeric) {
-            // [1] index selector
             type = 'number';
         } else if (isNumeric) {
             type = 'number';
         } else {
-            // .Path, .Method, field name
             type = 'property';
         }
         emitter.emitDecoded(sourceMap, segStart, segEnd, type);
-        // Skip the dot separator
         cursor = segEnd + 1;
     }
 }
 
-/** Split a path's original text into dot-separated segments (preserving bracket groups). */
 function splitPathSegments(original: string): string[] {
     return original.split('.');
 }
 
-/** Emit tokens for a single argument expression. `fakerArg` colors a known faker name as enum. */
 function emitExpression(
     emitter: TokenEmitter,
     sourceMap: StringSourceMap,
@@ -233,17 +185,14 @@ function emitExpression(
     }
 }
 
-/** The helper name of a call path (`now`, `faker`, `Request.Body` → `now`/`faker`/`Request`). */
 function helperHeadName(path: PathExpression): string {
     return path.parts[0] ?? path.original.replace(/^#/u, '');
 }
 
-/** Whether the call head names a known helper (so its head colors as function/keyword). */
 function isKnownHelper(path: PathExpression): boolean {
     return ALL_HELPER_NAMES.has(helperHeadName(path));
 }
 
-/** Emit a mustache's head (helper or path) plus its arguments. */
 function emitCall(
     emitter: TokenEmitter,
     sourceMap: StringSourceMap,
@@ -258,7 +207,6 @@ function emitCall(
     });
 }
 
-/** Emit a subexpression `(helper args…)`. */
 function emitSubExpression(
     emitter: TokenEmitter,
     sourceMap: StringSourceMap,
@@ -267,7 +215,6 @@ function emitSubExpression(
     emitCall(emitter, sourceMap, expr.path, expr.params);
 }
 
-/** Emit the `{{`/`}}` (or `{{{`/`}}}`) delimiters around a mustache as operator tokens. */
 function emitMustacheDelimiters(
     emitter: TokenEmitter,
     sourceMap: StringSourceMap,
@@ -278,23 +225,19 @@ function emitMustacheDelimiters(
     emitter.emitDecoded(sourceMap, node.end - openLen, node.end, 'operator');
 }
 
-/** Emit a block's opening/closing tag delimiters (`{{#`, `}}`, `{{/`, `}}`) as operators. */
 function emitBlockDelimiters(
     emitter: TokenEmitter,
     sourceMap: StringSourceMap,
     node: BlockNode,
 ): void {
-    // `{{#` open marker (3 chars).
     emitter.emitDecoded(sourceMap, node.openTag.start, node.openTag.start + 3, 'operator');
     emitter.emitDecoded(sourceMap, node.openTag.end - 2, node.openTag.end, 'operator');
     if (node.closeTag) {
-        // `{{/` close marker (3 chars) and `}}`.
         emitter.emitDecoded(sourceMap, node.closeTag.start, node.closeTag.start + 3, 'operator');
         emitter.emitDecoded(sourceMap, node.closeTag.end - 2, node.closeTag.end, 'operator');
     }
 }
 
-/** Walk one statement, emitting its tokens. */
 function emitStatement(
     emitter: TokenEmitter,
     sourceMap: StringSourceMap,
@@ -308,7 +251,6 @@ function emitStatement(
         }
         case 'BlockNode': {
             emitBlockDelimiters(emitter, sourceMap, statement);
-            // The block-helper name colors as a keyword (block) or function.
             emitPath(emitter, sourceMap, statement.path, isKnownHelper(statement.path));
             for (const param of statement.params) {
                 emitExpression(emitter, sourceMap, param, false);
@@ -330,10 +272,6 @@ function emitStatement(
     }
 }
 
-/**
- * Parse the decoded template of one templatable string NODE and emit all its tokens, mapping
- * decoded offsets to document offsets through the escape-aware source map.
- */
 function emitTemplateString(emitter: TokenEmitter, document: TextDocument, node: ASTNode): void {
     if (node.type !== 'string' || !hasTemplateSyntax(node.value)) {
         return;
@@ -346,14 +284,10 @@ function emitTemplateString(emitter: TokenEmitter, document: TextDocument, node:
     }
 }
 
-/* ------------------------------------- model traversal ----------------------------------- */
-
-/** Whether a `templated` field node is the JSON boolean `true`. */
 function isTemplated(node: ASTNode | undefined): boolean {
     return node?.type === 'boolean' && node.value;
 }
 
-/** Emit a templatable string node and array-of-strings (header value shapes). */
 function emitTemplatableValue(
     emitter: TokenEmitter,
     document: TextDocument,
@@ -373,7 +307,6 @@ function emitTemplatableValue(
     }
 }
 
-/** Emit the matcher-NAME enum token over a matcher's `matcher` string value. */
 function emitMatcherName(emitter: TokenEmitter, matcher: MatcherModel): void {
     const node = matcher.matcherNode;
     if (node?.type !== 'string' || matcher.matcherName === undefined) {
@@ -382,14 +315,11 @@ function emitMatcherName(emitter: TokenEmitter, matcher: MatcherModel): void {
     if (!MATCHER_NAME_SET.has(matcher.matcherName)) {
         return;
     }
-    // Color the value WITHOUT the surrounding quotes: node.offset spans the quoted token.
     emitter.emitDocSpan(node.offset + 1, node.offset + node.length - 1, 'enumMember');
 }
 
-/** Walk the model emitting template + matcher-name tokens. */
 function emitModel(emitter: TokenEmitter, document: TextDocument, model: SimulationModel): void {
     for (const pair of model.pairs) {
-        // Matcher names on every request field (path/method/body/headers/query).
         for (const fieldEntry of pair.request.fields) {
             for (const matcher of fieldEntry.matchers) {
                 emitMatcherName(emitter, matcher);
@@ -400,13 +330,10 @@ function emitModel(emitter: TokenEmitter, document: TextDocument, model: Simulat
         const templated = isTemplated(response.templated.valueNode);
         const bodyNode = response.body.valueNode;
 
-        // Body: templated bodies always; non-templated bodies still color if they contain `{{`
-        // (the HF501 scope — the user is clearly writing a template).
         if (bodyNode) {
             emitTemplatableValue(emitter, document, bodyNode);
         }
 
-        // Header values are templated only when templated === true.
         if (templated) {
             for (const header of response.headers) {
                 emitTemplatableValue(emitter, document, header.valueNode);
@@ -415,20 +342,12 @@ function emitModel(emitter: TokenEmitter, document: TextDocument, model: Simulat
     }
 }
 
-/* ------------------------------------------ entry ---------------------------------------- */
-
-/**
- * Produce the absolute, sorted semantic tokens for a document. Returns `[]` when the document is
- * not a Hoverfly simulation (D3 fingerprint) and is not a Hoverfly-named file. Never throws.
- *
- * @param model optional prebuilt {@link SimulationModel}; built from `jsonDocument` when omitted.
- */
+/** The absolute, sorted tokens of a document — none unless it is a simulation or named for Hoverfly; never throws. */
 function getSemanticTokens(
     document: TextDocument,
     jsonDocument: JSONDocument,
     model?: SimulationModel,
 ): SemanticToken[] {
-    // Gate (research/16 §4.1): only simulations or Hoverfly-named files get tokens.
     if (!isHoverflySimulationAst(jsonDocument.root) && !hasHoverflyFilename(document.uri)) {
         return [];
     }

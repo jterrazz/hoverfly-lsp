@@ -1,12 +1,3 @@
-/**
- * Focused unit tests for the HF5xx variables/structural rule (`hf5xx-variables.ts`):
- *   - HF510 (built-in function) vs HF511 (otherwise-unknown function) precedence,
- *   - HF512 arity vs the helper's HelperSpec (fixed / variadic / requestBody),
- *   - HF214 templatable-name charset on variables AND literals,
- *   - HF213 destination full-URL (exact/default matcher only).
- * They build a RuleContext via the framework helper and run the exported rule directly.
- */
-
 import { describe, expect, test } from 'vitest';
 import { getLanguageService } from 'vscode-json-languageservice';
 import { TextDocument } from 'vscode-languageserver-textdocument';
@@ -23,7 +14,6 @@ function run(sim: unknown) {
     return hf5xxVariablesRule.run(context);
 }
 
-/** Build a one-pair simulation with the given `data` extras (variables/literals) and request. */
 function runData(dataExtras: Record<string, unknown>, request: unknown = {}) {
     return run({
         data: { pairs: [{ request, response: { status: 200 } }], ...dataExtras },

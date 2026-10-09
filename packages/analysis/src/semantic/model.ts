@@ -1,11 +1,5 @@
-/**
- * Builds the {@link SimulationModel} from a (possibly malformed) JSON AST.
- *
- * Hard rule: NEVER throw on bad input. Every shape may be wrong (object where an array is
- * expected, missing properties, wrong value types). Absent or wrong-shaped data resolves to
- * `undefined`/empty arrays so rules can defensively skip. This is the only place that walks
- * the raw AST shape; rules consume the typed model.
- */
+// invariant: never throws on bad input — any shape may be wrong, and an absent or wrong-shaped node
+// resolves to undefined or an empty list for the rules to skip.
 
 import type {
     ASTNode,
@@ -31,13 +25,10 @@ import type {
     StateEntry,
 } from './rule.js';
 
-/* ----------------------------------- AST helpers ----------------------------------------- */
-
 function asObject(node: ASTNode | undefined): ObjectASTNode | undefined {
     return node?.type === 'object' ? node : undefined;
 }
 
-/** The property node for `key` on an object node, if present. */
 function prop(node: ObjectASTNode | undefined, key: string): PropertyASTNode | undefined {
     if (!node) {
         return undefined;
@@ -45,12 +36,10 @@ function prop(node: ObjectASTNode | undefined, key: string): PropertyASTNode | u
     return node.properties.find((p) => p.keyNode.value === key);
 }
 
-/** The value node for `key` on an object node, if present. */
 function propValue(node: ObjectASTNode | undefined, key: string): ASTNode | undefined {
     return prop(node, key)?.valueNode;
 }
 
-/** A {@link ResponseField} (property / key / value triple) for `key` on an object node. */
 function field(node: ObjectASTNode | undefined, key: string): ResponseField {
     const property = prop(node, key);
     return {
@@ -60,7 +49,6 @@ function field(node: ObjectASTNode | undefined, key: string): ResponseField {
     };
 }
 
-/** Array items of the value at `key`, or `[]` when the value is missing/not an array. */
 function arrayItems(node: ObjectASTNode | undefined, key: string): ASTNode[] {
     const value = propValue(node, key);
     return value?.type === 'array' ? value.items : [];
@@ -69,8 +57,6 @@ function arrayItems(node: ObjectASTNode | undefined, key: string): ASTNode[] {
 function stringValue(node: ASTNode | undefined): string | undefined {
     return node?.type === 'string' ? node.value : undefined;
 }
-
-/* --------------------------------- matcher / field model --------------------------------- */
 
 function buildMatcher(
     node: ASTNode | undefined,
@@ -105,10 +91,6 @@ function buildMatcherField(
     };
 }
 
-/**
- * Top-level request fields that hold matcher arrays directly (everything except the nested
- * `headers`/`query` maps, which are flattened separately).
- */
 const NESTED_MATCHER_MAPS = new Set(['headers', 'query']);
 
 function buildRequest(node: ASTNode | undefined): RequestModel {
@@ -121,7 +103,6 @@ function buildRequest(node: ASTNode | undefined): RequestModel {
     for (const property of object.properties) {
         const name = property.keyNode.value;
         if (NESTED_MATCHER_MAPS.has(name)) {
-            // Headers/query: { headerName: [matchers...] } — flatten each key into a field.
             const inner = asObject(property.valueNode);
             const container: FieldContainer = name === 'headers' ? 'headers' : 'query';
             if (inner) {
@@ -131,7 +112,6 @@ function buildRequest(node: ASTNode | undefined): RequestModel {
             }
             continue;
         }
-        // Only fields whose value is a matcher array are interesting to matcher rules.
         if (property.valueNode?.type === 'array') {
             fields.push(buildMatcherField(property, name, 'request'));
         }
@@ -139,8 +119,6 @@ function buildRequest(node: ASTNode | undefined): RequestModel {
 
     return { node: object, fields };
 }
-
-/* ------------------------------------- response model ------------------------------------ */
 
 function buildResponse(node: ASTNode | undefined): ResponseModel {
     const object = asObject(node);
@@ -167,8 +145,6 @@ function buildResponse(node: ASTNode | undefined): ResponseModel {
     };
 }
 
-/* --------------------------------------- state model ------------------------------------- */
-
 function buildStateEntries(node: ObjectASTNode | undefined, key: string): StateEntry[] {
     const map = asObject(propValue(node, key));
     if (!map) {
@@ -187,15 +163,10 @@ function buildRemovesState(node: ObjectASTNode | undefined): RemovesStateEntry[]
         .map((item) => ({ key: stringValue(item) ?? '', node: item }));
 }
 
-/* --------------------------------------- pair model -------------------------------------- */
-
 function buildPair(node: ASTNode | undefined): PairModel {
     const object = asObject(node);
-    /*
-     * Per Hoverfly source truth (research/02, Go structs): `requiresState` is a field of the
-     * REQUEST (RequestMatcherViewV5); `transitionsState`/`removesState` are fields of the
-     * RESPONSE (ResponseDetailsViewV5). Read them off the correct child node, not the pair.
-     */
+    // outside: Hoverfly holds requiresState on the request (RequestMatcherViewV5), transitionsState
+    // and removesState on the response (ResponseDetailsViewV5) (research/02).
     const requestNode = asObject(propValue(object, 'request'));
     const responseNode = asObject(propValue(object, 'response'));
     return {
@@ -208,8 +179,6 @@ function buildPair(node: ASTNode | undefined): PairModel {
     };
 }
 
-/* --------------------------------------- meta model -------------------------------------- */
-
 function buildMeta(node: ObjectASTNode | undefined): MetaModel {
     const object = asObject(propValue(node, 'meta'));
     return {
@@ -217,8 +186,6 @@ function buildMeta(node: ObjectASTNode | undefined): MetaModel {
         schemaVersion: field(object, 'schemaVersion'),
     };
 }
-
-/* ---------------------------------- globalActions model ---------------------------------- */
 
 function buildDelay(node: ASTNode | undefined): DelayModel {
     const object = asObject(node);
@@ -240,12 +207,7 @@ function buildGlobalActions(dataNode: ObjectASTNode | undefined): GlobalActionsM
     };
 }
 
-/* ----------------------------------------- root ------------------------------------------ */
-
-/**
- * Build the typed simulation view from a parsed JSON document. Defensive throughout: a
- * non-object root, missing `data`, or wrong-typed `pairs` all degrade to empty/undefined.
- */
+/** The typed view of a parsed simulation; a non-object root, a missing data or wrong-typed pairs degrade to empty. */
 export function buildSimulationModel(jsonDocument: JSONDocument): SimulationModel {
     const root = asObject(jsonDocument.root);
     const dataNode = asObject(propValue(root, 'data'));

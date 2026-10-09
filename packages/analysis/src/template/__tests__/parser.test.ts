@@ -13,12 +13,6 @@ import type {
 import { parse } from '../parser.js';
 import type { TemplateParseError } from '../parser.js';
 
-/**
- * Golden-ish unit tests for the hand-rolled Handlebars parser. Constructs are drawn from
- * `research/08-templating-spec.md` §4–5 (real Hoverfly idioms). Offsets are asserted against
- * the decoded source string the parser is handed. Error-recovery cases assert exact ranges.
- */
-
 function expectMustache(statement: Statement | undefined): MustacheNode {
     expect(statement?.type).toBe('MustacheNode');
     return statement as MustacheNode;

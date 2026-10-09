@@ -1,9 +1,3 @@
-/**
- * Focused unit tests for the HF23x matcher-value-SYNTAX rule (research/14). They build a
- * {@link RuleContext} and run the exported rule directly (like hf2xx.test.ts), so they pass
- * independent of when the integrator wires `MATCHER_SYNTAX_RULES` into `ALL_RULES`.
- */
-
 import { describe, expect, test } from 'vitest';
 import { getLanguageService } from 'vscode-json-languageservice';
 import { TextDocument } from 'vscode-languageserver-textdocument';
@@ -13,7 +7,6 @@ import { matcherSyntaxRule } from '../matcher-syntax.js';
 
 const ls = getLanguageService({});
 
-/** Run the rule over a simulation whose single pair has the given `request` object. */
 function runOnRequest(request: unknown) {
     const sim = {
         data: { pairs: [{ request, response: { status: 200 } }] },
@@ -25,7 +18,6 @@ function runOnRequest(request: unknown) {
     return matcherSyntaxRule.run(context);
 }
 
-/** The codes a run emits, for terse assertions. */
 function codes(diagnostics: ReturnType<typeof runOnRequest>): string[] {
     return diagnostics.map((d) => String(d.code));
 }

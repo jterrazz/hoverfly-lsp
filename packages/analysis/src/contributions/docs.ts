@@ -1,33 +1,14 @@
-/**
- * Markdown renderers for matcher completion items and hover content. ALL Hoverfly facts —
- * names, accepted value types, config support, `doMatch` behaviour, docs links — are sourced
- * from {@link MATCHER_SPECS} in the registry. This module only formats that data; it hardcodes
- * no matcher facts of its own (house rule).
- *
- * Content policy (issue: hover noise): a matcher hover/completion describes THAT matcher only —
- * its semantics, value type, `doMatch` behaviour, config support, docs link, and notes specific
- * to the matcher in hand. It does NOT append the generic "unknown matcher name panics" or
- * "config on a non-array matcher panics" warnings: those describe MISUSE the user is not
- * committing while hovering a valid matcher, and the HF2xx diagnostics (HF201 unknown name,
- * HF204 config misuse) own that messaging at the point the mistake is actually made. The only
- * notes surfaced here are intrinsic to the hovered matcher: array's config keys (ON array),
- * form's body-only + case-sensitivity (ON form), and negate's vacuous-true footgun (ON negate).
- */
+// invariant: a matcher's documentation describes that matcher alone; the generic unknown-name and
+// config-misuse panics are HF201's and HF204's, raised where the mistake is made.
 
 import type { MatcherSpec, MatcherValueType } from '../registry/matchers.js';
 
-/** Human label for a matcher's accepted JSON value types (registry data, formatted). */
 function valueTypeLine(spec: MatcherSpec): string {
     const types: readonly MatcherValueType[] = spec.valueTypes;
     const joined = types.map((t) => `\`${t}\``).join(' | ');
     return `**Value type:** ${joined}`;
 }
 
-/**
- * A one-line config-support note derived from the spec's `supportsConfig`/`configKeys`. Neutral
- * wording: the panic phrasing for misusing `config` belongs to HF204, not to a valid matcher's
- * own documentation.
- */
 function configLine(spec: MatcherSpec): string {
     if (spec.supportsConfig) {
         const keys = (spec.configKeys ?? []).map((k) => `\`${k}\``).join(', ');
@@ -36,14 +17,6 @@ function configLine(spec: MatcherSpec): string {
     return '**Config:** not supported.';
 }
 
-/**
- * Notes intrinsic to THIS matcher — surfaced only when they describe the hovered matcher's own
- * behaviour, never the generic any-matcher panics. Returned as markdown lines.
- *
- *   - `array`  — a non-boolean config value is a footgun (config keys ON array).
- *   - `form`   — body-only placement + case-sensitivity (semantics OF form).
- *   - `negate` — a non-string value matches vacuously (footgun OF negate).
- */
 function matcherSpecificNotes(spec: MatcherSpec): string[] {
     const notes: string[] = [];
     if (spec.supportsConfig) {
@@ -64,11 +37,7 @@ function matcherSpecificNotes(spec: MatcherSpec): string[] {
     return notes;
 }
 
-/**
- * Full markdown documentation for a matcher — used as a completion item's `documentation` and as
- * the hover body. Assembles the registry's `docs` string, the value-type line, the config line,
- * a `doMatch` note, and any matcher-specific notes (no generic panic warnings).
- */
+/** The Markdown documentation of a matcher, for a completion item and a hover. */
 export function matcherMarkdown(spec: MatcherSpec): string {
     const displayName = spec.name === '' ? '(default / empty matcher)' : spec.name;
     const lines: string[] = [

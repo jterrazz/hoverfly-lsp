@@ -1,18 +1,6 @@
-/**
- * Content fingerprint for Hoverfly simulation documents (architect decision D3).
- *
- * A JSON document is treated as a Hoverfly simulation iff its root is an object with:
- *   - a `data` property whose value is an object, AND
- *   - a `meta` property whose value is an object with a string `schemaVersion`
- *     that starts with "v".
- *
- * `data.pairs` is intentionally NOT required (it is optional in the official schema).
- *
- * Two variants exist: {@link isHoverflySimulation} (cheap `JSON.parse` over text) and
- * {@link isHoverflySimulationAst} (over the error-recovering AST, used by the service's
- * validation gate so half-typed/broken-but-recognisable documents are still treated as
- * simulations rather than dismissed).
- */
+// value: decision D3 — a simulation is an object root with a `data` object and a `meta` object
+// whose `schemaVersion` is a string starting with `v`; `data.pairs` is optional, as in the official
+// schema.
 
 import type { ASTNode } from 'vscode-json-languageservice';
 
@@ -20,15 +8,7 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-/**
- * AST-based variant of the D3 fingerprint, run over the error-recovering JSON AST so that
- * half-typed or syntactically-broken documents (which `JSON.parse` would reject outright)
- * are still recognised as simulations and get the full schema/semantic treatment instead of
- * being dismissed as "not a simulation". Never throws; tolerates a partial/absent AST.
- *
- * Matches when the root is an object with a `data` object property and a `meta` object whose
- * `schemaVersion` is a string starting with "v".
- */
+/** The D3 fingerprint over the error-recovering AST, so a half-typed simulation still gets its diagnostics; never throws. */
 export function isHoverflySimulationAst(root: ASTNode | undefined): boolean {
     if (root?.type !== 'object') {
         return false;
@@ -47,21 +27,9 @@ export function isHoverflySimulationAst(root: ASTNode | undefined): boolean {
     return schemaVersionNode?.type === 'string' && schemaVersionNode.value.startsWith('v');
 }
 
-/**
- * Returns `true` when `text` parses as JSON and matches the Hoverfly simulation
- * fingerprint described in decision D3. Never throws.
- */
-/**
- * Whether a document URI/path matches the canonical Hoverfly filename conventions
- * (`*.hoverfly.json`, `*.hfy`, or `hoverfly-simulation.json`, decision D3). Explicitly-named
- * files always get full treatment, including the "this doesn't look like a simulation"
- * diagnostic.
- *
- * Robust to URIs (`file:///a/b/foo.hoverfly.json`) and bare paths; case-insensitive on the
- * filename. Never throws.
- */
+/** Whether text parses as JSON and passes the D3 fingerprint; never throws. */
+/** Whether a URI or path names a Hoverfly file — `*.hoverfly.json`, `*.hfy` or `hoverfly-simulation.json`, case-insensitively (D3). */
 export function hasHoverflyFilename(uri: string): boolean {
-    // Take the last path segment (strip any query/fragment a URI might carry).
     const withoutQuery = uri.split(/[?#]/u, 1)[0] ?? uri;
     const segment = (withoutQuery.split('/').pop() ?? withoutQuery).toLowerCase();
     return (

@@ -1,26 +1,9 @@
-/**
- * JSON-location-path recognisers for the Hoverfly contribution.
- *
- * `vscode-json-languageservice` keys both completion and hover contributions off a
- * {@link JSONPath} — an array of `string | number` segments naming the route from the document
- * root to a node (e.g. `["data","pairs",0,"request","path",0,"matcher"]`). These helpers decide,
- * purely from such a path, *what kind of Hoverfly position* the cursor sits in, so the
- * contribution can offer the right completions / hover without re-walking the AST.
- *
- * Two callers, two path conventions (see the library source):
- *   - completion `collectValueCompletions(uri, location, propertyKey, …)` passes the path of the
- *     OBJECT that owns the property, and the property key separately. So a matcher-name value is
- *     `location = [..,<matcherObj>]`, `propertyKey = "matcher"`.
- *   - hover `getInfoContribution(uri, location)` passes the path of the hovered VALUE node. So a
- *     matcher-name value is `location = [..,"matcher"]` (the trailing key included).
- *
- * Both conventions are supported by matching on the *shape* of the matcher-object path and
- * treating the final `"matcher"` segment as optional.
- */
+// outside: the library hands completion the path of the object owning the property, its key apart,
+// and hover the path of the hovered value, key included — so a matcher position is matched by its
+// shape, the trailing `matcher` segment optional.
 
 import type { JSONPath, Segment } from 'vscode-json-languageservice';
 
-/** Top-level request fields whose value is a matcher array (the only places matchers live). */
 const DIRECT_MATCHER_FIELDS: ReadonlySet<string> = new Set([
     'body',
     'destination',
@@ -29,7 +12,6 @@ const DIRECT_MATCHER_FIELDS: ReadonlySet<string> = new Set([
     'scheme',
 ]);
 
-/** Request sub-objects that hold `{ key: [matchers] }` maps (header / query name → matchers). */
 const NESTED_MATCHER_MAPS: ReadonlySet<string> = new Set(['headers', 'query']);
 
 function isIndex(segment: Segment | undefined): segment is number {
@@ -40,31 +22,11 @@ function isString(segment: Segment | undefined): segment is string {
     return typeof segment === 'string';
 }
 
-/**
- * Result of locating a matcher position: which request field the matcher applies to (so callers
- * know whether `form` is offered — body only), and whether the position is the matcher OBJECT
- * itself (a value-completion site) vs the `matcher` key's value.
- */
 type MatcherPosition = {
-    /** The owning request field name (`path`, `body`, a header key, …). */
     readonly field: string;
-    /** Whether the owning field is the request `body` (the only place `form` is legal). */
     readonly isBody: boolean;
 };
 
-/**
- * Recognise a matcher-NAME position from a location path, tolerating the trailing `"matcher"`
- * segment (present for hover, absent for value-completion where the key is passed separately).
- *
- * Shapes accepted (… = `["data","pairs",<n>,"request"]`):
- *   - top-level field:    …, <field>, <i>            (+ optional "matcher")
- *   - header/query map:   …, headers|query, <name>, <i>   (+ optional "matcher")
- *   - any `doMatch` nesting after either of the above: …, "doMatch", (…"doMatch") (+ optional "matcher")
- *
- * Returns the {@link MatcherPosition} (with `isBody`) or `undefined` when the path is not a
- * matcher-name position. `requireMatcherKey` forces the trailing `"matcher"` segment to be
- * present (used by hover, where the value node path always ends at the key).
- */
 function matchMatcherNamePosition(
     path: JSONPath,
     options: { readonly requireMatcherKey: boolean },
@@ -79,25 +41,13 @@ function matchMatcherNamePosition(
         return undefined;
     }
 
-    /*
-     * After stripping the optional "matcher" key, the path must end at a matcher OBJECT — either a
-     * matcher-array index or a "doMatch" chain link. Peel any trailing "doMatch" links first.
-     */
     let trimmed = [...segments];
     while (trimmed.at(-1) === 'doMatch') {
         trimmed = trimmed.slice(0, -1);
     }
 
-    /*
-     * Now the tail must be `<field>, <index>` for a direct field, or
-     * `headers|query, <name>, <index>` for a nested map — preceded by `request`.
-     */
     const last = trimmed.at(-1);
     if (!isIndex(last)) {
-        /*
-         * A doMatch link lands directly on a matcher object (no array index); accept it when the
-         * segment before the doMatch chain identifies a matcher field under `request`.
-         */
         if (endsWithMatcherKey || segments.at(-1) === 'doMatch') {
             return classifyByField(trimmed);
         }
@@ -107,20 +57,14 @@ function matchMatcherNamePosition(
     return classifyByField(trimmed.slice(0, -1));
 }
 
-/**
- * Given the path UP TO (but not including) the matcher-array index, decide whether it names a
- * request matcher field and whether that field is `body`.
- */
 function classifyByField(beforeIndex: JSONPath): MatcherPosition | undefined {
     const last = beforeIndex.at(-1);
     const prev = beforeIndex.at(-2);
 
-    // Direct field: …, "request", <field>
     if (isString(last) && DIRECT_MATCHER_FIELDS.has(last) && prev === 'request') {
         return { field: last, isBody: last === 'body' };
     }
 
-    // Header/query map: …, "request", headers|query, <name>
     const grand = beforeIndex.at(-3);
     if (isString(last) && isString(prev) && NESTED_MATCHER_MAPS.has(prev) && grand === 'request') {
         return { field: last, isBody: false };
@@ -134,7 +78,6 @@ function isSchemaVersionPosition(
     path: JSONPath,
     options: { readonly propertyKey?: string } = {},
 ): boolean {
-    // Hover: path ends `["meta","schemaVersion"]`. Value completion: path is `["meta"]`, key passed.
     const last = path.at(-1);
     if (last === 'schemaVersion' && path.at(-2) === 'meta') {
         return true;
@@ -142,39 +85,16 @@ function isSchemaVersionPosition(
     return options.propertyKey === 'schemaVersion' && last === 'meta';
 }
 
-/**
- * True when `propertyKey` is a NEW key being typed inside a `request.requiresState` object.
- * Property-completion only: `location` is the requiresState object's path.
- */
 function isRequiresStateKeyPosition(path: JSONPath): boolean {
     return path.at(-1) === 'requiresState' && path.at(-2) === 'request';
 }
 
-/**
- * True when `propertyKey` is a NEW key being typed inside a `response.transitionsState` object.
- */
 function isTransitionsStateKeyPosition(path: JSONPath): boolean {
     return path.at(-1) === 'transitionsState' && path.at(-2) === 'response';
 }
 
-/**
- * The well-known-value request fields (`method`/`scheme`) whose `exact` matcher value is an enum we
- * can complete. Mirrors the HF215/HF216 rule gate. `destination`/`path`/`body` are free strings.
- */
 const VALUE_ENUM_FIELDS: ReadonlySet<string> = new Set(['method', 'scheme']);
 
-/**
- * Recognise a `value`-completion position inside a `method`/`scheme` matcher object that sits
- * DIRECTLY under `request` (not a header/query map, not a `doMatch` chain). The completion caller
- * passes `location` = the matcher OBJECT path and `propertyKey` = `"value"`.
- *
- * Returns the field name (`"method"`/`"scheme"`) so the caller can pick the right value set, or
- * `undefined` when the path is not such a position. The matcher-is-exact gate is NOT checked here
- * (it needs the sibling `matcher` value); the caller applies it.
- *
- * Accepted shape (… = `["data","pairs",<n>,"request"]`): `…, method|scheme, <index>` with
- * `propertyKey === "value"`.
- */
 function matchMethodSchemeValuePosition(
     path: JSONPath,
     options: { readonly propertyKey?: string } = {},

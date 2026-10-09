@@ -1,10 +1,3 @@
-/**
- * Focused unit tests for the HF215/HF216 method/scheme well-known-VALUE did-you-mean rule. They
- * build a {@link RuleContext} and run the exported rule directly (like matcher-syntax.test.ts), so
- * they pass independent of `ALL_RULES` wiring. The zero-false-positive policy is the contract under
- * test: a near-miss typo fires a Hint; every plausible custom value stays SILENT.
- */
-
 import { describe, expect, test } from 'vitest';
 import { getLanguageService } from 'vscode-json-languageservice';
 import { TextDocument } from 'vscode-languageserver-textdocument';
@@ -15,7 +8,6 @@ import { methodSchemeValueRule } from '../hf2xx-values.js';
 
 const ls = getLanguageService({});
 
-/** Run the rule over a one-pair simulation whose request is `request`. */
 function runOnRequest(request: unknown) {
     const sim = {
         data: { pairs: [{ request, response: { status: 200 } }] },

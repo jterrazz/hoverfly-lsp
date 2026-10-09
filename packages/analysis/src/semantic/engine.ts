@@ -1,17 +1,3 @@
-/**
- * The semantic engine: runs registered {@link SemanticRule}s over a {@link RuleContext} and
- * owns the HF102 layer.
- *
- * HF102 layer (the amazon-states lesson, report 05 / catalog notes):
- *   1. Re-tag every schema diagnostic from `vscode-json-languageservice` with code `HF102`
- *      and `source: "hoverfly"`, preserving its message/range/severity.
- *   2. SUPPRESS a schema diagnostic when a more specific semantic diagnostic that REPLACES the
- *      schema message fires on the same node (overlapping range) — the semantic message is
- *      clearer than the noisy oneOf/enum schema failure (decision D5). The suppressing set is
- *      every HF2xx matcher code plus the value-shape error codes HF308/HF404/HF405 (see
- *      {@link VALUE_SHAPE_SUPPRESSORS}).
- */
-
 import type { JSONDocument } from 'vscode-json-languageservice';
 import type { TextDocument } from 'vscode-languageserver-textdocument';
 import type { Diagnostic, Range } from 'vscode-languageserver-types';
@@ -34,22 +20,13 @@ function isBefore(
     return a.line < b.line || (a.line === b.line && a.character < b.character);
 }
 
-/** Two ranges overlap when neither ends strictly before the other starts. */
 function rangesOverlap(a: Range, b: Range): boolean {
     return !(isBefore(a.end, b.start) || isBefore(b.end, a.start));
 }
 
-/**
- * Codes that REPLACE the raw schema message on their node — when one of these fires, the
- * overlapping `gojsonschema` diagnostic is suppressed so the user sees only the clearer, targeted
- * Hoverfly message (the amazon-states lesson, decision D5). Two groups:
- *
- *   - every HF2xx matcher diagnostic (the original suppression set), and
- *   - the value-SHAPE error codes HF308/HF404/HF405 — each is a clean, targeted re-statement of a
- *     Hoverfly import-400 that gojsonschema also reports (response-header-not-array,
- *     non-string-state-value, non-string-removesState entry; reports 13 §3.5/§3.13/§3.14). These
- *     replace the noisy passthrough rather than double-reporting it.
- */
+// invariant: a code here replaces the schema message on its node — every HF2xx code, and
+// HF308/HF404/HF405, each a targeted restatement of an import-400 gojsonschema also reports
+// (reports 13 §3.5, §3.13, §3.14) — so the overlapping schema diagnostic is dropped (decision D5).
 const VALUE_SHAPE_SUPPRESSORS: ReadonlySet<string> = new Set(['HF308', 'HF404', 'HF405']);
 
 function suppressesSchema(code: Diagnostic['code']): boolean {
@@ -58,13 +35,12 @@ function suppressesSchema(code: Diagnostic['code']): boolean {
     );
 }
 
-/** Re-tag one raw schema diagnostic as HF102, preserving its message/range/severity. */
 function retagAsHF102(schema: Diagnostic): Diagnostic {
     return {
         code: 'HF102',
         source: DIAGNOSTIC_SOURCE,
-        // `severity` is an optional property: under exactOptionalPropertyTypes an
-        // absent severity is absent, not `undefined`.
+        // outside: under exactOptionalPropertyTypes an absent severity stays absent, never
+        // `undefined`.
         ...(schema.severity === undefined ? {} : { severity: schema.severity }),
         range: schema.range,
         message: schema.message,
@@ -97,7 +73,8 @@ export function runRules(rules: readonly SemanticRule[], context: RuleContext): 
         try {
             out.push(...rule.run(context));
         } catch {
-            // A rule must never throw; if one does, drop its output rather than fail validation.
+            // invariant: a rule never fails the validation — a rule that throws loses its own
+            // output alone.
         }
     }
     return out;

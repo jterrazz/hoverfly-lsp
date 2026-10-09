@@ -1,13 +1,11 @@
 name: Schema drift
 
-# Read-only upstream-drift watcher. It NEVER updates the bundled schema or registry — it only
-# detects when Hoverfly's official schema (or the Go source our matcher/templating catalogs were
-# transcribed from) has moved away from the pinned HOVERFLY_COMMIT baseline, and opens/refreshes a
-# single tracking issue so a human can re-verify and bump the pin deliberately.
+# invariant: read-only — it never updates the bundled schema or a registry; it opens or refreshes one
+# issue when Hoverfly's schema or the Go sources the registries were transcribed from move away from
+# the pinned HOVERFLY_COMMIT, so a person re-verifies and bumps the pin.
 
 on:
     schedule:
-        # Weekly, Mondays 06:00 UTC.
         - cron: '0 6 * * 1'
     workflow_dispatch: {}
 
