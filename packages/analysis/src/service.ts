@@ -18,7 +18,7 @@ import {
     isHoverflySimulation,
     isHoverflySimulationAst,
 } from './fingerprint.js';
-import { hoverflySchema } from './schema/hoverfly.schema.generated.js';
+import { hoverflySchema } from './schema/bundled-schema.js';
 import { applyHF102Layer, createRuleContext, runRules, sortByRange } from './semantic/engine.js';
 import type { HoverflyServiceSettings } from './semantic/rule.js';
 import { ALL_RULES } from './semantic/rules/families.js';

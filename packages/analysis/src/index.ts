@@ -81,5 +81,5 @@ export {
 } from './registry/structure.js';
 export { FAKER_NAMES, FAKER_PARAMETERIZED_PANICS, GOFAKEIT_VERSION } from './registry/faker.js';
 
-export { hoverflySchema } from './schema/hoverfly.schema.generated.js';
+export { hoverflySchema } from './schema/bundled-schema.js';
 export { HOVERFLY_COMMIT, HOVERFLY_SCHEMA_URL, SCHEMA_FETCHED_AT } from './schema/provenance.js';

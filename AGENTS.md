@@ -49,9 +49,8 @@ env UPDATE_GOLDENS=1 npx vitest --run packages/analysis/specs/integration/semant
 
 ## Standing rules
 
-- **Never edit a generated file.** `docs/reference/*` and
-  `packages/analysis/src/schema/hoverfly.schema.generated.ts` come from their
-  generators; change the source and regenerate.
+- **Never edit a generated file.** `docs/reference/*` comes from its generator;
+  change the source and regenerate.
 - **A new code owes five things**, listed once in `docs/guides/develop.md` under
   "Adding a diagnostic" — catalog entry, rule, fixture and golden, unit test,
   generator prose. CI fails on the last two being skipped.
