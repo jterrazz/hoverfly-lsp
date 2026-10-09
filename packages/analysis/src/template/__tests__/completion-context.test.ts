@@ -264,6 +264,10 @@ describe('classifyCompletionContext', () => {
         },
         { context: at('helperOrPathStart', { word: 'Requestx' }), marked: '{{Requestx|' },
         { context: at('none'), marked: 'a|b{{#each x}}c{{/each}}' },
+        { context: at('none'), marked: '|{{x' },
+        { context: at('none'), marked: '{|{x' },
+        { context: at('none'), marked: 'a{|{x' },
+        { context: at('helperOrPathStart', { word: 'fa' }), marked: '{{fa|{{x}}' },
     ])(
         // Given - a template being typed, `|` marking the cursor
         // Then - the whole context the cursor sits in: its kind, the word typed, the path, the enclosing blocks

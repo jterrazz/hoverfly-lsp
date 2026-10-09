@@ -4,8 +4,10 @@ type OpenMustache = {
 
 // invariant: quote-aware — a `}}` inside a string literal does not close the mustache.
 export function findOpenMustache(decoded: string, cursor: number): OpenMustache | undefined {
-    const head = decoded.lastIndexOf('{{', Math.max(0, cursor - 1));
-    if (head === -1) {
+    const head = decoded.lastIndexOf('{{', cursor - 2);
+    // invariant: lastIndexOf clamps a negative start to 0, so a cursor before or between the braces
+    // of a leading `{{` would find it; a mustache is open only once its `{{` ends at the cursor.
+    if (head === -1 || head + 2 > cursor) {
         return undefined;
     }
     if (hasCloseBetween(decoded, head + 2, cursor)) {
