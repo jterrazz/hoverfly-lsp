@@ -17,17 +17,18 @@ below ever reaches up.
 
 `packages/analysis` carries **zero LSP transport dependencies**: the JSON language
 service, the LSP _types_, a text-document model, and the two engines the rules
-need (`re2js`, `fast-xml-parser`) — nothing that speaks a wire protocol
-(`packages/analysis/package.json:23`). It is consumed as a real TypeScript project
-reference — `tsconfig.base.json` adds the emitting, composite half the house
-`node` preset leaves out (decision D1). A transport import in
-the analysis library is the one architectural regression to watch for.
+need (`re2js`, `fast-xml-validator`) — nothing that speaks a wire protocol (the
+`dependencies` of `packages/analysis/package.json`). It builds with
+`typescript build`, as a house library does, and the server consumes what that
+build leaves in `dist/`: the JavaScript and its declarations (decision D1). A
+transport import in the analysis library is the one architectural regression to
+watch for.
 
 `@hoverfly-lsp/analysis` is `"private": true` and is never published. esbuild inlines
 it into the server's single-file CommonJS bundle
 (`packages/server/esbuild.config.js`), so the published tarball has no runtime
-dependency on it — `packages/server/package.json:10` ships exactly `bin/` and
-`dist/cli.cjs`.
+dependency on it — the `files` of `packages/server/package.json` ship exactly
+`bin/` and `dist/cli.cjs`.
 
 ## Inside the analysis library
 
@@ -54,7 +55,7 @@ the completion coverage matrix).
 
 Every diagnostic's severity, message template and documentation href come from
 `packages/analysis/src/semantic/catalog.data.ts`, and a rule reaches them only through
-`makeDiagnostic()` (`packages/analysis/src/semantic/diagnostics.ts:65`). A rule never
+`makeDiagnostic()` (`packages/analysis/src/semantic/diagnostics.ts`). A rule never
 inlines a severity or a message string, so a code's meaning is defined in exactly
 one place and the golden snapshots stay stable.
 
@@ -84,7 +85,8 @@ Diagnostics are advertised through **both** channels: a `diagnosticProvider` for
 clients that pull (`textDocument/diagnostic`), and a debounced push on
 `didOpen`/`didChange` for clients that do not. The server reads the client's
 capabilities at `initialize` and skips the push path when pull is available, so
-no client pays for both (`packages/server/src/capabilities.ts:55`).
+no client pays for both (`clientSupportsPullDiagnostics` in
+`packages/server/src/capabilities.ts`).
 
 The semantic-tokens legend is taken verbatim and in order from the analysis library's
 `SEMANTIC_TOKEN_TYPES` / `SEMANTIC_TOKEN_MODIFIERS`. The wire protocol carries
