@@ -1,177 +1,156 @@
 import { describe, expect, test } from 'vitest';
 
 import { createStringSourceMap } from '../source-map.js';
-import type { StringSourceMap } from '../source-map.js';
+
+function described(
+    raw: string,
+    at: number,
+): { decoded: string; toDecodedOffset: string; toDocOffset: string } {
+    const map = createStringSourceMap(raw, at);
+    const toDoc = Array.from({ length: map.decoded.length + 3 }, (_, index) => index - 1);
+    const toDecoded = Array.from({ length: raw.length + 3 }, (_, index) => at + index - 1);
+    return {
+        decoded: map.decoded,
+        toDecodedOffset: toDecoded
+            .map((offset) => `${offset}:${map.toDecodedOffset(offset)}`)
+            .join(' '),
+        toDocOffset: toDoc.map((offset) => `${offset}:${map.toDocOffset(offset)}`).join(' '),
+    };
+}
 
 describe('createStringSourceMap', () => {
-    test('decodes a plain unescaped string and maps offsets through the quote at +1', () => {
-        // Given - a JSON token `"hello"` placed at document offset 10
-        const map: StringSourceMap = createStringSourceMap('"hello"', 10);
-        // Then - content is decoded, and offset 0 maps to the first content char (doc 11)
-        expect(map.decoded).toBe('hello');
-        expect(map.toDocOffset(0)).toBe(11);
-        expect(map.toDocOffset(1)).toBe(12);
-        expect(map.toDocOffset(4)).toBe(15);
-        expect(map.toDocOffset(5)).toBe(16);
-    });
-
-    test('accepts an unquoted raw token (treats the whole token as content)', () => {
-        // Given - no surrounding quotes
-        const map = createStringSourceMap('abc', 0);
-        // Then - identity mapping
-        expect(map.decoded).toBe('abc');
-        expect(map.toDocOffset(0)).toBe(0);
-        expect(map.toDocOffset(2)).toBe(2);
-        expect(map.toDocOffset(3)).toBe(3);
-    });
-
-    test(
-        String.raw`maps a decoded char after a \n escape to the document offset past the escape`,
-        () => {
-            // Given - `"a\nb"`: source chars a(1) \(2) n(3) b(4), at doc offset 0
-            const map = createStringSourceMap(String.raw`"a\nb"`, 0);
-            // Then - decoded is "a\nb"; 'b' (decoded index 2) sits at the source 'b' (doc 4)
-            expect(map.decoded).toBe('a\nb');
-            expect(map.toDocOffset(0)).toBe(1);
-            expect(map.toDocOffset(1)).toBe(2);
-            expect(map.toDocOffset(2)).toBe(4);
+    test.each([
+        {
+            at: 10,
+            map: {
+                decoded: 'hello',
+                toDecodedOffset: '9:0 10:0 11:0 12:1 13:2 14:3 15:4 16:5 17:5 18:5',
+                toDocOffset: '-1:11 0:11 1:12 2:13 3:14 4:15 5:16 6:16',
+            },
+            raw: '"hello"',
+        },
+        {
+            at: 0,
+            map: {
+                decoded: 'abc',
+                toDecodedOffset: '-1:0 0:0 1:1 2:2 3:3 4:3',
+                toDocOffset: '-1:0 0:0 1:1 2:2 3:3 4:3',
+            },
+            raw: 'abc',
+        },
+        {
+            at: 0,
+            map: {
+                decoded: 'a\nb',
+                toDecodedOffset: '-1:0 0:0 1:0 2:1 3:2 4:2 5:3 6:3 7:3',
+                toDocOffset: '-1:1 0:1 1:2 2:4 3:5 4:5',
+            },
+            raw: String.raw`"a\nb"`,
+        },
+        {
+            at: 0,
+            map: {
+                decoded: '"\\/\b\f\n\r\t',
+                toDecodedOffset:
+                    '-1:0 0:0 1:0 2:1 3:1 4:2 5:2 6:3 7:3 8:4 9:4 10:5 11:5 12:6 13:6 14:7 15:7 16:8 17:8 18:8 19:8',
+                toDocOffset: '-1:1 0:1 1:3 2:5 3:7 4:9 5:11 6:13 7:15 8:17 9:17',
+            },
+            raw: String.raw`"\"\\\/\b\f\n\r\t"`,
+        },
+        {
+            at: 0,
+            map: {
+                decoded: 'AZ',
+                toDecodedOffset: '-1:0 0:0 1:0 2:1 3:1 4:1 5:1 6:1 7:1 8:2 9:2 10:2',
+                toDocOffset: '-1:1 0:1 1:7 2:8 3:8',
+            },
+            raw: String.raw`"\u0041Z"`,
+        },
+        {
+            at: 0,
+            map: {
+                decoded: '😀x',
+                toDecodedOffset:
+                    '-1:0 0:0 1:0 2:1 3:1 4:1 5:1 6:1 7:1 8:2 9:2 10:2 11:2 12:2 13:2 14:3 15:3 16:3',
+                toDocOffset: '-1:1 0:1 1:7 2:13 3:14 4:14',
+            },
+            raw: String.raw`"\uD83D\uDE00x"`,
+        },
+        {
+            at: 0,
+            map: {
+                decoded: '😀y',
+                toDecodedOffset: '-1:0 0:0 1:0 2:1 3:2 4:3 5:3 6:3',
+                toDocOffset: '-1:1 0:1 1:2 2:3 3:4 4:4',
+            },
+            raw: '"😀y"',
+        },
+        {
+            at: 100,
+            map: {
+                decoded: 'line1\n{{x}}',
+                toDecodedOffset:
+                    '99:0 100:0 101:0 102:1 103:2 104:3 105:4 106:5 107:6 108:6 109:7 110:8 111:9 112:10 113:11 114:11 115:11',
+                toDocOffset:
+                    '-1:101 0:101 1:102 2:103 3:104 4:105 5:106 6:108 7:109 8:110 9:111 10:112 11:113 12:113',
+            },
+            raw: String.raw`"line1\n{{x}}"`,
+        },
+        {
+            at: 0,
+            map: {
+                decoded: 'AB{{Vars.x}}',
+                toDecodedOffset:
+                    '-1:0 0:0 1:0 2:1 3:1 4:1 5:1 6:1 7:1 8:2 9:2 10:2 11:2 12:2 13:2 14:3 15:4 16:5 17:6 18:7 19:8 20:9 21:10 22:11 23:12 24:12 25:12',
+                toDocOffset:
+                    '-1:1 0:1 1:7 2:13 3:14 4:15 5:16 6:17 7:18 8:19 9:20 10:21 11:22 12:23 13:23',
+            },
+            raw: String.raw`"\u0041\u0042{{Vars.x}}"`,
+        },
+        {
+            at: 0,
+            map: {
+                decoded: 'a\\zb',
+                toDecodedOffset: '-1:0 0:0 1:0 2:1 3:2 4:3 5:4 6:4 7:4',
+                toDocOffset: '-1:1 0:1 1:2 2:3 3:4 4:5 5:5',
+            },
+            raw: String.raw`"a\zb"`,
+        },
+        {
+            at: 5,
+            map: {
+                decoded: 'hi',
+                toDecodedOffset: '4:0 5:0 6:0 7:1 8:2 9:2 10:2',
+                toDocOffset: '-1:6 0:6 1:7 2:8 3:8',
+            },
+            raw: '"hi"',
+        },
+        {
+            at: 0,
+            map: {
+                decoded: '',
+                toDecodedOffset: '-1:0 0:0 1:0 2:0 3:0',
+                toDocOffset: '-1:1 0:1 1:1',
+            },
+            raw: '""',
+        },
+        {
+            at: 100,
+            map: {
+                decoded: 'line1\n{{Request.x}}',
+                toDecodedOffset:
+                    '99:0 100:0 101:0 102:1 103:2 104:3 105:4 106:5 107:6 108:6 109:7 110:8 111:9 112:10 113:11 114:12 115:13 116:14 117:15 118:16 119:17 120:18 121:19 122:19 123:19',
+                toDocOffset:
+                    '-1:101 0:101 1:102 2:103 3:104 4:105 5:106 6:108 7:109 8:110 9:111 10:112 11:113 12:114 13:115 14:116 15:117 16:118 17:119 18:120 19:121 20:121',
+            },
+            raw: String.raw`"line1\n{{Request.x}}"`,
+        },
+    ])(
+        // Given - the JSON string token $raw at document offset $at
+        // Then - its decoded text, and where every offset maps each way — one past each end included, so the clamps are read too
+        'maps $raw at $at',
+        ({ at, map, raw }) => {
+            expect(described(raw, at)).toStrictEqual(map);
         },
     );
-
-    test('handles all eight simple escapes mapping each to its backslash', () => {
-        // Given - every simple escape in sequence
-        const map = createStringSourceMap(String.raw`"\"\\\/\b\f\n\r\t"`, 0);
-        // Then - decoded has the eight resolved chars
-        expect(map.decoded).toBe('"\\/\b\f\n\r\t');
-        expect(map.toDocOffset(0)).toBe(1);
-        expect(map.toDocOffset(1)).toBe(3);
-        expect(map.toDocOffset(2)).toBe(5);
-        expect(map.toDocOffset(7)).toBe(15);
-    });
-
-    test(String.raw`decodes \uXXXX escapes and maps the decoded char to the backslash`, () => {
-        // Given - `"AZ"` -> "AZ"; the A is 6 source chars
-        const map = createStringSourceMap(String.raw`"\u0041Z"`, 0);
-        // Then
-        expect(map.decoded).toBe('AZ');
-        expect(map.toDocOffset(0)).toBe(1);
-        expect(map.toDocOffset(1)).toBe(7);
-        expect(map.toDocOffset(2)).toBe(8);
-    });
-
-    test(String.raw`handles a surrogate pair written as two \uXXXX escapes (emoji)`, () => {
-        // Given - 😀 = U+1F600 = 😀 (12 source chars) then 'x'
-        const map = createStringSourceMap(String.raw`"\uD83D\uDE00x"`, 0);
-        // Then - decoded is the emoji (2 UTF-16 units) + 'x'
-        expect(map.decoded).toBe('😀x');
-        expect(map.decoded).toHaveLength(3);
-        expect(map.toDocOffset(0)).toBe(1);
-        expect(map.toDocOffset(1)).toBe(7);
-        expect(map.toDocOffset(2)).toBe(13);
-    });
-
-    test('handles a literal (unescaped) emoji in the source as two identity-mapped units', () => {
-        // Given - a raw emoji in the JSON content (2 code units), then 'y'
-        const map = createStringSourceMap('"😀y"', 0);
-        // Then - each surrogate half maps identity into the source
-        expect(map.decoded).toBe('😀y');
-        expect(map.toDocOffset(0)).toBe(1);
-        expect(map.toDocOffset(1)).toBe(2);
-        expect(map.toDocOffset(2)).toBe(3);
-    });
-
-    test(String.raw`maps a mustache that starts after a \n into the right document range`, () => {
-        // Given - a body `"line1\n{{x}}"` (template after an escape), token at doc 100
-        const raw = String.raw`"line1\n{{x}}"`;
-        const map = createStringSourceMap(raw, 100);
-        // Then - decoded is "line1\n{{x}}"
-        expect(map.decoded).toBe('line1\n{{x}}');
-        const mustacheDecodedStart = map.decoded.indexOf('{{');
-        expect(mustacheDecodedStart).toBe(6);
-        expect(map.toDocOffset(mustacheDecodedStart)).toBe(108);
-        expect(map.toDocOffset(8)).toBe(110);
-    });
-
-    test(String.raw`maps a mustache split across a \uXXXX-heavy prefix`, () => {
-        // Given - two unicode escapes then a mustache
-        const raw = String.raw`"\u0041\u0042{{Vars.x}}"`;
-        const map = createStringSourceMap(raw, 0);
-        // Then - decoded "AB{{Vars.x}}"; the `{` after the two 6-char escapes is at doc 13
-        expect(map.decoded).toBe('AB{{Vars.x}}');
-        const start = map.decoded.indexOf('{{');
-        expect(start).toBe(2);
-        expect(map.toDocOffset(start)).toBe(13);
-    });
-
-    test('passes a malformed escape through literally and stays total', () => {
-        // Given - a bad escape `\z` and a lone trailing backslash run
-        const map = createStringSourceMap(String.raw`"a\zb"`, 0);
-        // Then - the backslash is kept literally; mapping covers every decoded char
-        expect(map.decoded).toBe(String.raw`a\zb`);
-        expect(map.toDocOffset(0)).toBe(1);
-        expect(map.toDocOffset(1)).toBe(2);
-        expect(map.toDocOffset(2)).toBe(3);
-        expect(map.toDocOffset(3)).toBe(4);
-    });
-
-    test('clamps out-of-range decoded offsets to the content bounds', () => {
-        // Given - a short token at doc 5
-        const map = createStringSourceMap('"hi"', 5);
-        // Then - negatives clamp to first char, overshoot clamps to the end sentinel
-        expect(map.toDocOffset(-3)).toBe(6);
-        expect(map.toDocOffset(99)).toBe(8);
-    });
-
-    test('treats an empty string token sensibly', () => {
-        // Given - `""`
-        const map = createStringSourceMap('""', 0);
-        // Then - empty decoded, end sentinel at the closing quote
-        expect(map.decoded).toBe('');
-        expect(map.toDocOffset(0)).toBe(1);
-    });
-});
-
-describe('stringSourceMap.toDecodedOffset', () => {
-    test('round-trips with toDocOffset on a plain string', () => {
-        // Given - `"hello"` at doc 10
-        const map = createStringSourceMap('"hello"', 10);
-        // Then - every decoded offset maps to a doc offset that maps back
-        for (let d = 0; d <= map.decoded.length; d += 1) {
-            expect(map.toDecodedOffset(map.toDocOffset(d))).toBe(d);
-        }
-    });
-
-    test('clamps a cursor on the opening quote to decoded offset 0', () => {
-        // Given - token at doc 10 (opening quote at doc 10, first content char at doc 11)
-        const map = createStringSourceMap('"hello"', 10);
-        // Then - the opening quote and anything before clamps to 0
-        expect(map.toDecodedOffset(10)).toBe(0);
-        expect(map.toDecodedOffset(0)).toBe(0);
-    });
-
-    test('clamps a cursor at/after the closing quote to decoded.length', () => {
-        // Given - `"hi"` at doc 5 (closing quote at doc 8)
-        const map = createStringSourceMap('"hi"', 5);
-        // Then - the closing quote and beyond clamp to the decoded length
-        expect(map.toDecodedOffset(8)).toBe(2);
-        expect(map.toDecodedOffset(99)).toBe(2);
-    });
-
-    test(String.raw`maps a cursor just after a \n escape to the decoded offset past it`, () => {
-        // Given - `"a\nb"` at doc 0: source a(1) \(2) n(3) b(4)
-        const map = createStringSourceMap(String.raw`"a\nb"`, 0);
-        // Then - a cursor at the 'b' source position (doc 4) is decoded offset 2 (after a, \n)
-        expect(map.toDecodedOffset(4)).toBe(2);
-        expect(map.toDecodedOffset(2)).toBe(1);
-    });
-
-    test(String.raw`maps a cursor after a \n-prefixed mustache to the right decoded offset`, () => {
-        // Given - `"line1\n{{Request.x}}"` token at doc 100
-        const raw = String.raw`"line1\n{{Request.x}}"`;
-        const map = createStringSourceMap(raw, 100);
-        expect(map.toDocOffset(6)).toBe(108);
-        const decodedDot = map.decoded.indexOf('Request.') + 'Request.'.length;
-        const docDot = map.toDocOffset(decodedDot);
-        expect(map.toDecodedOffset(docDot)).toBe(decodedDot);
-    });
 });

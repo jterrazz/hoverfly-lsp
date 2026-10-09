@@ -1,276 +1,228 @@
 import { describe, expect, test } from 'vitest';
 
 import { analyze } from '../analyzer.js';
-import type { AnalyzerContext, TemplateFinding } from '../analyzer.js';
 
-function ctx(variables: string[] = [], literals: string[] = []): AnalyzerContext {
-    return { variableNames: new Set(variables), literalNames: new Set(literals) };
-}
-
-function kinds(findings: TemplateFinding[]): string[] {
-    return findings.map((f) => f.kind);
-}
-
-describe('hF502 — parse errors', () => {
-    test('reports an unclosed mustache', () => {
-        // Given - a template missing its closing braces
-        const findings = analyze('hello {{name');
-        // Then - one HF502 finding carrying the parser message
-        expect(kinds(findings)).toContain('HF502');
-        const error = findings.find((f) => f.kind === 'HF502');
-        expect(error?.args.message).toContain('Unclosed mustache');
-    });
-
-    test('reports an unclosed block', () => {
-        // Given - a block helper that is never closed
-        const findings = analyze('{{#each xs}}{{this}}');
-        // Then - an HF502 finding fires
-        expect(kinds(findings)).toContain('HF502');
-    });
-
-    test('reports a mismatched closing block', () => {
-        // Given - an #if closed as /each
-        const findings = analyze('{{#if x}}a{{/each}}');
-        // Then - an HF502 finding fires
-        expect(kinds(findings)).toContain('HF502');
-    });
-
-    test('produces no findings for a plain literal', () => {
-        // Given - text with no template syntax
-        // Then - nothing fires
-        expect(analyze('just some text')).toStrictEqual([]);
-    });
-});
-
-describe('hF503 — unknown helper (precision: only flag calls)', () => {
-    test('flags an unknown helper called with arguments', () => {
-        // Given - a bare identifier WITH an argument (only helpers take args)
-        const findings = analyze("{{bogus 'x'}}");
-        // Then - HF503 on the helper name
-        expect(kinds(findings)).toStrictEqual(['HF503']);
-        expect(findings[0]?.args.name).toBe('bogus');
-        // And - the offset points at the helper name (after the `{{`)
-        expect(findings[0]?.start).toBe(2);
-    });
-
-    test('flags an unknown block-open helper', () => {
-        // Given - an unknown helper opened as a block
-        const findings = analyze('{{#bogus}}a{{/bogus}}');
-        // Then - HF503 fires (a block open is unambiguously a helper call)
-        expect(kinds(findings)).toContain('HF503');
-    });
-
-    test('flags an unknown subexpression head', () => {
-        // Given - an unknown helper used as a subexpression
-        const findings = analyze("{{concat (bogus 'x')}}");
-        // Then - HF503 fires for the subexpression head
-        expect(kinds(findings)).toStrictEqual(['HF503']);
-        expect(findings[0]?.args.name).toBe('bogus');
-    });
-
-    test('does NOT flag a dotted path lookup like {{State.foo}}', () => {
-        // Given - a State path lookup (not a helper)
-        // Then - no finding
-        expect(analyze('{{State.foo}}')).toStrictEqual([]);
-    });
-
-    test('does NOT flag {{Request.Path}} or {{Request.QueryParam.x}}', () => {
-        // Given - request data accessors
-        // Then - nothing fires
-        expect(analyze('{{Request.Path}} {{Request.QueryParam.x}}')).toStrictEqual([]);
-    });
-
-    test('does NOT flag a bare arg-less unknown identifier (treated as a context path)', () => {
-        // Given - {{something}} with no args, not a known helper — indistinguishable from a path
-        // Then - no HF503 (raymond renders an empty lookup, no panic)
-        expect(analyze('{{something}}')).toStrictEqual([]);
-    });
-
-    test('accepts a bare known zero-arg helper {{randomString}}', () => {
-        // Given - a registered zero-arg helper used bare
-        // Then - nothing fires
-        expect(analyze('{{randomString}}')).toStrictEqual([]);
-    });
-
-    test('does NOT flag the Request.Body method-call form', () => {
-        // Given - the {{Request.Body 'jsonpath' '$.x'}} method-call form
-        // Then - no unknown-helper finding
-        expect(analyze("{{Request.Body 'jsonpath' '$.x'}}")).toStrictEqual([]);
-    });
-
-    test('does NOT flag @data vars or this inside #each', () => {
-        // Given - @index / this used inside an #each block
-        // Then - nothing fires
-        expect(analyze('{{#each xs}}{{@index}}:{{this.id}}{{/each}}')).toStrictEqual([]);
-    });
-});
-
-describe('hF504 — arity / block-vs-inline misuse', () => {
-    test('flags too few arguments to a fixed-arity helper', () => {
-        // Given - replace requires 3 args, given 1
-        const findings = analyze("{{replace 'a'}}");
-        // Then - HF504 with the name and count
-        expect(kinds(findings)).toStrictEqual(['HF504']);
-        expect(findings[0]?.args.name).toBe('replace');
-        expect(findings[0]?.args.n).toBe('1');
-    });
-
-    test('accepts correct arity for #equal (block, 2 args)', () => {
-        // Given - #equal with its two required args
-        // Then - no arity finding
-        expect(analyze('{{#equal a b}}x{{else}}y{{/equal}}')).toStrictEqual([]);
-    });
-
-    test('flags #equal with one argument', () => {
-        // Given - #equal block opened with a single argument
-        const findings = analyze('{{#equal a}}x{{/equal}}');
-        // Then - HF504
-        expect(kinds(findings)).toStrictEqual(['HF504']);
-        expect(findings[0]?.args.name).toBe('equal');
-    });
-
-    test('flags an inline helper opened as a block', () => {
-        // Given - randomString (inline) opened as a block
-        const findings = analyze('{{#randomString}}x{{/randomString}}');
-        // Then - HF504 block-vs-inline misuse
-        expect(kinds(findings)).toStrictEqual(['HF504']);
-        expect(findings[0]?.args.sig).toContain('inline');
-    });
-
-    test('flags a block helper used inline', () => {
-        // Given - #each (block) used inline
-        const findings = analyze('{{each xs}}');
-        // Then - HF504 block-vs-inline misuse
-        expect(kinds(findings)).toStrictEqual(['HF504']);
-        expect(findings[0]?.args.sig).toContain('block');
-    });
-
-    test('accepts variadic concat with any number of args', () => {
-        // Given - concat with 0 and with many args
-        expect(analyze('{{concat}}')).toStrictEqual([]);
-        expect(analyze("{{concat 'a' 'b' 'c'}}")).toStrictEqual([]);
-    });
-
-    test('accepts optional now args (0, 1, or 2)', () => {
-        // Given - now used with 0/1/2 args
-        expect(analyze('{{now}}')).toStrictEqual([]);
-        expect(analyze("{{now '-1d'}}")).toStrictEqual([]);
-        expect(analyze("{{now '-1d' 'unix'}}")).toStrictEqual([]);
-    });
-});
-
-describe('hF505 / HF506 — Vars / Literals resolution', () => {
-    test('flags an unresolved Vars.X', () => {
-        // Given - Vars.missing with no such variable declared
-        const findings = analyze('{{Vars.missing}}', ctx(['present']));
-        // Then - HF505 with the variable name
-        expect(kinds(findings)).toStrictEqual(['HF505']);
-        expect(findings[0]?.args.x).toBe('missing');
-    });
-
-    test('resolves a declared Vars.X', () => {
-        // Given - Vars.present declared in context
-        // Then - nothing fires
-        expect(analyze('{{Vars.present}}', ctx(['present']))).toStrictEqual([]);
-    });
-
-    test('flags an unresolved Literals.X', () => {
-        // Given - Literals.gone with no such literal declared
-        const findings = analyze('{{Literals.gone}}', ctx([], ['here']));
-        // Then - HF506
-        expect(kinds(findings)).toStrictEqual(['HF506']);
-        expect(findings[0]?.args.x).toBe('gone');
-    });
-
-    test('resolves a declared Literals.X', () => {
-        // Given - Literals.here declared
-        // Then - nothing fires
-        expect(analyze('{{Literals.here}}', ctx([], ['here']))).toStrictEqual([]);
-    });
-
-    test('resolves Vars.X used as a helper argument', () => {
-        // Given - an undeclared Vars used inside a helper call
-        const findings = analyze('{{length Vars.nope}}', ctx());
-        // Then - HF505 fires for the argument path
-        expect(kinds(findings)).toStrictEqual(['HF505']);
-        expect(findings[0]?.args.x).toBe('nope');
-    });
-});
-
-describe('hF507 / HF508 — faker (string-literal arg only)', () => {
-    test('accepts a valid faker name', () => {
-        // Given - faker 'Name', a valid zero-arg gofakeit method
-        // Then - nothing fires
-        expect(analyze("{{faker 'Name'}}")).toStrictEqual([]);
-    });
-
-    test('flags an unknown faker type (HF507)', () => {
-        // Given - a misspelled faker type
-        const findings = analyze("{{faker 'Nope'}}");
-        // Then - HF507 with the type and the pinned version
-        expect(kinds(findings)).toStrictEqual(['HF507']);
-        expect(findings[0]?.args.t).toBe('Nope');
-        expect(findings[0]?.args.version).toBe('6.28.0');
-    });
-
-    test('flags a parameterized gofakeit method (HF508)', () => {
-        // Given - faker 'Number', which panics when called with no args
-        const findings = analyze("{{faker 'Number'}}");
-        // Then - HF508 (panic warning)
-        expect(kinds(findings)).toStrictEqual(['HF508']);
-        expect(findings[0]?.args.t).toBe('Number');
-    });
-
-    test('does NOT flag a dynamic faker arg (path)', () => {
-        // Given - faker called with a path argument (unknowable statically)
-        // Then - no faker finding
-        expect(analyze('{{faker Vars.kind}}', ctx(['kind']))).toStrictEqual([]);
-    });
-
-    test('does NOT flag a faker subexpression arg', () => {
-        // Given - faker called with a subexpression
-        // Then - no faker finding (only the inner call is analysed)
-        expect(analyze("{{faker (getValue 'k')}}")).toStrictEqual([]);
-    });
-});
-
-describe('hF509 — now offset token validation', () => {
-    test('accepts valid offsets including signs and fractions', () => {
-        // Given - a range of valid offsets
-        for (const offset of ['', '0', '1d', '-1d', '+2h45m', '1d12h', '-1.5h', '300ms', '5µs']) {
-            // Then - none flag
-            expect(analyze(`{{now '${offset}'}}`)).toStrictEqual([]);
-        }
-    });
-
-    test('flags an unsupported unit like w (week)', () => {
-        // Given - 2w (weeks unsupported)
-        const findings = analyze("{{now '2w'}}");
-        // Then - HF509 with the offending offset
-        expect(kinds(findings)).toStrictEqual(['HF509']);
-        expect(findings[0]?.args.o).toBe('2w');
-    });
-
-    test("flags a garbage offset like 'cat'", () => {
-        // Given - a non-duration string
-        const findings = analyze("{{now 'cat'}}");
-        // Then - HF509
-        expect(kinds(findings)).toStrictEqual(['HF509']);
-    });
-
-    test('does NOT flag a dynamic now offset', () => {
-        // Given - now called with a path offset
-        // Then - no HF509 (the literal-only precision rule)
-        expect(analyze('{{now Vars.off}}', ctx(['off']))).toStrictEqual([]);
-    });
-});
-
-describe('offset fidelity', () => {
-    test('points HF503 at the helper name within the mustache', () => {
-        // Given - leading text then an unknown helper call
-        const findings = analyze('xx {{bogus 1}}');
-        // Then - start is the offset of `bogus`, end just past it
-        expect(findings[0]?.start).toBe(5);
-        expect(findings[0]?.end).toBe(10);
-    });
+describe('analyze', () => {
+    test.each([
+        {
+            findings: [
+                {
+                    args: { message: 'Unclosed mustache — missing closing braces' },
+                    end: 12,
+                    kind: 'HF502',
+                    start: 6,
+                },
+            ],
+            literals: [],
+            template: 'hello {{name',
+            variables: [],
+        },
+        {
+            findings: [
+                {
+                    args: { message: 'Unclosed block {{#each}} — missing {{/each}}' },
+                    end: 12,
+                    kind: 'HF502',
+                    start: 0,
+                },
+            ],
+            literals: [],
+            template: '{{#each xs}}{{this}}',
+            variables: [],
+        },
+        {
+            findings: [
+                {
+                    args: {
+                        message: 'Mismatched closing block: expected {{/if}} but found {{/each}}',
+                    },
+                    end: 19,
+                    kind: 'HF502',
+                    start: 10,
+                },
+            ],
+            literals: [],
+            template: '{{#if x}}a{{/each}}',
+            variables: [],
+        },
+        { findings: [], literals: [], template: 'just some text', variables: [] },
+        {
+            findings: [{ args: { name: 'bogus' }, end: 7, kind: 'HF503', start: 2 }],
+            literals: [],
+            template: "{{bogus 'x'}}",
+            variables: [],
+        },
+        {
+            findings: [{ args: { name: 'bogus' }, end: 8, kind: 'HF503', start: 3 }],
+            literals: [],
+            template: '{{#bogus}}a{{/bogus}}',
+            variables: [],
+        },
+        {
+            findings: [{ args: { name: 'bogus' }, end: 15, kind: 'HF503', start: 10 }],
+            literals: [],
+            template: "{{concat (bogus 'x')}}",
+            variables: [],
+        },
+        { findings: [], literals: [], template: '{{State.foo}}', variables: [] },
+        {
+            findings: [],
+            literals: [],
+            template: '{{Request.Path}} {{Request.QueryParam.x}}',
+            variables: [],
+        },
+        { findings: [], literals: [], template: '{{something}}', variables: [] },
+        { findings: [], literals: [], template: '{{randomString}}', variables: [] },
+        {
+            findings: [],
+            literals: [],
+            template: "{{Request.Body 'jsonpath' '$.x'}}",
+            variables: [],
+        },
+        {
+            findings: [],
+            literals: [],
+            template: '{{#each xs}}{{@index}}:{{this.id}}{{/each}}',
+            variables: [],
+        },
+        {
+            findings: [
+                {
+                    args: { n: '1', name: 'replace', sig: '3 arguments' },
+                    end: 9,
+                    kind: 'HF504',
+                    start: 2,
+                },
+            ],
+            literals: [],
+            template: "{{replace 'a'}}",
+            variables: [],
+        },
+        {
+            findings: [],
+            literals: [],
+            template: '{{#equal a b}}x{{else}}y{{/equal}}',
+            variables: [],
+        },
+        {
+            findings: [
+                {
+                    args: { n: '1', name: 'equal', sig: '2 arguments' },
+                    end: 8,
+                    kind: 'HF504',
+                    start: 3,
+                },
+            ],
+            literals: [],
+            template: '{{#equal a}}x{{/equal}}',
+            variables: [],
+        },
+        {
+            findings: [
+                {
+                    args: { n: '0', name: 'randomString', sig: 'an inline helper' },
+                    end: 15,
+                    kind: 'HF504',
+                    start: 3,
+                },
+            ],
+            literals: [],
+            template: '{{#randomString}}x{{/randomString}}',
+            variables: [],
+        },
+        {
+            findings: [
+                {
+                    args: { n: '1', name: 'each', sig: 'a block helper' },
+                    end: 6,
+                    kind: 'HF504',
+                    start: 2,
+                },
+            ],
+            literals: [],
+            template: '{{each xs}}',
+            variables: [],
+        },
+        { findings: [], literals: [], template: '{{concat}}', variables: [] },
+        { findings: [], literals: [], template: "{{concat 'a' 'b' 'c'}}", variables: [] },
+        { findings: [], literals: [], template: '{{now}}', variables: [] },
+        { findings: [], literals: [], template: "{{now '-1d'}}", variables: [] },
+        { findings: [], literals: [], template: "{{now '-1d' 'unix'}}", variables: [] },
+        {
+            findings: [{ args: { x: 'missing' }, end: 14, kind: 'HF505', start: 2 }],
+            literals: [],
+            template: '{{Vars.missing}}',
+            variables: ['present'],
+        },
+        { findings: [], literals: [], template: '{{Vars.present}}', variables: ['present'] },
+        {
+            findings: [{ args: { x: 'gone' }, end: 15, kind: 'HF506', start: 2 }],
+            literals: ['here'],
+            template: '{{Literals.gone}}',
+            variables: [],
+        },
+        { findings: [], literals: ['here'], template: '{{Literals.here}}', variables: [] },
+        {
+            findings: [{ args: { x: 'nope' }, end: 18, kind: 'HF505', start: 9 }],
+            literals: [],
+            template: '{{length Vars.nope}}',
+            variables: [],
+        },
+        { findings: [], literals: [], template: "{{faker 'Name'}}", variables: [] },
+        {
+            findings: [
+                { args: { t: 'Nope', version: '6.28.0' }, end: 14, kind: 'HF507', start: 8 },
+            ],
+            literals: [],
+            template: "{{faker 'Nope'}}",
+            variables: [],
+        },
+        {
+            findings: [{ args: { t: 'Number' }, end: 16, kind: 'HF508', start: 8 }],
+            literals: [],
+            template: "{{faker 'Number'}}",
+            variables: [],
+        },
+        { findings: [], literals: [], template: '{{faker Vars.kind}}', variables: ['kind'] },
+        { findings: [], literals: [], template: "{{faker (getValue 'k')}}", variables: [] },
+        { findings: [], literals: [], template: "{{now ''}}", variables: [] },
+        { findings: [], literals: [], template: "{{now '0'}}", variables: [] },
+        { findings: [], literals: [], template: "{{now '1d'}}", variables: [] },
+        { findings: [], literals: [], template: "{{now '+2h45m'}}", variables: [] },
+        { findings: [], literals: [], template: "{{now '1d12h'}}", variables: [] },
+        { findings: [], literals: [], template: "{{now '-1.5h'}}", variables: [] },
+        { findings: [], literals: [], template: "{{now '300ms'}}", variables: [] },
+        { findings: [], literals: [], template: "{{now '5µs'}}", variables: [] },
+        {
+            findings: [{ args: { o: '2w' }, end: 10, kind: 'HF509', start: 6 }],
+            literals: [],
+            template: "{{now '2w'}}",
+            variables: [],
+        },
+        {
+            findings: [{ args: { o: 'cat' }, end: 11, kind: 'HF509', start: 6 }],
+            literals: [],
+            template: "{{now 'cat'}}",
+            variables: [],
+        },
+        { findings: [], literals: [], template: '{{now Vars.off}}', variables: ['off'] },
+        {
+            findings: [{ args: { name: 'bogus' }, end: 10, kind: 'HF503', start: 5 }],
+            literals: [],
+            template: 'xx {{bogus 1}}',
+            variables: [],
+        },
+    ])(
+        // Given - $template, with the variables and literals the document declares
+        // Then - every HF502–HF509 finding, its span and its message arguments, or none
+        'analyzes $template',
+        ({ findings, literals, template, variables }) => {
+            expect(
+                analyze(template, {
+                    literalNames: new Set(literals),
+                    variableNames: new Set(variables),
+                }),
+            ).toStrictEqual(findings);
+        },
+    );
 });

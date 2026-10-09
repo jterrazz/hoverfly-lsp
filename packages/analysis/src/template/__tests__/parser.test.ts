@@ -1,401 +1,282 @@
 import { describe, expect, test } from 'vitest';
 
-import type {
-    BlockNode,
-    ContentNode,
-    Expression,
-    MustacheNode,
-    PathExpression,
-    Statement,
-    SubExpression,
-    TemplateNode,
-} from '../ast.js';
 import { parse } from '../parser.js';
-import type { TemplateParseError } from '../parser.js';
+import { outline } from './outline.js';
 
-function expectMustache(statement: Statement | undefined): MustacheNode {
-    expect(statement?.type).toBe('MustacheNode');
-    return statement as MustacheNode;
-}
-function expectBlock(statement: Statement | undefined): BlockNode {
-    expect(statement?.type).toBe('BlockNode');
-    return statement as BlockNode;
-}
-function expectContent(statement: Statement | undefined): ContentNode {
-    expect(statement?.type).toBe('ContentNode');
-    return statement as ContentNode;
-}
-function expectPath(expression: Expression | undefined): PathExpression {
-    expect(expression?.type).toBe('PathExpression');
-    return expression as PathExpression;
-}
-function expectSub(expression: Expression | undefined): SubExpression {
-    expect(expression?.type).toBe('SubExpression');
-    return expression as SubExpression;
-}
-
-describe('parse — content & plain mustaches', () => {
-    test('parses leading/trailing literal content around a mustache', () => {
-        // Given
-        const { ast, errors } = parse('a {{x}} b');
-        // Then - content, mustache, content; no errors
-        expect(errors).toStrictEqual([]);
-        expect(ast.body).toHaveLength(3);
-        expect(expectContent(ast.body[0]).value).toBe('a ');
-        const mustache = expectMustache(ast.body[1]);
-        expect(mustache.start).toBe(2);
-        expect(mustache.end).toBe(7);
-        expect(mustache.path.parts).toStrictEqual(['x']);
-        expect(expectContent(ast.body[2]).value).toBe(' b');
-    });
-
-    test('parses a helper call with mixed string and number args', () => {
-        // Given - report 08 §1 example shape
-        const { ast, errors } = parse("{{substring 'hello' '0' 2}}");
-        // Then
-        expect(errors).toStrictEqual([]);
-        const mustache = expectMustache(ast.body[0]);
-        expect(mustache.path.parts).toStrictEqual(['substring']);
-        expect(mustache.params).toHaveLength(3);
-        expect(mustache.params[0]).toMatchObject({
-            type: 'StringLiteral',
-            value: 'hello',
-            quote: "'",
-        });
-        expect(mustache.params[1]).toMatchObject({ type: 'StringLiteral', value: '0' });
-        expect(mustache.params[2]).toMatchObject({ type: 'NumberLiteral', value: 2, raw: '2' });
-    });
-
-    test('supports double-quoted string args (SQL idiom)', () => {
-        // Given - report 08 §4 csvSqlCommand example
-        const { ast, errors } = parse('{{csvSqlCommand "SELECT * FROM pets"}}');
-        // Then
-        expect(errors).toStrictEqual([]);
-        const mustache = expectMustache(ast.body[0]);
-        expect(mustache.params[0]).toMatchObject({
-            type: 'StringLiteral',
-            value: 'SELECT * FROM pets',
-            quote: '"',
-        });
-    });
-
-    test('distinguishes escaped {{...}} from unescaped {{{...}}}', () => {
-        // Given
-        const escaped = expectMustache(parse('{{x}}').ast.body[0]);
-        const triple = expectMustache(parse('{{{x}}}').ast.body[0]);
-        // Then
-        expect(escaped.escaped).toBeTruthy();
-        expect(triple.escaped).toBeFalsy();
-        expect(triple.path.parts).toStrictEqual(['x']);
-    });
-
-    test('tolerates whitespace inside the mustache', () => {
-        // Given
-        const { errors } = parse("{{   now   '-1d'   'unix'   }}");
-        // Then
-        expect(errors).toStrictEqual([]);
-    });
-
-    test('keeps `}}` inside a quoted argument from closing the mustache', () => {
-        // Given - braces inside a string literal
-        const { ast, errors } = parse("{{replace x '}}' 'y'}}");
-        // Then
-        expect(errors).toStrictEqual([]);
-        const mustache = expectMustache(ast.body[0]);
-        expect(mustache.params[0]).toMatchObject({ type: 'PathExpression' });
-        expect(mustache.params[1]).toMatchObject({ type: 'StringLiteral', value: '}}' });
-    });
-});
-
-describe('parse — path expressions', () => {
-    test('parses dotted path lookups (TemplatingData roots)', () => {
-        // Given
-        const mustache = expectMustache(parse('{{Request.QueryParam.foo}}').ast.body[0]);
-        // Then
-        expect(mustache.path.parts).toStrictEqual(['Request', 'QueryParam', 'foo']);
-        expect(mustache.path.data).toBeFalsy();
-        expect(mustache.path.thisRef).toBeFalsy();
-    });
-
-    test('parses bracketed indexed segments', () => {
-        // Given - report 08 §5.1 example
-        const mustache = expectMustache(parse('{{Request.Header.Authorization.[0]}}').ast.body[0]);
-        // Then - the bracket inner is a part
-        expect(mustache.path.parts).toStrictEqual(['Request', 'Header', 'Authorization', '0']);
-    });
-
-    test('parses @-prefixed data variables', () => {
-        // Given
-        const mustache = expectMustache(parse('{{@index}}').ast.body[0]);
-        // Then
-        expect(mustache.path.data).toBeTruthy();
-        expect(mustache.path.parts).toStrictEqual(['index']);
-        expect(mustache.path.original).toBe('@index');
-    });
-
-    test('parses bare `this` and `this.field`', () => {
-        // Given
-        const bare = expectMustache(parse('{{this}}').ast.body[0]);
-        const field = expectMustache(parse('{{this.name}}').ast.body[0]);
-        // Then
-        expect(bare.path.thisRef).toBeTruthy();
-        expect(bare.path.parts).toStrictEqual([]);
-        expect(field.path.thisRef).toBeTruthy();
-        expect(field.path.parts).toStrictEqual(['name']);
-    });
-});
-
-describe('parse — subexpressions', () => {
-    test("parses nested subexpressions (multiply (this.price) (this.qty) '')", () => {
-        // Given - report 08 §5.1 example
-        const { ast, errors } = parse("{{multiply (this.price) (this.qty) ''}}");
-        // Then
-        expect(errors).toStrictEqual([]);
-        const mustache = expectMustache(ast.body[0]);
-        expect(mustache.path.parts).toStrictEqual(['multiply']);
-        expect(mustache.params).toHaveLength(3);
-        const first = expectSub(mustache.params[0]);
-        expect(first.path.thisRef).toBeTruthy();
-        expect(first.path.parts).toStrictEqual(['price']);
-        const second = expectSub(mustache.params[1]);
-        expect(second.path.parts).toStrictEqual(['qty']);
-        expect(mustache.params[2]).toMatchObject({ type: 'StringLiteral', value: '' });
-    });
-
-    test("parses a subexpression nested inside a subexpression: (helper (inner 'a') 'b')", () => {
-        // Given
-        const { ast, errors } = parse("{{outer (helper (inner 'a') 'b')}}");
-        // Then
-        expect(errors).toStrictEqual([]);
-        const mustache = expectMustache(ast.body[0]);
-        const helper = expectSub(mustache.params[0]);
-        expect(helper.path.parts).toStrictEqual(['helper']);
-        const inner = expectSub(helper.params[0]);
-        expect(inner.path.parts).toStrictEqual(['inner']);
-        expect(inner.params[0]).toMatchObject({ type: 'StringLiteral', value: 'a' });
-        expect(helper.params[1]).toMatchObject({ type: 'StringLiteral', value: 'b' });
-    });
-
-    test("treats Request.Body 'jsonpath' '$.x' as a path call with two string args", () => {
-        // Given - the func-typed-field method-call form (report 08 §6)
-        const mustache = expectMustache(parse("{{Request.Body 'jsonpath' '$.items'}}").ast.body[0]);
-        // Then
-        expect(mustache.path.parts).toStrictEqual(['Request', 'Body']);
-        expect(mustache.params).toHaveLength(2);
-        expect(mustache.params[0]).toMatchObject({ value: 'jsonpath' });
-        expect(mustache.params[1]).toMatchObject({ value: '$.items' });
-    });
-});
-
-describe('parse — block helpers', () => {
-    test('parses #if with an {{else}} inverse', () => {
-        // Given
-        const { ast, errors } = parse('{{#if x}}yes{{else}}no{{/if}}');
-        // Then
-        expect(errors).toStrictEqual([]);
-        const block = expectBlock(ast.body[0]);
-        expect(block.path.parts).toStrictEqual(['if']);
-        expect(block.params).toHaveLength(1);
-        expect(expectContent(block.program[0]).value).toBe('yes');
-        expect(block.inverse).toBeDefined();
-        expect(expectContent(block.inverse?.[0]).value).toBe('no');
-        expect(block.openTag.start).toBe(0);
-        expect(block.closeTag?.end).toBe(block.end);
-    });
-
-    test('parses #each with this.field, @index and a #unless @last guard (csvAsMap idiom)', () => {
-        // Given - report 08 §4 idiom
-        const source =
-            '{{#each (csvAsMap "pets")}}{{this.name}}{{#unless @last}},{{/unless}}{{/each}}';
-        const { ast, errors } = parse(source);
-        // Then
-        expect(errors).toStrictEqual([]);
-        const each = expectBlock(ast.body[0]);
-        expect(each.path.parts).toStrictEqual(['each']);
-        expect(expectSub(each.params[0]).path.parts).toStrictEqual(['csvAsMap']);
-        const name = expectMustache(each.program[0]);
-        expect(name.path.thisRef).toBeTruthy();
-        expect(name.path.parts).toStrictEqual(['name']);
-        const unless = expectBlock(each.program[1]);
-        expect(unless.path.parts).toStrictEqual(['unless']);
-        expect(expectPath(unless.params[0]).data).toBeTruthy();
-    });
-
-    test('parses nested #each this (csvAsArray idiom)', () => {
-        // Given - report 08 §5.1 example
-        const { ast, errors } = parse(
-            "{{#each (csvAsArray 'pets')}}{{#each this}}{{this}} {{/each}}{{/each}}",
-        );
-        // Then
-        expect(errors).toStrictEqual([]);
-        const outer = expectBlock(ast.body[0]);
-        const inner = expectBlock(outer.program[0]);
-        expect(inner.path.parts).toStrictEqual(['each']);
-        expect(expectPath(inner.params[0]).thisRef).toBeTruthy();
-    });
-
-    test('parses #equal with a subexpression and {{else}} (csvDeleteRows idiom)', () => {
-        // Given - report 08 §5.1 example (SpectoLabs fork `equal`)
-        const source =
-            '{{#equal (csvDeleteRows "pets" "category" "cats" true) "0"}}none{{else}}ok{{/equal}}';
-        const { ast, errors } = parse(source);
-        // Then
-        expect(errors).toStrictEqual([]);
-        const block = expectBlock(ast.body[0]);
-        expect(block.path.parts).toStrictEqual(['equal']);
-        const sub = expectSub(block.params[0]);
-        expect(sub.path.parts).toStrictEqual(['csvDeleteRows']);
-        expect(sub.params).toHaveLength(4);
-        expect(sub.params[3]).toMatchObject({ type: 'BooleanLiteral', value: true });
-        expect(block.params[1]).toMatchObject({ type: 'StringLiteral', value: '0' });
-        expect(block.inverse).toBeDefined();
-    });
-
-    test('records the open/close tag spans for bracket matching', () => {
-        // Given
-        const block = expectBlock(parse('{{#if x}}body{{/if}}').ast.body[0]);
-        // Then - openTag covers `{{#if x}}` (0..9), closeTag covers `{{/if}}`
-        expect(block.openTag).toStrictEqual({ start: 0, end: 9 });
-        expect(block.closeTag).toStrictEqual({ start: 13, end: 20 });
-    });
-});
-
-describe('parse — error recovery (exact offsets)', () => {
-    test('records an unclosed mustache and still scans the rest', () => {
-        // Given - a final `{{x` with no closing braces anywhere after it
-        const { ast, errors } = parse('a {{y}} then {{x and more');
-        // Then - one error at the unclosed `{{` (offset 13)
-        expect(errors).toHaveLength(1);
-        expect(errors[0]).toMatchObject({
-            message: 'Unclosed mustache — missing closing braces',
-            start: 13,
-        });
-        // The earlier `{{y}}` was still parsed as a mustache.
-        const recovered = ast.body.find((node) => node.type === 'MustacheNode') as MustacheNode;
-        expect(recovered.path.parts).toStrictEqual(['y']);
-    });
-
-    test('records an unclosed block with the block name and open-tag range', () => {
-        // Given - `{{#each xs}}` never closed
-        const { errors } = parse('{{#each xs}}item');
-        // Then
-        expect(errors).toHaveLength(1);
-        expect(errors[0]).toMatchObject({
-            message: 'Unclosed block {{#each}} — missing {{/each}}',
-            start: 0,
-            end: 12,
-        });
-    });
-
-    test("records a mismatched closing block at the closer's range", () => {
-        // Given - opened #if, closed with /each
-        const { errors } = parse('{{#if x}}body{{/each}}');
-        // Then - the closer `{{/each}}` spans 13..22
-        expect(errors).toHaveLength(1);
-        expect(errors[0]).toMatchObject({
-            message: 'Mismatched closing block: expected {{/if}} but found {{/each}}',
-            start: 13,
-            end: 22,
-        });
-    });
-
-    test('records a stray closing block with no matching open', () => {
-        // Given - a lone `{{/if}}`
-        const { errors } = parse('text {{/if}} more');
-        // Then - error spans the closer (5..12)
-        expect(errors).toHaveLength(1);
-        expect(errors[0]).toMatchObject({
-            message: 'Unexpected closing block {{/if}} — no matching open block',
-            start: 5,
-            end: 12,
-        });
-    });
-
-    test('records an empty mustache', () => {
-        // Given
-        const { errors } = parse('{{}}');
-        // Then
-        expect(errors).toHaveLength(1);
-        expect(errors[0]).toMatchObject({
-            message: 'Empty mustache — expected a path or helper',
-            start: 0,
-            end: 4,
-        });
-    });
-
-    test('records an unclosed subexpression but keeps the call', () => {
-        // Given - `(inner 'a'` never closes
-        const { ast, errors } = parse("{{outer (inner 'a'}}");
-        // Then
-        expect(
-            errors.some((error) => error.message === "Unclosed subexpression — missing ')'"),
-        ).toBeTruthy();
-        const mustache = expectMustache(ast.body[0]);
-        expect(expectSub(mustache.params[0]).path.parts).toStrictEqual(['inner']);
-    });
-
-    test('records an unclosed string literal', () => {
-        // Given - `'abc` never closes inside a mustache
-        const { errors } = parse("{{x 'abc}}");
-        // Then - an unclosed string is reported: findClose treats the `}}` as inside the string, so the mustache is unclosed too, and either way an error is recorded
-        expect(errors.length).toBeGreaterThanOrEqual(1);
-    });
-
-    test('recovers a valid block after a mismatched one', () => {
-        // Given - mismatch then a clean mustache
-        const { ast, errors } = parse('{{#if x}}a{{/each}}{{ok}}');
-        // Then - mismatch recorded, `{{ok}}` still parsed
-        expect(errors).toHaveLength(1);
-        const last = ast.body.at(-1);
-        expect(expectMustache(last).path.parts).toStrictEqual(['ok']);
-    });
-});
-
-describe('parse — robustness', () => {
-    test('never throws on adversarial input', () => {
-        // Given - a pile of broken syntax
-        const inputs = [
-            '{{',
-            '{{{',
-            '}}',
-            '{{#}}',
-            '{{/}}',
-            '{{# }}{{/}}',
-            '{{((((',
-            "{{a 'b}}",
-            '{{#each}}{{else}}{{else}}{{/each}}',
-            '{{#a}}{{#b}}{{/a}}{{/b}}',
-        ];
-        // Then - parse returns a result for every one
-        for (const input of inputs) {
-            expect(() => parse(input)).not.toThrow();
-            expect(parse(input).ast.type).toBe('Program');
-        }
-    });
-
-    test('returns an empty program for an empty source', () => {
-        // Given
-        const { ast, errors } = parse('');
-        // Then
-        expect(ast.body).toStrictEqual([]);
-        expect(errors).toStrictEqual([]);
-    });
-
-    test('treats a body with no mustaches as a single content node', () => {
-        // Given
-        const { ast } = parse('just plain text');
-        // Then
-        expect(ast.body).toHaveLength(1);
-        expect(expectContent(ast.body[0]).value).toBe('just plain text');
-    });
-
-    test('exposes the public node and error types through the barrel', () => {
-        // Given - the parse result, typed through the barrel's public types
-        const { ast, errors } = parse('{{x}}{{');
-        // Then - every node satisfies TemplateNode, every error TemplateParseError (span-shaped)
-        const nodes: TemplateNode[] = [ast, ...ast.body];
-        const firstError: TemplateParseError | undefined = errors[0];
-        expect(nodes.every((node) => typeof node.start === 'number')).toBeTruthy();
-        expect(firstError?.message).toContain('Unclosed mustache');
-    });
+describe('parse', () => {
+    test.each([
+        {
+            outline: ['program@0-9', '"a "@0-2', '{{x<x>@4-5}}@2-7', '" b"@7-9'],
+            source: 'a {{x}} b',
+        },
+        {
+            outline: [
+                'program@0-27',
+                "{{substring<substring>@2-11 'hello'@12-19 '0'@20-23 2=2@24-25}}@0-27",
+            ],
+            source: "{{substring 'hello' '0' 2}}",
+        },
+        {
+            outline: [
+                'program@0-38',
+                '{{csvSqlCommand<csvSqlCommand>@2-15 "SELECT * FROM pets"@16-36}}@0-38',
+            ],
+            source: '{{csvSqlCommand "SELECT * FROM pets"}}',
+        },
+        {
+            outline: ['program@0-5', '{{x<x>@2-3}}@0-5'],
+            source: '{{x}}',
+        },
+        {
+            outline: ['program@0-7', '{{{x<x>@3-4}}}@0-7'],
+            source: '{{{x}}}',
+        },
+        {
+            outline: ['program@0-30', "{{now<now>@5-8 '-1d'@11-16 'unix'@19-25}}@0-30"],
+            source: "{{   now   '-1d'   'unix'   }}",
+        },
+        {
+            outline: [
+                'program@0-22',
+                "{{replace<replace>@2-9 x<x>@10-11 '}}'@12-16 'y'@17-20}}@0-22",
+            ],
+            source: "{{replace x '}}' 'y'}}",
+        },
+        {
+            outline: [
+                'program@0-26',
+                '{{Request.QueryParam.foo<Request.QueryParam.foo>@2-24}}@0-26',
+            ],
+            source: '{{Request.QueryParam.foo}}',
+        },
+        {
+            outline: [
+                'program@0-36',
+                '{{Request.Header.Authorization.0<Request.Header.Authorization.[0]>@2-34}}@0-36',
+            ],
+            source: '{{Request.Header.Authorization.[0]}}',
+        },
+        {
+            outline: ['program@0-10', '{{@index<@index>@2-8}}@0-10'],
+            source: '{{@index}}',
+        },
+        {
+            outline: ['program@0-8', '{{this:<this>@2-6}}@0-8'],
+            source: '{{this}}',
+        },
+        {
+            outline: ['program@0-13', '{{this:name<this.name>@2-11}}@0-13'],
+            source: '{{this.name}}',
+        },
+        {
+            outline: [
+                'program@0-39',
+                "{{multiply<multiply>@2-10 (this:price<this.price>@12-22)@11-23 (this:qty<this.qty>@25-33)@24-34 ''@35-37}}@0-39",
+            ],
+            source: "{{multiply (this.price) (this.qty) ''}}",
+        },
+        {
+            outline: [
+                'program@0-34',
+                "{{outer<outer>@2-7 (helper<helper>@9-15 (inner<inner>@17-22 'a'@23-26)@16-27 'b'@28-31)@8-32}}@0-34",
+            ],
+            source: "{{outer (helper (inner 'a') 'b')}}",
+        },
+        {
+            outline: [
+                'program@0-37',
+                "{{Request.Body<Request.Body>@2-14 'jsonpath'@15-25 '$.items'@26-35}}@0-37",
+            ],
+            source: "{{Request.Body 'jsonpath' '$.items'}}",
+        },
+        {
+            outline: [
+                'program@0-29',
+                '#if<if>@3-5 x<x>@6-7 ["yes"@9-12] else ["no"@20-22] open 0-9 close 22-29@0-29',
+            ],
+            source: '{{#if x}}yes{{else}}no{{/if}}',
+        },
+        {
+            outline: [
+                'program@0-78',
+                '#each<each>@3-7 (csvAsMap<csvAsMap>@9-17 "pets"@18-24)@8-25 [{{this:name<this.name>@29-38}}@27-40 #unless<unless>@43-49 @last<@last>@50-55 [","@57-58] open 40-57 close 58-69@40-69] open 0-27 close 69-78@0-78',
+            ],
+            source: '{{#each (csvAsMap "pets")}}{{this.name}}{{#unless @last}},{{/unless}}{{/each}}',
+        },
+        {
+            outline: [
+                'program@0-70',
+                '#each<each>@3-7 (csvAsArray<csvAsArray>@9-19 \'pets\'@20-26)@8-27 [#each<each>@32-36 this:<this>@37-41 [{{this:<this>@45-49}}@43-51 " "@51-52] open 29-43 close 52-61@29-61] open 0-29 close 61-70@0-70',
+            ],
+            source: "{{#each (csvAsArray 'pets')}}{{#each this}}{{this}} {{/each}}{{/each}}",
+        },
+        {
+            outline: [
+                'program@0-84',
+                '#equal<equal>@3-8 (csvDeleteRows<csvDeleteRows>@10-23 "pets"@24-30 "category"@31-41 "cats"@42-48 true@49-53)@9-54 "0"@55-58 ["none"@60-64] else ["ok"@72-74] open 0-60 close 74-84@0-84',
+            ],
+            source: '{{#equal (csvDeleteRows "pets" "category" "cats" true) "0"}}none{{else}}ok{{/equal}}',
+        },
+        {
+            outline: [
+                'program@0-20',
+                '#if<if>@3-5 x<x>@6-7 ["body"@9-13] open 0-9 close 13-20@0-20',
+            ],
+            source: '{{#if x}}body{{/if}}',
+        },
+        {
+            outline: [
+                'program@0-25',
+                '"a "@0-2',
+                '{{y<y>@4-5}}@2-7',
+                '" then "@7-13',
+                '"x and more"@15-25',
+                'error Unclosed mustache — missing closing braces@13-25',
+            ],
+            source: 'a {{y}} then {{x and more',
+        },
+        {
+            outline: [
+                'program@0-16',
+                '#each<each>@3-7 xs<xs>@8-10 ["item"@12-16] open 0-12 close unclosed@0-16',
+                'error Unclosed block {{#each}} — missing {{/each}}@0-12',
+            ],
+            source: '{{#each xs}}item',
+        },
+        {
+            outline: [
+                'program@0-22',
+                '#if<if>@3-5 x<x>@6-7 ["body"@9-13] open 0-9 close 13-22@0-22',
+                'error Mismatched closing block: expected {{/if}} but found {{/each}}@13-22',
+            ],
+            source: '{{#if x}}body{{/each}}',
+        },
+        {
+            outline: [
+                'program@0-17',
+                '"text "@0-5',
+                '" more"@12-17',
+                'error Unexpected closing block {{/if}} — no matching open block@5-12',
+            ],
+            source: 'text {{/if}} more',
+        },
+        {
+            outline: ['program@0-4', 'error Empty mustache — expected a path or helper@0-4'],
+            source: '{{}}',
+        },
+        {
+            outline: [
+                'program@0-20',
+                "{{outer<outer>@2-7 (inner<inner>@9-14 'a'@15-18)@8-18}}@0-20",
+                "error Unclosed subexpression — missing ')'@8-18",
+            ],
+            source: "{{outer (inner 'a'}}",
+        },
+        {
+            outline: [
+                'program@0-10',
+                '"x \'abc}}"@2-10',
+                'error Unclosed mustache — missing closing braces@0-10',
+            ],
+            source: "{{x 'abc}}",
+        },
+        {
+            outline: [
+                'program@0-25',
+                '#if<if>@3-5 x<x>@6-7 ["a"@9-10] open 0-9 close 10-19@0-19',
+                '{{ok<ok>@21-23}}@19-25',
+                'error Mismatched closing block: expected {{/if}} but found {{/each}}@10-19',
+            ],
+            source: '{{#if x}}a{{/each}}{{ok}}',
+        },
+        {
+            outline: ['program@0-2', 'error Unclosed mustache — missing closing braces@0-2'],
+            source: '{{',
+        },
+        {
+            outline: ['program@0-3', 'error Unclosed mustache — missing closing braces@0-3'],
+            source: '{{{',
+        },
+        {
+            outline: ['program@0-2', '"}}"@0-2'],
+            source: '}}',
+        },
+        {
+            outline: [
+                'program@0-5',
+                '#<>@3-3 [] open 0-5 close unclosed@0-5',
+                'error Block open {{#…}} is missing a helper name@0-5',
+                'error Unclosed block {{#}} — missing {{/}}@0-5',
+            ],
+            source: '{{#}}',
+        },
+        {
+            outline: [
+                'program@0-5',
+                'error Unexpected closing block {{/}} — no matching open block@0-5',
+            ],
+            source: '{{/}}',
+        },
+        {
+            outline: [
+                'program@0-11',
+                '#<>@3-3 [] open 0-6 close 6-11@0-11',
+                'error Block open {{#…}} is missing a helper name@0-6',
+            ],
+            source: '{{# }}{{/}}',
+        },
+        {
+            outline: [
+                'program@0-6',
+                '"(((("@2-6',
+                'error Unclosed mustache — missing closing braces@0-6',
+            ],
+            source: '{{((((',
+        },
+        {
+            outline: [
+                'program@0-8',
+                '"a \'b}}"@2-8',
+                'error Unclosed mustache — missing closing braces@0-8',
+            ],
+            source: "{{a 'b}}",
+        },
+        {
+            outline: [
+                'program@0-34',
+                '#each<each>@3-7 [] else [] open 0-9 close 17-25@0-25',
+                'error Mismatched closing block: expected {{/each}} but found {{/}}@17-25',
+                'error Unexpected closing block {{/each}} — no matching open block@25-34',
+            ],
+            source: '{{#each}}{{else}}{{else}}{{/each}}',
+        },
+        {
+            outline: [
+                'program@0-24',
+                '#a<a>@3-4 [#b<b>@9-10 [] open 6-12 close 12-18@6-18] open 0-6 close 18-24@0-24',
+                'error Mismatched closing block: expected {{/b}} but found {{/a}}@12-18',
+                'error Mismatched closing block: expected {{/a}} but found {{/b}}@18-24',
+            ],
+            source: '{{#a}}{{#b}}{{/a}}{{/b}}',
+        },
+        {
+            outline: ['program@0-0'],
+            source: '',
+        },
+        {
+            outline: ['program@0-15', '"just plain text"@0-15'],
+            source: 'just plain text',
+        },
+        {
+            outline: ['program@0-21', "{{h<h>@2-3 'txt'@4-9 -1.5=-1.5@10-14 true@15-19}}@0-21"],
+            source: "{{h 'txt' -1.5 true}}",
+        },
+    ])(
+        // Given - $source, decoded
+        // Then - the whole program — each node with its span, every recorded error — and no throw
+        'parses $source',
+        ({ outline: expected, source }) => {
+            expect(outline(parse(source))).toStrictEqual(expected);
+        },
+    );
 });

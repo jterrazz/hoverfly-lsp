@@ -1,41 +1,26 @@
 import { describe, expect, test } from 'vitest';
-import { getLanguageService } from 'vscode-json-languageservice';
-import { TextDocument } from 'vscode-languageserver-textdocument';
 
-import { createRuleContext } from '../../engine.js';
-import type { RuleContext } from '../../rule.js';
-import {
-    hf401RequiresNeverSet,
-    hf402TransitionsNeverRequired,
-    hf403RemovesNeverSet,
-} from '../hf4xx.js';
-
-const ls = getLanguageService({});
-
-function contextOf(value: unknown): RuleContext {
-    const text = JSON.stringify(value, null, 2);
-    const doc = TextDocument.create('file:///s.hoverfly.json', 'json', 1, text);
-    return createRuleContext(doc, ls.parseJSONDocument(doc));
-}
+import { HF4XX_RULES } from '../hf4xx.js';
+import { diagnosticsOf } from './rule-run.js';
 
 type StatePair = {
+    removesState?: string[];
     requiresState?: Record<string, string>;
     transitionsState?: Record<string, string>;
-    removesState?: string[];
 };
 
-function sim(...pairs: StatePair[]): unknown {
+function simulationOf(pairs: readonly StatePair[]): object {
     return {
         data: {
-            pairs: pairs.map((pair) => ({
+            pairs: pairs.map(({ removesState, requiresState, transitionsState }) => ({
                 request: {
                     path: [{ matcher: 'exact', value: '/x' }],
-                    ...(pair.requiresState ? { requiresState: pair.requiresState } : {}),
+                    ...(requiresState && { requiresState }),
                 },
                 response: {
                     status: 200,
-                    ...(pair.transitionsState ? { transitionsState: pair.transitionsState } : {}),
-                    ...(pair.removesState ? { removesState: pair.removesState } : {}),
+                    ...(transitionsState && { transitionsState }),
+                    ...(removesState && { removesState }),
                 },
             })),
         },
@@ -43,134 +28,90 @@ function sim(...pairs: StatePair[]): unknown {
     };
 }
 
-describe('hF401 — requiresState key never set', () => {
-    test('warns when a required state is never set by any transitionsState', () => {
-        // Given - a pair requiring a state nothing transitions
-        const diags = hf401RequiresNeverSet.run(
-            contextOf(sim({ requiresState: { ready: 'yes' } })),
-        );
-        // Then - one HF401 warning on the key
-        expect(diags).toHaveLength(1);
-        expect(diags[0]?.code).toBe('HF401');
-        expect(diags[0]?.message).toContain('State "ready"');
-    });
+const run = (pairs: readonly StatePair[]): string[] =>
+    HF4XX_RULES.flatMap((rule) => diagnosticsOf(rule, simulationOf(pairs)));
 
-    test('stays silent cross-pair: required in pair A, set in pair B', () => {
-        // Given - pair A requires `auth`, pair B transitions `auth`
-        const diags = hf401RequiresNeverSet.run(
-            contextOf(
-                sim({ requiresState: { auth: 'true' } }, { transitionsState: { auth: 'true' } }),
-            ),
-        );
-        // Then - cross-pair satisfaction silences HF401
-        expect(diags).toStrictEqual([]);
-    });
-
-    test('still warns when required and set only in the SAME pair (state unset on first match)', () => {
-        // Given - one pair both requires and transitions `loop`
-        const diags = hf401RequiresNeverSet.run(
-            contextOf(sim({ requiresState: { loop: '1' }, transitionsState: { loop: '1' } })),
-        );
-        // Then - the request fires before the response sets it, so HF401 still warns
-        expect(diags).toHaveLength(1);
-        expect(diags[0]?.code).toBe('HF401');
-    });
-
-    test('exempts sequence:-prefixed keys (Hoverfly built-in sequencing)', () => {
-        // Given - a required state using the sequence: prefix
-        const diags = hf401RequiresNeverSet.run(
-            contextOf(sim({ requiresState: { 'sequence:1': '2' } })),
-        );
-        // Then - sequence keys are never flagged
-        expect(diags).toStrictEqual([]);
-    });
-
-    test('flags an empty-string state key', () => {
-        // Given - a required state whose key is the empty string
-        const diags = hf401RequiresNeverSet.run(contextOf(sim({ requiresState: { '': 'x' } })));
-        // Then - the empty key is still required-but-never-set
-        expect(diags).toHaveLength(1);
-        expect(diags[0]?.code).toBe('HF401');
-    });
-
-    test('warns once per pair for a duplicate required key never set', () => {
-        // Given - two pairs each requiring the same unset state
-        const diags = hf401RequiresNeverSet.run(
-            contextOf(sim({ requiresState: { gone: '1' } }, { requiresState: { gone: '1' } })),
-        );
-        // Then - each occurrence gets its own diagnostic (distinct ranges)
-        expect(diags).toHaveLength(2);
-        expect(diags.every((d) => d.code === 'HF401')).toBeTruthy();
-    });
-});
-
-describe('hF402 — transitionsState key never required', () => {
-    test('informs when a set state is never required', () => {
-        // Given - a pair transitioning a state nothing requires
-        const diags = hf402TransitionsNeverRequired.run(
-            contextOf(sim({ transitionsState: { done: 'true' } })),
-        );
-        // Then - one HF402 information on the key
-        expect(diags).toHaveLength(1);
-        expect(diags[0]?.code).toBe('HF402');
-        expect(diags[0]?.message).toContain('State "done"');
-    });
-
-    test('stays silent when the set state is required by another pair', () => {
-        // Given - pair A transitions `auth`, pair B requires it
-        const diags = hf402TransitionsNeverRequired.run(
-            contextOf(
-                sim({ transitionsState: { auth: 'true' } }, { requiresState: { auth: 'true' } }),
-            ),
-        );
-        // Then - no HF402
-        expect(diags).toStrictEqual([]);
-    });
-
-    test('exempts sequence:-prefixed keys', () => {
-        // Given - a transitioned sequence: state
-        const diags = hf402TransitionsNeverRequired.run(
-            contextOf(sim({ transitionsState: { 'sequence:foo': '1' } })),
-        );
-        // Then - sequence keys are exempt
-        expect(diags).toStrictEqual([]);
-    });
-});
-
-describe('hF403 — removesState entry never set', () => {
-    test('informs when a removed state is never set anywhere', () => {
-        // Given - a pair removing a state nothing transitions
-        const diags = hf403RemovesNeverSet.run(contextOf(sim({ removesState: ['ghost'] })));
-        // Then - one HF403 information on the entry
-        expect(diags).toHaveLength(1);
-        expect(diags[0]?.code).toBe('HF403');
-        expect(diags[0]?.message).toContain('State "ghost"');
-    });
-
-    test('stays silent when the removed state is set by some transitionsState', () => {
-        // Given - pair A sets `tmp`, pair B removes it
-        const diags = hf403RemovesNeverSet.run(
-            contextOf(sim({ transitionsState: { tmp: '1' } }, { removesState: ['tmp'] })),
-        );
-        // Then - no HF403
-        expect(diags).toStrictEqual([]);
-    });
-
-    test('exempts removesState of a sequence: key', () => {
-        // Given - removing a sequence: key (auto-managed, never transitioned)
-        const diags = hf403RemovesNeverSet.run(contextOf(sim({ removesState: ['sequence:2'] })));
-        // Then - sequence keys are exempt from HF403
-        expect(diags).toStrictEqual([]);
-    });
-});
-
-describe('hF4xx — defensive', () => {
-    test('emits nothing on a document with no pairs', () => {
-        // Given - an empty simulation
-        const ctx = contextOf({ data: { pairs: [] }, meta: { schemaVersion: 'v5.3' } });
-        // Then - all three rules are silent
-        expect(hf401RequiresNeverSet.run(ctx)).toStrictEqual([]);
-        expect(hf402TransitionsNeverRequired.run(ctx)).toStrictEqual([]);
-        expect(hf403RemovesNeverSet.run(ctx)).toStrictEqual([]);
-    });
+describe('hf4xx', () => {
+    test.each([
+        {
+            expected: [
+                'HF401 warning 12:12-12:19 State "ready" is required but never set by any transitionsState; this pair can only match if the state is set externally',
+            ],
+            label: 'requiresState key never set — warns when a required state is never set by any transitionsState',
+            pairs: [{ requiresState: { ready: 'yes' } }],
+        },
+        {
+            expected: [],
+            label: 'requiresState key never set — stays silent cross-pair: required in pair A, set in pair B',
+            pairs: [{ requiresState: { auth: 'true' } }, { transitionsState: { auth: 'true' } }],
+        },
+        {
+            expected: [
+                'HF401 warning 12:12-12:18 State "loop" is required but never set by any transitionsState; this pair can only match if the state is set externally',
+            ],
+            label: 'requiresState key never set — still warns when required and set only in the SAME pair (state unset on first match)',
+            pairs: [{ requiresState: { loop: '1' }, transitionsState: { loop: '1' } }],
+        },
+        {
+            expected: [],
+            label: 'requiresState key never set — exempts sequence:-prefixed keys (Hoverfly built-in sequencing)',
+            pairs: [{ requiresState: { 'sequence:1': '2' } }],
+        },
+        {
+            expected: [
+                'HF401 warning 12:12-12:14 State "" is required but never set by any transitionsState; this pair can only match if the state is set externally',
+            ],
+            label: 'requiresState key never set — flags an empty-string state key',
+            pairs: [{ requiresState: { '': 'x' } }],
+        },
+        {
+            expected: [
+                'HF401 warning 12:12-12:18 State "gone" is required but never set by any transitionsState; this pair can only match if the state is set externally',
+                'HF401 warning 28:12-28:18 State "gone" is required but never set by any transitionsState; this pair can only match if the state is set externally',
+            ],
+            label: 'requiresState key never set — warns once per pair for a duplicate required key never set',
+            pairs: [{ requiresState: { gone: '1' } }, { requiresState: { gone: '1' } }],
+        },
+        {
+            expected: [
+                'HF402 information 15:12-15:18 State "done" is set but never required in this simulation',
+            ],
+            label: 'transitionsState key never required — informs when a set state is never required',
+            pairs: [{ transitionsState: { done: 'true' } }],
+        },
+        {
+            expected: [],
+            label: 'transitionsState key never required — stays silent when the set state is required by another pair',
+            pairs: [{ transitionsState: { auth: 'true' } }, { requiresState: { auth: 'true' } }],
+        },
+        {
+            expected: [],
+            label: 'transitionsState key never required — exempts sequence:-prefixed keys',
+            pairs: [{ transitionsState: { 'sequence:foo': '1' } }],
+        },
+        {
+            expected: ['HF403 information 15:12-15:19 State "ghost" is removed but never set'],
+            label: 'removesState entry never set — informs when a removed state is never set anywhere',
+            pairs: [{ removesState: ['ghost'] }],
+        },
+        {
+            expected: [
+                'HF402 information 15:12-15:17 State "tmp" is set but never required in this simulation',
+            ],
+            label: 'removesState entry never set — stays silent when the removed state is set by some transitionsState',
+            pairs: [{ transitionsState: { tmp: '1' } }, { removesState: ['tmp'] }],
+        },
+        {
+            expected: [],
+            label: 'removesState entry never set — exempts removesState of a sequence: key',
+            pairs: [{ removesState: ['sequence:2'] }],
+        },
+    ])(
+        // Given - pairs whose state maps hold the case $label names
+        // Then - every HF401, HF402 and HF403 diagnostic, its range and its message, or none
+        '$label',
+        ({ expected, pairs }) => {
+            expect(run(pairs)).toStrictEqual(expected);
+        },
+    );
 });

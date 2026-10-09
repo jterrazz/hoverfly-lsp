@@ -1,283 +1,226 @@
 import { describe, expect, test } from 'vitest';
-import { getLanguageService } from 'vscode-json-languageservice';
-import { TextDocument } from 'vscode-languageserver-textdocument';
 
-import { createRuleContext } from '../../engine.js';
 import { matcherSyntaxRule } from '../matcher-syntax.js';
+import { diagnosticsOf, pairOf } from './rule-run.js';
 
-const ls = getLanguageService({});
+const run = (request: object): string[] => diagnosticsOf(matcherSyntaxRule, pairOf(request));
 
-function runOnRequest(request: unknown) {
-    const sim = {
-        data: { pairs: [{ request, response: { status: 200 } }] },
-        meta: { schemaVersion: 'v5.3' },
-    };
-    const text = JSON.stringify(sim, null, 2);
-    const doc = TextDocument.create('file:///s.hoverfly.json', 'json', 1, text);
-    const context = createRuleContext(doc, ls.parseJSONDocument(doc));
-    return matcherSyntaxRule.run(context);
-}
-
-function codes(diagnostics: ReturnType<typeof runOnRequest>): string[] {
-    return diagnostics.map((d) => String(d.code));
-}
-
-describe('hF230 — invalid RE2 regex (via re2js, not new RegExp)', () => {
-    test('flags an unbalanced-group pattern', () => {
-        // Given - a pattern that fails to compile under RE2
-        const diags = runOnRequest({ path: [{ matcher: 'regex', value: 'a(b' }] });
-        // Then - one HF230 error
-        expect(codes(diags)).toStrictEqual(['HF230']);
-        expect(diags[0]?.message).toContain('RE2');
-    });
-
-    test('catches a lookbehind that is VALID in JS but invalid in RE2', () => {
-        // Given - (?<=foo)bar compiles under new RegExp but Go's regexp rejects lookbehind
-        const diags = runOnRequest({ path: [{ matcher: 'regex', value: '(?<=foo)bar' }] });
-        // Then - HF230 still fires (re2js is the real grammar; new RegExp would miss this)
-        expect(codes(diags)).toStrictEqual(['HF230']);
-    });
-
-    test('catches a backreference (invalid in RE2)', () => {
-        // Given - \1 backreference, valid JS, rejected by RE2
-        expect(
-            codes(runOnRequest({ path: [{ matcher: 'regex', value: '(x)\\1' }] })),
-        ).toStrictEqual(['HF230']);
-    });
-
-    test('does NOT flag a Python-style named group (?P<n>…) — valid RE2, invalid JS', () => {
-        // Given - (?P<id>…) which new RegExp would false-positive on
-        const diags = runOnRequest({ path: [{ matcher: 'regex', value: '(?P<id>[0-9]+)' }] });
-        // Then - nothing (re2js accepts it, as Go does)
-        expect(codes(diags)).toStrictEqual([]);
-    });
-
-    test('does NOT flag a complex valid RE2 pattern', () => {
-        // Given - a rich but valid pattern
-        expect(
-            codes(
-                runOnRequest({ path: [{ matcher: 'regex', value: '^/v[0-9]+/[a-z-]+(\\?.*)?$' }] }),
-            ),
-        ).toStrictEqual([]);
-    });
-
-    test('defers an empty regex value to HF211 (no HF230)', () => {
-        // Given - an empty regex value (HF211's territory)
-        expect(codes(runOnRequest({ path: [{ matcher: 'regex', value: '' }] }))).toStrictEqual([]);
-    });
-
-    test('defers a non-string regex value to HF203 (no HF230)', () => {
-        // Given - a numeric regex value (wrong type)
-        expect(codes(runOnRequest({ path: [{ matcher: 'regex', value: 5 }] }))).toStrictEqual([]);
-    });
-});
-
-describe('hF231 — json/jsonpartial/jwt value must be JSON text', () => {
-    test('flags the motivating jwt $.username bug as an HF231 JSON-syntax error', () => {
-        // Given - the exact Zed bug: jwt value is a JSONPath string, not JSON text
-        const diags = runOnRequest({ body: [{ matcher: 'jwt', value: '$.username' }] });
-        // Then - HF231 (the JSON-syntax code), naming jwt
-        expect(codes(diags)).toStrictEqual(['HF231']);
-        expect(diags[0]?.message).toContain('jwt');
-        expect(diags[0]?.message).toContain('JSON');
-    });
-
-    test('flags broken json text', () => {
-        expect(
-            codes(runOnRequest({ body: [{ matcher: 'json', value: '{not valid' }] })),
-        ).toStrictEqual(['HF231']);
-    });
-
-    test('flags broken jsonpartial text', () => {
-        expect(
-            codes(runOnRequest({ path: [{ matcher: 'jsonpartial', value: '{broken' }] })),
-        ).toStrictEqual(['HF231']);
-    });
-
-    test('does NOT flag valid JSON text for json', () => {
-        expect(
-            codes(runOnRequest({ body: [{ matcher: 'json', value: '{"a":[1,2,3]}' }] })),
-        ).toStrictEqual([]);
-    });
-
-    test('does NOT flag a valid partial JSON spec for jwt', () => {
-        // Given - a valid {"payload":…} partial spec
-        expect(
-            codes(
-                runOnRequest({
-                    body: [{ matcher: 'jwt', value: '{"payload":{"username":"alice"}}' }],
-                }),
-            ),
-        ).toStrictEqual([]);
-    });
-
-    test('defers a non-string jwt value to HF203 (no HF231)', () => {
-        expect(
-            codes(runOnRequest({ body: [{ matcher: 'jwt', value: { payload: {} } }] })),
-        ).toStrictEqual([]);
-    });
-});
-
-describe('hF235 — jwt value with non-header/payload top-level keys', () => {
-    test('warns when a top-level key is not header/payload', () => {
-        // Given - valid JSON but {"username":…} can never match a JWT composite
-        const diags = runOnRequest({ body: [{ matcher: 'jwt', value: '{"username":"alice"}' }] });
-        // Then - HF235 naming the offending key
-        expect(codes(diags)).toStrictEqual(['HF235']);
-        expect(diags[0]?.message).toContain('username');
-    });
-
-    test('does NOT warn for a header/payload-only spec', () => {
-        expect(
-            codes(
-                runOnRequest({
-                    body: [
-                        {
-                            matcher: 'jwt',
-                            value: '{"header":{"alg":"HS256"},"payload":{"sub":"a"}}',
-                        },
-                    ],
-                }),
-            ),
-        ).toStrictEqual([]);
-    });
-
-    test('does NOT warn for an empty object (matches any JWT)', () => {
-        expect(codes(runOnRequest({ body: [{ matcher: 'jwt', value: '{}' }] }))).toStrictEqual([]);
-    });
-});
-
-describe('hF232 / HF233 — JSONPath / XPath balance lint', () => {
-    test('warns on unbalanced jsonpath brackets', () => {
-        expect(
-            codes(runOnRequest({ body: [{ matcher: 'jsonpath', value: '$.a[0' }] })),
-        ).toStrictEqual(['HF232']);
-    });
-
-    test('warns on unbalanced jwtjsonpath quotes', () => {
-        expect(
-            codes(runOnRequest({ path: [{ matcher: 'jwtjsonpath', value: "$['sub" }] })),
-        ).toStrictEqual(['HF232']);
-    });
-
-    test('warns on unbalanced xpath brackets', () => {
-        expect(
-            codes(runOnRequest({ body: [{ matcher: 'xpath', value: "//a[b='c" }] })),
-        ).toStrictEqual(['HF233']);
-    });
-
-    test('does NOT warn on a balanced kubectl-style jsonpath with range braces', () => {
-        expect(
-            codes(
-                runOnRequest({
-                    body: [{ matcher: 'jsonpath', value: '{range .items[*]}{.x}{end}' }],
-                }),
-            ),
-        ).toStrictEqual([]);
-    });
-
-    test('does NOT warn on a balanced xpath with predicates and quotes', () => {
-        expect(
-            codes(runOnRequest({ body: [{ matcher: 'xpath', value: "//book[@id='42']/title" }] })),
-        ).toStrictEqual([]);
-    });
-});
-
-describe('hF234 — XML well-formedness', () => {
-    test('warns on malformed xml', () => {
-        const diags = runOnRequest({ body: [{ matcher: 'xml', value: '<a><b></a>' }] });
-        expect(codes(diags)).toStrictEqual(['HF234']);
-        expect(diags[0]?.message).toContain('xml');
-    });
-
-    test('does NOT warn on well-formed xml with CDATA and attributes', () => {
-        expect(
-            codes(
-                runOnRequest({
-                    body: [{ matcher: 'xml', value: '<o id="1"><n><![CDATA[a < b]]></n></o>' }],
-                }),
-            ),
-        ).toStrictEqual([]);
-    });
-
-    test('validates the XML skeleton of xmltemplated after neutralizing tokens', () => {
-        // Given - xmltemplated whose XML is malformed (missing close) around template tokens
-        const diags = runOnRequest({
-            body: [{ matcher: 'xmltemplated', value: '<a>{{ ignore }}<b></a>' }],
-        });
-        // Then - HF234 on the skeleton (tokens neutralized, not mistaken for bad XML)
-        expect(codes(diags)).toStrictEqual(['HF234']);
-    });
-
-    test('does NOT warn on well-formed xmltemplated with ignore/regex leaves', () => {
-        expect(
-            codes(
-                runOnRequest({
-                    body: [
-                        {
-                            matcher: 'xmltemplated',
-                            value: '<u><id>{{ regex: [0-9]+ }}</id><n>{{ ignore }}</n></u>',
-                        },
-                    ],
-                }),
-            ),
-        ).toStrictEqual([]);
-    });
-
-    test('flags a bad {{ regex: … }} leaf inside xmltemplated as HF230 (RE2 reuse)', () => {
-        // Given - well-formed XML skeleton but the regex leaf is invalid RE2 (lookbehind)
-        const diags = runOnRequest({
-            body: [{ matcher: 'xmltemplated', value: '<u><id>{{ regex: (?<=x)y }}</id></u>' }],
-        });
-        // Then - HF230 (it IS a regex), not HF234 (the skeleton is well-formed)
-        expect(codes(diags)).toStrictEqual(['HF230']);
-    });
-});
-
-describe('hF236 — array elements must be strings', () => {
-    test('warns once per non-string element with its index', () => {
-        // Given - an array value mixing strings and non-strings
-        const diags = runOnRequest({ body: [{ matcher: 'array', value: ['a', 1, true, 'b'] }] });
-        // Then - two HF236 warnings (the number and the boolean), each naming its index
-        expect(codes(diags)).toStrictEqual(['HF236', 'HF236']);
-        expect(diags[0]?.message).toContain('1');
-        expect(diags[1]?.message).toContain('2');
-    });
-
-    test('does NOT warn on an all-string array', () => {
-        expect(
-            codes(runOnRequest({ body: [{ matcher: 'array', value: ['a', 'b'] }] })),
-        ).toStrictEqual([]);
-    });
-
-    test('defers a non-array array value to HF203 (no HF236)', () => {
-        expect(codes(runOnRequest({ body: [{ matcher: 'array', value: 'a;b' }] }))).toStrictEqual(
-            [],
-        );
-    });
-});
-
-describe('glob — deliberately silent (no invalid syntax exists)', () => {
-    test('never flags any glob value', () => {
-        // Given - glob values with chars that LOOK like extended-glob syntax (treated literally)
-        expect(
-            codes(runOnRequest({ path: [{ matcher: 'glob', value: '*.example.com' }] })),
-        ).toStrictEqual([]);
-        expect(
-            codes(runOnRequest({ path: [{ matcher: 'glob', value: 'a[b?c\\d' }] })),
-        ).toStrictEqual([]);
-    });
-});
-
-describe('doMatch recursion', () => {
-    test('checks syntax inside an object-shaped doMatch chain', () => {
-        // Given - a jsonpath whose doMatch nests a jwt with a non-JSON value
-        const diags = runOnRequest({
-            body: [
-                { matcher: 'jsonpath', value: '$.a', doMatch: { matcher: 'jwt', value: '$.x' } },
+describe('matcher-syntax', () => {
+    test.each([
+        {
+            expected: [
+                'HF230 error 8:23-8:28 Invalid RE2 regex; Hoverfly (Go regexp) silently never matches this',
             ],
-        });
-        // Then - HF231 fires on the nested jwt value
-        expect(codes(diags)).toStrictEqual(['HF231']);
-    });
+            label: 'invalid RE2 regex (via re2js, not new RegExp) — flags an unbalanced-group pattern',
+            request: { path: [{ matcher: 'regex', value: 'a(b' }] },
+        },
+        {
+            expected: [
+                'HF230 error 8:23-8:36 Invalid RE2 regex; Hoverfly (Go regexp) silently never matches this',
+            ],
+            label: 'invalid RE2 regex (via re2js, not new RegExp) — catches a lookbehind that is VALID in JS but invalid in RE2',
+            request: { path: [{ matcher: 'regex', value: '(?<=foo)bar' }] },
+        },
+        {
+            expected: [
+                'HF230 error 8:23-8:31 Invalid RE2 regex; Hoverfly (Go regexp) silently never matches this',
+            ],
+            label: 'invalid RE2 regex (via re2js, not new RegExp) — catches a backreference (invalid in RE2)',
+            request: { path: [{ matcher: 'regex', value: '(x)\\1' }] },
+        },
+        {
+            expected: [],
+            label: 'invalid RE2 regex (via re2js, not new RegExp) — does NOT flag a Python-style named group (?P<n>…) — valid RE2, invalid JS',
+            request: { path: [{ matcher: 'regex', value: '(?P<id>[0-9]+)' }] },
+        },
+        {
+            expected: [],
+            label: 'invalid RE2 regex (via re2js, not new RegExp) — does NOT flag a complex valid RE2 pattern',
+            request: { path: [{ matcher: 'regex', value: '^/v[0-9]+/[a-z-]+(\\?.*)?$' }] },
+        },
+        {
+            expected: [],
+            label: 'invalid RE2 regex (via re2js, not new RegExp) — defers an empty regex value to HF211 (no HF230)',
+            request: { path: [{ matcher: 'regex', value: '' }] },
+        },
+        {
+            expected: [],
+            label: 'invalid RE2 regex (via re2js, not new RegExp) — defers a non-string regex value to HF203 (no HF230)',
+            request: { path: [{ matcher: 'regex', value: 5 }] },
+        },
+        {
+            expected: [
+                'HF231 error 8:23-8:35 "jwt" value must be JSON text; this is not valid JSON, so the pair never matches',
+            ],
+            label: 'json/jsonpartial/jwt value must be JSON text — flags the motivating jwt $.username bug as an HF231 JSON-syntax error',
+            request: { body: [{ matcher: 'jwt', value: '$.username' }] },
+        },
+        {
+            expected: [
+                'HF231 error 8:23-8:35 "json" value must be JSON text; this is not valid JSON, so the pair never matches',
+            ],
+            label: 'json/jsonpartial/jwt value must be JSON text — flags broken json text',
+            request: { body: [{ matcher: 'json', value: '{not valid' }] },
+        },
+        {
+            expected: [
+                'HF231 error 8:23-8:32 "jsonpartial" value must be JSON text; this is not valid JSON, so the pair never matches',
+            ],
+            label: 'json/jsonpartial/jwt value must be JSON text — flags broken jsonpartial text',
+            request: { path: [{ matcher: 'jsonpartial', value: '{broken' }] },
+        },
+        {
+            expected: [],
+            label: 'json/jsonpartial/jwt value must be JSON text — does NOT flag valid JSON text for json',
+            request: { body: [{ matcher: 'json', value: '{"a":[1,2,3]}' }] },
+        },
+        {
+            expected: [],
+            label: 'json/jsonpartial/jwt value must be JSON text — does NOT flag a valid partial JSON spec for jwt',
+            request: { body: [{ matcher: 'jwt', value: '{"payload":{"username":"alice"}}' }] },
+        },
+        {
+            expected: [],
+            label: 'json/jsonpartial/jwt value must be JSON text — defers a non-string jwt value to HF203 (no HF231)',
+            request: { body: [{ matcher: 'jwt', value: { payload: {} } }] },
+        },
+        {
+            expected: [
+                'HF235 warning 8:23-8:49 jwt value should be a partial {"header":…,"payload":…} spec; key "username" can never match a JWT',
+            ],
+            label: 'jwt value with non-header/payload top-level keys — warns when a top-level key is not header/payload',
+            request: { body: [{ matcher: 'jwt', value: '{"username":"alice"}' }] },
+        },
+        {
+            expected: [],
+            label: 'jwt value with non-header/payload top-level keys — does NOT warn for a header/payload-only spec',
+            request: {
+                body: [
+                    { matcher: 'jwt', value: '{"header":{"alg":"HS256"},"payload":{"sub":"a"}}' },
+                ],
+            },
+        },
+        {
+            expected: [],
+            label: 'jwt value with non-header/payload top-level keys — does NOT warn for an empty object (matches any JWT)',
+            request: { body: [{ matcher: 'jwt', value: '{}' }] },
+        },
+        {
+            expected: ['HF232 warning 8:23-8:30 JSONPath has unbalanced brackets or quotes'],
+            label: 'JSONPath / XPath balance lint — warns on unbalanced jsonpath brackets',
+            request: { body: [{ matcher: 'jsonpath', value: '$.a[0' }] },
+        },
+        {
+            expected: ['HF232 warning 8:23-8:31 JSONPath has unbalanced brackets or quotes'],
+            label: 'JSONPath / XPath balance lint — warns on unbalanced jwtjsonpath quotes',
+            request: { path: [{ matcher: 'jwtjsonpath', value: "$['sub" }] },
+        },
+        {
+            expected: ['HF233 warning 8:23-8:33 XPath has unbalanced brackets or quotes'],
+            label: 'JSONPath / XPath balance lint — warns on unbalanced xpath brackets',
+            request: { body: [{ matcher: 'xpath', value: "//a[b='c" }] },
+        },
+        {
+            expected: [],
+            label: 'JSONPath / XPath balance lint — does NOT warn on a balanced kubectl-style jsonpath with range braces',
+            request: { body: [{ matcher: 'jsonpath', value: '{range .items[*]}{.x}{end}' }] },
+        },
+        {
+            expected: [],
+            label: 'JSONPath / XPath balance lint — does NOT warn on a balanced xpath with predicates and quotes',
+            request: { body: [{ matcher: 'xpath', value: "//book[@id='42']/title" }] },
+        },
+        {
+            expected: [
+                'HF234 warning 8:23-8:35 "xml" value is not well-formed XML; this pair never matches',
+            ],
+            label: 'XML well-formedness — warns on malformed xml',
+            request: { body: [{ matcher: 'xml', value: '<a><b></a>' }] },
+        },
+        {
+            expected: [],
+            label: 'XML well-formedness — does NOT warn on well-formed xml with CDATA and attributes',
+            request: {
+                body: [{ matcher: 'xml', value: '<o id="1"><n><![CDATA[a < b]]></n></o>' }],
+            },
+        },
+        {
+            expected: [
+                'HF234 warning 8:23-8:47 "xmltemplated" value is not well-formed XML; this pair never matches',
+            ],
+            label: 'XML well-formedness — validates the XML skeleton of xmltemplated after neutralizing tokens',
+            request: { body: [{ matcher: 'xmltemplated', value: '<a>{{ ignore }}<b></a>' }] },
+        },
+        {
+            expected: [],
+            label: 'XML well-formedness — does NOT warn on well-formed xmltemplated with ignore/regex leaves',
+            request: {
+                body: [
+                    {
+                        matcher: 'xmltemplated',
+                        value: '<u><id>{{ regex: [0-9]+ }}</id><n>{{ ignore }}</n></u>',
+                    },
+                ],
+            },
+        },
+        {
+            expected: [
+                'HF230 error 8:23-8:61 Invalid RE2 regex; Hoverfly (Go regexp) silently never matches this',
+            ],
+            label: 'XML well-formedness — flags a bad {{ regex: … }} leaf inside xmltemplated as HF230 (RE2 reuse)',
+            request: {
+                body: [{ matcher: 'xmltemplated', value: '<u><id>{{ regex: (?<=x)y }}</id></u>' }],
+            },
+        },
+        {
+            expected: [
+                'HF236 warning 10:16-10:17 array element 1 is not a string; Hoverfly cannot match a non-string element as written',
+                'HF236 warning 11:16-11:20 array element 2 is not a string; Hoverfly cannot match a non-string element as written',
+            ],
+            label: 'array elements must be strings — warns once per non-string element with its index',
+            request: { body: [{ matcher: 'array', value: ['a', 1, true, 'b'] }] },
+        },
+        {
+            expected: [],
+            label: 'array elements must be strings — does NOT warn on an all-string array',
+            request: { body: [{ matcher: 'array', value: ['a', 'b'] }] },
+        },
+        {
+            expected: [],
+            label: 'array elements must be strings — defers a non-array array value to HF203 (no HF236)',
+            request: { body: [{ matcher: 'array', value: 'a;b' }] },
+        },
+        {
+            expected: [],
+            label: 'glob — deliberately silent (no invalid syntax exists) — never flags any glob value',
+            request: { path: [{ matcher: 'glob', value: '*.example.com' }] },
+        },
+        {
+            expected: [],
+            label: 'glob — deliberately silent (no invalid syntax exists) — never flags any glob value (2)',
+            request: { path: [{ matcher: 'glob', value: 'a[b?c\\d' }] },
+        },
+        {
+            expected: [
+                'HF231 error 11:25-11:30 "jwt" value must be JSON text; this is not valid JSON, so the pair never matches',
+            ],
+            label: 'doMatch recursion — checks syntax inside an object-shaped doMatch chain',
+            request: {
+                body: [
+                    {
+                        matcher: 'jsonpath',
+                        value: '$.a',
+                        doMatch: { matcher: 'jwt', value: '$.x' },
+                    },
+                ],
+            },
+        },
+    ])(
+        // Given - a request whose matcher value holds the case $label names
+        // Then - every HF23x diagnostic, its severity, its range and its message, or none
+        'matcherSyntaxRule — $label',
+        ({ expected, request }) => {
+            expect(run(request)).toStrictEqual(expected);
+        },
+    );
 });

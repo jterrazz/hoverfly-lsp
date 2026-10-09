@@ -2,133 +2,64 @@ import { describe, expect, test } from 'vitest';
 
 import { classifyCompletionContext } from '../completion-context.js';
 
-function ctx(marked: string): ReturnType<typeof classifyCompletionContext> {
-    const offset = marked.indexOf('|');
-    const decoded = marked.replace('|', '');
-    return classifyCompletionContext(decoded, offset);
+type Context = ReturnType<typeof classifyCompletionContext>;
+
+function at(kind: Context['kind'], rest: Partial<Context> = {}): Context {
+    return { blockStack: [], inEachScope: false, kind, word: '', ...rest };
 }
 
-describe('classifyCompletionContext — helper/path start', () => {
-    test('classifies an empty mustache head as helperOrPathStart', () => {
-        // Given - just-opened mustache
-        const result = ctx('{{|');
-        // Then
-        expect(result.kind).toBe('helperOrPathStart');
-        expect(result.word).toBe('');
-    });
+const path = (root: string): NonNullable<Context['path']> => ({ parts: [], root });
 
-    test('recovers a mid-typed helper name `{{fa`', () => {
-        // Given - a partially-typed helper name with no closing braces
-        const result = ctx('{{fa|');
-        // Then - the partial word is captured for filtering
-        expect(result.kind).toBe('helperOrPathStart');
-        expect(result.word).toBe('fa');
-    });
-
-    test('treats a block-open head `{{#` as a (block) helper start', () => {
-        const result = ctx('{{#|');
-        expect(result.kind).toBe('helperOrPathStart');
-    });
-
-    test('treats a subexpression head `(` as a helper start', () => {
-        // Given - a cursor inside an open subexpression
-        const result = ctx('{{multiply (|');
-        expect(result.kind).toBe('helperOrPathStart');
-    });
-});
-
-describe('classifyCompletionContext — path continuation', () => {
+describe('classifyCompletionContext', () => {
     test.each([
-        ['{{Request.|', 'Request'],
-        ['{{State.|', 'State'],
-        ['{{Vars.|', 'Vars'],
-        ['{{Literals.|', 'Literals'],
-        ['{{this.|', 'this'],
-    ])('classifies %s as pathContinuation rooted at %s', (marked, root) => {
-        const result = ctx(marked);
-        expect(result.kind).toBe('pathContinuation');
-        expect(result.path?.root).toBe(root);
-    });
-
-    test('classifies `{{@` as an @-data path continuation', () => {
-        const result = ctx('{{@|');
-        expect(result.kind).toBe('pathContinuation');
-        expect(result.path?.root).toBe('@');
-    });
-
-    test('captures the partial segment word `{{Request.Met`', () => {
-        const result = ctx('{{Request.Met|');
-        expect(result.kind).toBe('pathContinuation');
-        expect(result.word).toBe('Met');
-        expect(result.path?.root).toBe('Request');
-    });
-});
-
-describe('classifyCompletionContext — argument contexts', () => {
-    test('classifies an open faker string arg as fakerArg', () => {
-        const result = ctx("{{faker '|");
-        expect(result.kind).toBe('fakerArg');
-    });
-
-    test('classifies the now offset (arg 0) vs format (arg 1) slots', () => {
-        // Given - the cursor in the first now string arg
-        expect(ctx("{{now '|").nowSlot).toBe('offset');
-        // And - in the second now string arg
-        expect(ctx("{{now '-1d' '|").nowSlot).toBe('format');
-    });
-
-    test('classifies a generic helper arg as helperArg', () => {
-        const result = ctx('{{multiply Req|');
-        expect(['helperArg', 'pathContinuation', 'helperOrPathStart']).toContain(result.kind);
-    });
-});
-
-describe('classifyCompletionContext — block close', () => {
-    test('classifies `{{/` as blockClose', () => {
-        const result = ctx('{{#each x}}{{/|');
-        expect(result.kind).toBe('blockClose');
-    });
-
-    test('captures the partial close name `{{/ea`', () => {
-        const result = ctx('{{#each x}}{{/ea|');
-        expect(result.kind).toBe('blockClose');
-        expect(result.word).toBe('ea');
-    });
-});
-
-describe('classifyCompletionContext — block stack & scope', () => {
-    test('reports the enclosing #each block at a nested mustache', () => {
-        // Given - a mustache inside an (unclosed) #each
-        const result = ctx('{{#each xs}}{{@|');
-        // Then - the block stack carries `each`, enabling @-vars
-        expect(result.blockStack).toContain('each');
-        expect(result.inEachScope).toBeTruthy();
-        expect(result.path?.root).toBe('@');
-    });
-
-    test('reports nested blocks outermost→innermost', () => {
-        // Given - a #with nested in a #each, cursor in the inner body
-        const result = ctx('{{#each xs}}{{#with this}}{{|');
-        expect(result.blockStack).toStrictEqual(['each', 'with']);
-        expect(result.inEachScope).toBeTruthy();
-    });
-
-    test('is not in each-scope at the top level', () => {
-        const result = ctx('{{|');
-        expect(result.blockStack).toStrictEqual([]);
-        expect(result.inEachScope).toBeFalsy();
-    });
-});
-
-describe('classifyCompletionContext — negatives', () => {
-    test('returns `none` in plain literal text outside any mustache', () => {
-        const result = ctx('hello |world');
-        expect(result.kind).toBe('none');
-    });
-
-    test('returns `none` after a closed mustache', () => {
-        // Given - the cursor is after a fully-closed `{{x}}`
-        const result = ctx('{{x}} |');
-        expect(result.kind).toBe('none');
-    });
+        { context: at('helperOrPathStart'), marked: '{{|' },
+        { context: at('helperOrPathStart', { word: 'fa' }), marked: '{{fa|' },
+        { context: at('helperOrPathStart'), marked: '{{#|' },
+        { context: at('helperOrPathStart'), marked: '{{multiply (|' },
+        { context: at('pathContinuation', { path: path('Request') }), marked: '{{Request.|' },
+        { context: at('pathContinuation', { path: path('State') }), marked: '{{State.|' },
+        { context: at('pathContinuation', { path: path('Vars') }), marked: '{{Vars.|' },
+        { context: at('pathContinuation', { path: path('Literals') }), marked: '{{Literals.|' },
+        { context: at('pathContinuation', { path: path('this') }), marked: '{{this.|' },
+        { context: at('pathContinuation', { path: path('@') }), marked: '{{@|' },
+        {
+            context: at('pathContinuation', { path: path('Request'), word: 'Met' }),
+            marked: '{{Request.Met|',
+        },
+        { context: at('fakerArg'), marked: "{{faker '|" },
+        { context: at('nowArg', { nowSlot: 'offset' }), marked: "{{now '|" },
+        { context: at('nowArg', { nowSlot: 'format' }), marked: "{{now '-1d' '|" },
+        { context: at('helperArg', { word: 'Req' }), marked: '{{multiply Req|' },
+        {
+            context: at('blockClose', { blockStack: ['each'], inEachScope: true }),
+            marked: '{{#each x}}{{/|',
+        },
+        {
+            context: at('blockClose', { blockStack: ['each'], inEachScope: true, word: 'ea' }),
+            marked: '{{#each x}}{{/ea|',
+        },
+        {
+            context: at('pathContinuation', {
+                blockStack: ['each'],
+                inEachScope: true,
+                path: path('@'),
+            }),
+            marked: '{{#each xs}}{{@|',
+        },
+        {
+            context: at('helperOrPathStart', { blockStack: ['each', 'with'], inEachScope: true }),
+            marked: '{{#each xs}}{{#with this}}{{|',
+        },
+        { context: at('none'), marked: 'hello |world' },
+        { context: at('none'), marked: '{{x}} |' },
+    ])(
+        // Given - a template being typed, `|` marking the cursor
+        // Then - the whole context the cursor sits in: its kind, the word typed, the path, the enclosing blocks
+        'classifies $marked',
+        ({ context, marked }) => {
+            expect(
+                classifyCompletionContext(marked.replace('|', ''), marked.indexOf('|')),
+            ).toStrictEqual(context);
+        },
+    );
 });

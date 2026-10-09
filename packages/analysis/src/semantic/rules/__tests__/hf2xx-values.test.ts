@@ -1,91 +1,83 @@
 import { describe, expect, test } from 'vitest';
-import { getLanguageService } from 'vscode-json-languageservice';
-import { TextDocument } from 'vscode-languageserver-textdocument';
-import { DiagnosticSeverity } from 'vscode-languageserver-types';
 
-import { createRuleContext } from '../../engine.js';
 import { methodSchemeValueRule } from '../hf2xx-values.js';
+import { diagnosticsOf, pairOf } from './rule-run.js';
 
-const ls = getLanguageService({});
+const run = (request: object): string[] => diagnosticsOf(methodSchemeValueRule, pairOf(request));
 
-function runOnRequest(request: unknown) {
-    const sim = {
-        data: { pairs: [{ request, response: { status: 200 } }] },
-        meta: { schemaVersion: 'v5.3' },
-    };
-    const text = JSON.stringify(sim, null, 2);
-    const doc = TextDocument.create('file:///s.hoverfly.json', 'json', 1, text);
-    return methodSchemeValueRule.run(createRuleContext(doc, ls.parseJSONDocument(doc)));
-}
-
-const codes = (diags: { code?: unknown }[]) => diags.map((d) => String(d.code));
-
-describe('hF215 — method value did-you-mean', () => {
-    test('fires a Hint on a near-miss typo (the reported GT bug)', () => {
-        // Given - a method `exact` value that is a one-edit typo of GET
-        const diags = runOnRequest({ method: [{ matcher: 'exact', value: 'GT' }] });
-        // Then - one HF215 Hint suggesting GET
-        expect(codes(diags)).toStrictEqual(['HF215']);
-        expect(diags[0]?.severity).toBe(DiagnosticSeverity.Hint);
-        expect(diags[0]?.message).toContain('"GT"');
-        expect(diags[0]?.message).toContain('"GET"');
-    });
-
-    test('fires on a default-exact (no matcher key) near-miss', () => {
-        // Given - a method matcher with no `matcher` key (default exact) and a typo
-        const diags = runOnRequest({ method: [{ value: 'DELET' }] });
-        // Then - HF215 suggesting DELETE
-        expect(codes(diags)).toStrictEqual(['HF215']);
-        expect(diags[0]?.message).toContain('"DELETE"');
-    });
-
-    test('is SILENT on a standard method', () => {
-        // Given - a real method
-        const diags = runOnRequest({ method: [{ matcher: 'exact', value: 'GET' }] });
-        // Then - nothing
-        expect(diags).toStrictEqual([]);
-    });
-
-    test('is SILENT on a custom verb far from every standard method', () => {
-        // Given - bespoke / WebDAV verbs (spec-legal, accepted by Hoverfly verbatim)
-        for (const verb of ['PURGE', 'PROPFIND', 'MKCOL']) {
-            const diags = runOnRequest({ method: [{ matcher: 'exact', value: verb }] });
-            // Then - no false positive
-            expect(diags, verb).toStrictEqual([]);
-        }
-    });
-
-    test('is SILENT on a glob/regex method value (a pattern, not an enum)', () => {
-        // Given - a typo-shaped value but under a pattern matcher
-        const diags = runOnRequest({ method: [{ matcher: 'regex', value: 'GT' }] });
-        // Then - no method-value hint (regex value is not an enum)
-        expect(diags).toStrictEqual([]);
-    });
-});
-
-describe('hF216 — scheme value did-you-mean', () => {
-    test('fires a Hint on a near-miss scheme typo', () => {
-        // Given - a scheme `exact` value that is a one-edit typo of http
-        const diags = runOnRequest({ scheme: [{ matcher: 'exact', value: 'htttp' }] });
-        // Then - HF216 suggesting http
-        expect(codes(diags)).toStrictEqual(['HF216']);
-        expect(diags[0]?.severity).toBe(DiagnosticSeverity.Hint);
-        expect(diags[0]?.message).toContain('"http"');
-    });
-
-    test('is SILENT on http/https/ws/wss', () => {
-        // Given - the common schemes
-        for (const scheme of ['http', 'https', 'ws', 'wss']) {
-            const diags = runOnRequest({ scheme: [{ matcher: 'exact', value: scheme }] });
-            // Then - nothing
-            expect(diags, scheme).toStrictEqual([]);
-        }
-    });
-
-    test('is SILENT on a custom scheme like ftp (distance 2 from http — a legal scheme)', () => {
-        // Given - ftp, a real scheme within edit-distance 2 of http: the reason the value-domain threshold is tightened to 1
-        const diags = runOnRequest({ scheme: [{ matcher: 'exact', value: 'ftp' }] });
-        // Then - no false positive
-        expect(diags).toStrictEqual([]);
-    });
+describe('hf2xx-values', () => {
+    test.each([
+        {
+            expected: ['HF215 hint 8:23-8:27 Unknown HTTP method "GT"; did you mean "GET"?'],
+            label: 'the typo GT under exact',
+            request: { method: [{ matcher: 'exact', value: 'GT' }] },
+        },
+        {
+            expected: ['HF215 hint 7:23-7:30 Unknown HTTP method "DELET"; did you mean "DELETE"?'],
+            label: 'the typo DELET under the default matcher',
+            request: { method: [{ value: 'DELET' }] },
+        },
+        {
+            expected: [],
+            label: 'the standard GET',
+            request: { method: [{ matcher: 'exact', value: 'GET' }] },
+        },
+        {
+            expected: [],
+            label: 'the custom verb PURGE',
+            request: { method: [{ matcher: 'exact', value: 'PURGE' }] },
+        },
+        {
+            expected: [],
+            label: 'the custom verb PROPFIND',
+            request: { method: [{ matcher: 'exact', value: 'PROPFIND' }] },
+        },
+        {
+            expected: [],
+            label: 'the custom verb MKCOL',
+            request: { method: [{ matcher: 'exact', value: 'MKCOL' }] },
+        },
+        {
+            expected: [],
+            label: 'GT under regex, a pattern',
+            request: { method: [{ matcher: 'regex', value: 'GT' }] },
+        },
+        {
+            expected: ['HF216 hint 8:23-8:30 Unknown URI scheme "htttp"; did you mean "http"?'],
+            label: 'the typo htttp under exact',
+            request: { scheme: [{ matcher: 'exact', value: 'htttp' }] },
+        },
+        {
+            expected: [],
+            label: 'the scheme http',
+            request: { scheme: [{ matcher: 'exact', value: 'http' }] },
+        },
+        {
+            expected: [],
+            label: 'the scheme https',
+            request: { scheme: [{ matcher: 'exact', value: 'https' }] },
+        },
+        {
+            expected: [],
+            label: 'the scheme ws',
+            request: { scheme: [{ matcher: 'exact', value: 'ws' }] },
+        },
+        {
+            expected: [],
+            label: 'the scheme wss',
+            request: { scheme: [{ matcher: 'exact', value: 'wss' }] },
+        },
+        {
+            expected: [],
+            label: 'ftp, a legal scheme two edits from http',
+            request: { scheme: [{ matcher: 'exact', value: 'ftp' }] },
+        },
+    ])(
+        // Given - a request whose method or scheme holds $label
+        // Then - a Hint only on a near-miss of a standard value, never on a custom one or a pattern
+        'methodSchemeValueRule — $label',
+        ({ expected, request }) => {
+            expect(run(request)).toStrictEqual(expected);
+        },
+    );
 });
