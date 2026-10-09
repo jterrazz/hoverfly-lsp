@@ -7,29 +7,21 @@ import type { Diagnostic } from 'vscode-languageserver-types';
 
 import { DID_YOU_MEAN_MAX_DISTANCE, STRUCTURE_ALLOWED_KEYS } from '../../registry/structure.js';
 import type { StructureObjectKind } from '../../registry/structure.js';
+import { arrayItems, asObject, propValue } from '../ast-access.js';
 import { makeDiagnostic } from '../diagnostics.js';
 import { levenshtein } from '../levenshtein.js';
 import type { RuleContext, SemanticRule } from '../rule.js';
+import { checkRemovesState, checkResponseHeaders, checkStateValues } from './value-shapes.js';
 
-const CANONICAL_BY_LOWER: Readonly<Record<StructureObjectKind, ReadonlyMap<string, string>>> =
-    Object.fromEntries(
-        (Object.keys(STRUCTURE_ALLOWED_KEYS) as StructureObjectKind[]).map((kind) => [
-            kind,
-            new Map(STRUCTURE_ALLOWED_KEYS[kind].map((key) => [key.toLowerCase(), key])),
-        ]),
-    ) as unknown as Record<StructureObjectKind, ReadonlyMap<string, string>>;
+const canonicalByKind = new Map<StructureObjectKind, ReadonlyMap<string, string>>();
 
-function asObject(node: ASTNode | undefined): ObjectASTNode | undefined {
-    return node?.type === 'object' ? node : undefined;
-}
-
-function propValue(node: ObjectASTNode | undefined, key: string): ASTNode | undefined {
-    return node?.properties.find((p) => p.keyNode.value === key)?.valueNode;
-}
-
-function arrayItems(node: ObjectASTNode | undefined, key: string): readonly ASTNode[] {
-    const value = propValue(node, key);
-    return value?.type === 'array' ? value.items : [];
+function canonicalOf(kind: StructureObjectKind): ReadonlyMap<string, string> {
+    let canonical = canonicalByKind.get(kind);
+    if (canonical === undefined) {
+        canonical = new Map(STRUCTURE_ALLOWED_KEYS[kind].map((key) => [key.toLowerCase(), key]));
+        canonicalByKind.set(kind, canonical);
+    }
+    return canonical;
 }
 
 function didYouMean(key: string, allowed: readonly string[]): string {
@@ -53,7 +45,7 @@ function checkUnknownKeys(
     kind: StructureObjectKind,
     diagnostics: Diagnostic[],
 ): void {
-    const canonicalByLower = CANONICAL_BY_LOWER[kind];
+    const canonicalByLower = canonicalOf(kind);
     const allowed = STRUCTURE_ALLOWED_KEYS[kind];
     for (const property of object.properties) {
         const key = property.keyNode.value;
@@ -164,58 +156,6 @@ function walkRequest(
     walkRequestMatcherMap(context, propValue(object, 'headers'), diagnostics);
     walkRequestMatcherMap(context, propValue(object, 'query'), diagnostics);
     checkStateValues(context, propValue(object, 'requiresState'), diagnostics);
-}
-
-function checkStateValues(
-    context: RuleContext,
-    node: ASTNode | undefined,
-    diagnostics: Diagnostic[],
-): void {
-    const object = asObject(node);
-    if (!object) {
-        return;
-    }
-    for (const property of object.properties) {
-        const value = property.valueNode;
-        if (value && value.type !== 'string') {
-            diagnostics.push(makeDiagnostic(context.textDocument, 'HF404', value));
-        }
-    }
-}
-
-function checkResponseHeaders(
-    context: RuleContext,
-    node: ASTNode | undefined,
-    diagnostics: Diagnostic[],
-): void {
-    const object = asObject(node);
-    if (!object) {
-        return;
-    }
-    for (const property of object.properties) {
-        const value = property.valueNode;
-        if (!value) {
-            continue;
-        }
-        if (value.type !== 'array' || value.items.some((item) => item.type !== 'string')) {
-            diagnostics.push(makeDiagnostic(context.textDocument, 'HF308', value));
-        }
-    }
-}
-
-function checkRemovesState(
-    context: RuleContext,
-    node: ASTNode | undefined,
-    diagnostics: Diagnostic[],
-): void {
-    if (node?.type !== 'array') {
-        return;
-    }
-    for (const item of node.items) {
-        if (item.type !== 'string') {
-            diagnostics.push(makeDiagnostic(context.textDocument, 'HF405', item));
-        }
-    }
 }
 
 function walkResponse(

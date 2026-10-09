@@ -36,7 +36,7 @@ export const hf1xxSchemaVersionRule: SemanticRule = {
     codes: ['HF103', 'HF104'],
     run(context): Diagnostic[] {
         const { valueNode } = context.model.meta.schemaVersion;
-        if (!valueNode || valueNode.type !== 'string') {
+        if (valueNode?.type !== 'string') {
             return [];
         }
         const version = valueNode.value;

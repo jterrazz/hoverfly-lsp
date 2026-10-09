@@ -22,7 +22,7 @@
         "test": "vitest --run"
     },
     "dependencies": {
-        "fast-xml-parser": "^5.8.0",
+        "fast-xml-validator": "^1.4.2",
         "re2js": "^2.8.3",
         "vscode-json-languageservice": "^5.7.2",
         "vscode-languageserver-textdocument": "^1.0.12",

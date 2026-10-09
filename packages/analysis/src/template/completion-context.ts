@@ -2,6 +2,12 @@
 // scans the text around the cursor and reads the parsed AST only for the enclosing block stack.
 
 import type { BlockNode, Statement } from './ast.js';
+import {
+    findOpenMustache,
+    innermostOpenSubexpression,
+    openStringQuote,
+    splitTopLevelTokens,
+} from './mustache-scan.js';
 import { parse } from './parser.js';
 
 type TemplateContextKind =
@@ -86,14 +92,24 @@ function classifySegment(
     }
 
     const tokens = splitTopLevelTokens(body);
-    const head = tokens[0] ?? '';
-    const lastIsPartial = !/\s$/u.test(body) || body.length === 0;
+    const lastIsPartial = !/\s$/u.test(body);
     const current = lastIsPartial ? (tokens.at(-1) ?? '') : '';
 
     if (tokens.length <= 1 && (lastIsPartial || body.trim().length === 0)) {
         return headContext(current, blockStack, inEachScope, blockOpen);
     }
+    return argumentContext(
+        { current, head: tokens[0] ?? '', slot: argSlot(tokens, lastIsPartial) },
+        blockStack,
+        inEachScope,
+    );
+}
 
+function argumentContext(
+    { current, head, slot }: { current: string; head: string; slot: number },
+    blockStack: readonly string[],
+    inEachScope: boolean,
+): TemplateCompletionContext {
     if (head === FAKER_HELPER) {
         return { kind: 'fakerArg', word: current, blockStack, inEachScope };
     }
@@ -101,12 +117,11 @@ function classifySegment(
         return {
             kind: 'nowArg',
             word: current,
-            nowSlot: argSlot(tokens, lastIsPartial) === 0 ? 'offset' : 'format',
+            nowSlot: slot === 0 ? 'offset' : 'format',
             blockStack,
             inEachScope,
         };
     }
-
     if (isPathContinuation(current)) {
         return pathContext(current, blockStack, inEachScope);
     }
@@ -174,186 +189,6 @@ function stringArgContext(
         };
     }
     return { kind: 'helperArg', word: typed, blockStack, inEachScope };
-}
-
-type OpenMustache = {
-    readonly contentStart: number;
-};
-
-// invariant: quote-aware — a `}}` inside a string literal does not close the mustache.
-function findOpenMustache(decoded: string, cursor: number): OpenMustache | undefined {
-    const head = decoded.lastIndexOf('{{', Math.max(0, cursor - 1));
-    if (head === -1) {
-        return undefined;
-    }
-    if (hasCloseBetween(decoded, head + 2, cursor)) {
-        return undefined;
-    }
-    const contentStart = decoded.startsWith('{{{', head) ? head + 3 : head + 2;
-    return { contentStart: Math.min(contentStart, cursor) };
-}
-
-function hasCloseBetween(decoded: string, from: number, to: number): boolean {
-    let quote: string | undefined;
-    for (let i = from; i < to - 1; i += 1) {
-        const ch = decoded[i];
-        if (quote) {
-            if (ch === quote) {
-                quote = undefined;
-            }
-            continue;
-        }
-        if (ch === "'" || ch === '"') {
-            quote = ch;
-        } else if (ch === '}' && decoded[i + 1] === '}') {
-            return true;
-        }
-    }
-    return false;
-}
-
-type InnerSegment = {
-    readonly text: string;
-    readonly atMustacheHead: boolean;
-};
-
-function innermostOpenSubexpression(inner: string): InnerSegment {
-    let depth = 0;
-    let lastOpen = -1;
-    let quote: string | undefined;
-    for (let i = 0; i < inner.length; i += 1) {
-        const ch = inner[i];
-        if (quote) {
-            if (ch === quote) {
-                quote = undefined;
-            }
-            continue;
-        }
-        if (ch === "'" || ch === '"') {
-            quote = ch;
-        } else if (ch === '(') {
-            depth += 1;
-            lastOpen = i;
-        } else if (ch === ')') {
-            depth -= 1;
-            lastOpen = lastOpenBefore(inner, i);
-        }
-    }
-    if (depth <= 0 || lastOpen === -1) {
-        return { text: inner, atMustacheHead: true };
-    }
-    return { text: inner.slice(lastOpen + 1), atMustacheHead: false };
-}
-
-function lastOpenBefore(inner: string, pos: number): number {
-    let depth = 0;
-    let quote: string | undefined;
-    let last = -1;
-    for (let i = 0; i < pos; i += 1) {
-        const ch = inner[i];
-        if (quote) {
-            if (ch === quote) {
-                quote = undefined;
-            }
-            continue;
-        }
-        if (ch === "'" || ch === '"') {
-            quote = ch;
-        } else if (ch === '(') {
-            depth += 1;
-            if (depth === 1) {
-                last = i;
-            }
-        } else if (ch === ')') {
-            depth -= 1;
-        }
-    }
-    return depth > 0 ? last : -1;
-}
-
-function openStringQuote(
-    body: string,
-): undefined | { before: string; quote: string; typed: string } {
-    let quote: string | undefined;
-    let quoteStart = -1;
-    for (let i = 0; i < body.length; i += 1) {
-        const ch = body[i];
-        if (quote) {
-            if (ch === '\\') {
-                i += 1;
-                continue;
-            }
-            if (ch === quote) {
-                quote = undefined;
-                quoteStart = -1;
-            }
-            continue;
-        }
-        if (ch === "'" || ch === '"') {
-            quote = ch;
-            quoteStart = i;
-        }
-    }
-    if (quote === undefined || quoteStart === -1) {
-        return undefined;
-    }
-    return {
-        before: body.slice(0, quoteStart),
-        quote,
-        typed: body.slice(quoteStart + 1),
-    };
-}
-
-function splitTopLevelTokens(body: string): string[] {
-    const tokens: string[] = [];
-    let current = '';
-    let depth = 0;
-    let quote: string | undefined;
-    for (let i = 0; i < body.length; i += 1) {
-        const ch = body[i];
-        if (quote) {
-            current += ch;
-            if (ch === '\\') {
-                const next = body[i + 1];
-                if (next !== undefined) {
-                    current += next;
-                    i += 1;
-                }
-                continue;
-            }
-            if (ch === quote) {
-                quote = undefined;
-            }
-            continue;
-        }
-        if (ch === "'" || ch === '"') {
-            quote = ch;
-            current += ch;
-            continue;
-        }
-        if (ch === '(') {
-            depth += 1;
-            current += ch;
-            continue;
-        }
-        if (ch === ')') {
-            depth -= 1;
-            current += ch;
-            continue;
-        }
-        if (depth === 0 && ch !== undefined && /\s/u.test(ch)) {
-            if (current.length > 0) {
-                tokens.push(current);
-                current = '';
-            }
-            continue;
-        }
-        current += ch;
-    }
-    if (current.length > 0) {
-        tokens.push(current);
-    }
-    return tokens;
 }
 
 function argSlot(tokens: readonly string[], lastIsPartial: boolean): number {

@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest';
 
-import { formatMessage } from '../catalog.js';
+import { formatMessage } from '../diagnostics.js';
 
-describe('catalog', () => {
+describe('diagnostics', () => {
     test.each([
         {
             args: { name: 'exct' },

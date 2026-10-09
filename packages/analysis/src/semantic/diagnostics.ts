@@ -2,14 +2,29 @@ import type { ASTNode } from 'vscode-json-languageservice';
 import type { TextDocument } from 'vscode-languageserver-textdocument';
 import type { Diagnostic, Range } from 'vscode-languageserver-types';
 
-import { DIAGNOSTIC_CATALOG, DIAGNOSTIC_SOURCE, formatMessage } from './catalog.js';
-import type { CatalogEntry, DiagnosticCode } from './catalog.js';
+import { DIAGNOSTIC_CATALOG, DIAGNOSTIC_SOURCE } from './catalog.data.js';
+import type { CatalogEntry, DiagnosticCode } from './catalog.data.js';
+
+/** The published page a code's `codeDescription.href` points at. */
+export function diagnosticHref(code: DiagnosticCode): string {
+    return `https://hoverfly-lsp.dev/diagnostics/${code.toLowerCase()}`;
+}
+
+/** Fills a template's `{placeholder}` slots from args; a missing one stays as written, and it never throws. */
+export function formatMessage(
+    template: string,
+    args: Readonly<Record<string, unknown>> = {},
+): string {
+    return template.replaceAll(/\{(?<key>\w+)\}/gu, (match: string, key: string) => {
+        if (Object.hasOwn(args, key)) {
+            return String(args[key]);
+        }
+        return match;
+    });
+}
 
 function isAstNode(target: ASTNode | Range): target is ASTNode {
-    return (
-        typeof (target as ASTNode).offset === 'number' &&
-        typeof (target as ASTNode).length === 'number'
-    );
+    return 'offset' in target;
 }
 
 /** A target for a diagnostic range: either an AST node (span = offset..offset+length) or a Range. */
@@ -32,7 +47,7 @@ export function resolveRange(document: TextDocument, target: RangeTarget): Range
  * Build a catalog-backed {@link Diagnostic}.
  *
  * @param document the source document (for offset→position).
- * @param code     the HFxxx code; pulls severity/template/href from the catalog.
+ * @param code     the HFxxx code; pulls severity and template from the catalog.
  * @param target   the AST node to point at, or an explicit Range.
  * @param args     template substitution args (`{name}` → args.name). For passthrough codes
  *                 (HF102/HF307/HF502) pass the full text as `{ message }` / `{ explain }`.
@@ -50,6 +65,6 @@ export function makeDiagnostic(
         severity: entry.severity,
         range: resolveRange(document, target),
         message: formatMessage(entry.messageTemplate, args),
-        codeDescription: { href: entry.href },
+        codeDescription: { href: diagnosticHref(code) },
     };
 }

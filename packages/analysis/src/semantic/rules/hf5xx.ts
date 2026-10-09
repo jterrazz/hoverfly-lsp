@@ -8,7 +8,7 @@ import { analyze } from '../../template/analyzer.js';
 import type { AnalyzerContext } from '../../template/analyzer.js';
 import { hasTemplateSyntax } from '../../template/detect.js';
 import { createStringSourceMap } from '../../template/source-map.js';
-import type { DiagnosticCode } from '../catalog.js';
+import type { DiagnosticCode } from '../catalog.data.js';
 import { makeDiagnostic } from '../diagnostics.js';
 import type { RuleContext, SemanticRule, SimulationModel } from '../rule.js';
 

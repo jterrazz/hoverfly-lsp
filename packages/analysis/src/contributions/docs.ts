@@ -24,7 +24,7 @@ function matcherSpecificNotes(spec: MatcherSpec): string[] {
             '⚠️ Each `config` value must be a JSON boolean — a string like `"true"` or a number is a mistake.',
         );
     }
-    if (spec.bodyOnly) {
+    if (spec.bodyOnly === true) {
         notes.push(
             '⚠️ Valid ONLY on the request `body`, only as a top-level matcher, and case-SENSITIVE (`form`, not `Form`/`FORM`).',
         );
@@ -67,6 +67,6 @@ export function matcherMarkdown(spec: MatcherSpec): string {
 /** A short one-line `detail` string for a completion item (shown inline next to the label). */
 export function matcherDetail(spec: MatcherSpec): string {
     const valueTypes = spec.valueTypes.join(' | ');
-    const suffix = spec.bodyOnly ? ' (body only)' : '';
+    const suffix = spec.bodyOnly === true ? ' (body only)' : '';
     return `Hoverfly matcher · value: ${valueTypes}${suffix}`;
 }

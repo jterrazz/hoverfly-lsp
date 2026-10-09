@@ -191,7 +191,7 @@ export const MATCHER_SPECS: readonly MatcherSpec[] = [
 
 /** The 14 registry matcher names (every spec except the `form` pseudo-matcher). */
 export const REGISTRY_MATCHER_NAMES: readonly string[] = MATCHER_SPECS.filter(
-    (spec) => !spec.bodyOnly,
+    (spec) => spec.bodyOnly !== true,
 ).map((spec) => spec.name);
 
 /** The four matchers whose doMatch extracts a value; after any other, doMatch re-tests the same input. */

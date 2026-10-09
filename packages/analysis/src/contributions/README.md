@@ -94,4 +94,4 @@ Including `transitionsState` and `removesState` keys in the union fixes it.
 
 Tests: [`../../specs/integration/contributions/coverage-matrix.spec.ts`](../../specs/integration/contributions/coverage-matrix.spec.ts)
 (per-context matrix), plus a real-server round-trip in
-`packages/server/specs/integration/lsp/lsp.spec.ts`.
+`packages/server/specs/integration/session/features.spec.ts`.

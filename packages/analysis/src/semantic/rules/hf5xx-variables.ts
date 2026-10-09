@@ -4,16 +4,13 @@
 import type { ASTNode, ObjectASTNode } from 'vscode-json-languageservice';
 import type { Diagnostic } from 'vscode-languageserver-types';
 
-import {
-    HOVERFLY_HELPERS,
-    RAYMOND_BUILTINS,
-    VARIABLE_FUNCTION_NAMES,
-} from '../../registry/templating.js';
-import type { HelperSpec } from '../../registry/templating.js';
+import { HOVERFLY_HELPERS, RAYMOND_BUILTINS } from '../../registry/templating.data.js';
+import type { HelperSpec } from '../../registry/templating.data.js';
 import { makeDiagnostic } from '../diagnostics.js';
 import type { MatcherModel, RuleContext, SemanticRule } from '../rule.js';
 
-const VALID_VARIABLE_FUNCTIONS: ReadonlySet<string> = new Set(VARIABLE_FUNCTION_NAMES);
+// outside: SupportedMethodMap consults the 52 Hoverfly helpers alone, never a raymond built-in.
+const VALID_VARIABLE_FUNCTIONS: ReadonlySet<string> = new Set(HOVERFLY_HELPERS.map((h) => h.name));
 
 const RAYMOND_BUILTIN_NAMES: ReadonlySet<string> = new Set(RAYMOND_BUILTINS.map((h) => h.name));
 
@@ -53,7 +50,7 @@ function checkVariableFunction(
 
 function describeArity(spec: HelperSpec): string {
     const required = spec.args.filter((arg) => !arg.optional).length;
-    if (spec.variadic) {
+    if (spec.variadic === true) {
         return `at least ${String(required)}`;
     }
     const max = spec.args.length;
@@ -77,7 +74,7 @@ function checkVariableArity(
     const argsNode = propValue(item, 'arguments');
     const got = argsNode?.type === 'array' ? argsNode.items.length : 0;
     const required = spec.args.filter((arg) => !arg.optional).length;
-    const max = spec.variadic ? Number.POSITIVE_INFINITY : spec.args.length;
+    const max = spec.variadic === true ? Number.POSITIVE_INFINITY : spec.args.length;
 
     if (got < required || got > max) {
         const target = argsNode ?? item;

@@ -39,7 +39,7 @@ function buildStateFlowIndex(model: SimulationModel): StateFlowIndex {
     const removes: RemovesStateEntry[] = [];
     const setByPairIndices = new Map<string, Set<number>>();
 
-    model.pairs.forEach((pair, pairIndex) => {
+    for (const [pairIndex, pair] of model.pairs.entries()) {
         for (const entry of pair.requiresState) {
             requires.push({ pairIndex, entry });
         }
@@ -50,7 +50,7 @@ function buildStateFlowIndex(model: SimulationModel): StateFlowIndex {
             setByPairIndices.set(entry.key, indices);
         }
         removes.push(...pair.removesState);
-    });
+    }
 
     return {
         requiredKeys: new Set(requires.map((scoped) => scoped.entry.key)),

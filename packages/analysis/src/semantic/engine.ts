@@ -2,7 +2,8 @@ import type { JSONDocument } from 'vscode-json-languageservice';
 import type { TextDocument } from 'vscode-languageserver-textdocument';
 import type { Diagnostic, Range } from 'vscode-languageserver-types';
 
-import { DIAGNOSTIC_CATALOG, DIAGNOSTIC_SOURCE } from './catalog.js';
+import { DIAGNOSTIC_SOURCE } from './catalog.data.js';
+import { diagnosticHref } from './diagnostics.js';
 import { buildSimulationModel } from './model.js';
 import type {
     HoverflyServiceSettings,
@@ -11,7 +12,7 @@ import type {
     SimulationModel,
 } from './rule.js';
 
-const HF102_HREF = DIAGNOSTIC_CATALOG.HF102.href;
+const HF102_HREF = diagnosticHref('HF102');
 
 function isBefore(
     a: { line: number; character: number },

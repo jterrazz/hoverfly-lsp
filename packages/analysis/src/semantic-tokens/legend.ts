@@ -22,10 +22,3 @@ export const SEMANTIC_TOKEN_MODIFIERS: readonly string[] = [];
 
 /** A token-type name in the frozen legend. */
 export type SemanticTokenTypeName = (typeof SEMANTIC_TOKEN_TYPES)[number];
-
-/** Each token type's index in SEMANTIC_TOKEN_TYPES, typed so a misspelt lookup does not compile. */
-export const SEMANTIC_TOKEN_TYPE_INDEX: Readonly<Record<SemanticTokenTypeName, number>> =
-    Object.fromEntries(SEMANTIC_TOKEN_TYPES.map((name, index) => [name, index])) as Record<
-        SemanticTokenTypeName,
-        number
-    >;

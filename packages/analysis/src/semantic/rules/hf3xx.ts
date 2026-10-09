@@ -86,7 +86,7 @@ function hf303(response: ResponseModel, context: RuleContext): Diagnostic[] {
 
     const header = response.headers.find((h) => h.name.toLowerCase() === CONTENT_LENGTH);
     const valueNode = firstHeaderString(header?.valueNode);
-    if (!valueNode || valueNode.type !== 'string') {
+    if (valueNode?.type !== 'string') {
         return [];
     }
     if (!/^\d+$/u.test(valueNode.value)) {
@@ -147,56 +147,72 @@ type LogNormalFields = {
     readonly node: (key: string) => ASTNode | undefined;
 };
 
-// outside: mirrors Go's ValidateLogNormalDelayOptions (core/delay/log_normal_generator.go) in its
-// order, reporting the first violation; an absent field is Go's int zero value, 0.
+type Delay = {
+    readonly max: number;
+    readonly mean: number;
+    readonly median: number;
+    readonly min: number;
+};
+
+const NEGATIVE = 'logNormalDelay min and max cannot be less than 0';
+const NOT_POSITIVE = 'logNormalDelay mean and median cannot be less than or equal to 0';
+
+// outside: Go's ValidateLogNormalDelayOptions (core/delay/log_normal_generator.go), in its order —
+// the first violation is the one reported; an absent field is Go's int zero value, 0.
+const LOG_NORMAL_CONSTRAINTS: readonly {
+    readonly broken: (delay: Delay) => boolean;
+    readonly explain: string;
+    readonly key: keyof Delay;
+}[] = [
+    { broken: ({ max }) => max < 0, explain: NEGATIVE, key: 'max' },
+    { broken: ({ min }) => min < 0, explain: NEGATIVE, key: 'min' },
+    { broken: ({ mean }) => mean <= 0, explain: NOT_POSITIVE, key: 'mean' },
+    { broken: ({ median }) => median <= 0, explain: NOT_POSITIVE, key: 'median' },
+    {
+        broken: ({ max, min }) => max !== 0 && max < min,
+        explain: 'logNormalDelay min must be less than max',
+        key: 'max',
+    },
+    {
+        broken: ({ max, mean }) => max !== 0 && mean > max,
+        explain: 'logNormalDelay mean cannot be greater than max',
+        key: 'mean',
+    },
+    {
+        broken: ({ max, median }) => max !== 0 && median > max,
+        explain: 'logNormalDelay median cannot be greater than max',
+        key: 'median',
+    },
+    {
+        broken: ({ mean, min }) => min !== 0 && mean < min,
+        explain: 'logNormalDelay mean cannot be less than min',
+        key: 'mean',
+    },
+    {
+        broken: ({ median, min }) => min !== 0 && median < min,
+        explain: 'logNormalDelay median cannot be less than min',
+        key: 'median',
+    },
+    {
+        broken: ({ mean, median }) => median > mean,
+        explain: 'logNormalDelay mean cannot be less than median',
+        key: 'median',
+    },
+];
+
 function logNormalDelayViolation(
     fields: LogNormalFields,
 ): undefined | { node: ASTNode; explain: string } {
-    const min = fields.min ?? 0;
-    const max = fields.max ?? 0;
-    const mean = fields.mean ?? 0;
-    const median = fields.median ?? 0;
-
-    const at = (key: string, explain: string): { node: ASTNode; explain: string } => ({
-        node: fields.node(key) ?? fields.object,
-        explain,
-    });
-
-    if (max < 0) {
-        return at('max', 'logNormalDelay min and max cannot be less than 0');
-    }
-    if (min < 0) {
-        return at('min', 'logNormalDelay min and max cannot be less than 0');
-    }
-    if (mean <= 0) {
-        return at('mean', 'logNormalDelay mean and median cannot be less than or equal to 0');
-    }
-    if (median <= 0) {
-        return at('median', 'logNormalDelay mean and median cannot be less than or equal to 0');
-    }
-    if (max !== 0) {
-        if (max < min) {
-            return at('max', 'logNormalDelay min must be less than max');
-        }
-        if (mean > max) {
-            return at('mean', 'logNormalDelay mean cannot be greater than max');
-        }
-        if (median > max) {
-            return at('median', 'logNormalDelay median cannot be greater than max');
-        }
-    }
-    if (min !== 0) {
-        if (mean < min) {
-            return at('mean', 'logNormalDelay mean cannot be less than min');
-        }
-        if (median < min) {
-            return at('median', 'logNormalDelay median cannot be less than min');
-        }
-    }
-    if (median > mean) {
-        return at('median', 'logNormalDelay mean cannot be less than median');
-    }
-    return undefined;
+    const delay: Delay = {
+        max: fields.max ?? 0,
+        mean: fields.mean ?? 0,
+        median: fields.median ?? 0,
+        min: fields.min ?? 0,
+    };
+    const violated = LOG_NORMAL_CONSTRAINTS.find(({ broken }) => broken(delay));
+    return violated === undefined
+        ? undefined
+        : { explain: violated.explain, node: fields.node(violated.key) ?? fields.object };
 }
 
 function readLogNormal(response: ResponseModel): LogNormalFields | undefined {

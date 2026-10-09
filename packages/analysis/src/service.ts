@@ -70,6 +70,44 @@ export type HoverflyLanguageService = {
     ) => Promise<Hover | null>;
 };
 
+function jsonServiceWith(contributions: JSONWorkerContribution[]): LanguageService {
+    const service = getLanguageService({
+        contributions,
+        schemaRequestService: async (uri: string): Promise<string> => {
+            if (uri === SCHEMA_URI) {
+                return SCHEMA_TEXT;
+            }
+            throw new Error(`Unknown schema URI: ${uri}`);
+        },
+    });
+    service.configure({
+        validate: true,
+        allowComments: false,
+        schemas: [{ uri: SCHEMA_URI, fileMatch: ['*.json', '*.hfy'] }],
+    });
+    return service;
+}
+
+// invariant: a document that is no simulation answers nothing — HF101 alone when its name claims
+// Hoverfly — so a non-simulation file gets no schema or semantic noise.
+async function validated(
+    { document, parsed }: { document: TextDocument; parsed: JSONDocument },
+    service: LanguageService,
+    settings: HoverflyServiceSettings,
+): Promise<Diagnostic[]> {
+    // value: the fingerprint reads the error-recovering AST, not JSON.parse, so a broken but
+    // recognisable simulation still gets its diagnostics.
+    if (!isHoverflySimulationAst(parsed.root)) {
+        return hasHoverflyFilename(document.uri) ? [hf101NotASimulation(document)] : [];
+    }
+    const schemaDiagnostics = await service.doValidation(document, parsed);
+    const semanticDiagnostics = runRules(ALL_RULES, createRuleContext(document, parsed, settings));
+    return sortByRange([
+        ...applyHF102Layer(schemaDiagnostics, semanticDiagnostics),
+        ...semanticDiagnostics,
+    ]);
+}
+
 /** Creates the Hoverfly language service; the bundled schema is resolved offline, never from the network or the disk. */
 export function createHoverflyLanguageService(
     contributions: JSONWorkerContribution[] = [],
@@ -78,99 +116,49 @@ export function createHoverflyLanguageService(
     // outside: the contribution API hands a URI and a JSON path, never the text, so the documents
     // the last completion, hover or parse saw are kept for the contribution to resolve.
     const seenDocuments = new Map<string, TextDocument>();
-    const hoverflyContribution = createHoverflyContribution(settings, (uri) =>
-        seenDocuments.get(uri),
-    );
-
-    const service: LanguageService = getLanguageService({
-        contributions: [hoverflyContribution, ...contributions],
-        schemaRequestService: async (uri: string): Promise<string> => {
-            if (uri === SCHEMA_URI) {
-                return SCHEMA_TEXT;
-            }
-            throw new Error(`Unknown schema URI: ${uri}`);
-        },
-    });
-
-    service.configure({
-        validate: true,
-        allowComments: false,
-        schemas: [{ uri: SCHEMA_URI, fileMatch: ['*.json', '*.hfy'] }],
-    });
+    const service = jsonServiceWith([
+        createHoverflyContribution(settings, (uri) => seenDocuments.get(uri)),
+        ...contributions,
+    ]);
 
     function parse(document: TextDocument): JSONDocument {
         seenDocuments.set(document.uri, document);
         return service.parseJSONDocument(document);
     }
 
-    // invariant: a document that is no simulation answers nothing — HF101 alone when its name
-    // claims Hoverfly — so a non-simulation file gets no schema or semantic noise.
-    async function validate(
+    function opened(
         document: TextDocument,
-        jsonDocument?: JSONDocument,
-    ): Promise<Diagnostic[]> {
-        const parsed = jsonDocument ?? parse(document);
-
-        // value: the fingerprint reads the error-recovering AST, not JSON.parse, so a broken but
-        // recognisable simulation still gets its diagnostics.
-        if (!isHoverflySimulationAst(parsed.root)) {
-            return hasHoverflyFilename(document.uri) ? [hf101NotASimulation(document)] : [];
-        }
-
-        const schemaDiagnostics = await service.doValidation(document, parsed);
-        const context = createRuleContext(document, parsed, settings);
-        const semanticDiagnostics = runRules(ALL_RULES, context);
-
-        return sortByRange([
-            ...applyHF102Layer(schemaDiagnostics, semanticDiagnostics),
-            ...semanticDiagnostics,
-        ]);
+        jsonDocument: JSONDocument | undefined,
+    ): { normalized: TextDocument; parsed: JSONDocument } {
+        const normalized = stripLeadingBom(document);
+        seenDocuments.set(normalized.uri, normalized);
+        return { normalized, parsed: jsonDocument ?? parse(normalized) };
     }
 
     return {
-        parse(document: TextDocument): JSONDocument {
-            return parse(stripLeadingBom(document));
-        },
-        isSimulation(document: TextDocument): boolean {
-            return isHoverflySimulation(stripLeadingBom(document).getText());
-        },
-        async doValidation(
-            document: TextDocument,
-            jsonDocument?: JSONDocument,
-        ): Promise<Diagnostic[]> {
-            return await validate(stripLeadingBom(document), jsonDocument);
-        },
-        async doComplete(
-            document: TextDocument,
-            position: Position,
-            jsonDocument?: JSONDocument,
-        ): Promise<CompletionList | null> {
+        parse: (document) => parse(stripLeadingBom(document)),
+        isSimulation: (document) => isHoverflySimulation(stripLeadingBom(document).getText()),
+        doValidation: async (document, jsonDocument) => {
             const normalized = stripLeadingBom(document);
-            seenDocuments.set(normalized.uri, normalized);
             const parsed = jsonDocument ?? parse(normalized);
-
+            return await validated({ document: normalized, parsed }, service, settings);
+        },
+        doComplete: async (document, position, jsonDocument) => {
+            const { normalized, parsed } = opened(document, jsonDocument);
             // invariant: inside a templatable string the template completions replace the schema's
             // — the cursor is inside a JSON string value — and they are computed here, where the
             // position is known.
             const templateItems = getTemplateCompletions(normalized, parsed, position);
-            if (templateItems) {
-                return { isIncomplete: false, items: templateItems };
-            }
-            return await service.doComplete(normalized, position, parsed);
+            return templateItems === undefined
+                ? await service.doComplete(normalized, position, parsed)
+                : { isIncomplete: false, items: templateItems };
         },
-        async doHover(
-            document: TextDocument,
-            position: Position,
-            jsonDocument?: JSONDocument,
-        ): Promise<Hover | null> {
-            const normalized = stripLeadingBom(document);
-            seenDocuments.set(normalized.uri, normalized);
-            const parsed = jsonDocument ?? parse(normalized);
-            const templateHover = getTemplateHover(normalized, parsed, position);
-            if (templateHover) {
-                return templateHover;
-            }
-            return await service.doHover(normalized, position, parsed);
+        doHover: async (document, position, jsonDocument) => {
+            const { normalized, parsed } = opened(document, jsonDocument);
+            return (
+                getTemplateHover(normalized, parsed, position) ??
+                (await service.doHover(normalized, position, parsed))
+            );
         },
     };
 }

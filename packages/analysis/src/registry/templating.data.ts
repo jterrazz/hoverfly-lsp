@@ -345,7 +345,7 @@ export const HOVERFLY_HELPERS: readonly HelperSpec[] = [
         args: [{ name: 'dataSourceName', type: 'string', optional: false }],
         block: false,
         builtin: false,
-        docs: `Return the CSV as [][]string; iterate with #each. ${DOCS_TEMPLATING}`,
+        docs: `Return the CSV as \`[][]string\`; iterate with #each. ${DOCS_TEMPLATING}`,
         example: "{{#each (csvAsArray 'pets')}}…{{/each}}",
     },
     {
@@ -636,11 +636,6 @@ export const RAYMOND_BUILTINS: readonly HelperSpec[] = [
 
 /** All recognised helper names: the 52 Hoverfly helpers plus the 8 raymond built-ins. */
 export const ALL_HELPERS: readonly HelperSpec[] = [...HOVERFLY_HELPERS, ...RAYMOND_BUILTINS];
-
-/** The helper names data.variables[].function accepts: the 52 Hoverfly helpers alone, SupportedMethodMap consulting no built-in. */
-export const VARIABLE_FUNCTION_NAMES: readonly string[] = HOVERFLY_HELPERS.map(
-    (helper) => helper.name,
-);
 
 // outside: parse_duration.go's unitMap — both micro signs (µs U+00B5, μs U+03BC), no week, no
 // month; Hoverfly silently ignores an invalid offset (report 08 §2).

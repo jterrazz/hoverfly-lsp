@@ -5,7 +5,7 @@
 import type { Diagnostic } from 'vscode-languageserver-types';
 
 import { HTTP_METHODS, URI_SCHEMES, VALUE_DID_YOU_MEAN_MAX_DISTANCE } from '../../registry/http.js';
-import type { DiagnosticCode } from '../catalog.js';
+import type { DiagnosticCode } from '../catalog.data.js';
 import { makeDiagnostic } from '../diagnostics.js';
 import { nearestWithin } from '../levenshtein.js';
 import type { MatcherModel, RuleContext, SemanticRule } from '../rule.js';

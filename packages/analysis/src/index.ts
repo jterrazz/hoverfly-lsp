@@ -11,22 +11,20 @@ export {
     DIAGNOSTIC_CATALOG,
     DIAGNOSTIC_SOURCE,
     type DiagnosticCode,
-    formatMessage,
-} from './semantic/catalog.js';
+} from './semantic/catalog.data.js';
 export {
     type HoverflyServiceSettings,
     type RuleContext,
     type SemanticRule,
     type SimulationModel,
 } from './semantic/rule.js';
-export { makeDiagnostic } from './semantic/diagnostics.js';
+export { diagnosticHref, formatMessage, makeDiagnostic } from './semantic/diagnostics.js';
 
 export { createHoverflyLanguageService, type HoverflyLanguageService } from './service.js';
 
 export { getSemanticTokens, type SemanticToken } from './semantic-tokens/producer.js';
 export {
     SEMANTIC_TOKEN_MODIFIERS,
-    SEMANTIC_TOKEN_TYPE_INDEX,
     SEMANTIC_TOKEN_TYPES,
     type SemanticTokenTypeName,
 } from './semantic-tokens/legend.js';
@@ -60,8 +58,7 @@ export {
     NOW_FORMAT_NOTES,
     NOW_OFFSET_UNITS,
     RAYMOND_BUILTINS,
-    VARIABLE_FUNCTION_NAMES,
-} from './registry/templating.js';
+} from './registry/templating.data.js';
 export {
     type ArrayConfigKey,
     MATCHER_PANIC_NOTES,

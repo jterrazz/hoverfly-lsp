@@ -8,7 +8,7 @@ import type { TextDocument } from 'vscode-languageserver-textdocument';
 import { hasHoverflyFilename, isHoverflySimulationAst } from '../fingerprint.js';
 import { FAKER_NAMES } from '../registry/faker.js';
 import { MATCHER_SPECS } from '../registry/matchers.js';
-import { ALL_HELPERS } from '../registry/templating.js';
+import { ALL_HELPERS } from '../registry/templating.data.js';
 import { buildSimulationModel } from '../semantic/model.js';
 import type { MatcherModel, SimulationModel } from '../semantic/rule.js';
 import type {
@@ -23,22 +23,9 @@ import { hasTemplateSyntax } from '../template/detect.js';
 import { parse } from '../template/parser.js';
 import { createStringSourceMap } from '../template/source-map.js';
 import type { StringSourceMap } from '../template/source-map.js';
-import { SEMANTIC_TOKEN_TYPE_INDEX } from './legend.js';
 import type { SemanticTokenTypeName } from './legend.js';
-
-/** One absolute, single-line token; its type an index into SEMANTIC_TOKEN_TYPES, its modifiers always 0. */
-type SemanticToken = {
-    /** 0-based line. */
-    readonly line: number;
-    /** 0-based start character (UTF-16 code units). */
-    readonly startChar: number;
-    /** Token length in UTF-16 code units (never spans a line). */
-    readonly length: number;
-    /** Index into `SEMANTIC_TOKEN_TYPES`. */
-    readonly tokenType: number;
-    /** Modifier bitset; `0` in v1. */
-    readonly tokenModifiers: number;
-};
+import { TokenEmitter } from './token-emitter.js';
+import type { SemanticToken } from './token-emitter.js';
 
 const BLOCK_HELPER_NAMES: ReadonlySet<string> = new Set(
     ALL_HELPERS.filter((helper) => helper.block).map((helper) => helper.name),
@@ -49,56 +36,6 @@ const ALL_HELPER_NAMES: ReadonlySet<string> = new Set(ALL_HELPERS.map((helper) =
 const FAKER_NAME_SET: ReadonlySet<string> = new Set(FAKER_NAMES);
 
 const MATCHER_NAME_SET: ReadonlySet<string> = new Set(MATCHER_SPECS.map((spec) => spec.name));
-
-class TokenEmitter {
-    private readonly tokens: SemanticToken[] = [];
-    private readonly document: TextDocument;
-
-    constructor(document: TextDocument) {
-        this.document = document;
-    }
-
-    emitDocSpan(startOffset: number, endOffset: number, type: SemanticTokenTypeName): void {
-        if (endOffset <= startOffset) {
-            return;
-        }
-        const tokenType = SEMANTIC_TOKEN_TYPE_INDEX[type];
-        let cursor = startOffset;
-        while (cursor < endOffset) {
-            const start = this.document.positionAt(cursor);
-            const lineEndOffset = this.document.offsetAt({ line: start.line + 1, character: 0 });
-            const segmentEnd = Math.min(endOffset, lineEndOffset);
-            const end = this.document.positionAt(segmentEnd);
-            const length =
-                end.line === start.line
-                    ? end.character - start.character
-                    : this.document.offsetAt({ line: start.line + 1, character: 0 }) - cursor;
-            if (length > 0) {
-                this.tokens.push({
-                    line: start.line,
-                    startChar: start.character,
-                    length,
-                    tokenType,
-                    tokenModifiers: 0,
-                });
-            }
-            cursor = segmentEnd;
-        }
-    }
-
-    emitDecoded(
-        sourceMap: StringSourceMap,
-        start: number,
-        end: number,
-        type: SemanticTokenTypeName,
-    ): void {
-        this.emitDocSpan(sourceMap.toDocOffset(start), sourceMap.toDocOffset(end), type);
-    }
-
-    result(): SemanticToken[] {
-        return this.tokens.toSorted((a, b) => a.line - b.line || a.startChar - b.startChar);
-    }
-}
 
 function emitPath(
     emitter: TokenEmitter,
@@ -202,9 +139,9 @@ function emitCall(
     const helper = isKnownHelper(path);
     emitPath(emitter, sourceMap, path, helper);
     const fakerCall = helperHeadName(path) === 'faker';
-    params.forEach((param, index) => {
+    for (const [index, param] of params.entries()) {
         emitExpression(emitter, sourceMap, param, fakerCall && index === 0);
-    });
+    }
 }
 
 function emitSubExpression(
@@ -358,4 +295,5 @@ function getSemanticTokens(
     return emitter.result();
 }
 
-export { getSemanticTokens, type SemanticToken };
+export { getSemanticTokens };
+export type { SemanticToken } from './token-emitter.js';

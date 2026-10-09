@@ -4,40 +4,20 @@
 // dotted, `@` or `this` path is never a helper, but for the Request.Body method call (report 08
 // §6).
 
-import { FAKER_NAMES, FAKER_PARAMETERIZED_PANICS, GOFAKEIT_VERSION } from '../registry/faker.js';
-import { ALL_HELPERS, NOW_OFFSET_UNITS } from '../registry/templating.js';
-import type { HelperSpec } from '../registry/templating.js';
+import { ALL_HELPERS } from '../registry/templating.data.js';
+import type { HelperSpec } from '../registry/templating.data.js';
 import type {
     BlockNode,
     Expression,
     MustacheNode,
     PathExpression,
     Statement,
-    StringLiteral,
     SubExpression,
 } from './ast.js';
+import type { TemplateFinding } from './finding.js';
+import { checkArity, checkSpecialHelperArgs } from './helper-arguments.js';
 import { parse } from './parser.js';
 import type { TemplateParseError } from './parser.js';
-
-type TemplateFindingKind =
-    | 'HF502'
-    | 'HF503'
-    | 'HF504'
-    | 'HF505'
-    | 'HF506'
-    | 'HF507'
-    | 'HF508'
-    | 'HF509';
-
-type TemplateFinding = {
-    readonly kind: TemplateFindingKind;
-    /** Inclusive start offset into the decoded template. */
-    readonly start: number;
-    /** Exclusive end offset into the decoded template. */
-    readonly end: number;
-    /** Catalog message placeholder args for this finding's code. */
-    readonly args: Readonly<Record<string, string>>;
-};
 
 /** Document-level context the analyzer needs to resolve `Vars.X` / `Literals.X` references. */
 type AnalyzerContext = {
@@ -51,22 +31,9 @@ const HELPER_BY_NAME: ReadonlyMap<string, HelperSpec> = new Map(
     ALL_HELPERS.map((spec) => [spec.name, spec]),
 );
 
-const FAKER_NAME_SET: ReadonlySet<string> = new Set(FAKER_NAMES);
-const FAKER_PANIC_SET: ReadonlySet<string> = new Set(FAKER_PARAMETERIZED_PANICS);
+const NOTHING_DECLARED: AnalyzerContext = { literalNames: new Set(), variableNames: new Set() };
 
-const NOW_OFFSET_RE = new RegExp(
-    `^[-+]?(?:\\d+(?:\\.\\d+)?(?:${NOW_OFFSET_UNITS.map(escapeRegExp).join('|')}))+$`,
-    'u',
-);
-
-function escapeRegExp(text: string): string {
-    return text.replaceAll(/[.*+?^${}()|[\]\\]/gu, String.raw`\$&`);
-}
-
-function analyze(
-    decoded: string,
-    context: AnalyzerContext = { variableNames: new Set(), literalNames: new Set() },
-): TemplateFinding[] {
+function analyze(decoded: string, context?: AnalyzerContext): TemplateFinding[] {
     const findings: TemplateFinding[] = [];
     const { ast, errors } = parse(decoded);
 
@@ -74,7 +41,7 @@ function analyze(
         findings.push(parseErrorFinding(error));
     }
 
-    walkStatements(ast.body, findings, context);
+    walkStatements(ast.body, findings, context ?? NOTHING_DECLARED);
     return findings;
 }
 
@@ -114,14 +81,22 @@ function checkMustache(
     findings: TemplateFinding[],
     context: AnalyzerContext,
 ): void {
-    checkCall(node.path, node.params, node.params.length > 0, false, findings, context);
+    checkCall(
+        { isBlock: false, isCall: node.params.length > 0, params: node.params, path: node.path },
+        findings,
+        context,
+    );
     for (const param of node.params) {
         checkExpression(param, findings, context);
     }
 }
 
 function checkBlock(node: BlockNode, findings: TemplateFinding[], context: AnalyzerContext): void {
-    checkCall(node.path, node.params, true, true, findings, context);
+    checkCall(
+        { isBlock: true, isCall: true, params: node.params, path: node.path },
+        findings,
+        context,
+    );
     for (const param of node.params) {
         checkExpression(param, findings, context);
     }
@@ -156,17 +131,25 @@ function checkSubExpression(
     findings: TemplateFinding[],
     context: AnalyzerContext,
 ): void {
-    checkCall(node.path, node.params, true, false, findings, context);
+    checkCall(
+        { isBlock: false, isCall: true, params: node.params, path: node.path },
+        findings,
+        context,
+    );
     for (const param of node.params) {
         checkExpression(param, findings, context);
     }
 }
 
+type Call = {
+    readonly isBlock: boolean;
+    readonly isCall: boolean;
+    readonly params: readonly Expression[];
+    readonly path: PathExpression;
+};
+
 function checkCall(
-    path: PathExpression,
-    params: readonly Expression[],
-    isCall: boolean,
-    isBlock: boolean,
+    { isBlock, isCall, params, path }: Call,
     findings: TemplateFinding[],
     context: AnalyzerContext,
 ): void {
@@ -195,108 +178,8 @@ function checkCall(
         return;
     }
 
-    checkArity(spec, path, params, isBlock, findings);
+    checkArity(spec, { isBlock, params, path }, findings);
     checkSpecialHelperArgs(spec, params, findings);
-}
-
-// outside: raymond does not enforce arity, so HF504 checks the intended contract; the catalog still
-// rates it an Error (D4).
-function checkArity(
-    spec: HelperSpec,
-    path: PathExpression,
-    params: readonly Expression[],
-    isBlock: boolean,
-    findings: TemplateFinding[],
-): void {
-    if (spec.block !== isBlock) {
-        const wanted = spec.block ? 'a block helper' : 'an inline helper';
-        findings.push({
-            kind: 'HF504',
-            start: path.start,
-            end: path.end,
-            args: { name: spec.name, sig: wanted, n: String(params.length) },
-        });
-        return;
-    }
-
-    const required = spec.args.filter((arg) => !arg.optional).length;
-    const max = spec.variadic ? Number.POSITIVE_INFINITY : spec.args.length;
-    const got = params.length;
-    if (got < required || got > max) {
-        findings.push({
-            kind: 'HF504',
-            start: path.start,
-            end: path.end,
-            args: { name: spec.name, sig: describeArity(spec, required, max), n: String(got) },
-        });
-    }
-}
-
-function describeArity(spec: HelperSpec, required: number, max: number): string {
-    if (spec.variadic) {
-        return required === 0 ? 'any number of arguments' : `at least ${plural(required)}`;
-    }
-    if (required === max) {
-        return plural(required);
-    }
-    return `${required} to ${max} arguments`;
-}
-
-function plural(count: number): string {
-    return count === 1 ? '1 argument' : `${count} arguments`;
-}
-
-// invariant: only a string-literal argument is judged — a path or a subexpression is unknowable
-// statically.
-function checkSpecialHelperArgs(
-    spec: HelperSpec,
-    params: readonly Expression[],
-    findings: TemplateFinding[],
-): void {
-    if (spec.name === 'faker') {
-        checkFakerArg(params[0], findings);
-    } else if (spec.name === 'now') {
-        checkNowOffsetArg(params[0], findings);
-    }
-}
-
-function checkFakerArg(arg: Expression | undefined, findings: TemplateFinding[]): void {
-    const literal = asStringLiteral(arg);
-    if (!literal) {
-        return;
-    }
-    const type = literal.value;
-    if (FAKER_NAME_SET.has(type)) {
-        return;
-    }
-    if (FAKER_PANIC_SET.has(type)) {
-        findings.push({ kind: 'HF508', start: literal.start, end: literal.end, args: { t: type } });
-        return;
-    }
-    findings.push({
-        kind: 'HF507',
-        start: literal.start,
-        end: literal.end,
-        args: { t: type, version: GOFAKEIT_VERSION },
-    });
-}
-
-function checkNowOffsetArg(arg: Expression | undefined, findings: TemplateFinding[]): void {
-    const literal = asStringLiteral(arg);
-    if (!literal) {
-        return;
-    }
-    const offset = literal.value;
-    // outside: an empty offset and `0` are valid; Hoverfly silently ignores any other offset
-    // outside the unit grammar.
-    if (offset === '' || offset === '0' || NOW_OFFSET_RE.test(offset)) {
-        return;
-    }
-    findings.push({ kind: 'HF509', start: literal.start, end: literal.end, args: { o: offset } });
-}
-
-function asStringLiteral(expression: Expression | undefined): StringLiteral | undefined {
-    return expression?.type === 'StringLiteral' ? expression : undefined;
 }
 
 function checkPathReferences(
@@ -329,4 +212,4 @@ function isRequestBodyMethodCall(path: PathExpression): boolean {
     );
 }
 
-export { analyze, type AnalyzerContext, type TemplateFinding };
+export { analyze, type AnalyzerContext };

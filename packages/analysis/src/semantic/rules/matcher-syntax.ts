@@ -2,74 +2,39 @@
 // a correctly typed, non-empty value; glob is never judged — ryanuber/go-glob has no invalid
 // syntax, `*` alone being special (research/14 §3.2, §4, §7).
 
-import { XMLValidator } from 'fast-xml-parser';
-import type { ASTNode, ObjectASTNode } from 'vscode-json-languageservice';
+import { SyntaxValidator } from 'fast-xml-validator';
+import type { ASTNode } from 'vscode-json-languageservice';
 import type { Diagnostic } from 'vscode-languageserver-types';
 
 import { makeDiagnostic } from '../diagnostics.js';
 import { isValidRe2 } from '../re2.js';
-import type { FieldContainer, MatcherModel, RuleContext, SemanticRule } from '../rule.js';
+import type { MatcherModel, RuleContext, SemanticRule } from '../rule.js';
+import { walkMatchers } from './matcher-walk.js';
 
-function valueNodeOf(object: ObjectASTNode | undefined, key: string): ASTNode | undefined {
-    return object?.properties.find((p) => p.keyNode.value === key)?.valueNode;
-}
-
-function nestedMatcher(node: ASTNode, fieldName: string, container: FieldContainer): MatcherModel {
-    const object = node.type === 'object' ? node : undefined;
-    const matcherNode = valueNodeOf(object, 'matcher');
-    return {
-        node: object,
-        matcherNode,
-        matcherName: matcherNode?.type === 'string' ? matcherNode.value : undefined,
-        valueNode: valueNodeOf(object, 'value'),
-        configNode: valueNodeOf(object, 'config'),
-        doMatchNode: valueNodeOf(object, 'doMatch'),
-        parent: { fieldName, container },
-    };
-}
-
-function walkMatchers(matchers: readonly MatcherModel[]): MatcherModel[] {
-    const out: MatcherModel[] = [];
-    const visit = (matcher: MatcherModel): void => {
-        out.push(matcher);
-        const { doMatchNode } = matcher;
-        if (doMatchNode?.type === 'object') {
-            visit(nestedMatcher(doMatchNode, matcher.parent.fieldName, matcher.parent.container));
-        } else if (doMatchNode?.type === 'array') {
-            for (const item of doMatchNode.items) {
-                visit(nestedMatcher(item, matcher.parent.fieldName, matcher.parent.container));
-            }
-        }
-    };
-    for (const matcher of matchers) {
-        visit(matcher);
-    }
-    return out;
-}
+const CLOSERS: ReadonlyMap<string, string> = new Map([
+    ['(', ')'],
+    ['[', ']'],
+    ['{', '}'],
+]);
+const CLOSING: ReadonlySet<string> = new Set(CLOSERS.values());
 
 function isBalanced(s: string): boolean {
     const stack: string[] = [];
-    const close: Record<string, string> = { '(': ')', '[': ']', '{': '}' };
-    let quote: "'" | '"' | undefined;
+    let quote: string | undefined;
     for (const ch of s) {
-        if (quote) {
-            if (ch === quote) {
-                quote = undefined;
-            }
+        if (quote !== undefined) {
+            quote = ch === quote ? undefined : quote;
             continue;
         }
         if (ch === '"' || ch === "'") {
             quote = ch;
             continue;
         }
-        if (ch === '(' || ch === '[' || ch === '{') {
-            stack.push(close[ch]!);
-            continue;
-        }
-        if (ch === ')' || ch === ']' || ch === '}') {
-            if (stack.pop() !== ch) {
-                return false;
-            }
+        const closer = CLOSERS.get(ch);
+        if (closer !== undefined) {
+            stack.push(closer);
+        } else if (CLOSING.has(ch) && stack.pop() !== ch) {
+            return false;
         }
     }
     return stack.length === 0 && quote === undefined;
@@ -223,8 +188,16 @@ function checkXml(
     if (xml.trim() === '') {
         return;
     }
-    if (XMLValidator.validate(xml) !== true) {
+    if (!isWellFormedXml(xml)) {
         diagnostics.push(makeDiagnostic(context.textDocument, 'HF234', valueNode, { name }));
+    }
+}
+
+function isWellFormedXml(xml: string): boolean {
+    try {
+        return SyntaxValidator.validate(xml);
+    } catch {
+        return false;
     }
 }
 
@@ -232,11 +205,11 @@ function checkArray(context: RuleContext, valueNode: ASTNode, diagnostics: Diagn
     if (valueNode.type !== 'array') {
         return;
     }
-    valueNode.items.forEach((item, index) => {
+    for (const [index, item] of valueNode.items.entries()) {
         if (item.type !== 'string') {
             diagnostics.push(makeDiagnostic(context.textDocument, 'HF236', item, { i: index }));
         }
-    });
+    }
 }
 
 // outside: JSON.parse reads the same strict grammar as Go's encoding/json.
@@ -256,7 +229,7 @@ export const matcherSyntaxRule: SemanticRule = {
         const diagnostics: Diagnostic[] = [];
         for (const pair of context.model.pairs) {
             for (const field of pair.request.fields) {
-                for (const matcher of walkMatchers(field.matchers)) {
+                for (const { matcher } of walkMatchers(field.matchers)) {
                     checkSyntax(context, matcher, diagnostics);
                 }
             }

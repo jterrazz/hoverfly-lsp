@@ -62,18 +62,14 @@ function locateInResponse(
         return buildLocation(document, bodyNode, templatedEnabled, offset);
     }
 
-    const headers = asObject(propValue(response, 'headers'));
-    if (headers) {
-        for (const property of headers.properties) {
-            const value = property.valueNode;
-            if (value?.type === 'array') {
-                for (const item of value.items) {
-                    if (isStringNode(item) && containsOffset(item, offset)) {
-                        return buildLocation(document, item, templatedEnabled, offset);
-                    }
-                }
-            }
-        }
+    const headerValues = (asObject(propValue(response, 'headers'))?.properties ?? []).flatMap(
+        ({ valueNode }) => (valueNode?.type === 'array' ? valueNode.items : []),
+    );
+    const header = headerValues.find(
+        (item): item is StringASTNode => isStringNode(item) && containsOffset(item, offset),
+    );
+    if (header !== undefined) {
+        return buildLocation(document, header, templatedEnabled, offset);
     }
     return undefined;
 }

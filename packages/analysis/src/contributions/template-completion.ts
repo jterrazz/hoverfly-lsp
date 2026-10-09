@@ -1,13 +1,14 @@
-import type { ASTNode, JSONDocument, ObjectASTNode, Position } from 'vscode-json-languageservice';
+import type { JSONDocument, Position } from 'vscode-json-languageservice';
 import type { TextDocument } from 'vscode-languageserver-textdocument';
 import { CompletionItemKind, InsertTextFormat, MarkupKind } from 'vscode-languageserver-types';
 import type { CompletionItem } from 'vscode-languageserver-types';
 
 import { FAKER_NAMES } from '../registry/faker.js';
-import { ALL_HELPERS, NOW_FORMAT_NOTES } from '../registry/templating.js';
-import type { HelperSpec } from '../registry/templating.js';
+import { ALL_HELPERS, NOW_FORMAT_NOTES } from '../registry/templating.data.js';
+import type { HelperSpec } from '../registry/templating.data.js';
 import { classifyCompletionContext } from '../template/completion-context.js';
 import type { TemplateCompletionContext } from '../template/completion-context.js';
+import { dataNameItems, stateKeyItems } from './document-names.js';
 import { findTemplateLocation } from './template-location.js';
 import { EACH_DATA_VARIABLES, PATH_ROOTS, REQUEST_MEMBERS } from './template-members.js';
 
@@ -103,7 +104,7 @@ function helperItem(spec: HelperSpec, context: TemplateCompletionContext): Compl
 
 function helperSignature(spec: HelperSpec): string {
     const args = spec.args.map((a) => (a.optional ? `[${a.name}]` : a.name));
-    if (spec.variadic) {
+    if (spec.variadic === true) {
         args.push('…');
     }
     const prefix = spec.block ? '#' : '';
@@ -247,89 +248,6 @@ function blockCloseItems(context: TemplateCompletionContext): CompletionItem[] {
         });
     }
     return items;
-}
-
-function stateKeyItems(jsonDocument: JSONDocument): CompletionItem[] {
-    const keys = collectStateKeys(jsonDocument);
-    return [...keys].toSorted().map((key) => ({
-        label: key,
-        kind: CompletionItemKind.Variable,
-        detail: 'State key (declared in this simulation)',
-        insertText: key,
-        insertTextFormat: InsertTextFormat.PlainText,
-    }));
-}
-
-function dataNameItems(
-    jsonDocument: JSONDocument,
-    dataKey: 'literals' | 'variables',
-    detail: string,
-): CompletionItem[] {
-    const names = collectDataNames(jsonDocument, dataKey);
-    return [...names].toSorted().map((name) => ({
-        label: name,
-        kind: CompletionItemKind.Variable,
-        detail,
-        insertText: name,
-        insertTextFormat: InsertTextFormat.PlainText,
-    }));
-}
-
-function collectStateKeys(jsonDocument: JSONDocument): Set<string> {
-    const keys = new Set<string>();
-    const root = asObject(jsonDocument.root);
-    const data = asObject(propValue(root, 'data'));
-    for (const pairNode of arrayItems(data, 'pairs')) {
-        const pair = asObject(pairNode);
-        const request = asObject(propValue(pair, 'request'));
-        const response = asObject(propValue(pair, 'response'));
-        addObjectKeys(propValue(request, 'requiresState'), keys);
-        addObjectKeys(propValue(response, 'transitionsState'), keys);
-    }
-    return keys;
-}
-
-function collectDataNames(
-    jsonDocument: JSONDocument,
-    dataKey: 'literals' | 'variables',
-): Set<string> {
-    const names = new Set<string>();
-    const root = asObject(jsonDocument.root);
-    const data = asObject(propValue(root, 'data'));
-    for (const entry of arrayItems(data, dataKey)) {
-        const obj = asObject(entry);
-        const nameNode = propValue(obj, 'name');
-        if (nameNode?.type === 'string' && nameNode.value.length > 0) {
-            names.add(nameNode.value);
-        }
-    }
-    return names;
-}
-
-function asObject(node: ASTNode | undefined): ObjectASTNode | undefined {
-    return node?.type === 'object' ? node : undefined;
-}
-
-function propValue(node: ObjectASTNode | undefined, key: string): ASTNode | undefined {
-    return node?.properties.find((p) => p.keyNode.value === key)?.valueNode;
-}
-
-function arrayItems(node: ObjectASTNode | undefined, key: string): readonly ASTNode[] {
-    const value = propValue(node, key);
-    return value?.type === 'array' ? value.items : [];
-}
-
-function addObjectKeys(node: ASTNode | undefined, into: Set<string>): void {
-    const obj = asObject(node);
-    if (!obj) {
-        return;
-    }
-    for (const property of obj.properties) {
-        const key = property.keyNode.value;
-        if (key.length > 0) {
-            into.add(key);
-        }
-    }
 }
 
 export { getTemplateCompletions };

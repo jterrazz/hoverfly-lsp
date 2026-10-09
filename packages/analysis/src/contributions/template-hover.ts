@@ -3,8 +3,8 @@ import type { TextDocument } from 'vscode-languageserver-textdocument';
 import { MarkupKind } from 'vscode-languageserver-types';
 
 import { FAKER_NAMES, FAKER_PARAMETERIZED_PANICS, GOFAKEIT_VERSION } from '../registry/faker.js';
-import { ALL_HELPERS } from '../registry/templating.js';
-import type { HelperSpec } from '../registry/templating.js';
+import { ALL_HELPERS } from '../registry/templating.data.js';
+import type { HelperSpec } from '../registry/templating.data.js';
 import type {
     Expression,
     MustacheNode,
@@ -60,7 +60,7 @@ function findHover(statements: readonly Statement[], cursor: number): HoverHit |
                 return mustacheHover(statement, cursor);
             }
             case 'BlockNode': {
-                const onName = pathHover(statement.path, cursor, true);
+                const onName = pathHover(statement.path, true);
                 if (onName) {
                     return onName;
                 }
@@ -83,7 +83,7 @@ function findHover(statements: readonly Statement[], cursor: number): HoverHit |
 
 function mustacheHover(node: MustacheNode, cursor: number): HoverHit | undefined {
     if (spans(node.path, cursor)) {
-        return pathHover(node.path, cursor, node.params.length > 0);
+        return pathHover(node.path, node.params.length > 0);
     }
     return paramHover(node.params, cursor, headName(node.path));
 }
@@ -101,7 +101,7 @@ function paramHover(
             return subExpressionHover(param, cursor);
         }
         if (param.type === 'PathExpression') {
-            return pathHover(param, cursor, false);
+            return pathHover(param, false);
         }
         if (param.type === 'StringLiteral' && head === 'faker' && index === 0) {
             return { markdown: fakerMarkdown(param.value), start: param.start, end: param.end };
@@ -112,7 +112,7 @@ function paramHover(
 
 function subExpressionHover(node: SubExpression, cursor: number): HoverHit | undefined {
     if (spans(node.path, cursor)) {
-        return pathHover(node.path, cursor, true);
+        return pathHover(node.path, true);
     }
     return paramHover(node.params, cursor, headName(node.path));
 }
@@ -124,34 +124,38 @@ function headName(path: PathExpression): string | undefined {
     return path.parts[0];
 }
 
-function pathHover(path: PathExpression, cursor: number, asCall: boolean): HoverHit | undefined {
-    void cursor;
-    if (!path.data && !path.thisRef && path.parts[0] === 'Request' && path.parts.length >= 2) {
-        const member = REQUEST_MEMBER_BY_NAME.get(path.parts[1] ?? '');
-        if (member) {
-            return {
-                markdown: requestMemberMarkdown(member.name),
-                start: path.start,
-                end: path.end,
-            };
-        }
+function pathHover(path: PathExpression, asCall: boolean): HoverHit | undefined {
+    if (path.data || path.thisRef) {
+        return undefined;
     }
+    return requestMemberHover(path) ?? helperHover(path, asCall);
+}
 
-    if (!path.data && !path.thisRef && path.parts.length === 1) {
-        const name = path.parts[0] ?? '';
-        const spec = HELPER_BY_NAME.get(name);
-        if (spec && (asCall || spec.args.length === 0)) {
-            return { markdown: helperMarkdown(spec), start: path.start, end: path.end };
-        }
+function requestMemberHover(path: PathExpression): HoverHit | undefined {
+    if (path.parts[0] !== 'Request' || path.parts.length < 2) {
+        return undefined;
     }
-    return undefined;
+    const member = REQUEST_MEMBER_BY_NAME.get(path.parts[1] ?? '');
+    return member === undefined
+        ? undefined
+        : { end: path.end, markdown: requestMemberMarkdown(member.name), start: path.start };
+}
+
+function helperHover(path: PathExpression, asCall: boolean): HoverHit | undefined {
+    if (path.parts.length !== 1) {
+        return undefined;
+    }
+    const spec = HELPER_BY_NAME.get(path.parts[0] ?? '');
+    return spec !== undefined && (asCall || spec.args.length === 0)
+        ? { end: path.end, markdown: helperMarkdown(spec), start: path.start }
+        : undefined;
 }
 
 function helperMarkdown(spec: HelperSpec): string {
     const args = spec.args.map((a) =>
         a.optional ? `[${a.name}: ${a.type}]` : `${a.name}: ${a.type}`,
     );
-    if (spec.variadic) {
+    if (spec.variadic === true) {
         args.push('…');
     }
     const prefix = spec.block ? '#' : '';
@@ -159,9 +163,10 @@ function helperMarkdown(spec: HelperSpec): string {
     const kind = spec.block ? 'block helper' : 'inline helper';
     const origin = spec.builtin ? 'raymond built-in' : 'Hoverfly helper';
     const required = spec.args.filter((a) => !a.optional).length;
-    const arity = spec.variadic
-        ? `≥ ${required} argument(s)`
-        : `${required}${required === spec.args.length ? '' : `–${spec.args.length}`} argument(s)`;
+    const arity =
+        spec.variadic === true
+            ? `≥ ${required} argument(s)`
+            : `${required}${required === spec.args.length ? '' : `–${spec.args.length}`} argument(s)`;
     return [
         `### \`${spec.name}\` — ${kind}`,
         '',

@@ -5,7 +5,7 @@ import type { ASTNode, JSONDocument, ObjectASTNode } from 'vscode-json-languages
 import type { TextDocument } from 'vscode-languageserver-textdocument';
 import type { Diagnostic } from 'vscode-languageserver-types';
 
-import type { DiagnosticCode } from './catalog.js';
+import type { DiagnosticCode } from './catalog.data.js';
 
 /** A rule family: the HFxxx codes it can emit, and the pass that emits them. */
 export type SemanticRule = {
