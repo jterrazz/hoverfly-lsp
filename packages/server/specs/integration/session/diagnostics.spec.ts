@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs';
 import { describe, expect, test } from 'vitest';
 import {
     DidChangeTextDocumentNotification,
@@ -6,16 +5,13 @@ import {
 } from 'vscode-languageserver-protocol/node';
 
 import { integration } from '../integration.specification.js';
-import { initialized } from './__setup__/server.js';
+import { corpusFile, initialized } from './__setup__/server.js';
 
 // value: a client advertising no `textDocument.diagnostic` gets diagnostics pushed; one advertising it pulls them.
 const PUSH = { capabilities: { textDocument: {}, workspace: {} } };
 const PULL = { capabilities: { textDocument: { diagnostic: { dynamicRegistration: false } } } };
 
-const danglingStates = readFileSync(
-    new URL('../../../../../testdata/invalid/hf4xx/dangling-states.hoverfly.json', import.meta.url),
-    'utf8',
-);
+const danglingStates = corpusFile('invalid/hf4xx/dangling-states.hoverfly.json');
 
 describe('diagnostics', () => {
     test('pushes the diagnostics of an invalid simulation on open', async () => {
@@ -262,12 +258,8 @@ describe('diagnostics', () => {
 
     test('raises HF602 against the actions initializationOptions registers', async () => {
         // Given - a client with no workspace/configuration, registering one action at initialize
-        const text = readFileSync(
-            new URL(
-                '../../../../../testdata/invalid/globalactions/hf602-postserveaction-silent-without-settings.hoverfly.json',
-                import.meta.url,
-            ),
-            'utf8',
+        const text = corpusFile(
+            'invalid/globalactions/hf602-postserveaction-silent-without-settings.hoverfly.json',
         );
         const result = await integration.call(async () => {
             await using lsp = await initialized({

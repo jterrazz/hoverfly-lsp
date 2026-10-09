@@ -1,15 +1,15 @@
 import { file } from '@jterrazz/test';
 import { glob } from 'glob';
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { describe, expect, test } from 'vitest';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DiagnosticSeverity } from 'vscode-languageserver-types';
 
 import { createHoverflyLanguageService } from '../../../src/service.js';
 import { integration } from '../integration.specification.js';
+import { fromCorpusSpecs, repositoryRoot } from './__setup__/repository.js';
 
-const repoRoot = fileURLToPath(new URL('../../../../../', import.meta.url));
+const repoRoot = repositoryRoot();
 const invalid = await glob('testdata/invalid/**/*.hoverfly.json', { cwd: repoRoot });
 const valid = await glob('testdata/valid/**/*.hoverfly.json', { cwd: repoRoot });
 
@@ -59,11 +59,10 @@ describe('diagnostics', () => {
             const result = await integration.call(async () => await diagnosticsOf(fixture));
 
             // Then - the diagnostics beside it, whole
-            expect(result.value).toMatch(
-                file(
-                    `../../../../../${fixture.replace(/\.hoverfly\.json$/u, '.diagnostics.json')}`,
-                ),
+            const golden = fromCorpusSpecs(
+                fixture.replace(/\.hoverfly\.json$/u, '.diagnostics.json'),
             );
+            expect(result.value).toMatch(file(golden));
         },
     );
 

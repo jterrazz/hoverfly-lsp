@@ -1,7 +1,8 @@
 import { execFileSync, spawn } from 'node:child_process';
+import { existsSync, readFileSync } from 'node:fs';
 import { mkdtemp, readdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
     createProtocolConnection,
@@ -19,6 +20,21 @@ import type {
 } from 'vscode-languageserver-protocol/node';
 
 const PACKAGE = fileURLToPath(new URL('../../../..', import.meta.url));
+
+// hazard: mutation runs these specs from a sandbox copy of the member, deeper than the checkout, so
+// the corpus is found by walking up to it, never at a fixed depth.
+/** A file of the repository's `testdata/` corpus, read as text. */
+export function corpusFile(path: string): string {
+    let folder = PACKAGE;
+    while (!existsSync(join(folder, 'testdata'))) {
+        const parent = dirname(folder);
+        if (parent === folder) {
+            throw new Error(`no testdata/ above ${PACKAGE}`);
+        }
+        folder = parent;
+    }
+    return readFileSync(join(folder, 'testdata', path), 'utf8');
+}
 
 // outside: a stdio language server has no specification of @jterrazz/test — `packed()` lays a tarball
 // only for a cli chain, whose one-shot `.exec()` cannot hold an LSP conversation — so the spec packs
