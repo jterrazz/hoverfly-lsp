@@ -6,218 +6,24 @@ import type { ASTNode, JSONDocument } from 'vscode-json-languageservice';
 import type { TextDocument } from 'vscode-languageserver-textdocument';
 
 import { hasHoverflyFilename, isHoverflySimulationAst } from '../fingerprint.js';
-import { FAKER_NAMES } from '../registry/faker.js';
 import { MATCHER_SPECS } from '../registry/matchers.js';
-import { ALL_HELPERS } from '../registry/templating.data.js';
 import { buildSimulationModel } from '../semantic/model.js';
 import type { MatcherModel, SimulationModel } from '../semantic/rule.js';
-import type {
-    BlockNode,
-    Expression,
-    MustacheNode,
-    PathExpression,
-    Statement,
-    SubExpression,
-} from '../template/ast.js';
-import { hasTemplateSyntax } from '../template/detect.js';
-import { parse } from '../template/parser.js';
 import { createStringSourceMap } from '../template/source-map.js';
-import type { StringSourceMap } from '../template/source-map.js';
-import type { SemanticTokenTypeName } from './legend.js';
+import { templateTokens } from './template-tokens.js';
 import { TokenEmitter } from './token-emitter.js';
 import type { SemanticToken } from './token-emitter.js';
 
-const BLOCK_HELPER_NAMES: ReadonlySet<string> = new Set(
-    ALL_HELPERS.filter((helper) => helper.block).map((helper) => helper.name),
-);
-
-const ALL_HELPER_NAMES: ReadonlySet<string> = new Set(ALL_HELPERS.map((helper) => helper.name));
-
-const FAKER_NAME_SET: ReadonlySet<string> = new Set(FAKER_NAMES);
-
 const MATCHER_NAME_SET: ReadonlySet<string> = new Set(MATCHER_SPECS.map((spec) => spec.name));
 
-function emitPath(
-    emitter: TokenEmitter,
-    sourceMap: StringSourceMap,
-    path: PathExpression,
-    isHelperHead: boolean,
-): void {
-    if (isHelperHead) {
-        const type: SemanticTokenTypeName = BLOCK_HELPER_NAMES.has(path.original.replace(/^#/u, ''))
-            ? 'keyword'
-            : 'function';
-        emitter.emitDecoded(sourceMap, path.start, path.end, type);
-        return;
-    }
-
-    if (path.data || path.thisRef) {
-        emitter.emitDecoded(sourceMap, path.start, path.end, 'parameter');
-        return;
-    }
-
-    const segments = splitPathSegments(path.original);
-    let cursor = path.start;
-    for (let i = 0; i < segments.length; i += 1) {
-        const segment = segments[i];
-        if (segment === undefined) {
-            continue;
-        }
-        const segStart = cursor;
-        const segEnd = cursor + segment.length;
-        const inner = segment.replace(/^\[(?<index>.*)\]$/u, '$<index>');
-        const isBracketIndex = inner !== segment;
-        const isNumeric = /^-?\d+$/u.test(inner);
-
-        let type: SemanticTokenTypeName;
-        if (i === 0) {
-            type = 'variable';
-        } else if (isBracketIndex && isNumeric) {
-            type = 'number';
-        } else if (isNumeric) {
-            type = 'number';
-        } else {
-            type = 'property';
-        }
-        emitter.emitDecoded(sourceMap, segStart, segEnd, type);
-        cursor = segEnd + 1;
-    }
-}
-
-function splitPathSegments(original: string): string[] {
-    return original.split('.');
-}
-
-function emitExpression(
-    emitter: TokenEmitter,
-    sourceMap: StringSourceMap,
-    expr: Expression,
-    fakerArg: boolean,
-): void {
-    switch (expr.type) {
-        case 'StringLiteral': {
-            const isFaker = fakerArg && FAKER_NAME_SET.has(expr.value);
-            emitter.emitDecoded(sourceMap, expr.start, expr.end, isFaker ? 'enumMember' : 'string');
-            return;
-        }
-        case 'NumberLiteral': {
-            emitter.emitDecoded(sourceMap, expr.start, expr.end, 'number');
-            return;
-        }
-        case 'BooleanLiteral': {
-            emitter.emitDecoded(sourceMap, expr.start, expr.end, 'keyword');
-            return;
-        }
-        case 'PathExpression': {
-            emitPath(emitter, sourceMap, expr, false);
-            return;
-        }
-        case 'SubExpression': {
-            emitSubExpression(emitter, sourceMap, expr);
-            return;
-        }
-        default: {
-            return;
-        }
-    }
-}
-
-function helperHeadName(path: PathExpression): string {
-    return path.parts[0] ?? path.original.replace(/^#/u, '');
-}
-
-function isKnownHelper(path: PathExpression): boolean {
-    return ALL_HELPER_NAMES.has(helperHeadName(path));
-}
-
-function emitCall(
-    emitter: TokenEmitter,
-    sourceMap: StringSourceMap,
-    path: PathExpression,
-    params: readonly Expression[],
-): void {
-    const helper = isKnownHelper(path);
-    emitPath(emitter, sourceMap, path, helper);
-    const fakerCall = helperHeadName(path) === 'faker';
-    for (const [index, param] of params.entries()) {
-        emitExpression(emitter, sourceMap, param, fakerCall && index === 0);
-    }
-}
-
-function emitSubExpression(
-    emitter: TokenEmitter,
-    sourceMap: StringSourceMap,
-    expr: SubExpression,
-): void {
-    emitCall(emitter, sourceMap, expr.path, expr.params);
-}
-
-function emitMustacheDelimiters(
-    emitter: TokenEmitter,
-    sourceMap: StringSourceMap,
-    node: MustacheNode,
-): void {
-    const openLen = node.escaped ? 2 : 3;
-    emitter.emitDecoded(sourceMap, node.start, node.start + openLen, 'operator');
-    emitter.emitDecoded(sourceMap, node.end - openLen, node.end, 'operator');
-}
-
-function emitBlockDelimiters(
-    emitter: TokenEmitter,
-    sourceMap: StringSourceMap,
-    node: BlockNode,
-): void {
-    emitter.emitDecoded(sourceMap, node.openTag.start, node.openTag.start + 3, 'operator');
-    emitter.emitDecoded(sourceMap, node.openTag.end - 2, node.openTag.end, 'operator');
-    if (node.closeTag) {
-        emitter.emitDecoded(sourceMap, node.closeTag.start, node.closeTag.start + 3, 'operator');
-        emitter.emitDecoded(sourceMap, node.closeTag.end - 2, node.closeTag.end, 'operator');
-    }
-}
-
-function emitStatement(
-    emitter: TokenEmitter,
-    sourceMap: StringSourceMap,
-    statement: Statement,
-): void {
-    switch (statement.type) {
-        case 'MustacheNode': {
-            emitMustacheDelimiters(emitter, sourceMap, statement);
-            emitCall(emitter, sourceMap, statement.path, statement.params);
-            return;
-        }
-        case 'BlockNode': {
-            emitBlockDelimiters(emitter, sourceMap, statement);
-            emitPath(emitter, sourceMap, statement.path, isKnownHelper(statement.path));
-            for (const param of statement.params) {
-                emitExpression(emitter, sourceMap, param, false);
-            }
-            for (const child of statement.program) {
-                emitStatement(emitter, sourceMap, child);
-            }
-            for (const child of statement.inverse ?? []) {
-                emitStatement(emitter, sourceMap, child);
-            }
-            return;
-        }
-        case 'ContentNode': {
-            return;
-        }
-        default: {
-            return;
-        }
-    }
-}
-
 function emitTemplateString(emitter: TokenEmitter, document: TextDocument, node: ASTNode): void {
-    if (node.type !== 'string' || !hasTemplateSyntax(node.value)) {
+    if (node.type !== 'string') {
         return;
     }
     const rawToken = document.getText().slice(node.offset, node.offset + node.length);
     const sourceMap = createStringSourceMap(rawToken, node.offset);
-    const { ast } = parse(sourceMap.decoded);
-    for (const statement of ast.body) {
-        emitStatement(emitter, sourceMap, statement);
+    for (const { end, start, type } of templateTokens(sourceMap.decoded)) {
+        emitter.emitDecoded(sourceMap, start, end, type);
     }
 }
 
@@ -230,26 +36,17 @@ function emitTemplatableValue(
     document: TextDocument,
     node: ASTNode | undefined,
 ): void {
-    if (!node) {
+    if (node === undefined) {
         return;
     }
-    if (node.type === 'string') {
-        emitTemplateString(emitter, document, node);
-        return;
-    }
-    if (node.type === 'array') {
-        for (const item of node.items) {
-            emitTemplateString(emitter, document, item);
-        }
+    for (const item of node.type === 'array' ? node.items : [node]) {
+        emitTemplateString(emitter, document, item);
     }
 }
 
 function emitMatcherName(emitter: TokenEmitter, matcher: MatcherModel): void {
     const node = matcher.matcherNode;
-    if (node?.type !== 'string' || matcher.matcherName === undefined) {
-        return;
-    }
-    if (!MATCHER_NAME_SET.has(matcher.matcherName)) {
+    if (node?.type !== 'string' || !MATCHER_NAME_SET.has(node.value)) {
         return;
     }
     emitter.emitDocSpan(node.offset + 1, node.offset + node.length - 1, 'enumMember');
@@ -267,9 +64,7 @@ function emitModel(emitter: TokenEmitter, document: TextDocument, model: Simulat
         const templated = isTemplated(response.templated.valueNode);
         const bodyNode = response.body.valueNode;
 
-        if (bodyNode) {
-            emitTemplatableValue(emitter, document, bodyNode);
-        }
+        emitTemplatableValue(emitter, document, bodyNode);
 
         if (templated) {
             for (const header of response.headers) {

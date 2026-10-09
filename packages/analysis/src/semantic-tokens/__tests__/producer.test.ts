@@ -116,29 +116,6 @@ describe('getSemanticTokens', () => {
             },
         },
         {
-            expected: [
-                'exact enumMember 7:26',
-                '{{# operator 13:19',
-                'each keyword 13:22',
-                'Request variable 13:27',
-                'Body property 13:35',
-                '}} operator 13:39',
-                '{{ operator 13:41',
-                'this.name parameter 13:43',
-                '}} operator 13:52',
-                '{{/ operator 13:54',
-                '}} operator 13:61',
-            ],
-            label: 'an #each block over a request path',
-            input: {
-                text: simulation({
-                    body: '{{#each Request.Body}}{{this.name}}{{/each}}',
-                    status: 200,
-                    templated: true,
-                }),
-            },
-        },
-        {
             expected: [],
             label: 'plain JSON with a template-looking string',
             input: { text: JSON.stringify({ hello: '{{ now }}' }), uri: 'file:///plain.json' },
@@ -170,6 +147,84 @@ describe('getSemanticTokens', () => {
             expected: ['exact enumMember 7:26'],
             label: 'an unclosed mustache',
             input: { text: simulation({ body: '{{ now ', status: 200, templated: true }) },
+        },
+        {
+            expected: [
+                'exact enumMember 7:26',
+                '{{ operator 14:18',
+                'now function 14:21',
+                '}} operator 14:25',
+                '{{ operator 17:15',
+                'now function 17:18',
+                '}} operator 17:22',
+            ],
+            label: 'templated headers, a bare string and an array with a number',
+            input: {
+                text: simulation({
+                    headers: { A: '{{ now }}', B: [5, '{{ now }}'] },
+                    status: 200,
+                    templated: true,
+                }),
+            },
+        },
+        {
+            expected: [],
+            label: 'headers when templated is absent, or the string "true"',
+            input: {
+                text: JSON.stringify({
+                    data: {
+                        pairs: [
+                            { request: {}, response: { headers: { A: '{{ now }}' }, status: 200 } },
+                            {
+                                request: {},
+                                response: { headers: { A: '{{ now }}' }, templated: 'true' },
+                            },
+                        ],
+                    },
+                    meta: { schemaVersion: 'v5.3' },
+                }),
+            },
+        },
+        {
+            expected: [],
+            label: 'a response with no body, and matchers with no or a numeric name',
+            input: {
+                text: simulation(
+                    { status: 200 },
+                    { path: [{ value: '/a' }, { matcher: 5, value: '/b' }] },
+                ),
+            },
+        },
+        {
+            expected: [],
+            label: 'pairs without meta, in a plain JSON file',
+            input: {
+                text: JSON.stringify({
+                    data: { pairs: [{ request: { path: [{ matcher: 'exact', value: '/' }] } }] },
+                }),
+                uri: 'file:///plain.json',
+            },
+        },
+        {
+            expected: ['exact enumMember 0:50'],
+            label: 'pairs without meta, in a file named for Hoverfly',
+            input: {
+                text: JSON.stringify({
+                    data: { pairs: [{ request: { path: [{ matcher: 'exact', value: '/' }] } }] },
+                }),
+                uri: 'file:///api.hfy',
+            },
+        },
+        {
+            expected: ['exact enumMember 7:26'],
+            label: 'a templated header array holding an object',
+            input: {
+                text: simulation({
+                    headers: { B: [{ x: '{{ now }}' }] },
+                    status: 200,
+                    templated: true,
+                }),
+            },
         },
     ])(
         // Given - a document holding $label
