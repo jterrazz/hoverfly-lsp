@@ -67,14 +67,14 @@ describe('lifecycle', () => {
         });
     });
 
-    test('refuses an argument it does not know, with its usage', async () => {
+    test('refuses an argument it does not know, saying which transports it reads', async () => {
         // Given - a flag no transport and no client injects
         const result = await integration.call(async () => await hoverflyLsp(['--frobnicate']));
 
-        // Then - the argument named on stderr, the usage after it, and exit 1
+        // Then - what was found, why it is refused, the transports to pass and where they are listed, and exit 1
         expect(result.value).toMatch({
             exitCode: 1,
-            stderr: 'hoverfly-lsp: unknown argument "--frobnicate"\n\nhoverfly-lsp — Language Server for Hoverfly JSON simulation files\n\nUsage: hoverfly-lsp [transport] [options]\n\nTransports (default: --stdio):\n  --stdio             Communicate over stdin/stdout (default)\n  --node-ipc          Communicate over Node IPC (parent process channel)\n  --socket=PORT       Connect over a TCP socket on PORT\n  --pipe=NAME         Communicate over a named pipe\n\nOptions:\n  --version, -v       Print the version and exit\n  --help, -h          Print this help and exit\n',
+            stderr: 'found: the argument "--frobnicate", which names no transport and no option\nwhy: an editor starts the server with one transport, and an argument it cannot read would be ignored in silence\nfix: pass --stdio (the default), --node-ipc, --socket=PORT or --pipe=NAME\nread: hoverfly-lsp --help\n',
             stdout: '',
         });
     });

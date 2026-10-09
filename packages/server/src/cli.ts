@@ -34,7 +34,19 @@ function isAcceptedArg(arg: string): boolean {
     );
 }
 
-/** The command: `--version` and `--help` answer, an unknown flag is refused with the usage, and the transport is left to vscode-languageserver/node, which reads process.argv. */
+// outside: the toolchain's refusal() is a devDependency a published bin cannot import, so the
+// four parts of a refusal (found, why, fix, read) are written here by hand.
+function refusal(argument: string): string {
+    return [
+        `found: the argument "${argument}", which names no transport and no option`,
+        'why: an editor starts the server with one transport, and an argument it cannot read would be ignored in silence',
+        'fix: pass --stdio (the default), --node-ipc, --socket=PORT or --pipe=NAME',
+        'read: hoverfly-lsp --help',
+        '',
+    ].join('\n');
+}
+
+/** The command: `--version` and `--help` answer, an unknown flag is refused, and the transport is left to vscode-languageserver/node, which reads process.argv. */
 export function main(argv: readonly string[] = process.argv.slice(2)): void {
     if (argv.includes('--version') || argv.includes('-v')) {
         process.stdout.write(`${HOVERFLY_LSP_VERSION}\n`);
@@ -47,7 +59,7 @@ export function main(argv: readonly string[] = process.argv.slice(2)): void {
 
     const unknown = argv.find((arg) => !isAcceptedArg(arg));
     if (unknown !== undefined) {
-        process.stderr.write(`hoverfly-lsp: unknown argument "${unknown}"\n\n${HELP}`);
+        process.stderr.write(refusal(unknown));
         process.exitCode = 1;
         return;
     }
