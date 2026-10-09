@@ -3,19 +3,12 @@
 // registered at runtime, so HF602 reads the allowlist the settings give and stays silent without
 // one.
 
-import type { ASTNode } from 'vscode-json-languageservice';
 import type { Diagnostic } from 'vscode-languageserver-types';
 
+import { propValue } from '../ast-access.js';
 import { makeDiagnostic } from '../diagnostics.js';
 import { isValidRe2 } from '../re2.js';
 import type { RuleContext, SemanticRule } from '../rule.js';
-
-function stringPropValue(node: ASTNode | undefined, key: string): ASTNode | undefined {
-    if (node?.type !== 'object') {
-        return undefined;
-    }
-    return node.properties.find((p) => p.keyNode.value === key)?.valueNode;
-}
 
 function hf601(context: RuleContext): Diagnostic[] {
     const { delays, delaysLogNormal } = context.model.globalActions;
@@ -41,7 +34,7 @@ function hf602(context: RuleContext): Diagnostic[] {
 
     const out: Diagnostic[] = [];
     for (const pair of context.model.pairs) {
-        const valueNode = stringPropValue(pair.response.node, 'postServeAction');
+        const valueNode = propValue(pair.response.node, 'postServeAction');
         if (valueNode?.type !== 'string') {
             continue;
         }
@@ -56,13 +49,11 @@ function hf602(context: RuleContext): Diagnostic[] {
 
 /** HF601 — invalid globalActions delay urlPattern. */
 export const hf601DelayPatternRule: SemanticRule = {
-    codes: ['HF601'],
     run: hf601,
 };
 
 /** HF602 — postServeAction not in the configured allowlist. */
 export const hf602PostServeActionRule: SemanticRule = {
-    codes: ['HF602'],
     run: hf602,
 };
 

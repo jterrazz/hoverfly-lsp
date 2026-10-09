@@ -30,10 +30,11 @@ export function diagnosticsOf(
         });
 }
 
-/** A one-pair simulation around a request and a response. */
-export function pairOf(request: unknown, response?: unknown, data?: object): object {
+/** A one-pair simulation around a request and a response, beside the data keys given. */
+export function pairOf(request: unknown, response?: unknown, data?: unknown): object {
+    const keys = typeof data === 'object' && data !== null ? data : {};
     return {
-        data: { ...data, pairs: [{ request, response: response ?? { status: 200 } }] },
+        data: { ...keys, pairs: [{ request, response: response ?? { status: 200 } }] },
         meta: { schemaVersion: 'v5.3' },
     };
 }

@@ -34,6 +34,33 @@ describe('hf1xx', () => {
             label: "a numeric version, the schema's concern",
             simulation: { data: { pairs: [] }, meta: { schemaVersion: 5 } },
         },
+        {
+            expected: [],
+            label: 'no version at all',
+            simulation: { data: { pairs: [] }, meta: {} },
+        },
+        {
+            expected: [
+                'HF103 information 5:21-5:27 Schema version v4.1 is legacy; Hoverfly auto-upgrades it on import (current: v5.3)',
+            ],
+            label: 'the legacy minor v4.1',
+            simulation: { data: { pairs: [] }, meta: { schemaVersion: 'v4.1' } },
+        },
+        {
+            expected: ['HF104 error 5:21-5:26 Unrecognized schema version "xv5"'],
+            label: 'a version with text before its v',
+            simulation: { data: { pairs: [] }, meta: { schemaVersion: 'xv5' } },
+        },
+        {
+            expected: [],
+            label: 'the two-digit major v10',
+            simulation: { data: { pairs: [] }, meta: { schemaVersion: 'v10' } },
+        },
+        {
+            expected: [],
+            label: 'the two-digit minor v5.10',
+            simulation: { data: { pairs: [] }, meta: { schemaVersion: 'v5.10' } },
+        },
     ])(
         // Given - a simulation whose meta holds $label
         // Then - HF103 on a legacy version, HF104 on an unrecognised one, nothing on a current or missing one

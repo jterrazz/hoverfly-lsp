@@ -1,12 +1,10 @@
 // invariant: a matcher's documentation describes that matcher alone; the generic unknown-name and
 // config-misuse panics are HF201's and HF204's, raised where the mistake is made.
 
-import type { MatcherSpec, MatcherValueType } from '../registry/matchers.js';
+import type { MatcherSpec } from '../registry/matchers.js';
 
 function valueTypeLine(spec: MatcherSpec): string {
-    const types: readonly MatcherValueType[] = spec.valueTypes;
-    const joined = types.map((t) => `\`${t}\``).join(' | ');
-    return `**Value type:** ${joined}`;
+    return `**Value type:** \`${spec.valueType}\``;
 }
 
 function configLine(spec: MatcherSpec): string {
@@ -66,7 +64,6 @@ export function matcherMarkdown(spec: MatcherSpec): string {
 
 /** A short one-line `detail` string for a completion item (shown inline next to the label). */
 export function matcherDetail(spec: MatcherSpec): string {
-    const valueTypes = spec.valueTypes.join(' | ');
     const suffix = spec.bodyOnly === true ? ' (body only)' : '';
-    return `Hoverfly matcher · value: ${valueTypes}${suffix}`;
+    return `Hoverfly matcher · value: ${spec.valueType}${suffix}`;
 }

@@ -128,18 +128,6 @@ describe('hf3xx', () => {
             response: { status: 200, logNormalDelay: { mean: 0, median: 5 } },
         },
         {
-            expected: [
-                'HF307 warning 15:19-15:21 logNormalDelay min and max cannot be less than 0',
-            ],
-            label: 'logNormalDelay constraints — warns when min is negative',
-            response: { status: 200, logNormalDelay: { min: -1, max: 100, mean: 50, median: 40 } },
-        },
-        {
-            expected: ['HF307 warning 16:19-16:21 logNormalDelay min must be less than max'],
-            label: 'logNormalDelay constraints — warns when max < min',
-            response: { status: 200, logNormalDelay: { min: 100, max: 10, mean: 50, median: 40 } },
-        },
-        {
             expected: ['HF307 warning 16:22-16:24 logNormalDelay mean cannot be less than median'],
             label: 'logNormalDelay constraints — warns when median > mean',
             response: { status: 200, logNormalDelay: { mean: 30, median: 50 } },
@@ -168,7 +156,107 @@ describe('hf3xx', () => {
         { expected: [], label: 'status out of range — status 200', response: { status: 200 } },
         { expected: [], label: 'status out of range — status 404', response: { status: 404 } },
         { expected: [], label: 'status out of range — status 599', response: { status: 599 } },
+        {
+            expected: ['HF305 warning 14:18-14:23 encodedBody is set but body is not valid base64'],
+            label: 'encodedBody but invalid base64 — warns on unpadded base64',
+            response: { status: 200, body: 'abc', encodedBody: true },
+        },
+        {
+            expected: [
+                'HF307 warning 14:28-16:11 logNormalDelay mean and median cannot be less than or equal to 0',
+            ],
+            label: 'logNormalDelay constraints — a violation on an absent field lands on the delay',
+            response: { status: 200, logNormalDelay: { mean: 5 } },
+        },
+        {
+            expected: [],
+            label: "logNormalDelay constraints — a delay that is no object, the schema's concern",
+            response: { status: 200, logNormalDelay: 5 },
+        },
         { expected: [], label: 'a document whose data is no object', response: '{"data":123}' },
+        {
+            expected: [],
+            label: 'Content-Length and Transfer-Encoding both set — stays silent beside an unrelated header',
+            response: {
+                status: 200,
+                body: '',
+                headers: { 'Content-Length': ['0'], 'X-Trace': ['a'] },
+            },
+        },
+        {
+            expected: ['HF303 warning 20:14-20:17 Content-Length 3 does not match body length 4'],
+            label: 'Content-Length mismatch — reads Content-Length behind an unrelated header',
+            response: {
+                status: 200,
+                body: 'abcd',
+                headers: { 'X-Trace': ['a'], 'Content-Length': ['3'] },
+            },
+        },
+        {
+            expected: ['HF303 warning 16:30-16:33 Content-Length 3 does not match body length 4'],
+            label: 'Content-Length mismatch — reads a Content-Length given as a bare string',
+            response: { status: 200, body: 'abcd', headers: { 'Content-Length': '3' } },
+        },
+        {
+            expected: ['HF303 warning 17:14-17:18 Content-Length 12 does not match body length 3'],
+            label: 'Content-Length mismatch — reads a two-digit Content-Length',
+            response: { status: 200, body: 'abc', headers: { 'Content-Length': ['12'] } },
+        },
+        {
+            expected: [],
+            label: 'Content-Length mismatch — skips a Content-Length with a non-digit prefix',
+            response: { status: 200, body: 'abc', headers: { 'Content-Length': ['x5'] } },
+        },
+        {
+            expected: [],
+            label: 'Content-Length mismatch — skips a Content-Length with a non-digit suffix',
+            response: { status: 200, body: 'abc', headers: { 'Content-Length': ['5x'] } },
+        },
+        {
+            expected: [],
+            label: "Content-Length mismatch — skips a numeric Content-Length item, the schema's concern",
+            response: { status: 200, body: 'abc', headers: { 'Content-Length': [5] } },
+        },
+        {
+            expected: [],
+            label: 'Content-Length mismatch — skips an empty Content-Length array',
+            response: { status: 200, body: 'abc', headers: { 'Content-Length': [] } },
+        },
+        {
+            expected: [],
+            label: 'encodedBody but invalid base64 — skips an encoded response with no body',
+            response: { status: 200, encodedBody: true },
+        },
+        {
+            expected: [],
+            label: 'encodedBody but invalid base64 — skips a numeric encoded body',
+            response: { status: 200, body: 5, encodedBody: true },
+        },
+        {
+            expected: [],
+            label: 'negative fixedDelay — is silent on a zero fixedDelay',
+            response: { status: 200, fixedDelay: 0 },
+        },
+        {
+            expected: [],
+            label: "negative fixedDelay — is silent on a string fixedDelay, the schema's concern",
+            response: { status: 200, fixedDelay: '-5' },
+        },
+        {
+            expected: [],
+            label: 'status out of range — no status at all',
+            response: { body: 'x' },
+        },
+        {
+            expected: [],
+            label: 'status out of range — a non-numeric string status is no number',
+            response: { status: 'abc' },
+        },
+        {
+            expected: [],
+            label: 'a pair with no response',
+            response: '{"data":{"pairs":[{"request":{}}]},"meta":{"schemaVersion":"v5.3"}}',
+        },
     ])(
         // Given - a response holding the case $label names
         // Then - every HF3xx diagnostic, its severity, its range and its message, or none

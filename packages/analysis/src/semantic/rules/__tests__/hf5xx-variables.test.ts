@@ -3,8 +3,11 @@ import { describe, expect, test } from 'vitest';
 import { hf5xxVariablesRule } from '../hf5xx-variables.js';
 import { diagnosticsOf, pairOf } from './rule-run.js';
 
-const run = ([data, request]: readonly object[]): string[] =>
-    diagnosticsOf(hf5xxVariablesRule, pairOf(request ?? {}, undefined, data));
+const run = (input: readonly object[] | string): string[] =>
+    diagnosticsOf(
+        hf5xxVariablesRule,
+        typeof input === 'string' ? input : pairOf(input[1] ?? {}, undefined, input[0]),
+    );
 
 describe('hf5xx-variables', () => {
     test.each([
@@ -165,6 +168,52 @@ describe('hf5xx-variables', () => {
                 },
                 { destination: [{ matcher: 'exact', value: 'api.example.com:8080' }] },
             ],
+        },
+        {
+            expected: [
+                'HF512 warning 6:21-10:9 "now" expects 0 to 2 arguments, got 3; the variable renders empty',
+            ],
+            label: "argument arity vs the helper's HelperSpec — names the range of a helper with optional arguments",
+            input: [{ variables: [{ name: 'v', function: 'now', arguments: ['a', 'b', 'c'] }] }],
+        },
+        {
+            expected: [],
+            label: 'templatable name charset — ignores a numeric or missing name',
+            input: [
+                { variables: [{ name: 5, function: 'randomUuid' }], literals: [{ value: 'x' }] },
+            ],
+        },
+        {
+            expected: [],
+            label: 'templatable name charset — skips an item that is no object',
+            input: [{ variables: ['a.b'], literals: [7] }],
+        },
+        {
+            expected: [
+                'HF213 information 8:23-8:33 destination matches the request host only (host[:port]); "http://x" includes a scheme or path and will never match',
+            ],
+            label: 'destination full URL — flags an empty-named (default) matcher holding ://',
+            input: [{}, { destination: [{ matcher: '', value: 'http://x' }] }],
+        },
+        {
+            expected: [],
+            label: 'destination full URL — does NOT flag a header named destination',
+            input: [{}, { headers: { destination: [{ matcher: 'exact', value: 'http://x' }] } }],
+        },
+        {
+            expected: [],
+            label: "destination full URL — ignores a numeric or missing value, the schema's concern",
+            input: [{}, { destination: [{ matcher: 'exact', value: 5 }, { matcher: 'exact' }] }],
+        },
+        {
+            expected: [],
+            label: 'a document with no data',
+            input: '{"meta":{"schemaVersion":"v5.3"}}',
+        },
+        {
+            expected: [],
+            label: "argument arity vs the helper's HelperSpec — accepts no argument where every one is optional",
+            input: [{ variables: [{ name: 'v', function: 'now' }] }],
         },
     ])(
         // Given - data, and a request, holding the case $label names

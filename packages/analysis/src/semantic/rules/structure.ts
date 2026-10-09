@@ -13,30 +13,13 @@ import { levenshtein } from '../levenshtein.js';
 import type { RuleContext, SemanticRule } from '../rule.js';
 import { checkRemovesState, checkResponseHeaders, checkStateValues } from './value-shapes.js';
 
-const canonicalByKind = new Map<StructureObjectKind, ReadonlyMap<string, string>>();
-
-function canonicalOf(kind: StructureObjectKind): ReadonlyMap<string, string> {
-    let canonical = canonicalByKind.get(kind);
-    if (canonical === undefined) {
-        canonical = new Map(STRUCTURE_ALLOWED_KEYS[kind].map((key) => [key.toLowerCase(), key]));
-        canonicalByKind.set(kind, canonical);
-    }
-    return canonical;
-}
-
+// value: the nearest allowed key within the distance, the alphabetically first on a tie.
 function didYouMean(key: string, allowed: readonly string[]): string {
-    let best: string | undefined;
-    let bestDistance = DID_YOU_MEAN_MAX_DISTANCE + 1;
-    for (const candidate of allowed) {
-        const distance = levenshtein(key, candidate);
-        if (distance < bestDistance || (distance === bestDistance && candidate < (best ?? ''))) {
-            best = candidate;
-            bestDistance = distance;
-        }
-    }
-    return best !== undefined && bestDistance <= DID_YOU_MEAN_MAX_DISTANCE
-        ? ` (did you mean "${best}"?)`
-        : '';
+    const [nearest] = allowed
+        .map((candidate) => ({ candidate, distance: levenshtein(key, candidate) }))
+        .filter(({ distance }) => distance <= DID_YOU_MEAN_MAX_DISTANCE)
+        .toSorted((a, b) => a.distance - b.distance || a.candidate.localeCompare(b.candidate));
+    return nearest === undefined ? '' : ` (did you mean "${nearest.candidate}"?)`;
 }
 
 function checkUnknownKeys(
@@ -45,8 +28,8 @@ function checkUnknownKeys(
     kind: StructureObjectKind,
     diagnostics: Diagnostic[],
 ): void {
-    const canonicalByLower = canonicalOf(kind);
     const allowed = STRUCTURE_ALLOWED_KEYS[kind];
+    const canonicalByLower = new Map(allowed.map((key) => [key.toLowerCase(), key]));
     for (const property of object.properties) {
         const key = property.keyNode.value;
         const canonical = canonicalByLower.get(key.toLowerCase());
@@ -244,13 +227,9 @@ function walkData(
 }
 
 const structureRule: SemanticRule = {
-    codes: ['HF212', 'HF308', 'HF404', 'HF405', 'HF603', 'HF604'],
     run(context: RuleContext): Diagnostic[] {
         const diagnostics: Diagnostic[] = [];
         const { root } = context.model;
-        if (!root) {
-            return diagnostics;
-        }
         // value: the root is not judged for unknown keys — additionalProperties:false already
         // reports them as HF102 (report 13 §6).
         walkData(context, propValue(root, 'data'), diagnostics);

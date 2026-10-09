@@ -31,9 +31,8 @@ function rangesOverlap(a: Range, b: Range): boolean {
 const VALUE_SHAPE_SUPPRESSORS: ReadonlySet<string> = new Set(['HF308', 'HF404', 'HF405']);
 
 function suppressesSchema(code: Diagnostic['code']): boolean {
-    return (
-        typeof code === 'string' && (/^HF2\d\d$/u.test(code) || VALUE_SHAPE_SUPPRESSORS.has(code))
-    );
+    const text = String(code);
+    return /^HF2\d\d$/u.test(text) || VALUE_SHAPE_SUPPRESSORS.has(text);
 }
 
 function retagAsHF102(schema: Diagnostic): Diagnostic {

@@ -3,7 +3,7 @@ import { describe, expect, test } from 'vitest';
 import { structureRule } from '../structure.js';
 import { diagnosticsOf, pairOf } from './rule-run.js';
 
-const run = (input: readonly object[] | string): string[] =>
+const run = (input: readonly unknown[] | string): string[] =>
     diagnosticsOf(
         structureRule,
         typeof input === 'string' ? input : pairOf(input[0], input[1], input[2]),
@@ -131,6 +131,117 @@ describe('structure', () => {
             expected: [],
             label: 'an unknown key on the root, already HF102',
             input: '{"data":{"pairs":[]},"meta":{"schemaVersion":"v5.3"},"extra":1}',
+        },
+        {
+            expected: [
+                'HF603 warning 8:12-8:17 Unknown key "mix" (did you mean "max"?); silently ignored by Hoverfly',
+            ],
+            label: 'unknown key (silent drop) with did-you-mean — on a tie, suggests the alphabetically first key',
+            input: [{}, { status: 200, logNormalDelay: { mix: 1 } }],
+        },
+        {
+            expected: [
+                'HF603 warning 8:12-8:16 Unknown key "mi" (did you mean "min"?); silently ignored by Hoverfly',
+            ],
+            label: 'unknown key (silent drop) with did-you-mean — suggests the nearest key, not the alphabetically first',
+            input: [{}, { status: 200, logNormalDelay: { mi: 1 } }],
+        },
+        {
+            expected: [
+                'HF603 warning 11:16-11:23 Unknown key "valeu" (did you mean "value"?); silently ignored by Hoverfly',
+                'HF212 warning 9:25-12:15 Matcher has no "value"; it can never match (the value is nil)',
+                'HF603 warning 22:18-22:25 Unknown key "valeu" (did you mean "value"?); silently ignored by Hoverfly',
+                'HF212 warning 20:16-23:17 Matcher has no "value"; it can never match (the value is nil)',
+            ],
+            label: 'unknown key (silent drop) with did-you-mean — walks an object doMatch and a legacy array doMatch',
+            input: [
+                {
+                    path: [
+                        { matcher: 'regex', value: 'a', doMatch: { matcher: 'exact', valeu: 'b' } },
+                    ],
+                    body: [
+                        {
+                            matcher: 'jsonpath',
+                            value: '$',
+                            doMatch: [{ matcher: 'exact', valeu: 'c' }],
+                        },
+                    ],
+                },
+            ],
+        },
+        {
+            expected: [
+                'HF603 warning 9:16-9:23 Unknown key "valeu" (did you mean "value"?); silently ignored by Hoverfly',
+                'HF212 warning 7:14-10:15 Matcher has no "value"; it can never match (the value is nil)',
+                'HF603 warning 17:16-17:23 Unknown key "valeu" (did you mean "value"?); silently ignored by Hoverfly',
+                'HF212 warning 15:14-18:15 Matcher has no "value"; it can never match (the value is nil)',
+            ],
+            label: 'unknown key (silent drop) with did-you-mean — walks the matcher arrays of headers and query',
+            input: [
+                {
+                    headers: { 'X-A': [{ matcher: 'exact', valeu: 'a' }] },
+                    query: { q: [{ matcher: 'exact', valeu: 'b' }] },
+                },
+            ],
+        },
+        {
+            expected: [
+                'HF603 warning 8:14-8:21 Unknown key "valeu" (did you mean "value"?); silently ignored by Hoverfly',
+                'HF212 warning 6:12-9:13 Matcher has no "value"; it can never match (the value is nil)',
+                'HF603 warning 14:14-14:21 Unknown key "valeu" (did you mean "value"?); silently ignored by Hoverfly',
+                'HF212 warning 12:12-15:13 Matcher has no "value"; it can never match (the value is nil)',
+                'HF603 warning 20:14-20:21 Unknown key "valeu" (did you mean "value"?); silently ignored by Hoverfly',
+                'HF212 warning 18:12-21:13 Matcher has no "value"; it can never match (the value is nil)',
+            ],
+            label: 'unknown key (silent drop) with did-you-mean — walks destination, scheme and body matchers',
+            input: [
+                {
+                    destination: [{ matcher: 'exact', valeu: 'a' }],
+                    scheme: [{ matcher: 'exact', valeu: 'b' }],
+                    body: [{ matcher: 'exact', valeu: 'c' }],
+                },
+            ],
+        },
+        {
+            expected: [
+                'HF603 warning 6:10-6:21 Unknown key "urlPatter" (did you mean "urlPattern"?); silently ignored by Hoverfly',
+            ],
+            label: 'unknown key (silent drop) with did-you-mean — walks the delaysLogNormal items',
+            input: [
+                {},
+                { status: 200 },
+                { globalActions: { delaysLogNormal: [{ min: 1, urlPatter: '/a' }] } },
+            ],
+        },
+        {
+            expected: [],
+            label: 'shapes that are no object — a delay item, a matcher, a request and a response',
+            input: [{ path: ['x'] }, 'r', { globalActions: { delays: [5] } }],
+        },
+        {
+            expected: [],
+            label: 'shapes that are no object — a request',
+            input: ['x'],
+        },
+        {
+            expected: [],
+            label: 'shapes that are no object — a document with no meta',
+            input: '{"data":{"pairs":[]}}',
+        },
+        {
+            expected: [],
+            label: 'shapes that are no object — a root array',
+            input: '[]',
+        },
+        {
+            expected: [],
+            label: "shapes that are no object — a pair, and data's globalActions",
+            input: '{"data":{"pairs":[5],"globalActions":5},"meta":{"schemaVersion":"v5.3"}}',
+        },
+        {
+            expected: [],
+            label: 'shapes that are no object — data',
+            input: '{"data":5,"meta":{"schemaVersion":"v5.3"}}',
         },
     ])(
         // Given - a request, a response and data holding the case $label names

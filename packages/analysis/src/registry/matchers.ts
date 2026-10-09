@@ -17,8 +17,8 @@ export type ArrayConfigKey = 'ignoreOccurrences' | 'ignoreOrder' | 'ignoreUnknow
 export type MatcherSpec = {
     /** Registry key, the exact, case-sensitive canonical spelling Hoverfly stores. */
     name: string;
-    /** JSON value types the matcher's `value` field accepts. */
-    valueTypes: MatcherValueType[];
+    /** The JSON value type the matcher's `value` field accepts. */
+    valueType: MatcherValueType;
     /** Whether the matcher honours a `config` object (only `array` does). */
     supportsConfig: boolean;
     /** When `supportsConfig`, the boolean config keys recognised. */
@@ -37,10 +37,17 @@ export type MatcherSpec = {
 
 // hazard: the negate matcher's key is `negate`; its Go constant is `Negation` (report 07 §1).
 /** The 14 registry matchers, the empty default among them, and the body-only form pseudo-matcher. */
+/** The boolean keys the array matcher's `config` accepts. */
+export const ARRAY_CONFIG_KEYS: readonly ArrayConfigKey[] = [
+    'ignoreUnknown',
+    'ignoreOrder',
+    'ignoreOccurrences',
+];
+
 export const MATCHER_SPECS: readonly MatcherSpec[] = [
     {
         name: '',
-        valueTypes: ['string'],
+        valueType: 'string',
         supportsConfig: false,
         doMatchTransforms: false,
         wrongTypeBehavior: 'no-match',
@@ -49,7 +56,7 @@ export const MATCHER_SPECS: readonly MatcherSpec[] = [
     },
     {
         name: 'exact',
-        valueTypes: ['string'],
+        valueType: 'string',
         supportsConfig: false,
         doMatchTransforms: false,
         wrongTypeBehavior: 'no-match',
@@ -58,7 +65,7 @@ export const MATCHER_SPECS: readonly MatcherSpec[] = [
     },
     {
         name: 'negate',
-        valueTypes: ['string'],
+        valueType: 'string',
         supportsConfig: false,
         doMatchTransforms: false,
         // outside: NegationMatch answers true for any value that is not a string (report 07 §3).
@@ -68,7 +75,7 @@ export const MATCHER_SPECS: readonly MatcherSpec[] = [
     },
     {
         name: 'glob',
-        valueTypes: ['string'],
+        valueType: 'string',
         supportsConfig: false,
         doMatchTransforms: false,
         wrongTypeBehavior: 'no-match',
@@ -77,7 +84,7 @@ export const MATCHER_SPECS: readonly MatcherSpec[] = [
     },
     {
         name: 'regex',
-        valueTypes: ['string'],
+        valueType: 'string',
         supportsConfig: false,
         doMatchTransforms: false,
         wrongTypeBehavior: 'no-match',
@@ -86,7 +93,7 @@ export const MATCHER_SPECS: readonly MatcherSpec[] = [
     },
     {
         name: 'xml',
-        valueTypes: ['string'],
+        valueType: 'string',
         supportsConfig: false,
         doMatchTransforms: false,
         wrongTypeBehavior: 'no-match',
@@ -95,7 +102,7 @@ export const MATCHER_SPECS: readonly MatcherSpec[] = [
     },
     {
         name: 'xmltemplated',
-        valueTypes: ['string'],
+        valueType: 'string',
         supportsConfig: false,
         doMatchTransforms: false,
         wrongTypeBehavior: 'no-match',
@@ -104,7 +111,7 @@ export const MATCHER_SPECS: readonly MatcherSpec[] = [
     },
     {
         name: 'xpath',
-        valueTypes: ['string'],
+        valueType: 'string',
         supportsConfig: false,
         // outside: XPathMatchValueGenerator extracts a value for doMatch (report 07 §2b).
         doMatchTransforms: true,
@@ -114,7 +121,7 @@ export const MATCHER_SPECS: readonly MatcherSpec[] = [
     },
     {
         name: 'json',
-        valueTypes: ['string'],
+        valueType: 'string',
         supportsConfig: false,
         doMatchTransforms: false,
         wrongTypeBehavior: 'no-match',
@@ -123,7 +130,7 @@ export const MATCHER_SPECS: readonly MatcherSpec[] = [
     },
     {
         name: 'jsonpartial',
-        valueTypes: ['string'],
+        valueType: 'string',
         supportsConfig: false,
         doMatchTransforms: false,
         wrongTypeBehavior: 'no-match',
@@ -132,7 +139,7 @@ export const MATCHER_SPECS: readonly MatcherSpec[] = [
     },
     {
         name: 'jsonpath',
-        valueTypes: ['string'],
+        valueType: 'string',
         supportsConfig: false,
         // outside: JsonPathMatcherValueGenerator extracts the query result for doMatch (report 07
         // §2b).
@@ -143,7 +150,7 @@ export const MATCHER_SPECS: readonly MatcherSpec[] = [
     },
     {
         name: 'jwt',
-        valueTypes: ['string'],
+        valueType: 'string',
         supportsConfig: false,
         // outside: JwtMatchValueGenerator hands the decoded JWT on to doMatch (report 07 §2b).
         doMatchTransforms: true,
@@ -153,7 +160,7 @@ export const MATCHER_SPECS: readonly MatcherSpec[] = [
     },
     {
         name: 'jwtjsonpath',
-        valueTypes: ['string'],
+        valueType: 'string',
         supportsConfig: false,
         // outside: JwtJsonPathMatchValueGenerator hands the JSONPath result on to doMatch (report
         // 07 §2b).
@@ -164,9 +171,9 @@ export const MATCHER_SPECS: readonly MatcherSpec[] = [
     },
     {
         name: 'array',
-        valueTypes: ['array'],
+        valueType: 'array',
         supportsConfig: true,
-        configKeys: ['ignoreUnknown', 'ignoreOrder', 'ignoreOccurrences'],
+        configKeys: [...ARRAY_CONFIG_KEYS],
         doMatchTransforms: false,
         // outside: GetStringArray refuses a non-slice, so the pair never matches; a non-boolean
         // config value panics.
@@ -176,7 +183,7 @@ export const MATCHER_SPECS: readonly MatcherSpec[] = [
     },
     {
         name: 'form',
-        valueTypes: ['object'],
+        valueType: 'object',
         supportsConfig: false,
         doMatchTransforms: false,
         // outside: a non-object value falls back to the raw value and rarely matches; a misplaced

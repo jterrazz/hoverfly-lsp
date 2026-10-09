@@ -3,10 +3,12 @@ import { describe, expect, test } from 'vitest';
 import { hf5xxTemplateRule } from '../hf5xx.js';
 import { diagnosticsOf, pairOf } from './rule-run.js';
 
-const run = ([response, data]: readonly object[]): string[] =>
+const run = (input: readonly object[] | string): string[] =>
     diagnosticsOf(
         hf5xxTemplateRule,
-        pairOf({ path: [{ matcher: 'exact', value: '/x' }] }, response, data),
+        typeof input === 'string'
+            ? input
+            : pairOf({ path: [{ matcher: 'exact', value: '/x' }] }, input[0], input[1]),
     );
 
 describe('hf5xx', () => {
@@ -127,6 +129,44 @@ describe('hf5xx', () => {
                     literals: [{ name: 'brand', value: 'acme' }],
                 },
             ],
+        },
+        {
+            expected: [],
+            label: 'template syntax in a non-templated body — ignores an object body',
+            input: [{ status: 200, body: { a: '{{x}}' } }],
+        },
+        {
+            expected: [],
+            label: 'unknown helper — ignores a templated object body, no string to render',
+            input: [{ status: 200, templated: true, body: { a: "{{bogus 'x'}}" } }],
+        },
+        {
+            expected: ['HF503 error 16:22-16:27 Unknown template helper "bogus"'],
+            label: 'headers are templated too (report 01 §8) — analyses a header value given as a bare string',
+            input: [{ status: 200, templated: true, headers: { 'X-A': "{{bogus 'x'}}" } }],
+        },
+        {
+            expected: [],
+            label: "headers are templated too (report 01 §8) — ignores a numeric header value, the schema's concern",
+            input: [{ status: 200, templated: true, headers: { 'X-A': 5 } }],
+        },
+        {
+            expected: ['HF505 error 21:21-21:27 Variable "a" is not defined in data.variables'],
+            label: 'Vars / Literals resolution against data — a variable item that is no object, or has no name, declares nothing',
+            input: [
+                { status: 200, templated: true, body: '{{Vars.a}}' },
+                { variables: ['a', { function: 'randomUuid' }] },
+            ],
+        },
+        {
+            expected: [],
+            label: 'a document whose data is no object',
+            input: '{"meta":{"schemaVersion":"v5.3"},"data":5}',
+        },
+        {
+            expected: [],
+            label: 'a templated header with no value, a syntax error',
+            input: '{"data":{"pairs":[{"request":{},"response":{"templated":true,"headers":{"X-A":}}}]},"meta":{"schemaVersion":"v5.3"}}',
         },
     ])(
         // Given - a response, and the data it declares, holding the case $label names

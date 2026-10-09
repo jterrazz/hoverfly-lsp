@@ -72,6 +72,31 @@ describe('hf2xx-values', () => {
             label: 'ftp, a legal scheme two edits from http',
             request: { scheme: [{ matcher: 'exact', value: 'ftp' }] },
         },
+        {
+            expected: ['HF215 hint 8:23-8:27 Unknown HTTP method "GT"; did you mean "GET"?'],
+            label: 'the typo GT under an empty matcher name, the default',
+            request: { method: [{ matcher: '', value: 'GT' }] },
+        },
+        {
+            expected: [],
+            label: "a numeric method, the schema's concern",
+            request: { method: [{ matcher: 'exact', value: 5 }] },
+        },
+        {
+            expected: [],
+            label: 'a method matcher with no value',
+            request: { method: [{ matcher: 'exact' }] },
+        },
+        {
+            expected: [],
+            label: 'GT as the value of a header named method',
+            request: { headers: { method: [{ matcher: 'exact', value: 'GT' }] } },
+        },
+        {
+            expected: [],
+            label: 'GT as an exact path, outside both domains',
+            request: { path: [{ matcher: 'exact', value: 'GT' }] },
+        },
     ])(
         // Given - a request whose method or scheme holds $label
         // Then - a Hint only on a near-miss of a standard value, never on a custom one or a pattern

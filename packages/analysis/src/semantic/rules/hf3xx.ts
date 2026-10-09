@@ -1,13 +1,13 @@
 // outside: Hoverfly discards a base64 decode error (core/models/payload.go), ignores a fixedDelay
 // that is not positive (core/hoverfly.go applyResponseDelay), and fails the whole import on a
-// logNormalDelay ValidateLogNormalDelayOptions refuses — HF307 stays a Warning because the catalog
-// pins every severity.
+// logNormalDelay it refuses — HF307 stays a Warning because the catalog pins every severity.
 
-import type { ASTNode, ObjectASTNode } from 'vscode-json-languageservice';
+import type { ASTNode } from 'vscode-json-languageservice';
 import type { Diagnostic } from 'vscode-languageserver-types';
 
 import { makeDiagnostic } from '../diagnostics.js';
 import type { ResponseModel, RuleContext, SemanticRule } from '../rule.js';
+import { logNormalDelayViolation } from './log-normal-delay.js';
 
 // value: Hoverfly treats 100–599 as in range, both ends included.
 const MIN_HTTP_STATUS = 100;
@@ -41,34 +41,23 @@ function hf301(response: ResponseModel, context: RuleContext): Diagnostic[] {
     return [];
 }
 
+// value: the warning lands on whichever of the two headers comes second, the one to remove.
 function hf302(response: ResponseModel, context: RuleContext): Diagnostic[] {
-    let contentLength: ASTNode | undefined;
-    let transferEncoding: ASTNode | undefined;
+    const seen = new Set<string>();
     for (const header of response.headers) {
         const name = header.name.toLowerCase();
-        if (name === CONTENT_LENGTH) {
-            contentLength ??= header.keyNode;
-        } else if (name === TRANSFER_ENCODING) {
-            transferEncoding ??= header.keyNode;
+        if (name === CONTENT_LENGTH || name === TRANSFER_ENCODING) {
+            seen.add(name);
+            if (seen.size === 2) {
+                return [makeDiagnostic(context.textDocument, 'HF302', header.keyNode)];
+            }
         }
     }
-    if (!contentLength || !transferEncoding) {
-        return [];
-    }
-    const second =
-        contentLength.offset > transferEncoding.offset ? contentLength : transferEncoding;
-    return [makeDiagnostic(context.textDocument, 'HF302', second)];
+    return [];
 }
 
-function firstHeaderString(valueNode: ASTNode | undefined): ASTNode | undefined {
-    if (valueNode?.type === 'string') {
-        return valueNode;
-    }
-    if (valueNode?.type === 'array') {
-        const first = valueNode.items[0];
-        return first?.type === 'string' ? first : undefined;
-    }
-    return undefined;
+function firstHeaderValue(valueNode: ASTNode | undefined): ASTNode | undefined {
+    return valueNode?.type === 'array' ? valueNode.items[0] : valueNode;
 }
 
 function hf303(response: ResponseModel, context: RuleContext): Diagnostic[] {
@@ -85,7 +74,7 @@ function hf303(response: ResponseModel, context: RuleContext): Diagnostic[] {
     }
 
     const header = response.headers.find((h) => h.name.toLowerCase() === CONTENT_LENGTH);
-    const valueNode = firstHeaderString(header?.valueNode);
+    const valueNode = firstHeaderValue(header?.valueNode);
     if (valueNode?.type !== 'string') {
         return [];
     }
@@ -103,10 +92,10 @@ function hf303(response: ResponseModel, context: RuleContext): Diagnostic[] {
 
 function hf304(response: ResponseModel, context: RuleContext): Diagnostic[] {
     const { valueNode } = response.status;
-    const status = numberValue(valueNode);
-    if (valueNode === undefined || status === undefined) {
+    if (valueNode?.type !== 'number') {
         return [];
     }
+    const status = valueNode.value;
     if (status >= MIN_HTTP_STATUS && status <= MAX_HTTP_STATUS) {
         return [];
     }
@@ -122,8 +111,8 @@ function hf305(response: ResponseModel, context: RuleContext): Diagnostic[] {
         return [];
     }
     const body = bodyNode.value;
-    // value: the empty string is valid base64, decoding to nothing.
-    if (body.length === 0 || BASE64_STD_PATTERN.test(body)) {
+    // value: the empty string is valid base64, decoding to nothing, and the pattern accepts it.
+    if (BASE64_STD_PATTERN.test(body)) {
         return [];
     }
     return [makeDiagnostic(context.textDocument, 'HF305', bodyNode)];
@@ -131,118 +120,30 @@ function hf305(response: ResponseModel, context: RuleContext): Diagnostic[] {
 
 function hf306(response: ResponseModel, context: RuleContext): Diagnostic[] {
     const { valueNode } = response.fixedDelay;
-    const delay = numberValue(valueNode);
-    if (valueNode === undefined || delay === undefined || delay >= 0) {
+    if (valueNode?.type !== 'number' || valueNode.value >= 0) {
         return [];
     }
     return [makeDiagnostic(context.textDocument, 'HF306', valueNode)];
 }
 
-type LogNormalFields = {
-    readonly object: ObjectASTNode;
-    readonly min: number | undefined;
-    readonly max: number | undefined;
-    readonly mean: number | undefined;
-    readonly median: number | undefined;
-    readonly node: (key: string) => ASTNode | undefined;
-};
-
-type Delay = {
-    readonly max: number;
-    readonly mean: number;
-    readonly median: number;
-    readonly min: number;
-};
-
-const NEGATIVE = 'logNormalDelay min and max cannot be less than 0';
-const NOT_POSITIVE = 'logNormalDelay mean and median cannot be less than or equal to 0';
-
-// outside: Go's ValidateLogNormalDelayOptions (core/delay/log_normal_generator.go), in its order —
-// the first violation is the one reported; an absent field is Go's int zero value, 0.
-const LOG_NORMAL_CONSTRAINTS: readonly {
-    readonly broken: (delay: Delay) => boolean;
-    readonly explain: string;
-    readonly key: keyof Delay;
-}[] = [
-    { broken: ({ max }) => max < 0, explain: NEGATIVE, key: 'max' },
-    { broken: ({ min }) => min < 0, explain: NEGATIVE, key: 'min' },
-    { broken: ({ mean }) => mean <= 0, explain: NOT_POSITIVE, key: 'mean' },
-    { broken: ({ median }) => median <= 0, explain: NOT_POSITIVE, key: 'median' },
-    {
-        broken: ({ max, min }) => max !== 0 && max < min,
-        explain: 'logNormalDelay min must be less than max',
-        key: 'max',
-    },
-    {
-        broken: ({ max, mean }) => max !== 0 && mean > max,
-        explain: 'logNormalDelay mean cannot be greater than max',
-        key: 'mean',
-    },
-    {
-        broken: ({ max, median }) => max !== 0 && median > max,
-        explain: 'logNormalDelay median cannot be greater than max',
-        key: 'median',
-    },
-    {
-        broken: ({ mean, min }) => min !== 0 && mean < min,
-        explain: 'logNormalDelay mean cannot be less than min',
-        key: 'mean',
-    },
-    {
-        broken: ({ median, min }) => min !== 0 && median < min,
-        explain: 'logNormalDelay median cannot be less than min',
-        key: 'median',
-    },
-    {
-        broken: ({ mean, median }) => median > mean,
-        explain: 'logNormalDelay mean cannot be less than median',
-        key: 'median',
-    },
-];
-
-function logNormalDelayViolation(
-    fields: LogNormalFields,
-): undefined | { node: ASTNode; explain: string } {
-    const delay: Delay = {
-        max: fields.max ?? 0,
-        mean: fields.mean ?? 0,
-        median: fields.median ?? 0,
-        min: fields.min ?? 0,
-    };
-    const violated = LOG_NORMAL_CONSTRAINTS.find(({ broken }) => broken(delay));
-    return violated === undefined
-        ? undefined
-        : { explain: violated.explain, node: fields.node(violated.key) ?? fields.object };
-}
-
-function readLogNormal(response: ResponseModel): LogNormalFields | undefined {
+function hf307(response: ResponseModel, context: RuleContext): Diagnostic[] {
     const node = response.logNormalDelay.valueNode;
     if (node?.type !== 'object') {
-        return undefined;
+        return [];
     }
     const value = (key: string): ASTNode | undefined =>
         node.properties.find((p) => p.keyNode.value === key)?.valueNode;
-    return {
-        object: node,
-        min: numberValue(value('min')),
-        max: numberValue(value('max')),
-        mean: numberValue(value('mean')),
-        median: numberValue(value('median')),
-        node: value,
-    };
-}
-
-function hf307(response: ResponseModel, context: RuleContext): Diagnostic[] {
-    const fields = readLogNormal(response);
-    if (!fields) {
-        return [];
-    }
-    const violation = logNormalDelayViolation(fields);
-    if (!violation) {
+    const violation = logNormalDelayViolation({
+        max: numberValue(value('max')) ?? 0,
+        mean: numberValue(value('mean')) ?? 0,
+        median: numberValue(value('median')) ?? 0,
+        min: numberValue(value('min')) ?? 0,
+    });
+    if (violation === undefined) {
         return [];
     }
     return [
-        makeDiagnostic(context.textDocument, 'HF307', violation.node, {
+        makeDiagnostic(context.textDocument, 'HF307', value(violation.key) ?? node, {
             explain: violation.explain,
         }),
     ];
@@ -250,14 +151,10 @@ function hf307(response: ResponseModel, context: RuleContext): Diagnostic[] {
 
 /** The single HF3xx rule: one pass over every pair's response. */
 export const hf3xxResponseRule: SemanticRule = {
-    codes: ['HF301', 'HF302', 'HF303', 'HF304', 'HF305', 'HF306', 'HF307'],
     run(context): Diagnostic[] {
         const out: Diagnostic[] = [];
         for (const pair of context.model.pairs) {
             const { response } = pair;
-            if (!response.node) {
-                continue;
-            }
             out.push(
                 ...hf301(response, context),
                 ...hf302(response, context),

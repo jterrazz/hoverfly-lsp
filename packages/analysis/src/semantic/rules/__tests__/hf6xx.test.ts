@@ -3,17 +3,23 @@ import { describe, expect, test } from 'vitest';
 import { HF6XX_RULES } from '../hf6xx.js';
 import { diagnosticsOf, pairOf } from './rule-run.js';
 
-type Case = { action?: string; globalActions?: object; registeredActions?: string[] };
+type Case = {
+    action?: unknown;
+    globalActions?: object;
+    raw?: string;
+    registeredActions?: string[];
+};
 
-const run = ({ action, globalActions, registeredActions }: Case): string[] =>
+const run = ({ action, globalActions, raw, registeredActions }: Case): string[] =>
     HF6XX_RULES.flatMap((rule) =>
         diagnosticsOf(
             rule,
-            pairOf(
-                { path: [{ matcher: 'exact', value: '/' }] },
-                { status: 200, ...(action !== undefined && { postServeAction: action }) },
-                { ...(globalActions !== undefined && { globalActions }) },
-            ),
+            raw ??
+                pairOf(
+                    { path: [{ matcher: 'exact', value: '/' }] },
+                    { status: 200, ...(action !== undefined && { postServeAction: action }) },
+                    { ...(globalActions !== undefined && { globalActions }) },
+                ),
             registeredActions === undefined ? {} : { registeredActions },
         ),
     );
@@ -77,6 +83,29 @@ describe('hf6xx', () => {
             expected: [],
             label: 'a postServeAction inside the allowlist',
             input: { action: 'webhook', registeredActions: ['webhook'] },
+        },
+        {
+            expected: [],
+            label: 'an allowlist and no postServeAction',
+            input: { registeredActions: ['logger'] },
+        },
+        {
+            expected: [],
+            label: "an allowlist and a numeric postServeAction, the schema's concern",
+            input: { action: 5, registeredActions: ['logger'] },
+        },
+        {
+            expected: [],
+            label: 'an allowlist and an empty postServeAction, which runs nothing',
+            input: { action: '', registeredActions: ['logger'] },
+        },
+        {
+            expected: [],
+            label: 'an allowlist and a pair with no response',
+            input: {
+                raw: '{"data":{"pairs":[{"request":{}}]},"meta":{"schemaVersion":"v5.3"}}',
+                registeredActions: ['logger'],
+            },
         },
     ])(
         // Given - a simulation holding $label

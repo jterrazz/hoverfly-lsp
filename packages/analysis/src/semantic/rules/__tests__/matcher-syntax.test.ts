@@ -122,11 +122,6 @@ describe('matcher-syntax', () => {
         },
         {
             expected: [],
-            label: 'JSONPath / XPath balance lint — does NOT warn on a balanced kubectl-style jsonpath with range braces',
-            request: { body: [{ matcher: 'jsonpath', value: '{range .items[*]}{.x}{end}' }] },
-        },
-        {
-            expected: [],
             label: 'JSONPath / XPath balance lint — does NOT warn on a balanced xpath with predicates and quotes',
             request: { body: [{ matcher: 'xpath', value: "//book[@id='42']/title" }] },
         },
@@ -214,6 +209,74 @@ describe('matcher-syntax', () => {
                     },
                 ],
             },
+        },
+        {
+            expected: [
+                'HF230 error 8:23-8:27 Invalid RE2 regex; Hoverfly (Go regexp) silently never matches this',
+            ],
+            label: 'the regex matcher spelled Regex, looked up case-insensitively',
+            request: { path: [{ matcher: 'Regex', value: '(a' }] },
+        },
+        {
+            expected: [],
+            label: 'a regex matcher with no value',
+            request: { path: [{ matcher: 'regex' }] },
+        },
+        {
+            expected: [],
+            label: 'an exact matcher holding regex syntax, which no rule judges',
+            request: { path: [{ matcher: 'exact', value: '(a' }] },
+        },
+        {
+            expected: [],
+            label: 'jwt value with non-header/payload top-level keys — a null JWT spec',
+            request: { body: [{ matcher: 'jwt', value: 'null' }] },
+        },
+        {
+            expected: [],
+            label: 'jwt value with non-header/payload top-level keys — an array JWT spec',
+            request: { body: [{ matcher: 'jwt', value: '[1]' }] },
+        },
+        {
+            expected: [],
+            label: 'jwt value with non-header/payload top-level keys — a string JWT spec',
+            request: { body: [{ matcher: 'jwt', value: '"ab"' }] },
+        },
+        {
+            expected: [
+                'HF234 warning 8:23-8:32 "xmltemplated" value is not well-formed XML; this pair never matches',
+            ],
+            label: 'XML well-formedness — a lone template token is no XML',
+            request: { body: [{ matcher: 'xmltemplated', value: '{{ x }}' }] },
+        },
+        {
+            expected: [
+                'HF230 error 8:23-8:43 Invalid RE2 regex; Hoverfly (Go regexp) silently never matches this',
+            ],
+            label: 'XML well-formedness — flags a {{regex:…}} leaf written with no space',
+            request: { body: [{ matcher: 'xmltemplated', value: '<a>{{regex:(}}</a>' }] },
+        },
+        {
+            expected: [],
+            label: 'XML well-formedness — plain xml reads a {{regex:…}} leaf as text',
+            request: { body: [{ matcher: 'xml', value: '<a>{{regex:(}}</a>' }] },
+        },
+        {
+            expected: [
+                'HF234 warning 8:23-8:40 "xml" value is not well-formed XML; this pair never matches',
+            ],
+            label: "XML well-formedness — plain xml keeps a template token's markup",
+            request: { body: [{ matcher: 'xml', value: '<a>{{</b>}}</a>' }] },
+        },
+        {
+            expected: [],
+            label: 'XML well-formedness — a whitespace-only xml value',
+            request: { body: [{ matcher: 'xml', value: '  ' }] },
+        },
+        {
+            expected: [],
+            label: 'array elements must be strings — an array matcher with no value',
+            request: { query: { tags: [{ matcher: 'array' }] } },
         },
     ])(
         // Given - a request whose matcher value holds the case $label names

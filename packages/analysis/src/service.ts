@@ -13,11 +13,7 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 import { createHoverflyContribution } from './contributions/hoverfly-contribution.js';
 import { getTemplateCompletions } from './contributions/template-completion.js';
 import { getTemplateHover } from './contributions/template-hover.js';
-import {
-    hasHoverflyFilename,
-    isHoverflySimulation,
-    isHoverflySimulationAst,
-} from './fingerprint.js';
+import { hasHoverflyFilename, isHoverflySimulationAst } from './fingerprint.js';
 import { hoverflySchema } from './schema/bundled-schema.js';
 import { applyHF102Layer, createRuleContext, runRules, sortByRange } from './semantic/engine.js';
 import type { HoverflyServiceSettings } from './semantic/rule.js';
@@ -52,8 +48,6 @@ function stripLeadingBom(document: TextDocument): TextDocument {
 export type HoverflyLanguageService = {
     /** Parse a document into an error-recovering JSON AST (reused across the other calls). */
     parse: (document: TextDocument) => JSONDocument;
-    /** Whether this document looks like a Hoverfly simulation (D3 fingerprint). */
-    isSimulation: (document: TextDocument) => boolean;
     /** Diagnostics of a document: the D3 gate, the schema's as HF102 and the HFxxx rules', sorted by range. */
     doValidation: (document: TextDocument, jsonDocument?: JSONDocument) => Promise<Diagnostic[]>;
     /** Schema-driven completion at a position. */
@@ -137,7 +131,6 @@ export function createHoverflyLanguageService(
 
     return {
         parse: (document) => parse(stripLeadingBom(document)),
-        isSimulation: (document) => isHoverflySimulation(stripLeadingBom(document).getText()),
         doValidation: async (document, jsonDocument) => {
             const normalized = stripLeadingBom(document);
             const parsed = jsonDocument ?? parse(normalized);

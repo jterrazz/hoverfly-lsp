@@ -35,7 +35,7 @@ function checkValue(
         return;
     }
     const { valueNode } = matcher;
-    if (valueNode?.type !== 'string' || valueNode.value === '') {
+    if (valueNode?.type !== 'string') {
         return;
     }
     const { value } = valueNode;
@@ -56,7 +56,6 @@ function checkValue(
 
 /** The HF215/HF216 rule: a Hint on a near-miss of a standard method or scheme, never on a custom value. */
 export const methodSchemeValueRule: SemanticRule = {
-    codes: ['HF215', 'HF216'],
     run(context: RuleContext): Diagnostic[] {
         const diagnostics: Diagnostic[] = [];
         for (const pair of context.model.pairs) {

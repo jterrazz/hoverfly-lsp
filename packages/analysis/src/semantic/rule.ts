@@ -5,12 +5,8 @@ import type { ASTNode, JSONDocument, ObjectASTNode } from 'vscode-json-languages
 import type { TextDocument } from 'vscode-languageserver-textdocument';
 import type { Diagnostic } from 'vscode-languageserver-types';
 
-import type { DiagnosticCode } from './catalog.data.js';
-
-/** A rule family: the HFxxx codes it can emit, and the pass that emits them. */
+/** A rule family: the pass that emits its HFxxx codes. */
 export type SemanticRule = {
-    /** Catalog codes this rule may emit (documentation/coverage aid; not enforced). */
-    readonly codes: readonly DiagnosticCode[];
     /** Produce diagnostics for one document. MUST NOT throw on malformed input. */
     run: (context: RuleContext) => Diagnostic[];
 };
@@ -103,7 +99,7 @@ export type ResponseField = {
 /** One response header (`name: [values]`). */
 export type HeaderEntry = {
     readonly name: string;
-    readonly keyNode: ASTNode | undefined;
+    readonly keyNode: ASTNode;
     readonly valueNode: ASTNode | undefined;
 };
 

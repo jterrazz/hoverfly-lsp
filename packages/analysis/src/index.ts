@@ -1,8 +1,4 @@
-export {
-    hasHoverflyFilename,
-    isHoverflySimulation,
-    isHoverflySimulationAst,
-} from './fingerprint.js';
+export { hasHoverflyFilename, isHoverflySimulationAst } from './fingerprint.js';
 
 export { ALL_RULES } from './semantic/rules/families.js';
 export { applyHF102Layer, createRuleContext, runRules, sortByRange } from './semantic/engine.js';

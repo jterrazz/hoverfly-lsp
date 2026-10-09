@@ -24,9 +24,11 @@ function propValue(object: ObjectASTNode | undefined, key: string): ASTNode | un
     return object?.properties.find((p) => p.keyNode.value === key)?.valueNode;
 }
 
-function dataArrayItems(dataNode: ObjectASTNode | undefined, key: string): readonly ASTNode[] {
+function dataObjects(dataNode: ObjectASTNode | undefined, key: string): readonly ObjectASTNode[] {
     const array = propValue(dataNode, key);
-    return array?.type === 'array' ? array.items : [];
+    return array?.type === 'array'
+        ? array.items.filter((item): item is ObjectASTNode => item.type === 'object')
+        : [];
 }
 
 function checkVariableFunction(
@@ -48,11 +50,10 @@ function checkVariableFunction(
     diagnostics.push(makeDiagnostic(context.textDocument, 'HF511', fnNode, { name }));
 }
 
+// invariant: the one variadic helper, concat, requires no argument, so a variadic arity is never
+// reported and the range here is always a fixed one.
 function describeArity(spec: HelperSpec): string {
     const required = spec.args.filter((arg) => !arg.optional).length;
-    if (spec.variadic === true) {
-        return `at least ${String(required)}`;
-    }
     const max = spec.args.length;
     return required === max ? String(required) : `${String(required)} to ${String(max)}`;
 }
@@ -94,7 +95,7 @@ function checkName(context: RuleContext, item: ObjectASTNode, diagnostics: Diagn
         return;
     }
     const name = nameNode.value;
-    if (name.length > 0 && NON_WORD_CHAR.test(name)) {
+    if (NON_WORD_CHAR.test(name)) {
         diagnostics.push(makeDiagnostic(context.textDocument, 'HF214', nameNode, { n: name }));
     }
 }
@@ -126,27 +127,18 @@ function checkDestination(
     );
 }
 
-const HF5XX_VARIABLES_CODES = ['HF213', 'HF214', 'HF510', 'HF511', 'HF512'] as const;
-
 const hf5xxVariablesRule: SemanticRule = {
-    codes: HF5XX_VARIABLES_CODES,
     run(context: RuleContext): Diagnostic[] {
         const diagnostics: Diagnostic[] = [];
         const { dataNode } = context.model;
 
-        for (const item of dataArrayItems(dataNode, 'variables')) {
-            if (item.type !== 'object') {
-                continue;
-            }
+        for (const item of dataObjects(dataNode, 'variables')) {
             checkVariableFunction(context, propValue(item, 'function'), diagnostics);
             checkVariableArity(context, item, diagnostics);
             checkName(context, item, diagnostics);
         }
 
-        for (const item of dataArrayItems(dataNode, 'literals')) {
-            if (item.type !== 'object') {
-                continue;
-            }
+        for (const item of dataObjects(dataNode, 'literals')) {
             checkName(context, item, diagnostics);
         }
 

@@ -15,16 +15,6 @@ describe('hf2xx', () => {
             request: { path: [{ matcher: 'xform', value: 'x' }] },
         },
         {
-            expected: [],
-            label: 'unknown matcher — does not flag the empty-string default matcher name',
-            request: { path: [{ matcher: '', value: 'x' }] },
-        },
-        {
-            expected: [],
-            label: 'unknown matcher — does not flag a matcher with no matcher field (default exact)',
-            request: { path: [{ value: 'x' }] },
-        },
-        {
             expected: ['HF202 hint 7:25-7:38 Prefer canonical lowercase "jsonpartial"'],
             label: 'non-canonical casing — hints the canonical lowercase for jsonPartial',
             request: { body: [{ matcher: 'jsonPartial', value: '{}' }] },
@@ -62,39 +52,6 @@ describe('hf2xx', () => {
             ],
             label: 'config on a non-array matcher — flags config on exact, even when empty',
             request: { path: [{ matcher: 'exact', value: 'x', config: {} }] },
-        },
-        {
-            expected: [],
-            label: 'config on a non-array matcher — does not flag config on the array matcher',
-            request: { body: [{ matcher: 'array', value: ['a'], config: { ignoreOrder: true } }] },
-        },
-        {
-            expected: [
-                'HF205 warning 12:16-12:28 Unknown config key "ignoreCase" (ignored by Hoverfly)',
-            ],
-            label: 'unknown array config key — warns on an unrecognised config key',
-            request: { body: [{ matcher: 'array', value: ['a'], config: { ignoreCase: true } }] },
-        },
-        {
-            expected: [
-                'HF206 error 12:31-12:37 Config values must be booleans; Hoverfly panics on a string',
-            ],
-            label: 'non-boolean array config value — flags a string config value as a panic',
-            request: {
-                body: [{ matcher: 'array', value: ['a'], config: { ignoreOrder: 'true' } }],
-            },
-        },
-        {
-            expected: [
-                'HF207 warning 8:23-8:24 "negate" with a non-string value always matches (vacuous true); likely not what you want',
-            ],
-            label: 'negate with a non-string value — warns about vacuous-true on a numeric negate value',
-            request: { path: [{ matcher: 'negate', value: 5 }] },
-        },
-        {
-            expected: [],
-            label: 'negate with a non-string value — does not flag negate with a string value',
-            request: { path: [{ matcher: 'negate', value: 'x' }] },
         },
         {
             expected: [
@@ -202,17 +159,6 @@ describe('hf2xx', () => {
         },
         {
             expected: [
-                'HF201 error 10:27-10:33 Unknown matcher "nope": Hoverfly panics at match time on unknown matchers',
-            ],
-            label: 'object-shaped doMatch recursion (HF201/HF203/HF210) — fires HF201 on an unknown matcher nested in an object doMatch',
-            request: {
-                body: [
-                    { matcher: 'jsonpath', value: '$.x', doMatch: { matcher: 'nope', value: 'y' } },
-                ],
-            },
-        },
-        {
-            expected: [
                 'HF203 error 11:25-11:30 Matcher "array" expects a JSON array; this pair will never match',
             ],
             label: 'object-shaped doMatch recursion (HF201/HF203/HF210) — fires HF203 on a value-type mismatch nested in an object doMatch',
@@ -225,21 +171,6 @@ describe('hf2xx', () => {
                     },
                 ],
             },
-        },
-        {
-            expected: ['HF211 warning 8:23-8:25 Empty regex value never matches'],
-            label: 'empty value that never matches — warns on an empty regex value',
-            request: { path: [{ matcher: 'regex', value: '' }] },
-        },
-        {
-            expected: ['HF211 warning 8:23-8:25 Empty jwtjsonpath value never matches'],
-            label: 'empty value that never matches — warns on an empty jwtjsonpath value',
-            request: { body: [{ matcher: 'jwtjsonpath', value: '' }] },
-        },
-        {
-            expected: [],
-            label: 'empty value that never matches — does not flag an empty exact value (empty exact can legitimately match)',
-            request: { path: [{ matcher: 'exact', value: '' }] },
         },
         {
             expected: [
@@ -256,6 +187,95 @@ describe('hf2xx', () => {
                 requiresState: { authed: 'true' },
             },
         },
+        {
+            expected: [
+                'HF208 error 8:27-8:33 "form" is only valid on the body field; elsewhere Hoverfly panics',
+            ],
+            label: 'form mis-placed — form under a header named body',
+            request: { headers: { body: [{ matcher: 'form', value: {} }] } },
+        },
+        {
+            expected: [
+                'HF203 error 7:23-7:25 Matcher "" expects a string; this pair will never match',
+            ],
+            label: 'value type mismatch — the default matcher, with no matcher field, given an object',
+            request: { path: [{ value: {} }] },
+        },
+        {
+            expected: [
+                'HF206 error 10:31-10:37 Config values must be booleans; Hoverfly panics on a string',
+                'HF206 error 11:33-11:35 Config values must be booleans; Hoverfly panics on an array',
+                'HF206 error 18:31-18:33 Config values must be booleans; Hoverfly panics on an object',
+                'HF206 error 19:33-19:34 Config values must be booleans; Hoverfly panics on a number',
+                'HF206 error 26:31-26:35 Config values must be booleans; Hoverfly panics on null',
+            ],
+            label: 'non-boolean array config value — flags each, naming its JSON type',
+            request: {
+                body: [
+                    {
+                        matcher: 'array',
+                        value: [],
+                        config: { ignoreOrder: 'true', ignoreUnknown: [] },
+                    },
+                    { matcher: 'array', value: [], config: { ignoreOrder: {}, ignoreUnknown: 1 } },
+                    { matcher: 'array', value: [], config: { ignoreOrder: null } },
+                ],
+            },
+        },
+        {
+            expected: [],
+            label: 'shapes the schema owns — a string config, a numeric matcher name, a matcher with no value',
+            request: {
+                body: [{ matcher: 'array', value: [], config: 'x' }],
+                path: [{ matcher: 5, value: 'x' }, { matcher: 'exact' }],
+            },
+        },
+        {
+            expected: [
+                'HF207 warning 8:23-8:24 "negate" with a non-string value always matches (vacuous true); likely not what you want',
+            ],
+            label: 'negate with a non-string value — warns on a numeric value, never on a string',
+            request: {
+                path: [
+                    { matcher: 'negate', value: 5 },
+                    { matcher: 'negate', value: 'x' },
+                ],
+            },
+        },
+        {
+            expected: [],
+            label: 'unknown matcher — the empty-string name and a missing one are the default exact',
+            request: { path: [{ matcher: '', value: 'x' }, { value: 'x' }] },
+        },
+        {
+            expected: [
+                'HF211 warning 8:23-8:25 Empty regex value never matches',
+                'HF211 warning 18:23-18:25 Empty jwtjsonpath value never matches',
+            ],
+            label: 'empty value that never matches — warns on regex and jwtjsonpath, never on exact, which can match',
+            request: {
+                path: [
+                    { matcher: 'regex', value: '' },
+                    { matcher: 'exact', value: '' },
+                ],
+                body: [{ matcher: 'jwtjsonpath', value: '' }],
+            },
+        },
+        {
+            expected: [
+                'HF205 warning 13:16-13:28 Unknown config key "ignoreCase" (ignored by Hoverfly)',
+            ],
+            label: 'array config — accepts a known boolean key, warns on an unknown one',
+            request: {
+                body: [
+                    {
+                        matcher: 'array',
+                        value: ['a'],
+                        config: { ignoreOrder: true, ignoreCase: true },
+                    },
+                ],
+            },
+        },
     ])(
         // Given - a request whose matchers hold the case $label names
         // Then - every HF2xx diagnostic, its severity, its range and its message, or none
@@ -264,4 +284,13 @@ describe('hf2xx', () => {
             expect(run(request)).toStrictEqual(expected);
         },
     );
+
+    test('hf2xxMatcherRule — a doMatch key with no value, a syntax error, adds no HF210', () => {
+        // Given - an exact matcher whose doMatch key the parser kept without a value
+        const simulation =
+            '{"data":{"pairs":[{"request":{"path":[{"matcher":"exact","value":"/x","doMatch":}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}';
+
+        // Then - no diagnostic: the chain the hint would name does not exist
+        expect(diagnosticsOf(hf2xxMatcherRule, simulation)).toStrictEqual([]);
+    });
 });

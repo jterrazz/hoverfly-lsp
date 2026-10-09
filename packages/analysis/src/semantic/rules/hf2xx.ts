@@ -1,19 +1,23 @@
 import type { ASTNode } from 'vscode-json-languageservice';
 import type { Diagnostic } from 'vscode-languageserver-types';
 
-import { MATCHER_SPECS, TRANSFORMING_MATCHER_NAMES } from '../../registry/matchers.js';
+import {
+    ARRAY_CONFIG_KEYS,
+    MATCHER_SPECS,
+    TRANSFORMING_MATCHER_NAMES,
+} from '../../registry/matchers.js';
 import type { MatcherSpec, MatcherValueType } from '../../registry/matchers.js';
 import { makeDiagnostic } from '../diagnostics.js';
 import type { MatcherModel, RuleContext, SemanticRule } from '../rule.js';
 import { walkMatchers } from './matcher-walk.js';
 import type { WalkedMatcher } from './matcher-walk.js';
 
+// invariant: form is dispatched before this lookup, so its entry here is never read.
 const SPEC_BY_LOWER_NAME: ReadonlyMap<string, MatcherSpec> = new Map(
-    MATCHER_SPECS.filter((spec) => spec.bodyOnly !== true).map((spec) => [
-        spec.name.toLowerCase(),
-        spec,
-    ]),
+    MATCHER_SPECS.map((spec) => [spec.name.toLowerCase(), spec]),
 );
+
+const DEFAULT_SPEC: MatcherSpec | undefined = SPEC_BY_LOWER_NAME.get('');
 
 const FORM_SPEC: MatcherSpec | undefined = MATCHER_SPECS.find((spec) => spec.bodyOnly === true);
 
@@ -21,44 +25,25 @@ const TRANSFORMING = new Set(TRANSFORMING_MATCHER_NAMES.map((name) => name.toLow
 
 const EMPTY_VALUE_NEVER_MATCHES = new Set(['jwtjsonpath', 'regex', 'glob']);
 
-const ARRAY_CONFIG_KEYS: ReadonlySet<string> = new Set(
-    MATCHER_SPECS.find((spec) => spec.name === 'array')?.configKeys,
-);
+const ARRAY_CONFIG_KEY_SET: ReadonlySet<string> = new Set(ARRAY_CONFIG_KEYS);
+
+// invariant: a boolean is the one valid config value, so it is never named; null reads as itself.
+const ARTICLED_TYPE: Readonly<Record<string, string>> = {
+    array: 'an array',
+    number: 'a number',
+    object: 'an object',
+    string: 'a string',
+};
 
 function jsonTypeName(node: ASTNode): string {
-    switch (node.type) {
-        case 'array': {
-            return 'an array';
-        }
-        case 'object': {
-            return 'an object';
-        }
-        case 'string': {
-            return 'a string';
-        }
-        case 'number': {
-            return 'a number';
-        }
-        case 'boolean': {
-            return 'a boolean';
-        }
-        case 'null': {
-            return 'null';
-        }
-        default: {
-            return 'this value';
-        }
-    }
+    return ARTICLED_TYPE[node.type] ?? node.type;
 }
 
-function expectedValuePhrase(spec: MatcherSpec): string {
-    const phrase: Record<MatcherValueType, string> = {
-        array: 'a JSON array',
-        object: 'an object',
-        string: 'a string',
-    };
-    return spec.valueTypes.map((type) => phrase[type]).join(' or ');
-}
+const EXPECTED_VALUE_PHRASE: Readonly<Record<MatcherValueType, string>> = {
+    array: 'a JSON array',
+    object: 'an object',
+    string: 'a string',
+};
 
 function isValidFormPlacement(matcher: MatcherModel, depth: number): boolean {
     return (
@@ -74,11 +59,13 @@ function checkNameAndPlacement(
     diagnostics: Diagnostic[],
 ): MatcherSpec | undefined {
     const { matcher, depth } = walked;
-    const { matcherName, matcherNode } = matcher;
+    const { matcherNode } = matcher;
 
-    if (matcherName === undefined || !matcherNode) {
-        return matcherName === undefined ? SPEC_BY_LOWER_NAME.get('') : undefined;
+    // value: a missing or non-string matcher name is the default matcher, as Hoverfly reads it.
+    if (matcherNode?.type !== 'string') {
+        return DEFAULT_SPEC;
     }
+    const matcherName = matcherNode.value;
 
     const lower = matcherName.toLowerCase();
 
@@ -135,18 +122,18 @@ function checkValue(
         return;
     }
 
-    const accepted = (spec.valueTypes as readonly string[]).includes(valueNode.type);
-    if (!accepted) {
+    if (valueNode.type !== spec.valueType) {
         diagnostics.push(
             makeDiagnostic(context.textDocument, 'HF203', valueNode, {
                 name: spec.name,
-                expected: expectedValuePhrase(spec),
+                expected: EXPECTED_VALUE_PHRASE[spec.valueType],
             }),
         );
         return;
     }
 
     if (
+        // Stryker disable next-line ConditionalExpression: equivalent — the three never-matching matchers accept a string alone, so any other value returned at HF203
         valueNode.type === 'string' &&
         valueNode.value === '' &&
         EMPTY_VALUE_NEVER_MATCHES.has(lower)
@@ -177,7 +164,7 @@ function checkConfig(
 
     for (const property of configNode.properties) {
         const key = property.keyNode.value;
-        if (!ARRAY_CONFIG_KEYS.has(key)) {
+        if (!ARRAY_CONFIG_KEY_SET.has(key)) {
             diagnostics.push(
                 makeDiagnostic(context.textDocument, 'HF205', property.keyNode, { key }),
             );
@@ -211,19 +198,6 @@ function checkDoMatch(
 
 /** The HF2xx rule: one pass over every matcher, doMatch chains included, emitting the eleven matcher codes. */
 export const hf2xxMatcherRule: SemanticRule = {
-    codes: [
-        'HF201',
-        'HF202',
-        'HF203',
-        'HF204',
-        'HF205',
-        'HF206',
-        'HF207',
-        'HF208',
-        'HF209',
-        'HF210',
-        'HF211',
-    ],
     run(context: RuleContext): Diagnostic[] {
         const diagnostics: Diagnostic[] = [];
 

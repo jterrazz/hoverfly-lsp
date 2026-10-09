@@ -4,10 +4,6 @@
 
 import type { ASTNode } from 'vscode-json-languageservice';
 
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-    return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
 /** The D3 fingerprint over the error-recovering AST, so a half-typed simulation still gets its diagnostics; never throws. */
 export function isHoverflySimulationAst(root: ASTNode | undefined): boolean {
     if (root?.type !== 'object') {
@@ -27,38 +23,13 @@ export function isHoverflySimulationAst(root: ASTNode | undefined): boolean {
     return schemaVersionNode?.type === 'string' && schemaVersionNode.value.startsWith('v');
 }
 
-/** Whether text parses as JSON and passes the D3 fingerprint; never throws. */
 /** Whether a URI or path names a Hoverfly file — `*.hoverfly.json`, `*.hfy` or `hoverfly-simulation.json`, case-insensitively (D3). */
 export function hasHoverflyFilename(uri: string): boolean {
-    const withoutQuery = uri.split(/[?#]/u, 1)[0] ?? uri;
-    const segment = (withoutQuery.split('/').pop() ?? withoutQuery).toLowerCase();
+    const path = uri.replace(/[?#].*/su, '');
+    const segment = path.slice(path.lastIndexOf('/') + 1).toLowerCase();
     return (
         segment.endsWith('.hoverfly.json') ||
         segment.endsWith('.hfy') ||
         segment === 'hoverfly-simulation.json'
     );
-}
-
-export function isHoverflySimulation(text: string): boolean {
-    let root: unknown;
-    try {
-        root = JSON.parse(text);
-    } catch {
-        return false;
-    }
-
-    if (!isPlainObject(root)) {
-        return false;
-    }
-
-    const { data, meta } = root;
-    if (!isPlainObject(data)) {
-        return false;
-    }
-    if (!isPlainObject(meta)) {
-        return false;
-    }
-
-    const { schemaVersion } = meta;
-    return typeof schemaVersion === 'string' && schemaVersion.startsWith('v');
 }

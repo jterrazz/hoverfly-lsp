@@ -66,7 +66,6 @@ function buildStateFlowIndex(model: SimulationModel): StateFlowIndex {
 // fires after the match, so on first encounter the state is unset.
 /** HF401: a required state key no transitionsState sets, one warning per occurrence, on its key. */
 export const hf401RequiresNeverSet: SemanticRule = {
-    codes: ['HF401'],
     run(context: RuleContext): Diagnostic[] {
         const index = buildStateFlowIndex(context.model);
         const diagnostics: Diagnostic[] = [];
@@ -94,7 +93,6 @@ export const hf401RequiresNeverSet: SemanticRule = {
 
 /** HF402: a transitioned state key nothing requires, one note per occurrence, on its key. */
 export const hf402TransitionsNeverRequired: SemanticRule = {
-    codes: ['HF402'],
     run(context: RuleContext): Diagnostic[] {
         const index = buildStateFlowIndex(context.model);
         const diagnostics: Diagnostic[] = [];
@@ -118,7 +116,6 @@ export const hf402TransitionsNeverRequired: SemanticRule = {
 
 /** HF403: a removesState entry no transitionsState sets, one note per entry. */
 export const hf403RemovesNeverSet: SemanticRule = {
-    codes: ['HF403'],
     run(context: RuleContext): Diagnostic[] {
         const index = buildStateFlowIndex(context.model);
         const diagnostics: Diagnostic[] = [];

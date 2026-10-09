@@ -8,7 +8,6 @@ import { analyze } from '../../template/analyzer.js';
 import type { AnalyzerContext } from '../../template/analyzer.js';
 import { hasTemplateSyntax } from '../../template/detect.js';
 import { createStringSourceMap } from '../../template/source-map.js';
-import type { DiagnosticCode } from '../catalog.data.js';
 import { makeDiagnostic } from '../diagnostics.js';
 import type { RuleContext, SemanticRule, SimulationModel } from '../rule.js';
 
@@ -79,18 +78,6 @@ function isTemplated(node: ASTNode | undefined): boolean {
     return node?.type === 'boolean' && node.value;
 }
 
-const HF5XX_CODES: readonly DiagnosticCode[] = [
-    'HF501',
-    'HF502',
-    'HF503',
-    'HF504',
-    'HF505',
-    'HF506',
-    'HF507',
-    'HF508',
-    'HF509',
-];
-
 function analyzeHeaderValue(
     context: RuleContext,
     node: ASTNode | undefined,
@@ -112,7 +99,6 @@ function analyzeHeaderValue(
 }
 
 const hf5xxTemplateRule: SemanticRule = {
-    codes: HF5XX_CODES,
     run(context: RuleContext): Diagnostic[] {
         const diagnostics: Diagnostic[] = [];
         const model: SimulationModel = context.model;

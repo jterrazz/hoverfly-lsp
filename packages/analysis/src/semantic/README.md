@@ -1,7 +1,7 @@
 # Semantic rules — adding a rule family
 
 A rule family lives in `rules/hfNxx.ts` and exports `HFNXX_RULES: readonly SemanticRule[]`.
-Each `SemanticRule` is `{ codes, run(ctx) }` — `run` returns `Diagnostic[]` and MUST NOT throw.
+Each `SemanticRule` is `{ run(ctx) }` — `run` returns `Diagnostic[]` and MUST NOT throw.
 
 1. Read everything from `ctx.model` (a typed, AST-anchored `SimulationModel` — see `rule.ts`).
    Never re-walk the raw AST or hardcode matcher/helper facts; consume `../registry/*`.
