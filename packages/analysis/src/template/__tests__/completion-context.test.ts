@@ -52,6 +52,218 @@ describe('classifyCompletionContext', () => {
         },
         { context: at('none'), marked: 'hello |world' },
         { context: at('none'), marked: '{{x}} |' },
+        {
+            context: { blockStack: [], inEachScope: false, kind: 'blockClose', word: 'ea' },
+            marked: '{{ /ea|',
+        },
+        {
+            context: {
+                blockStack: [],
+                inEachScope: false,
+                kind: 'helperOrPathStart',
+                word: 'x/ea',
+            },
+            marked: '{{x/ea|',
+        },
+        {
+            context: { blockStack: [], inEachScope: false, kind: 'helperArg', word: '/x' },
+            marked: '{{a /x|',
+        },
+        {
+            context: { blockStack: [], inEachScope: false, kind: 'helperArg', word: 'b' },
+            marked: '{{/ea b|',
+        },
+        {
+            context: {
+                blockStack: [],
+                inEachScope: false,
+                kind: 'helperOrPathStart',
+                word: 'Request.',
+            },
+            marked: '{{#Request.|',
+        },
+        {
+            context: {
+                blockStack: [],
+                inEachScope: false,
+                kind: 'pathContinuation',
+                path: { parts: [], root: 'Request' },
+                word: 'a#',
+            },
+            marked: '{{Request.a#|',
+        },
+        {
+            context: {
+                blockStack: [],
+                inEachScope: false,
+                kind: 'helperOrPathStart',
+                word: 'Request.',
+            },
+            marked: '{{ #Request.|',
+        },
+        {
+            context: { blockStack: [], inEachScope: false, kind: 'fakerArg', word: 'a#' },
+            marked: '{{faker a#|',
+        },
+        {
+            context: { blockStack: [], inEachScope: false, kind: 'helperOrPathStart', word: 'x#y' },
+            marked: '{{x#y|',
+        },
+        {
+            context: { blockStack: [], inEachScope: false, kind: 'helperOrPathStart', word: '' },
+            marked: '{{ |',
+        },
+        {
+            context: {
+                blockStack: [],
+                inEachScope: false,
+                kind: 'nowArg',
+                nowSlot: 'offset',
+                word: '',
+            },
+            marked: '{{now |',
+        },
+        {
+            context: {
+                blockStack: [],
+                inEachScope: false,
+                kind: 'nowArg',
+                nowSlot: 'format',
+                word: '',
+            },
+            marked: '{{now a |',
+        },
+        {
+            context: {
+                blockStack: [],
+                inEachScope: false,
+                kind: 'nowArg',
+                nowSlot: 'offset',
+                word: 'a',
+            },
+            marked: '{{now a|',
+        },
+        {
+            context: {
+                blockStack: [],
+                inEachScope: false,
+                kind: 'nowArg',
+                nowSlot: 'format',
+                word: 'b',
+            },
+            marked: '{{now a b|',
+        },
+        {
+            context: {
+                blockStack: [],
+                inEachScope: false,
+                kind: 'pathContinuation',
+                path: { parts: [], root: 'Request' },
+                word: 'a@',
+            },
+            marked: '{{Request.a@|',
+        },
+        {
+            context: {
+                blockStack: [],
+                inEachScope: false,
+                kind: 'pathContinuation',
+                path: { parts: ['QueryParam'], root: 'Request' },
+                word: 'na',
+            },
+            marked: '{{Request.QueryParam.na|',
+        },
+        {
+            context: {
+                blockStack: [],
+                inEachScope: false,
+                kind: 'nowArg',
+                nowSlot: 'offset',
+                word: '',
+            },
+            marked: "{{#now '|",
+        },
+        {
+            context: {
+                blockStack: [],
+                inEachScope: false,
+                kind: 'nowArg',
+                nowSlot: 'format',
+                word: '',
+            },
+            marked: "{{now #x '|",
+        },
+        {
+            context: { blockStack: [], inEachScope: false, kind: 'helperArg', word: '' },
+            marked: "{{x#now '|",
+        },
+        {
+            context: { blockStack: [], inEachScope: false, kind: 'helperOrPathStart', word: 'x@' },
+            marked: '{{x@|',
+        },
+        {
+            context: {
+                blockStack: [],
+                inEachScope: false,
+                kind: 'helperOrPathStart',
+                word: 'Request',
+            },
+            marked: '{{Request|',
+        },
+        {
+            context: {
+                blockStack: [],
+                inEachScope: false,
+                kind: 'helperOrPathStart',
+                word: 'foo.bar',
+            },
+            marked: '{{foo.bar|',
+        },
+        {
+            context: { blockStack: [], inEachScope: false, kind: 'helperOrPathStart', word: '' },
+            marked: '{{#each x}}a{{/each}} {{|',
+        },
+        {
+            context: {
+                blockStack: ['if', 'each'],
+                inEachScope: true,
+                kind: 'helperOrPathStart',
+                word: '',
+            },
+            marked: '{{#if x}}a{{else}}{{#each y}}{{|',
+        },
+        {
+            context: { blockStack: ['each'], inEachScope: true, kind: 'none', word: '' },
+            marked: '{{#each x}}|a{{/each}}',
+        },
+        {
+            context: { blockStack: ['each'], inEachScope: true, kind: 'none', word: '' },
+            marked: '{{#each x}}a|{{/each}}',
+        },
+        {
+            context: { blockStack: [], inEachScope: false, kind: 'none', word: '' },
+            marked: '{{#each x}}a{{/each}}b|',
+        },
+        {
+            context: {
+                blockStack: ['first'],
+                inEachScope: true,
+                kind: 'helperOrPathStart',
+                word: '',
+            },
+            marked: '{{#first x}}{{|',
+        },
+        {
+            context: {
+                blockStack: ['with'],
+                inEachScope: false,
+                kind: 'helperOrPathStart',
+                word: '',
+            },
+            marked: '{{#with x}}{{|',
+        },
+        { context: at('helperOrPathStart', { word: 'Requestx' }), marked: '{{Requestx|' },
+        { context: at('none'), marked: 'a|b{{#each x}}c{{/each}}' },
     ])(
         // Given - a template being typed, `|` marking the cursor
         // Then - the whole context the cursor sits in: its kind, the word typed, the path, the enclosing blocks

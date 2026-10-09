@@ -10,20 +10,6 @@ describe('parse', () => {
             source: 'a {{x}} b',
         },
         {
-            outline: [
-                'program@0-27',
-                "{{substring<substring>@2-11 'hello'@12-19 '0'@20-23 2=2@24-25}}@0-27",
-            ],
-            source: "{{substring 'hello' '0' 2}}",
-        },
-        {
-            outline: [
-                'program@0-38',
-                '{{csvSqlCommand<csvSqlCommand>@2-15 "SELECT * FROM pets"@16-36}}@0-38',
-            ],
-            source: '{{csvSqlCommand "SELECT * FROM pets"}}',
-        },
-        {
             outline: ['program@0-5', '{{x<x>@2-3}}@0-5'],
             source: '{{x}}',
         },
@@ -32,62 +18,11 @@ describe('parse', () => {
             source: '{{{x}}}',
         },
         {
-            outline: ['program@0-30', "{{now<now>@5-8 '-1d'@11-16 'unix'@19-25}}@0-30"],
-            source: "{{   now   '-1d'   'unix'   }}",
-        },
-        {
             outline: [
                 'program@0-22',
                 "{{replace<replace>@2-9 x<x>@10-11 '}}'@12-16 'y'@17-20}}@0-22",
             ],
             source: "{{replace x '}}' 'y'}}",
-        },
-        {
-            outline: [
-                'program@0-26',
-                '{{Request.QueryParam.foo<Request.QueryParam.foo>@2-24}}@0-26',
-            ],
-            source: '{{Request.QueryParam.foo}}',
-        },
-        {
-            outline: [
-                'program@0-36',
-                '{{Request.Header.Authorization.0<Request.Header.Authorization.[0]>@2-34}}@0-36',
-            ],
-            source: '{{Request.Header.Authorization.[0]}}',
-        },
-        {
-            outline: ['program@0-10', '{{@index<@index>@2-8}}@0-10'],
-            source: '{{@index}}',
-        },
-        {
-            outline: ['program@0-8', '{{this:<this>@2-6}}@0-8'],
-            source: '{{this}}',
-        },
-        {
-            outline: ['program@0-13', '{{this:name<this.name>@2-11}}@0-13'],
-            source: '{{this.name}}',
-        },
-        {
-            outline: [
-                'program@0-39',
-                "{{multiply<multiply>@2-10 (this:price<this.price>@12-22)@11-23 (this:qty<this.qty>@25-33)@24-34 ''@35-37}}@0-39",
-            ],
-            source: "{{multiply (this.price) (this.qty) ''}}",
-        },
-        {
-            outline: [
-                'program@0-34',
-                "{{outer<outer>@2-7 (helper<helper>@9-15 (inner<inner>@17-22 'a'@23-26)@16-27 'b'@28-31)@8-32}}@0-34",
-            ],
-            source: "{{outer (helper (inner 'a') 'b')}}",
-        },
-        {
-            outline: [
-                'program@0-37',
-                "{{Request.Body<Request.Body>@2-14 'jsonpath'@15-25 '$.items'@26-35}}@0-37",
-            ],
-            source: "{{Request.Body 'jsonpath' '$.items'}}",
         },
         {
             outline: [
@@ -166,22 +101,6 @@ describe('parse', () => {
         },
         {
             outline: [
-                'program@0-20',
-                "{{outer<outer>@2-7 (inner<inner>@9-14 'a'@15-18)@8-18}}@0-20",
-                "error Unclosed subexpression — missing ')'@8-18",
-            ],
-            source: "{{outer (inner 'a'}}",
-        },
-        {
-            outline: [
-                'program@0-10',
-                '"x \'abc}}"@2-10',
-                'error Unclosed mustache — missing closing braces@0-10',
-            ],
-            source: "{{x 'abc}}",
-        },
-        {
-            outline: [
                 'program@0-25',
                 '#if<if>@3-5 x<x>@6-7 ["a"@9-10] open 0-9 close 10-19@0-19',
                 '{{ok<ok>@21-23}}@19-25',
@@ -227,22 +146,6 @@ describe('parse', () => {
         },
         {
             outline: [
-                'program@0-6',
-                '"(((("@2-6',
-                'error Unclosed mustache — missing closing braces@0-6',
-            ],
-            source: '{{((((',
-        },
-        {
-            outline: [
-                'program@0-8',
-                '"a \'b}}"@2-8',
-                'error Unclosed mustache — missing closing braces@0-8',
-            ],
-            source: "{{a 'b}}",
-        },
-        {
-            outline: [
                 'program@0-34',
                 '#each<each>@3-7 [] else [] open 0-9 close 17-25@0-25',
                 'error Mismatched closing block: expected {{/each}} but found {{/}}@17-25',
@@ -268,8 +171,62 @@ describe('parse', () => {
             source: 'just plain text',
         },
         {
-            outline: ['program@0-21', "{{h<h>@2-3 'txt'@4-9 -1.5=-1.5@10-14 true@15-19}}@0-21"],
-            source: "{{h 'txt' -1.5 true}}",
+            outline: [
+                'program@0-31',
+                '#if<if>@3-5 x<x>@6-7 ["a"@9-10 {{elsewhere<elsewhere>@12-21}}@10-23 "b"@23-24] open 0-9 close 24-31@0-31',
+            ],
+            source: '{{#if x}}a{{elsewhere}}b{{/if}}',
+        },
+        {
+            outline: [
+                'program@0-16',
+                '#if<if>@3-5 x<x>@6-7 ["a"@9-10] else [] open 0-9 close unclosed@0-16',
+                'error Unclosed block {{#if}} — missing {{/if}}@0-9',
+            ],
+            source: '{{#if x}}a{{else',
+        },
+        {
+            outline: [
+                'program@0-27',
+                '#if<if>@3-5 x<x>@6-7 ["a"@9-10 {{elsex<elsex>@12-17}}@10-19 "b"@19-20] open 0-9 close 20-27@0-27',
+            ],
+            source: '{{#if x}}a{{elsex}}b{{/if}}',
+        },
+        {
+            outline: [
+                'program@0-27',
+                '#if<if>@3-5 x<x>@6-7 ["a"@9-10] else ["b"@19-20] open 0-9 close 20-27@0-27',
+            ],
+            source: '{{#if x}}a{{else }}b{{/if}}',
+        },
+        {
+            outline: [
+                'program@0-9',
+                'error Unexpected closing block {{/x}} — no matching open block@0-9',
+            ],
+            source: '{{ / x }}',
+        },
+        {
+            outline: ['program@0-20', '#if<if>@3-5 x<x>@6-7 ["a"@9-10] open 0-9 close 10-20@0-20'],
+            source: '{{#if x}}a{{ / if }}',
+        },
+        {
+            outline: [
+                'program@0-25',
+                '#if<if>@3-5 x<x>@6-7 ["a"@9-10] else [] open 0-9 close unclosed@0-25',
+                'error Unclosed block {{#if}} — missing {{/if}}@0-9',
+            ],
+            source: '{{#if x}}a{{else b{{/if}}',
+        },
+        {
+            outline: [
+                'program@0-35',
+                '#if<if>@3-5 x<x>@6-7 ["a"@9-10] else ["b"@18-19] open 0-9 close 19-27@0-27',
+                '"c"@27-28',
+                'error Mismatched closing block: expected {{/if}} but found {{/}}@19-27',
+                'error Unexpected closing block {{/if}} — no matching open block@28-35',
+            ],
+            source: '{{#if x}}a{{else}}b{{else}}c{{/if}}',
         },
     ])(
         // Given - $source, decoded

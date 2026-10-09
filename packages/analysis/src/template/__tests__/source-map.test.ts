@@ -145,6 +145,69 @@ describe('createStringSourceMap', () => {
             },
             raw: String.raw`"line1\n{{Request.x}}"`,
         },
+        {
+            at: 0,
+            map: {
+                decoded: 'a12345',
+                toDecodedOffset: '-1:0 0:0 1:1 2:2 3:3 4:4 5:5 6:6 7:6',
+                toDocOffset: '-1:0 0:0 1:1 2:2 3:3 4:4 5:5 6:6 7:6',
+            },
+            raw: 'a12345',
+        },
+        {
+            at: 0,
+            map: {
+                decoded: '\\z1234',
+                toDecodedOffset: '-1:0 0:0 1:1 2:2 3:3 4:4 5:5 6:6 7:6',
+                toDocOffset: '-1:0 0:0 1:1 2:2 3:3 4:4 5:5 6:6 7:6',
+            },
+            raw: String.raw`\z1234`,
+        },
+        {
+            at: 0,
+            map: {
+                decoded: '\\u12zz',
+                toDecodedOffset: '-1:0 0:0 1:1 2:2 3:3 4:4 5:5 6:6 7:6',
+                toDocOffset: '-1:0 0:0 1:1 2:2 3:3 4:4 5:5 6:6 7:6',
+            },
+            raw: String.raw`\u12zz`,
+        },
+        {
+            at: 0,
+            map: {
+                decoded: '"ab',
+                toDecodedOffset: '-1:0 0:0 1:1 2:2 3:3 4:3',
+                toDocOffset: '-1:0 0:0 1:1 2:2 3:3 4:3',
+            },
+            raw: '"ab',
+        },
+        {
+            at: 0,
+            map: {
+                decoded: 'ab"',
+                toDecodedOffset: '-1:0 0:0 1:1 2:2 3:3 4:3',
+                toDocOffset: '-1:0 0:0 1:1 2:2 3:3 4:3',
+            },
+            raw: 'ab"',
+        },
+        {
+            at: 0,
+            map: {
+                decoded: '"',
+                toDecodedOffset: '-1:0 0:0 1:1 2:1',
+                toDocOffset: '-1:0 0:0 1:1 2:1',
+            },
+            raw: '"',
+        },
+        {
+            at: 0,
+            map: {
+                decoded: 'au1234',
+                toDecodedOffset: '-1:0 0:0 1:1 2:2 3:3 4:4 5:5 6:6 7:6',
+                toDocOffset: '-1:0 0:0 1:1 2:2 3:3 4:4 5:5 6:6 7:6',
+            },
+            raw: 'au1234',
+        },
     ])(
         // Given - the JSON string token $raw at document offset $at
         // Then - its decoded text, and where every offset maps each way — one past each end included, so the clamps are read too

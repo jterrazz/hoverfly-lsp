@@ -23,10 +23,6 @@ export function parseCallParts(
     to: number,
 ): undefined | { path: PathExpression; params: Expression[] } {
     let cursor = skipWhitespace(scope.source, from, to);
-    if (cursor >= to) {
-        return undefined;
-    }
-
     const path = parsePath(scope, cursor, to);
     if (!path) {
         return undefined;
@@ -52,10 +48,7 @@ export function parseCallParts(
     return { path, params };
 }
 function parseExpression(scope: Scope, cursor: number, to: number): Expression | undefined {
-    const ch = scope.source[cursor];
-    if (ch === undefined) {
-        return undefined;
-    }
+    const ch = scope.source.charAt(cursor);
     if (ch === '(') {
         return parseSubExpression(scope, cursor, to);
     }
@@ -102,6 +95,7 @@ function parseSubExpression(scope: Scope, open: number, to: number): SubExpressi
 function parseStringLiteral(scope: Scope, open: number, to: number): StringLiteral {
     const quote = scope.source[open] === '"' ? '"' : "'";
     let i = open + 1;
+    // Stryker disable next-line EqualityOperator: equivalent — a literal unclosed at `to` is unclosed whatever the scan reads past it, and its value is clamped to `to`
     while (i < to) {
         const ch = scope.source[i];
         if (ch === '\\') {
@@ -113,7 +107,8 @@ function parseStringLiteral(scope: Scope, open: number, to: number): StringLiter
         }
         i += 1;
     }
-    const closed = i < to && scope.source[i] === quote;
+    // invariant: the scan stops before `to` only on the closing quote.
+    const closed = i < to;
     const valueEnd = closed ? i : Math.min(i, to);
     const value = unescapeStringBody(scope.source.slice(open + 1, valueEnd));
     const end = closed ? i + 1 : to;

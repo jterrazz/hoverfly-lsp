@@ -212,6 +212,47 @@ describe('analyze', () => {
             template: 'xx {{bogus 1}}',
             variables: [],
         },
+        {
+            findings: [
+                {
+                    args: { message: 'Block open {{#…}} is missing a helper name' },
+                    end: 5,
+                    kind: 'HF502',
+                    start: 0,
+                },
+            ],
+            literals: [],
+            template: '{{#}}a{{/}}',
+            variables: [],
+        },
+        { findings: [], literals: [], template: '{{ Vars }}', variables: [] },
+        { findings: [], literals: [], template: '{{ @Vars.x }}', variables: [] },
+        { findings: [], literals: [], template: '{{ this.Vars.x }}', variables: [] },
+        {
+            findings: [{ args: { name: 'bogus' }, end: 25, kind: 'HF503', start: 20 }],
+            literals: [],
+            template: '{{#if x}}a{{else}}{{bogus 1}}{{/if}}',
+            variables: [],
+        },
+        {
+            findings: [{ args: { name: 'bogus' }, end: 12, kind: 'HF503', start: 7 }],
+            literals: [],
+            template: '{{#if (bogus 1)}}a{{/if}}',
+            variables: [],
+        },
+        {
+            findings: [{ args: { name: 'bogus' }, end: 16, kind: 'HF503', start: 11 }],
+            literals: [],
+            template: '{{#if x}}{{bogus 1}}{{/if}}',
+            variables: [],
+        },
+        {
+            findings: [],
+            literals: [],
+            template: '{{ Request.Body "jsonpath" "$.x" }}',
+            variables: [],
+        },
+        { findings: [], literals: [], template: '{{ concat Vars }}', variables: [] },
     ])(
         // Given - $template, with the variables and literals the document declares
         // Then - every HF502–HF509 finding, its span and its message arguments, or none
@@ -225,4 +266,12 @@ describe('analyze', () => {
             ).toStrictEqual(findings);
         },
     );
+
+    test('analyzes a Vars reference with no context as declaring nothing', () => {
+        // Given - a template naming a variable, analyzed with no document context
+        const findings = analyze('{{ Vars.x }}');
+
+        // Then - the variable is undeclared
+        expect(findings).toStrictEqual([{ args: { x: 'x' }, end: 9, kind: 'HF505', start: 3 }]);
+    });
 });

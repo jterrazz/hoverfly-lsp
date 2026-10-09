@@ -26,48 +26,34 @@ const SIMPLE_ESCAPES: Readonly<Record<string, string>> = {
 // invariant: a malformed escape — a lone trailing `\` or `\z` — passes its backslash through, so
 // the mapping stays total.
 function unitAt(raw: string, index: number): { text: string; width: number } {
-    const ch = raw[index] ?? '';
-    const next = raw[index + 1] ?? '';
+    const ch = raw.charAt(index);
+    const next = raw.charAt(index + 1);
     const simple = ch === '\\' ? SIMPLE_ESCAPES[next] : undefined;
     if (simple !== undefined) {
         return { text: simple, width: 2 };
     }
+    // value: the slice holds four characters at most, so four hex digits are the whole of it.
     const hex = raw.slice(index + 2, index + 6);
-    if (ch === '\\' && next === 'u' && /^[0-9A-Fa-f]{4}$/u.test(hex)) {
+    if (ch === '\\' && next === 'u' && /[0-9A-Fa-f]{4}/u.test(hex)) {
         return { text: String.fromCodePoint(Number.parseInt(hex, 16)), width: 6 };
     }
     return { text: ch, width: 1 };
 }
 
 type Mapping = {
-    readonly contentDocStart: number;
     readonly decoded: string;
     readonly endDocOffset: number;
     readonly offsets: readonly number[];
 };
 
 function toDocOffset({ decoded, endDocOffset, offsets }: Mapping, decodedOffset: number): number {
-    if (decodedOffset <= 0) {
-        return offsets[0] ?? endDocOffset;
-    }
-    if (decodedOffset >= decoded.length) {
-        return endDocOffset;
-    }
-    return offsets[decodedOffset] ?? endDocOffset;
+    return offsets[Math.min(Math.max(decodedOffset, 0), decoded.length)] ?? endDocOffset;
 }
 
 // invariant: offsets never decreases; a document offset maps to the count of decoded units whose
-// source starts strictly before it — half-open like toDocOffset, never inside an escape.
-function toDecodedOffset(
-    { contentDocStart, decoded, endDocOffset, offsets }: Mapping,
-    docOffset: number,
-): number {
-    if (docOffset <= contentDocStart) {
-        return 0;
-    }
-    if (docOffset >= endDocOffset) {
-        return decoded.length;
-    }
+// source starts strictly before it — half-open like toDocOffset, never inside an escape, and
+// clamped to the content by the search itself.
+function toDecodedOffset({ decoded, endDocOffset, offsets }: Mapping, docOffset: number): number {
     let lo = 0;
     let hi = decoded.length;
     while (lo < hi) {
@@ -98,14 +84,7 @@ function createStringSourceMap(rawToken: string, docOffsetOfToken: number): Stri
         offsets.push(docOffsetOfToken + index);
         index += width;
     }
-    const endDocOffset = docOffsetOfToken + contentEnd;
-    offsets.push(endDocOffset);
-    const mapping: Mapping = {
-        contentDocStart: docOffsetOfToken + contentStart,
-        decoded,
-        endDocOffset,
-        offsets,
-    };
+    const mapping: Mapping = { decoded, endDocOffset: docOffsetOfToken + contentEnd, offsets };
     return {
         decoded,
         toDecodedOffset: (docOffset) => toDecodedOffset(mapping, docOffset),

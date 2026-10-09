@@ -42,7 +42,6 @@ class Parser {
     parse(): ParseResult {
         const body = this.parseStatements();
         const ast: Program = {
-            type: 'Program',
             start: 0,
             end: this.source.length,
             body,
@@ -50,45 +49,40 @@ class Parser {
         return { ast, errors: this.errors };
     }
 
-    private parseStatements(closers?: ReadonlySet<string>): Statement[] {
+    // invariant: inside a block body, a `{{/…}}` or `{{else}}` ends the statements, left unconsumed
+    // for the block to read.
+    private parseStatements(insideBlock = false): Statement[] {
         const out: Statement[] = [];
-
-        while (this.pos < this.source.length) {
-            const open = this.source.indexOf('{{', this.pos);
-
-            if (open === -1) {
-                this.pushContent(out, this.pos, this.source.length);
-                this.pos = this.source.length;
-                break;
-            }
-
+        let open = this.source.indexOf('{{', this.pos);
+        while (open !== -1) {
             this.pushContent(out, this.pos, open);
-
-            if (closers && this.isTerminator(open)) {
+            if (insideBlock && this.isTerminator(open)) {
                 this.pos = open;
                 return out;
             }
-
             const statement = this.parseMustacheOrBlock(open);
             if (statement) {
                 out.push(statement);
             }
+            open = this.source.indexOf('{{', this.pos);
         }
-
+        this.pushContent(out, this.pos, this.source.length);
+        this.pos = this.source.length;
         return out;
     }
 
     private isTerminator(open: number): boolean {
         const after = skipWhitespace(this.source, open + 2);
-        const ch = this.source[after];
-        if (ch === '/') {
-            return true;
+        return this.source[after] === '/' || this.isElseAt(after);
+    }
+
+    // value: `else` is the keyword only when a space, a `}` or the end of the text follows it.
+    private isElseAt(index: number): boolean {
+        if (!this.source.startsWith('else', index)) {
+            return false;
         }
-        if (this.source.startsWith('else', after)) {
-            const boundary = this.source[after + 4];
-            return boundary === undefined || /[\s}]/u.test(boundary);
-        }
-        return false;
+        const boundary = this.source[index + 4];
+        return boundary === undefined || /[\s}]/u.test(boundary);
     }
 
     private pushContent(out: Statement[], start: number, end: number): void {
@@ -199,13 +193,13 @@ class Parser {
         const blockName = path.original;
 
         this.pos = openTagEnd;
-        const program = this.parseStatements(BLOCK_BODY_CLOSERS);
+        const program = this.parseStatements(true);
 
         let inverse: Statement[] | undefined;
 
         if (this.atElse()) {
             this.consumeElse();
-            inverse = this.parseStatements(BLOCK_BODY_CLOSERS);
+            inverse = this.parseStatements(true);
         }
 
         const closeTag = this.consumeBlockClose(blockName, open, openTagEnd);
@@ -226,16 +220,9 @@ class Parser {
         };
     }
 
+    // invariant: a block body ends at a `{{` or at the end of the text, so the else is read past it.
     private atElse(): boolean {
-        if (!this.source.startsWith('{{', this.pos)) {
-            return false;
-        }
-        const after = skipWhitespace(this.source, this.pos + 2);
-        if (!this.source.startsWith('else', after)) {
-            return false;
-        }
-        const boundary = this.source[after + 4];
-        return boundary === undefined || /[\s}]/u.test(boundary);
+        return this.isElseAt(skipWhitespace(this.source, this.pos + 2));
     }
 
     private consumeElse(): void {
@@ -248,15 +235,7 @@ class Parser {
         openStart: number,
         openEnd: number,
     ): Span | undefined {
-        if (this.pos >= this.source.length || !this.source.startsWith('{{', this.pos)) {
-            this.errors.push({
-                message: `Unclosed block {{#${blockName}}} — missing {{/${blockName}}}`,
-                start: openStart,
-                end: openEnd,
-            });
-            return undefined;
-        }
-
+        // invariant: the body ended at a `{{` or at the end of the text, where no close is found.
         const open = this.pos;
         const close = findClose(this.source, open + 2, '}}');
         if (close === -1) {
@@ -284,8 +263,6 @@ class Parser {
         return { start: open, end: tagEnd };
     }
 }
-
-const BLOCK_BODY_CLOSERS: ReadonlySet<string> = new Set(['/', 'else']);
 
 /** Parses a decoded template into its AST, recording every syntax error and recovering; never throws. */
 function parse(source: string): ParseResult {

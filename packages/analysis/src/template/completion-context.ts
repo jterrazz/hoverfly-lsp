@@ -61,14 +61,8 @@ function classifyCompletionContext(decoded: string, cursor: number): TemplateCom
 
     const inner = decoded.slice(open.contentStart, offset);
 
-    const closeMatch = /^\s*\/(?<name>[A-Za-z0-9_]*)$/u.exec(inner);
-    if (closeMatch) {
-        return {
-            kind: 'blockClose',
-            word: closeMatch.groups?.name ?? '',
-            blockStack,
-            inEachScope,
-        };
+    if (/^\s*\/[A-Za-z0-9_]*$/u.test(inner)) {
+        return { kind: 'blockClose', word: inner.trimStart().slice(1), blockStack, inEachScope };
     }
 
     const sub = innermostOpenSubexpression(inner);
@@ -93,12 +87,14 @@ function classifySegment(
 
     const tokens = splitTopLevelTokens(body);
     const lastIsPartial = !/\s$/u.test(body);
+    // Stryker disable next-line StringLiteral: equivalent — a body with no trailing space splits into one token at least
     const current = lastIsPartial ? (tokens.at(-1) ?? '') : '';
 
     if (tokens.length <= 1 && (lastIsPartial || body.trim().length === 0)) {
         return headContext(current, blockStack, inEachScope, blockOpen);
     }
     return argumentContext(
+        // Stryker disable next-line StringLiteral: equivalent — an argument context has a head token
         { current, head: tokens[0] ?? '', slot: argSlot(tokens, lastIsPartial) },
         blockStack,
         inEachScope,
@@ -154,10 +150,10 @@ function pathContext(
             inEachScope,
         };
     }
-    const segments = token.split('.');
-    const root = segments[0] ?? '';
-    const word = segments.at(-1) ?? '';
-    const parts = segments.slice(1, -1);
+    // invariant: a path continuation holds a dot, so its root ends at the first one.
+    const root = token.slice(0, token.indexOf('.'));
+    const word = token.slice(token.lastIndexOf('.') + 1);
+    const parts = token.split('.').slice(1, -1);
     return {
         kind: 'pathContinuation',
         word,
@@ -173,7 +169,9 @@ function stringArgContext(
     blockStack: readonly string[],
     inEachScope: boolean,
 ): TemplateCompletionContext {
-    const tokens = splitTopLevelTokens(before.replace(/^\s*#/u, ''));
+    // invariant: the segment's block marker was stripped before the quote was found.
+    const tokens = splitTopLevelTokens(before);
+    // Stryker disable next-line StringLiteral: equivalent — with no head token, neither faker nor now is named
     const head = tokens[0] ?? '';
     if (head === FAKER_HELPER) {
         return { kind: 'fakerArg', word: typed, blockStack, inEachScope };
@@ -203,7 +201,7 @@ function isPathContinuation(token: string): boolean {
     if (!token.includes('.')) {
         return false;
     }
-    const root = token.split('.')[0] ?? '';
+    const root = token.slice(0, token.indexOf('.'));
     return PATH_ROOTS.has(root) || root === 'this';
 }
 
@@ -224,7 +222,7 @@ function collectEnclosing(statements: readonly Statement[], offset: number, out:
         if (isInsideBlockBody(statement, offset)) {
             out.push(statement.path.original);
             collectEnclosing(statement.program, offset, out);
-            if (statement.inverse) {
+            if (statement.inverse !== undefined) {
                 collectEnclosing(statement.inverse, offset, out);
             }
         }

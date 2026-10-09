@@ -99,7 +99,6 @@ export type Statement = BlockNode | ContentNode | MustacheNode;
 
 /** The root program: the ordered statements of a whole template. */
 export type Program = Span & {
-    readonly type: 'Program';
     readonly body: readonly Statement[];
 };
 

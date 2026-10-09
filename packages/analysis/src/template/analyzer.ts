@@ -1,8 +1,8 @@
 // outside: raymond reads a leading token as a helper when one is registered and as a context path
 // otherwise (report 08 §4), so a bare argument-less `{{foo}}` is a path — raymond renders it empty,
 // no panic — and only a call with arguments, a block open or a subexpression head is HF503; a
-// dotted, `@` or `this` path is never a helper, but for the Request.Body method call (report 08
-// §6).
+// dotted, `@` or `this` path is never a helper, the Request.Body method call (report 08 §6)
+// included.
 
 import { ALL_HELPERS } from '../registry/templating.data.js';
 import type { HelperSpec } from '../registry/templating.data.js';
@@ -60,18 +60,10 @@ function walkStatements(
     context: AnalyzerContext,
 ): void {
     for (const statement of statements) {
-        switch (statement.type) {
-            case 'ContentNode': {
-                break;
-            }
-            case 'MustacheNode': {
-                checkMustache(statement, findings, context);
-                break;
-            }
-            case 'BlockNode': {
-                checkBlock(statement, findings, context);
-                break;
-            }
+        if (statement.type === 'MustacheNode') {
+            checkMustache(statement, findings, context);
+        } else if (statement.type === 'BlockNode') {
+            checkBlock(statement, findings, context);
         }
     }
 }
@@ -101,7 +93,7 @@ function checkBlock(node: BlockNode, findings: TemplateFinding[], context: Analy
         checkExpression(param, findings, context);
     }
     walkStatements(node.program, findings, context);
-    if (node.inverse) {
+    if (node.inverse !== undefined) {
         walkStatements(node.inverse, findings, context);
     }
 }
@@ -111,18 +103,10 @@ function checkExpression(
     findings: TemplateFinding[],
     context: AnalyzerContext,
 ): void {
-    switch (expression.type) {
-        case 'SubExpression': {
-            checkSubExpression(expression, findings, context);
-            break;
-        }
-        case 'PathExpression': {
-            checkPathReferences(expression, findings, context);
-            break;
-        }
-        default: {
-            break;
-        }
+    if (expression.type === 'SubExpression') {
+        checkSubExpression(expression, findings, context);
+    } else if (expression.type === 'PathExpression') {
+        checkPathReferences(expression, findings, context);
     }
 }
 
@@ -153,23 +137,14 @@ function checkCall(
     findings: TemplateFinding[],
     context: AnalyzerContext,
 ): void {
-    if (isRequestBodyMethodCall(path)) {
-        return;
-    }
-
-    if (path.parts.length !== 1 || path.data || path.thisRef) {
+    const [name, ...rest] = path.parts;
+    if (name === undefined || rest.length > 0 || path.data || path.thisRef) {
         checkPathReferences(path, findings, context);
-        return;
-    }
-
-    const name = path.parts[0];
-    if (name === undefined) {
         return;
     }
     const spec = HELPER_BY_NAME.get(name);
-
+    // value: a bare single-segment path with no argument is a context lookup, which renders empty.
     if (!isCall && !spec) {
-        checkPathReferences(path, findings, context);
         return;
     }
 
@@ -187,12 +162,8 @@ function checkPathReferences(
     findings: TemplateFinding[],
     context: AnalyzerContext,
 ): void {
-    if (path.data || path.thisRef || path.parts.length < 2) {
-        return;
-    }
-    const root = path.parts[0];
-    const name = path.parts[1];
-    if (name === undefined) {
+    const [root, name] = path.parts;
+    if (path.data || path.thisRef || name === undefined) {
         return;
     }
     if (root === 'Vars' && !context.variableNames.has(name)) {
@@ -200,16 +171,6 @@ function checkPathReferences(
     } else if (root === 'Literals' && !context.literalNames.has(name)) {
         findings.push({ kind: 'HF506', start: path.start, end: path.end, args: { x: name } });
     }
-}
-
-function isRequestBodyMethodCall(path: PathExpression): boolean {
-    return (
-        !path.data &&
-        !path.thisRef &&
-        path.parts.length === 2 &&
-        path.parts[0] === 'Request' &&
-        path.parts[1] === 'Body'
-    );
 }
 
 export { analyze, type AnalyzerContext };

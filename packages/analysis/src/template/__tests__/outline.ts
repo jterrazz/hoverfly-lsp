@@ -5,7 +5,8 @@ function span(node: { end: number; start: number }): string {
     return `${node.start}-${node.end}`;
 }
 
-function expression(node: Expression): string {
+/** One expression as `text@start-end`, its kind written the way the template spells it. */
+export function expression(node: Expression): string {
     switch (node.type) {
         case 'PathExpression': {
             return `${node.data ? '@' : ''}${node.thisRef ? 'this:' : ''}${node.parts.join('.')}<${node.original}>@${span(node)}`;
