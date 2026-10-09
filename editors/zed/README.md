@@ -33,7 +33,7 @@ locally-built server.
 
 > The `hoverfly-lsp` npm package is not yet published. Until it is, **step 3 will
 > fail** (npm can't find the package); use step 1 or 2 with a local build of the
-> server. See [Dev install](#dev-install).
+> server. See [Dev install](#dev-install-current-package-not-yet-published).
 
 ### Why not ship the server inside the extension (zero-setup)?
 
@@ -91,7 +91,7 @@ To claim additional names without editing the extension, add to your Zed
     > Homebrew toolchain, which has no `wasm32-wasip2` std component and fails.
     > Either `brew uninstall rust`, or ensure rustup's `~/.cargo/bin` precedes
     > Homebrew on `$PATH` so `which cargo` resolves to `~/.cargo/bin/cargo`.
-
+    >
     > **GUI launch and `$PATH`.** A Zed launched from Finder/Dock inherits the macOS
     > GUI environment, which usually does **not** include `~/.cargo/bin`, so the
     > extension build can't find `cargo`. Launch Zed from a terminal (`zed .`) where
@@ -226,7 +226,7 @@ Submit the `v0.1.0` tag; Zed's CI builds the WASM from source (Rust 1.90,
 
 ## Layout
 
-```
+```text
 editors/zed/
 ├── extension.toml                          # manifest: id, language server, json grammar (pinned)
 ├── Cargo.toml                              # cdylib crate, zed_extension_api 0.7.0

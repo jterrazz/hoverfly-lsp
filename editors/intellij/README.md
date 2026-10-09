@@ -205,7 +205,7 @@ hoverfly-lsp --version   # verify
 2. Search for **LSP4IJ**.
 3. Click **Install** and restart the IDE.
 
-Plugin page: https://plugins.jetbrains.com/plugin/23257-lsp4ij
+Plugin page: <https://plugins.jetbrains.com/plugin/23257-lsp4ij>
 
 ---
 
@@ -220,7 +220,7 @@ LSP4IJ supports importing a pre-built user-defined language server template.
 5. Proceed to Step 5.
 
 > If the **Import from template** option is absent in your LSP4IJ version, use
-> [Step 4: Manual configuration](#step-4--manual-configuration-alternative) instead.
+> [Step 4: Manual configuration](#step-4-manual-configuration-alternative-to-step-3) instead.
 
 ---
 
@@ -247,7 +247,7 @@ For a dev path (pre-publish): replace `hoverfly-lsp` with the absolute path to t
 e.g. `/Users/you/Developer/hoverfly-lsp/packages/server/bin/hoverfly-lsp.js` prefixed with
 `node`:
 
-```
+```text
 node /path/to/hoverfly-lsp/packages/server/bin/hoverfly-lsp.js --stdio
 ```
 
@@ -307,7 +307,7 @@ Trigger a diagnostic:
 
 Verify the server is running:
 
-```
+```text
 Settings → Tools → Language Servers
 ```
 
@@ -315,7 +315,7 @@ The **Hoverfly** row should show **Running** status.
 
 Check the LSP4IJ logs if the server fails to start:
 
-```
+```text
 View → Tool Windows → LSP → Console (select "Hoverfly" in the dropdown)
 ```
 

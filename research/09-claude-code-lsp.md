@@ -17,11 +17,11 @@ Claude Code (2026) implements a **declared, standardized LSP plugin system** via
 
 ## 1. `.lsp.json` Schema (Authoritative)
 
-**Source**: https://code.claude.com/docs/en/plugins-reference.md (official Anthropic docs, fetched 2026-06-11)
+**Source**: <https://code.claude.com/docs/en/plugins-reference.md> (official Anthropic docs, fetched 2026-06-11)
 
 ### File Location
 
-```
+```text
 plugin-root/
 ├── .lsp.json              ← Dedicated file at plugin root
 └── [or inline in plugin.json with "lspServers" key]
@@ -182,7 +182,7 @@ Given the constraints above, recommend the following:
 
 ### Primary Distribution (Ideal)
 
-```
+```text
 hoverfly-lsp-plugin/
 ├── .claude-plugin/
 │   └── plugin.json
@@ -221,7 +221,7 @@ hoverfly-lsp-plugin/
 
 **Pros:**
 
-- Bundled binary (`bin/hoverfly-lsp`) added to `$PATH` automatically when plugin is enabled
+- Bundled `hoverfly-lsp` binary (in the plugin's bin folder) added to `$PATH` automatically when plugin is enabled
 - Registers on `.json` extension
 - Server uses content detection to activate only on Hoverfly files (see Section 7)
 - Single installation path: `/plugin install hoverfly-lsp@<marketplace>`
@@ -243,7 +243,7 @@ Since Claude Code LSP cannot distinguish `.hoverfly.json` from `package.json`, t
 
 **Proposed canonical fingerprint** (improve on prior work):
 
-```
+```text
 Root JSON object contains:
   + "data": object
   + "meta": object
@@ -390,7 +390,7 @@ Then **rename files locally**:
 
 1. **Create plugin GitHub repo:**
 
-    ```
+    ```text
     github.com/<org>/hoverfly-lsp
     ├── .claude-plugin/plugin.json
     ├── .lsp.json
@@ -399,10 +399,11 @@ Then **rename files locally**:
     ```
 
 2. **Add to marketplace:**
-    - **Official marketplace** (`claude-plugins-official`): Submit via https://platform.claude.com/plugins/submit; Anthropic reviews and decides inclusion
+    - **Official marketplace** (`claude-plugins-official`): Submit via <https://platform.claude.com/plugins/submit>; Anthropic reviews and decides inclusion
     - **Community marketplace** (`anthropics/claude-plugins-community`): Submit via same form; automated CI approval process after passing safety/validation checks
 
 3. **Users install:**
+
     ```bash
     /plugin install hoverfly-lsp@claude-plugins-official
     # (or @claude-community if submitted there)
@@ -439,7 +440,7 @@ All three are **consistent** and define the exact schema and field semantics doc
 
 Prior report recommended deciding on a canonical fingerprint. This report proposes:
 
-```
+```text
 Root contains { data, meta } and meta.schemaVersion.startsWith("v")
 ```
 
@@ -451,7 +452,7 @@ This is **stronger than C4's previous `^v\d+$` regex** (which rejects `v5.3`) an
 
 **Final recommended structure:**
 
-```
+```text
 hoverfly-lsp/ (plugin root)
 ├── .claude-plugin/
 │   └── plugin.json                    ← Plugin metadata
@@ -510,16 +511,16 @@ claude plugin install hoverfly-lsp@<marketplace>
 
 ## References & Source Citations
 
-| Claim                                             | Source URL                                                                                               | Access date |
-| :------------------------------------------------ | :------------------------------------------------------------------------------------------------------- | :---------- |
-| `.lsp.json` schema (required/optional fields)     | https://code.claude.com/docs/en/plugins-reference.md → "LSP servers" section                             | 2026-06-11  |
-| `extensionToLanguage` single-extension limitation | https://code.claude.com/docs/en/plugins-reference.md → LSP servers table                                 | 2026-06-11  |
-| Diagnostics auto-injection behavior               | https://code.claude.com/docs/en/discover-plugins.md → "What Claude gains from code intelligence plugins" | 2026-06-11  |
-| LSP features consumed (nav, refs, hover, etc.)    | https://code.claude.com/docs/en/discover-plugins.md → "Code intelligence" section                        | 2026-06-11  |
-| LSP plugin example (Go)                           | https://code.claude.com/docs/en/plugins.md → "Add LSP servers to your plugin"                            | 2026-06-11  |
-| Plugin installation flow                          | https://code.claude.com/docs/en/discover-plugins.md → "Official Anthropic marketplace"                   | 2026-06-11  |
-| Marketplace submission (community)                | https://code.claude.com/docs/en/plugins.md → "Submit your plugin to the community marketplace"           | 2026-06-11  |
-| Official LSP plugins table                        | https://code.claude.com/docs/en/discover-plugins.md → "Code intelligence" table                          | 2026-06-11  |
+| Claim                                             | Source URL                                                                                                 | Access date |
+| :------------------------------------------------ | :--------------------------------------------------------------------------------------------------------- | :---------- |
+| `.lsp.json` schema (required/optional fields)     | <https://code.claude.com/docs/en/plugins-reference.md> → "LSP servers" section                             | 2026-06-11  |
+| `extensionToLanguage` single-extension limitation | <https://code.claude.com/docs/en/plugins-reference.md> → LSP servers table                                 | 2026-06-11  |
+| Diagnostics auto-injection behavior               | <https://code.claude.com/docs/en/discover-plugins.md> → "What Claude gains from code intelligence plugins" | 2026-06-11  |
+| LSP features consumed (nav, refs, hover, etc.)    | <https://code.claude.com/docs/en/discover-plugins.md> → "Code intelligence" section                        | 2026-06-11  |
+| LSP plugin example (Go)                           | <https://code.claude.com/docs/en/plugins.md> → "Add LSP servers to your plugin"                            | 2026-06-11  |
+| Plugin installation flow                          | <https://code.claude.com/docs/en/discover-plugins.md> → "Official Anthropic marketplace"                   | 2026-06-11  |
+| Marketplace submission (community)                | <https://code.claude.com/docs/en/plugins.md> → "Submit your plugin to the community marketplace"           | 2026-06-11  |
+| Official LSP plugins table                        | <https://code.claude.com/docs/en/discover-plugins.md> → "Code intelligence" table                          | 2026-06-11  |
 
 ---
 
@@ -555,6 +556,7 @@ Claude Code (2026) LSP plugin mechanism is **fully documented, standardized, and
             // Optional: environment vars
             "KEY": "value"
         },
+
         "initializationOptions": {}, // Optional: init-time config
         "settings": {}, // Optional: workspace settings
         "workspaceFolder": "/path", // Optional: workspace path
@@ -625,9 +627,9 @@ function isHoverfly(json: any): boolean {
 
 **This report resolves B4** by verifying against:
 
-- 🔗 https://code.claude.com/docs/en/plugins-reference.md (LSP servers section)
-- 🔗 https://code.claude.com/docs/en/plugins.md (Add LSP servers to your plugin)
-- 🔗 https://code.claude.com/docs/en/discover-plugins.md (Code intelligence section)
+- 🔗 <https://code.claude.com/docs/en/plugins-reference.md> (LSP servers section)
+- 🔗 <https://code.claude.com/docs/en/plugins.md> (Add LSP servers to your plugin)
+- 🔗 <https://code.claude.com/docs/en/discover-plugins.md> (Code intelligence section)
 
 **Result**: Schema is **officially documented, standardized, and consistent** across all three sources.
 
@@ -662,7 +664,7 @@ Before shipping hoverfly-lsp plugin:
 ### Integration Tests
 
 1. ✅ Plugin installs via `/plugin install hoverfly-lsp@<marketplace>`
-2. ✅ `bin/hoverfly-lsp` is added to `$PATH` automatically
+2. ✅ The plugin's bundled `hoverfly-lsp` binary is added to `$PATH` automatically
 3. ✅ Server starts on first `.json` file edit
 4. ✅ Diagnostics appear inline when user presses Ctrl+O
 5. ✅ Code navigation (go-to-def, find-refs) works on Hoverfly-specific symbols

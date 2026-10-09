@@ -3,18 +3,18 @@
 > Research deliverable for the **hoverfly-lsp** project. Scope: the JSON simulation
 > format only (request matchers, responses, global actions, meta, state, response
 > templating) — everything needed for diagnostics, autocomplete, and hover docs.
->
-> **Sources** (Hoverfly docs `latest` == release **v1.12.8**, schema version **v5.3**):
->
-> - Simulation schema: https://docs.hoverfly.io/en/latest/pages/reference/simulationschema.html
-> - Raw JSON Schema: https://raw.githubusercontent.com/SpectoLabs/hoverfly/master/core/handlers/v2/schema.json
-> - Request matchers: https://docs.hoverfly.io/en/latest/pages/reference/hoverfly/request_matchers.html
-> - Simulations / Pairs: https://docs.hoverfly.io/en/latest/pages/keyconcepts/simulations/simulations.html , .../pairs.html
-> - Templating: https://docs.hoverfly.io/en/latest/pages/keyconcepts/templating/templating.html
-> - State: https://docs.hoverfly.io/en/latest/pages/keyconcepts/state/state.html (+ settingstate, requiringstate, sequences)
-> - Matching: https://docs.hoverfly.io/en/latest/pages/keyconcepts/matching/matching.html
-> - REST API: https://docs.hoverfly.io/en/latest/pages/reference/api/api.html
-> - Go source (authoritative): `core/handlers/v2/schema.json`, `core/handlers/v2/simulation_views.go`
+
+**Sources** (Hoverfly docs `latest` == release **v1.12.8**, schema version **v5.3**):
+
+- Simulation schema: <https://docs.hoverfly.io/en/latest/pages/reference/simulationschema.html>
+- Raw JSON Schema: <https://raw.githubusercontent.com/SpectoLabs/hoverfly/master/core/handlers/v2/schema.json>
+- Request matchers: <https://docs.hoverfly.io/en/latest/pages/reference/hoverfly/request_matchers.html>
+- Simulations / Pairs: <https://docs.hoverfly.io/en/latest/pages/keyconcepts/simulations/simulations.html> , .../pairs.html
+- Templating: <https://docs.hoverfly.io/en/latest/pages/keyconcepts/templating/templating.html>
+- State: <https://docs.hoverfly.io/en/latest/pages/keyconcepts/state/state.html> (+ settingstate, requiringstate, sequences)
+- Matching: <https://docs.hoverfly.io/en/latest/pages/keyconcepts/matching/matching.html>
+- REST API: <https://docs.hoverfly.io/en/latest/pages/reference/api/api.html>
+- Go source (authoritative): `core/handlers/v2/schema.json`, `core/handlers/v2/simulation_views.go`
 
 ---
 
@@ -140,7 +140,7 @@ The authoritative schema (`core/handlers/v2/schema.json`) for the root:
 | `requiresState` | object: `{ <key>: <string> }`                    | no       | v5    | Gates the match on Hoverfly state. Keys must be non-empty (`patternProperties: ".{1,}"`), values are strings. See §6.                                                                                                                                                               |
 
 > **Important semantics:** Each request field is an **array of matchers**, ALL of which must pass for that field to match. If a field is **absent**, it is simply not evaluated (it does not block matching). An incoming request matches a pair only if **every** matcher present passes; otherwise the pair is "unmatched". See §7 (scoring).
-
+>
 > **`query` / `headers` shape:** these are objects keyed by the param/header name; each value is an array of field-matchers. Example:
 >
 > ```json
@@ -164,6 +164,7 @@ The authoritative schema (`core/handlers/v2/schema.json`) for the root:
         "ignoreOccurrences": { "type": "boolean" }
       }
     },
+
     "doMatch": { "$ref": "#/definitions/field-matchers" }   // recursive — matcher chaining
   }
 }
@@ -293,6 +294,7 @@ JWT + chaining inside a header matcher:
     "headers":      { "$ref": "#/definitions/headers" },
     "templated":    { "type": "boolean" },
     "fixedDelay":   { "type": "integer" },
+
     "logNormalDelay": {
       "properties": {
         "min":    { "type": "integer" },
@@ -303,6 +305,7 @@ JWT + chaining inside a header matcher:
     },
     "postServeAction":  { "type": "string" },
     "removesState":     { "type": "array" },
+
     "transitionsState": {
       "type": "object",
       "patternProperties": { ".{1,}": { "type": "string" } }
@@ -417,6 +420,7 @@ Sequences let identical requests return _different_ responses in order. Conventi
             },
             {
                 "request": { "requiresState": { "sequence:1": "2" } },
+
                 "response": { "status": 200, "body": "Second response" }
             }
         ]
@@ -525,7 +529,7 @@ Empty arrays are common in exports:
 
 ## 10. Response templating (for template-aware body validation/completion)
 
-- **Engine**: Handlebars.js semantics via the Go `raymond` library (https://github.com/aymerick/raymond). Supports `{{#if}}…{{/if}}`, `{{#unless}}`, `{{#each array}}…{{/each}}`, `{{#equal}}…{{/equal}}`, `{{this}}`, `@index`, `@last`.
+- **Engine**: Handlebars.js semantics via the Go `raymond` library (<https://github.com/aymerick/raymond>). Supports `{{#if}}…{{/if}}`, `{{#unless}}`, `{{#each array}}…{{/each}}`, `{{#equal}}…{{/equal}}`, `{{this}}`, `@index`, `@last`.
 - **Enable** by setting `"templated": true` on the response. When `false`/absent, `{{ }}` is emitted literally.
 - **Syntax**: everything inside `{{ … }}`. Helpers take space-separated positional args; string literals use single quotes (e.g. `'jsonpath'`).
 
@@ -678,6 +682,7 @@ The loader validates ALL v5.x against ONE schema, so versions are documentation/
                     "headers": {},
                     "query": {}
                 },
+
                 "response": {
                     "status": 200,
                     "body": "<h1>Matched on recording</h1>",
@@ -689,6 +694,7 @@ The loader validates ALL v5.x against ONE schema, so versions are documentation/
         ],
         "globalActions": { "delays": [], "delaysLogNormal": [] }
     },
+
     "meta": {
         "schemaVersion": "v5",
         "hoverflyVersion": "v1.0.0",
@@ -712,6 +718,6 @@ The loader validates ALL v5.x against ONE schema, so versions are documentation/
 9. **Version hints**: optional info diagnostic when a field postdates declared `schemaVersion` (§11) — never a hard error.
 10. **Hover docs**: every field/matcher/helper here has a one-line description suitable for hover content.
 
-```
+```text
 
 ```

@@ -135,7 +135,7 @@ verbatim `schema.json` reproduced in both 02 §2 and 05 §4.1.
 
 ## 2. Blocking gaps (must be filled before implementation)
 
-### B1 — Per-matcher `value`-type rules are described prose-only, not specified as a validation table the team can code directly.
+### B1 — Per-matcher `value`-type rules are described prose-only, not specified as a validation table the team can code directly
 
 Both 01 §4 and 02 §3.3 describe value types narratively (e.g. "json: string containing JSON",
 "array: string semicolon-split OR string[]"), but there is **no single normative table mapping
@@ -146,7 +146,7 @@ decided spec: for each matcher, is the value `string` / `valid-JSON-string` / `s
 `object`, and is a wrong type an error or warning. Resolve `array` per 02 (accept both string and
 array) and write the table.
 
-### B2 — Template-string sub-language: parse depth is undecided and under-specified for validation.
+### B2 — Template-string sub-language: parse depth is undecided and under-specified for validation
 
 03 §5/§8 and 05 §6.2/§8.3 both recommend a template-aware pass, but the two reports **disagree on
 rigor**: 05 §8.3 explicitly says "a regex-based tokenizer scanning for `{{[^}]+}}` is sufficient",
@@ -158,7 +158,7 @@ rule 6 promises "Request.Body called without required arguments" diagnostics. De
 real Handlebars/raymond-compatible parser, and produce the arity/signature table, before building
 `template-refs.ts`. This is the single largest hidden-scope risk in the project.
 
-### B3 — `faker` type enumeration is non-authoritative.
+### B3 — `faker` type enumeration is non-authoritative
 
 01 §10.4 lists ~30 faker type names but explicitly flags them as "verify against the linked go-fakeit
 version before shipping as authoritative"; 05 gives only examples. No report pinned the gofakeit
@@ -167,7 +167,7 @@ version Hoverfly vendors or extracted the real accepted `faker` argument set. If
 faker types, OR pin gofakeit version and extract the list. Until decided, faker validation is
 unspecified.
 
-### B4 — Claude Code `.lsp.json` mechanism is asserted without a verifiable citation.
+### B4 — Claude Code `.lsp.json` mechanism is asserted without a verifiable citation
 
 04 §4 describes a "native `.lsp.json` plugin system" with a specific field schema
 (`extensionToLanguage`, `diagnostics`, `maxRestarts`, etc.) and even an `claude plugin install`
@@ -179,7 +179,7 @@ content detection (which then collides with C4's broken `^v\d+$` regex). **Verif
 `.lsp.json` schema and field names against live Claude Code docs before coding the plugin**; treat
 04 §4.2's field table as unverified.
 
-### B5 — Server-side content-detection heuristic is inconsistent across reports and partly wrong.
+### B5 — Server-side content-detection heuristic is inconsistent across reports and partly wrong
 
 - 04 §5.4 requires `data.pairs` to be an **array** AND `meta.schemaVersion` to match `/^v\d+$/`.
 - 05 §8.5 requires only root `data` + `meta` present and `schemaVersion` startsWith `"v"`.
@@ -191,7 +191,7 @@ content detection (which then collides with C4's broken `^v\d+$` regex). **Verif
   do NOT use `^v\d+$`). This must be settled because three editors (Claude Code, and the fallback paths
   for Zed/IntelliJ) depend on it.
 
-### B6 — Diagnostic severity policy is undecided (error vs warning vs info per rule).
+### B6 — Diagnostic severity policy is undecided (error vs warning vs info per rule)
 
 The reports propose many semantic rules (unknown matcher, wrong value type, config-on-non-array,
 form-misuse, state cross-refs, version-postdates-field, bodyFile-not-found, Content-Length checks)

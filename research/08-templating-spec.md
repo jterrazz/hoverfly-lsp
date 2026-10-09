@@ -69,6 +69,7 @@ helperMethodMap["randomUuid"] = t.randomUuid
 helperMethodMap["replace"] = t.replace
 helperMethodMap["split"] = t.split
 helperMethodMap["concat"] = t.concat
+
 helperMethodMap["length"] = t.length
 helperMethodMap["substring"] = t.substring
 helperMethodMap["rightmostCharacters"] = t.rightmostCharacters
@@ -84,6 +85,7 @@ helperMethodMap["matchesRegex"] = t.matchesRegex
 helperMethodMap["faker"] = t.faker
 helperMethodMap["requestBody"] = t.requestBody
 helperMethodMap["csv"] = t.fetchSingleFieldCsv
+
 helperMethodMap["csvMatchingRows"] = t.fetchMatchingRowsCsv
 helperMethodMap["csvAsArray"] = t.csvAsArray
 helperMethodMap["csvAsMap"] = t.csvAsMap
@@ -99,6 +101,7 @@ helperMethodMap["sum"] = t.sum
 helperMethodMap["add"] = t.add
 helperMethodMap["subtract"] = t.subtract
 helperMethodMap["multiply"] = t.multiply
+
 helperMethodMap["divide"] = t.divide
 helperMethodMap["initArray"] = t.initArray
 helperMethodMap["addToArray"] = t.addToArray
@@ -163,7 +166,7 @@ read). Notes:
 | `requestBody`          | `(queryType, query string)` (+auto options)                                              | 2 string                   | interface{}            | inline                      | `{{requestBody 'jsonpath' '$.x'}}`                                               |
 | `csv`                  | `(dataSourceName, searchFieldName, searchFieldValue, returnFieldName string)` (+options) | 4 string                   | string                 | inline                      | `{{csv 'pets' 'id' '1' 'name'}}`                                                 |
 | `csvMatchingRows`      | `(dataSourceName, searchFieldName, searchFieldValue string)`                             | 3 string                   | []RowMap               | inline (iterate w/ `#each`) | `{{#each (csvMatchingRows 'pets' 'category' 'dogs')}}…{{/each}}`                 |
-| `csvAsArray`           | `(dataSourceName string)`                                                                | 1 string                   | [][]string             | inline (`#each`)            | `{{#each (csvAsArray 'pets')}}…{{/each}}`                                        |
+| `csvAsArray`           | `(dataSourceName string)`                                                                | 1 string                   | `[][]string`           | inline (`#each`)            | `{{#each (csvAsArray 'pets')}}…{{/each}}`                                        |
 | `csvAsMap`             | `(dataSourceName string)`                                                                | 1 string                   | []RowMap               | inline (`#each`)            | `{{#each (csvAsMap 'pets')}}{{this.name}}{{/each}}`                              |
 | `csvAddRow`            | `(dataSourceName string, newRow []string)`                                               | 2 (string, []string)       | ""                     | inline (side effect)        | `{{csvAddRow 'pets' (split 'a,b' ',')}}`                                         |
 | `csvDeleteRows`        | `(dataSourceName, searchFieldName, searchFieldValue string, output bool)`                | 4 (3 string + bool)        | string/""              | inline                      | `{{csvDeleteRows 'pets' 'category' 'cats' true}}`                                |
@@ -190,6 +193,7 @@ read). Notes:
 - **`now` formats** (verbatim from `nowHelper`): `""` → RFC3339 UTC (`2006-01-02T15:04:05Z07:00`);
   `"unix"` → `now.Unix()` (seconds); `"epoch"` → `now.UnixNano()/1000000` (**milliseconds**, despite
   the name); anything else → treated as a Go time layout `now.UTC().Format(format)`.
+
     ```go
     if format == "" {
         formatted = now.UTC().Format(defaultDateTimeFormat)
@@ -201,6 +205,7 @@ read). Notes:
         formatted = now.UTC().Format(format)
     }
     ```
+
 - **`concat` is variadic** and flattens any `[]interface{}` argument (so it concatenates arrays).
 - **`faker` returns `[]reflect.Value`** and is the only helper whose output type is fully dynamic.
 - **`setStatusCode` / `setHeader`** mutate `options.InternalVars` (consumed in `RenderTemplate` to
@@ -331,7 +336,7 @@ Key facts:
 Derived by enumerating `func (f *Faker) X() …` zero-arg exported methods across the v6.28.0 source
 (`grep -roE 'func \(f \*Faker\) [A-Z][A-Za-z0-9]*\(\)'`). **210 names** (feed directly to autocomplete):
 
-```
+```text
 AchAccount, AchRouting, Address, Animal, AnimalType, AppAuthor, AppName, AppVersion,
 BeerAlcohol, BeerBlg, BeerHop, BeerIbu, BeerMalt, BeerName, BeerStyle, BeerYeast, Bird,
 BitcoinAddress, BitcoinPrivateKey, Blurb, Book, BookAuthor, BookGenre, BookTitle, Bool,
@@ -347,6 +352,7 @@ HackerAbbreviation, HackerAdjective, HackeringVerb, HackerNoun, HackerPhrase, Ha
 HexColor, HexUint128, HexUint16, HexUint256, HexUint32, HexUint64, HexUint8, Hobby, Hour,
 HTTPMethod, HTTPStatusCode, HTTPStatusCodeSimple, HTTPVersion, InputName, Int16, Int32, Int64,
 Int8, IPv4Address, IPv6Address, Isin, Job, JobDescriptor, JobLevel, JobTitle, Language,
+
 LanguageAbbreviation, LanguageBCP, LastName, Latitude, Letter, Longitude, LoremIpsumWord, Lunch,
 MacAddress, Map, MiddleName, MinecraftAnimal, MinecraftArmorPart, MinecraftArmorTier,
 MinecraftBiome, MinecraftDye, MinecraftFood, MinecraftMobBoss, MinecraftMobHostile,
@@ -449,6 +455,7 @@ current item as **`this`** (and `this.<field>` for maps/structs/RowMap). Confirm
 Real-world templates (verbatim from `docs/pages/keyconcepts/templating/`) prove the LSP must handle:
 
 - **Block helpers with bodies and `{{else}}`:**
+
     ```handlebars
     {{#equal (csvDeleteRows 'pets' 'category' 'cats' true) '0'}}
         {{setStatusCode '404'}}
@@ -458,26 +465,35 @@ Real-world templates (verbatim from `docs/pages/keyconcepts/templating/`) prove 
         {"Message":"All cats deleted"}
     {{/equal}}
     ```
+
 - **`#each` over data-source results with `this` / `this.field` / `@last`:**
+
     ```handlebars
     {{#each (csvAsMap 'pets')}}
         { "id":{{this.id}}, "name":"{{this.name}}" }{{#unless @last}},{{/unless}}
     {{/each}}
     ```
+
 - **Nested `#each` with bare `this`:**
+
     ```handlebars
     {{#each (csvAsArray 'pets')}}{{#each this}}{{this}} {{/each}}{{/each}}
     ```
+
 - **Subexpressions (parenthesised helper calls as arguments), arbitrarily nested:**
+
     ```handlebars
     {{addToArray 'subtotal' (multiply (this.price) (this.quantity) '') false}}
     total:
     {{sum (getArray 'subtotal') '0.00'}}
     ```
+
 - **The `Request.Body` method-call form inside `#each`:**
+
     ```handlebars
     {{#each (Request.Body 'jsonpath' '$.lineitems.lineitem')}} … {{/each}}
     ```
+
 - **Dotted path expressions / indexed access:** `{{Request.QueryParam.foo}}`,
   `{{Request.QueryParam.foo.[1]}}`, `{{Request.Header.Authorization.[0]}}`,
   `{{Request.Path.[2]}}`, `{{State.someKey}}`, `{{Literals.x}}`, `{{Vars.x}}` (the `TemplatingData`
@@ -588,6 +604,7 @@ func FetchFromRequestBody(queryType, query, toMatch string) interface{} {
 		return jsonPath(query, jsonBytes.String())
 	}
 	log.Errorf("Unknown query type \"%s\" for templating Request.Body", queryType)
+
 	return ""
 }
 ```

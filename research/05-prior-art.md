@@ -55,7 +55,7 @@ There is **no `hoverctl simulation validate` subcommand** that validates without
 
 The code uses [gojsonschema](https://github.com/xeipuuv/gojsonschema) to validate the parsed JSON map against the embedded schema. The flow is:
 
-```
+```text
 1. json.Unmarshal → if fail → "Invalid JSON"
 2. check jsonMap["meta"] == nil → "Invalid JSON, missing \"meta\" object"
 3. check meta["schemaVersion"] == nil → "Invalid JSON, missing \"meta.schemaVersion\" string"
@@ -101,7 +101,7 @@ The warning struct also carries a `DocsLink` field (JSON: `"documentation"`) for
 
 For field-level schema violations, Hoverfly produces:
 
-```
+```text
 [Error for <json-path>: <description>; Error for <json-path2>: <description2>]
 ```
 
@@ -117,7 +117,7 @@ The **single target format** is the Hoverfly simulation JSON file. Key identifie
 
 The official JSON schema lives at:
 
-```
+```text
 https://raw.githubusercontent.com/SpectoLabs/hoverfly/master/core/handlers/v2/schema.json
 ```
 
@@ -168,6 +168,7 @@ Hoverfly Cloud is a SaaS built on top of open-source Hoverfly. It uses the same 
     "description": "Hoverfly simulation schema",
     "required": ["data", "meta"],
     "type": "object",
+
     "properties": {
         "data": {
             "type": "object",
@@ -183,6 +184,7 @@ Hoverfly Cloud is a SaaS built on top of open-source Hoverfly. It uses the same 
                     }
                 },
                 "literals": { "type": "array", "items": { "$ref": "#/definitions/literals" } },
+
                 "pairs": {
                     "type": "array",
                     "items": { "$ref": "#/definitions/request-response-pair" }
@@ -192,6 +194,7 @@ Hoverfly Cloud is a SaaS built on top of open-source Hoverfly. It uses the same 
         },
         "meta": { "$ref": "#/definitions/meta" }
     },
+
     "definitions": {
         "delay": {
             "type": "object",
@@ -201,6 +204,7 @@ Hoverfly Cloud is a SaaS built on top of open-source Hoverfly. It uses the same 
                 "urlPattern": { "type": "string" }
             }
         },
+
         "delay-log-normal": {
             "type": "object",
             "properties": {
@@ -212,6 +216,7 @@ Hoverfly Cloud is a SaaS built on top of open-source Hoverfly. It uses the same 
                 "urlPattern": { "type": "string" }
             }
         },
+
         "field-matchers": {
             "type": "object",
             "properties": {
@@ -225,6 +230,7 @@ Hoverfly Cloud is a SaaS built on top of open-source Hoverfly. It uses the same 
                         "ignoreOccurrences": { "type": "boolean" }
                     }
                 },
+
                 "doMatch": { "$ref": "#/definitions/field-matchers" }
             }
         },
@@ -240,6 +246,7 @@ Hoverfly Cloud is a SaaS built on top of open-source Hoverfly. It uses the same 
                 "value": {}
             }
         },
+
         "meta": {
             "type": "object",
             "required": ["schemaVersion"],
@@ -249,6 +256,7 @@ Hoverfly Cloud is a SaaS built on top of open-source Hoverfly. It uses the same 
                 "timeExported": { "type": "string" }
             }
         },
+
         "request": {
             "type": "object",
             "properties": {
@@ -264,6 +272,7 @@ Hoverfly Cloud is a SaaS built on top of open-source Hoverfly. It uses the same 
                     "type": "object",
                     "patternProperties": { ".{1,}": { "type": "string" } }
                 },
+
                 "scheme": { "type": "array", "items": { "$ref": "#/definitions/field-matchers" } }
             }
         },
@@ -274,6 +283,7 @@ Hoverfly Cloud is a SaaS built on top of open-source Hoverfly. It uses the same 
                 "items": { "$ref": "#/definitions/field-matchers" }
             }
         },
+
         "request-queries": {
             "type": "object",
             "additionalProperties": {
@@ -281,6 +291,7 @@ Hoverfly Cloud is a SaaS built on top of open-source Hoverfly. It uses the same 
                 "items": { "$ref": "#/definitions/field-matchers" }
             }
         },
+
         "request-response-pair": {
             "type": "object",
             "required": ["request", "response"],
@@ -290,6 +301,7 @@ Hoverfly Cloud is a SaaS built on top of open-source Hoverfly. It uses the same 
                 "response": { "$ref": "#/definitions/response" }
             }
         },
+
         "response": {
             "type": "object",
             "properties": {
@@ -303,6 +315,7 @@ Hoverfly Cloud is a SaaS built on top of open-source Hoverfly. It uses the same 
                         "max": { "type": "integer" },
                         "mean": { "type": "integer" },
                         "median": { "type": "integer" },
+
                         "min": { "type": "integer" }
                     }
                 },
@@ -316,6 +329,7 @@ Hoverfly Cloud is a SaaS built on top of open-source Hoverfly. It uses the same 
                 }
             }
         },
+
         "variables": {
             "type": "object",
             "required": ["name", "function"],
@@ -375,7 +389,7 @@ All template expressions use `{{ }}` delimiters (double-mustache). Block helpers
 
 ### 5.2 Request Variables (`Request.*`)
 
-```
+```text
 {{ Request.Scheme }}                        — "http" or "https"
 {{ Request.Method }}                        — GET, POST, etc.
 {{ Request.Host }}                          — hostname
@@ -396,7 +410,7 @@ All template expressions use `{{ }}` delimiters (double-mustache). Block helpers
 
 **Random data:**
 
-```
+```text
 {{ randomString }}
 {{ randomStringLength N }}
 {{ randomBoolean }}
@@ -412,7 +426,7 @@ All template expressions use `{{ }}` delimiters (double-mustache). Block helpers
 
 **Date/time:**
 
-```
+```text
 {{ now 'OFFSET' 'FORMAT' }}
 ```
 
@@ -421,13 +435,13 @@ All template expressions use `{{ }}` delimiters (double-mustache). Block helpers
 
 **Faker:**
 
-```
+```text
 {{ faker 'TYPE' }}  — e.g., 'Name', 'Email', 'PhoneNumber'
 ```
 
 **Math:**
 
-```
+```text
 {{ add NUM1 NUM2 'PRECISION' }}
 {{ subtract NUM1 NUM2 'PRECISION' }}
 {{ multiply NUM1 NUM2 'PRECISION' }}
@@ -437,7 +451,7 @@ All template expressions use `{{ }}` delimiters (double-mustache). Block helpers
 
 **Validation helpers:**
 
-```
+```text
 {{ isNumeric VALUE }}
 {{ isAlphanumeric VALUE }}
 {{ isBool VALUE }}
@@ -449,20 +463,20 @@ All template expressions use `{{ }}` delimiters (double-mustache). Block helpers
 
 **Response control:**
 
-```
+```text
 {{ setStatusCode CODE }}
 {{ setHeader "NAME" "VALUE" }}
 ```
 
 **JWT:**
 
-```
+```text
 {{ jsonFromJWT '$.CLAIM' HEADER }}
 ```
 
 **CSV data source:**
 
-```
+```text
 {{ csv 'SOURCE' 'COLUMN' 'VALUE' 'RETURN_COL' }}
 {{ csvAsMap 'SOURCE' }}
 {{ csvMatchingRows 'SOURCE' 'COL' 'VAL' }}
@@ -475,14 +489,14 @@ All template expressions use `{{ }}` delimiters (double-mustache). Block helpers
 
 **Journal (replay/audit log):**
 
-```
+```text
 {{ journal "INDEX" "KEY" "request|response" "jsonpath|xpath" "QUERY" }}
 {{ hasJournalKey "INDEX" "KEY" }}
 ```
 
 **Key-value store (per-request-session):**
 
-```
+```text
 {{ putValue 'KEY' VALUE BOOLEAN }}
 {{ getValue 'KEY' }}
 {{ addToArray 'ARRAY' VALUE BOOLEAN }}
@@ -492,7 +506,7 @@ All template expressions use `{{ }}` delimiters (double-mustache). Block helpers
 
 **Block helpers (Handlebars control flow):**
 
-```
+```text
 {{#if CONDITION}}…{{/if}}
 {{#unless CONDITION}}…{{/unless}}
 {{#each ARRAY}}…{{ this }}…{{/each}}
@@ -513,7 +527,7 @@ Templates are **only processed when `response.templated = true`**. The LSP shoul
 
 ### 6.1 `microsoft/vscode-json-languageservice` (TypeScript, MIT)
 
-**Repository**: https://github.com/microsoft/vscode-json-languageservice  
+**Repository**: <https://github.com/microsoft/vscode-json-languageservice>  
 **npm**: `vscode-json-languageservice`  
 **Role**: The foundational building block used by VS Code's built-in JSON support and by virtually every other JSON-based language service.
 
@@ -530,7 +544,7 @@ Templates are **only processed when `response.templated = true`**. The LSP shoul
 
 ### 6.2 `aws/amazon-states-language-service` (TypeScript, Apache-2.0)
 
-**Repository**: https://github.com/aws/amazon-states-language-service  
+**Repository**: <https://github.com/aws/amazon-states-language-service>  
 **Role**: LSP for Amazon States Language (ASL), the JSON dialect used by AWS Step Functions.  
 **Last release**: v1.7.0, May 2026.
 
@@ -558,7 +572,7 @@ This is the pattern hoverfly-lsp should follow for `response.body` when `templat
 
 ### 6.3 `aws-cloudformation/cloudformation-languageserver` (TypeScript, Apache-2.0)
 
-**Repository**: https://github.com/aws-cloudformation/cloudformation-languageserver  
+**Repository**: <https://github.com/aws-cloudformation/cloudformation-languageserver>  
 **Last release**: v1.7.0, May 2026 (actively maintained)  
 **Language**: TypeScript (96.9%)
 
@@ -580,7 +594,7 @@ The CloudFormation LSP parses `Fn::Sub` string values using a custom tokenizer t
 
 ### 6.4 `redhat-developer/yaml-language-server` (TypeScript, MIT)
 
-**Repository**: https://github.com/redhat-developer/yaml-language-server  
+**Repository**: <https://github.com/redhat-developer/yaml-language-server>  
 **npm**: `yaml-language-server`  
 **1489+ commits, actively maintained**
 
@@ -595,14 +609,14 @@ The CloudFormation LSP parses `Fn::Sub` string values using a custom tokenizer t
 
 ### 6.5 `Redocly/redocly-vs-code` (OpenAPI)
 
-**Repository**: https://github.com/Redocly/redocly-vs-code  
+**Repository**: <https://github.com/Redocly/redocly-vs-code>  
 **Feature set**: validation, `$ref` completion (context-aware: `$ref` inside `requestBody` only offers `components.requestBodies`), multi-file ref resolution, go-to-definition for `$ref`, inline preview, documentation preview
 
 **Relevant pattern for hoverfly-lsp**: The "context-aware completion inside string value" approach — knowing that a specific string field (`$ref`) has constrained semantics — is exactly the pattern needed for Hoverfly's `matcher` field (only valid matcher type strings) and `response.body` (only valid template syntax when `templated=true`).
 
 ### 6.6 `well-ar.vscode-wiremock` (WireMock — closest competitor in domain)
 
-**VS Code Marketplace**: https://marketplace.visualstudio.com/items?itemName=well-ar.vscode-wiremock  
+**VS Code Marketplace**: <https://marketplace.visualstudio.com/items?itemName=well-ar.vscode-wiremock>  
 **Features**: Start WireMock server, create stubs, auto-reload on file change, **JSON Schema validation**
 
 WireMock is Hoverfly's primary competitor in the API mocking space. Its VS Code extension ships JSON schema validation as its primary IDE feature. This confirms market demand and sets the baseline: users of API mocking tools expect at minimum schema-validated JSON in their editor.
@@ -653,7 +667,7 @@ Based on this prior-art survey, the following architectural decisions are recomm
 
 ### 8.2 Schema Registration
 
-- **Submit the Hoverfly schema to SchemaStore** (https://github.com/SchemaStore/schemastore) as a separate contribution. File glob patterns: `*.hoverfly.json`, `hoverfly.json`, `simulation.json` (with `meta.schemaVersion` trigger). This gives free schema validation to all VS Code users with zero LSP install required, and complements the LSP for users who don't install it.
+- **Submit the Hoverfly schema to SchemaStore** (<https://github.com/SchemaStore/schemastore>) as a separate contribution. File glob patterns: `*.hoverfly.json`, `hoverfly.json`, `simulation.json` (with `meta.schemaVersion` trigger). This gives free schema validation to all VS Code users with zero LSP install required, and complements the LSP for users who don't install it.
 - Add `"$schema": "http://json-schema.org/draft-04/schema#"` to the submitted schema (the official schema lacks this).
 
 ### 8.3 Template-in-String Implementation
@@ -692,22 +706,22 @@ No file extension is enforced. The LSP should activate on `.json` files where th
 
 ## Sources
 
-- Hoverfly GitHub: https://github.com/SpectoLabs/hoverfly
-- Hoverfly simulation schema (raw): https://raw.githubusercontent.com/SpectoLabs/hoverfly/master/core/handlers/v2/schema.json
-- Hoverfly simulation schema docs: https://docs.hoverfly.io/en/latest/pages/reference/simulationschema.html
-- Hoverfly templating docs: https://docs.hoverfly.io/en/latest/pages/keyconcepts/templating/templating.html
-- Hoverfly request matchers docs: https://docs.hoverfly.io/en/latest/pages/reference/hoverfly/request_matchers.html
-- Hoverfly simulation views source: https://github.com/SpectoLabs/hoverfly/blob/master/core/handlers/v2/simulation_views.go
-- GitHub issue #446 (JSON Schema request): https://github.com/SpectoLabs/hoverfly/issues/446
-- SchemaStore catalog: https://github.com/SchemaStore/schemastore/blob/master/src/api/json/catalog.json
-- microsoft/vscode-json-languageservice: https://github.com/microsoft/vscode-json-languageservice
-- aws/amazon-states-language-service: https://github.com/aws/amazon-states-language-service
-- aws-cloudformation/cloudformation-languageserver: https://github.com/aws-cloudformation/cloudformation-languageserver
-- redhat-developer/yaml-language-server: https://github.com/redhat-developer/yaml-language-server
-- Redocly VS Code extension: https://github.com/Redocly/redocly-vs-code
-- WireMock VS Code extension: https://marketplace.visualstudio.com/items?itemName=well-ar.vscode-wiremock
-- armsnyder/openapi-language-server (Go): https://github.com/armsnyder/openapi-language-server
-- vacuum OpenAPI LSP: https://quobix.com/vacuum/commands/language-server/
-- Hoverfly-java DSL docs: https://docs.hoverfly.io/projects/hoverfly-java/en/latest/pages/corefunctionality/dsl.html
-- Hoverfly postServeAction docs: https://docs.hoverfly.io/en/latest/pages/keyconcepts/postserveaction.html
-- ASL intrinsic function false-positive issue: https://github.com/aws/aws-toolkit-vscode/issues/3049
+- Hoverfly GitHub: <https://github.com/SpectoLabs/hoverfly>
+- Hoverfly simulation schema (raw): <https://raw.githubusercontent.com/SpectoLabs/hoverfly/master/core/handlers/v2/schema.json>
+- Hoverfly simulation schema docs: <https://docs.hoverfly.io/en/latest/pages/reference/simulationschema.html>
+- Hoverfly templating docs: <https://docs.hoverfly.io/en/latest/pages/keyconcepts/templating/templating.html>
+- Hoverfly request matchers docs: <https://docs.hoverfly.io/en/latest/pages/reference/hoverfly/request_matchers.html>
+- Hoverfly simulation views source: <https://github.com/SpectoLabs/hoverfly/blob/master/core/handlers/v2/simulation_views.go>
+- GitHub issue #446 (JSON Schema request): <https://github.com/SpectoLabs/hoverfly/issues/446>
+- SchemaStore catalog: <https://github.com/SchemaStore/schemastore/blob/master/src/api/json/catalog.json>
+- microsoft/vscode-json-languageservice: <https://github.com/microsoft/vscode-json-languageservice>
+- aws/amazon-states-language-service: <https://github.com/aws/amazon-states-language-service>
+- aws-cloudformation/cloudformation-languageserver: <https://github.com/aws-cloudformation/cloudformation-languageserver>
+- redhat-developer/yaml-language-server: <https://github.com/redhat-developer/yaml-language-server>
+- Redocly VS Code extension: <https://github.com/Redocly/redocly-vs-code>
+- WireMock VS Code extension: <https://marketplace.visualstudio.com/items?itemName=well-ar.vscode-wiremock>
+- armsnyder/openapi-language-server (Go): <https://github.com/armsnyder/openapi-language-server>
+- vacuum OpenAPI LSP: <https://quobix.com/vacuum/commands/language-server/>
+- Hoverfly-java DSL docs: <https://docs.hoverfly.io/projects/hoverfly-java/en/latest/pages/corefunctionality/dsl.html>
+- Hoverfly postServeAction docs: <https://docs.hoverfly.io/en/latest/pages/keyconcepts/postserveaction.html>
+- ASL intrinsic function false-positive issue: <https://github.com/aws/aws-toolkit-vscode/issues/3049>

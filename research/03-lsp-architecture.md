@@ -119,6 +119,7 @@ export interface LanguageService {
     newJSONDocument(
         rootNode: ASTNode | undefined,
         syntaxDiagnostics?: Diagnostic[],
+
         comments?: Range[],
     ): JSONDocument;
     resetSchema(uri: string): boolean;
@@ -134,6 +135,7 @@ export interface LanguageService {
         position: Position,
         doc: JSONDocument,
     ): PromiseLike<CompletionList | null>;
+
     findDocumentSymbols(
         document: TextDocument,
         doc: JSONDocument,
@@ -146,6 +148,7 @@ export interface LanguageService {
     ): DocumentSymbol[];
     findDocumentColors(document, doc, context?): PromiseLike<ColorInformation[]>;
     getColorPresentations(document, doc, color, range): ColorPresentation[];
+
     doHover(
         document: TextDocument,
         position: Position,
@@ -160,6 +163,7 @@ export interface LanguageService {
         range: Range | undefined,
         options: FormattingOptions,
     ): TextEdit[];
+
     sort(document: TextDocument, options: SortOptions): TextEdit[];
 }
 ```
@@ -221,6 +225,7 @@ export interface JSONWorkerContribution {
         isLast: boolean,
         result: CompletionsCollector,
     ): PromiseLike<any>;
+
     collectValueCompletions(
         uri: string,
         location: JSONPath,
@@ -385,7 +390,7 @@ a clearer diagnostic, optionally suppressing the schema's union noise via `docum
 A **pnpm/npm workspaces monorepo**. The non-negotiable rule: `packages/analysis` has **zero LSP/transport
 dependencies** (only `vscode-json-languageservice` + `vscode-languageserver-types` for return data types).
 
-```
+```text
 hoverfly-lsp/
 ├─ package.json                      # workspaces root, private:true
 ├─ pnpm-workspace.yaml               # (or "workspaces" field) packages/*, editors/vscode
@@ -401,6 +406,7 @@ hoverfly-lsp/
 │  │  │  ├─ schema/
 │  │  │  │  ├─ hoverfly.schema.ts    # the inlined JSON Schema (draft-07) as a TS const
 │  │  │  │  └─ hoverfly.schema.json  # canonical artifact (also published for external use)
+
 │  │  │  ├─ semantic/                # <-- "type checking" beyond schema
 │  │  │  │  ├─ index.ts              # SemanticValidator[] registry
 │  │  │  │  ├─ matcher-kinds.ts      # matcher type must be one of the known kinds
@@ -415,6 +421,7 @@ hoverfly-lsp/
 │  │  │  │  └─ nav.ts                # ASTNode helpers: findNodeAtPath, rangeOf(node), jsonPathOf(node)
 │  │  │  └─ docs/
 │  │  │     └─ field-docs.ts         # hover markdown per JSONPath (matcher kinds, response fields...)
+
 │  │  └─ test/
 │  │     └─ ...                      # see §6
 │  └─ server/                        # @hoverfly-lsp/server — THIN LSP WRAPPER (the npm bin)
@@ -429,6 +436,7 @@ hoverfly-lsp/
 │     │  └─ capabilities.ts          # InitializeResult capability object
 │     └─ test/
 │        └─ integration/             # full stdio round-trip tests (see §6.4)
+
 ├─ editors/
 │  ├─ vscode/                        # the .vsix; client only
 │  │  ├─ package.json                # contributes.languages + activationEvents; bundles server
@@ -444,6 +452,7 @@ hoverfly-lsp/
 ├─ testdata/                         # SHARED CORPUS (see §6.1) — consumed by core tests
 │  ├─ valid/
 │  ├─ invalid/
+
 │  ├─ completion/
 │  └─ hover/
 └─ scripts/                          # release, schema-export, bundle
@@ -464,7 +473,7 @@ Recommended runner: **Vitest** (ESM-native, snapshot support, fast watch). yaml-
 mocha+chai+sinon+nyc; for a greenfield ESM TS project Vitest is the cleaner choice (built-in `toMatchSnapshot`,
 no ts-node/register dance).
 
-```
+```text
                   ▲  few   editors/* manual + 1 smoke   (VS Code @vscode/test-electron, optional)
                  ╱ ╲
                 ╱   ╲  some  packages/server integration over real stdio (JSON-RPC round trips)
@@ -475,7 +484,7 @@ no ts-node/register dance).
 
 ### 6.1 Corpus / fixture layout (`testdata/`)
 
-```
+```text
 testdata/
 ├─ valid/                            # must produce ZERO diagnostics
 │  ├─ minimal.json
@@ -490,6 +499,7 @@ testdata/
 │  ├─ missing-meta-schemaversion.json
 │  └─ missing-meta-schemaversion.golden
 ├─ completion/                       # cursor-marker files (see §6.3)
+
 │  ├─ matcher-kind.json              # contains the |  cursor marker
 │  ├─ matcher-kind.expected          # expected completion labels (ordered or as a set)
 │  └─ response-status.json
@@ -548,6 +558,7 @@ test('completes matcher kinds', async () => {
     const doc = TextDocument.create('file://t.json', 'json', 1, text);
     const list = await svc.complete(doc, pos);
     const labels = list!.items.map((i) => i.label).sort();
+
     expect(labels).toEqual([
         'exact',
         'form',
@@ -567,7 +578,7 @@ verified at the analysis layer, not over the wire.**
 
 ### 6.4 Full server integration tests (server, over stdio)
 
-A handful only: spawn the built `bin/hoverfly-lsp.js` as a child process, drive it with `vscode-jsonrpc`,
+A handful only: spawn the built `packages/server/bin/hoverfly-lsp.js` as a child process, drive it with `vscode-jsonrpc`,
 assert real `initialize`, `textDocument/didOpen` → `publishDiagnostics`, `textDocument/completion`,
 `textDocument/hover` round-trips. This proves the protocol wiring and `bin` shebang work end-to-end.
 
@@ -595,6 +606,7 @@ await conn.sendRequest('initialize', { capabilities: {}, rootUri: null, processI
 ### 7.1 npm — the server (primary artifact, headless-friendly for Claude Code)
 
 - Publish **`@hoverfly-lsp/server`** (or unscoped `hoverfly-lsp`) with:
+
     ```jsonc
     {
         "name": "hoverfly-lsp",
@@ -609,7 +621,8 @@ await conn.sendRequest('initialize', { capabilities: {}, rootUri: null, processI
         },
     }
     ```
-- `bin/hoverfly-lsp.js` is a tiny ESM shim with `#!/usr/bin/env node` that imports the built `dist/cli.js`.
+
+- `packages/server/bin/hoverfly-lsp.js` is a tiny ESM shim with `#!/usr/bin/env node` that imports the built `dist/cli.js`.
 - Default transport **stdio** (`--stdio`), also support `--node-ipc` and `--socket=<port>` like
   yaml-language-server. Claude Code agents and any editor can then run `npx hoverfly-lsp --stdio`.
 - Bundle the server (and `core`) with **esbuild/tsup** into a single `dist/cli.js` so the published package has
@@ -668,16 +681,16 @@ hoverflyVersion,timeExported}`. Encode matcher entries as a discriminated array 
 
 ## 9. Source URLs (for implementers)
 
-- LSP libs monorepo: https://github.com/microsoft/vscode-languageserver-node
+- LSP libs monorepo: <https://github.com/microsoft/vscode-languageserver-node>
   (`vscode-languageserver`@10, `vscode-jsonrpc`@9, `vscode-languageserver-protocol`@3.18,
   `vscode-languageserver-types`@3.17, `vscode-languageserver-textdocument`@1)
-- JSON language service: https://github.com/microsoft/vscode-json-languageservice (npm `vscode-json-languageservice`@5.7.x)
+- JSON language service: <https://github.com/microsoft/vscode-json-languageservice> (npm `vscode-json-languageservice`@5.7.x)
     - API: `src/jsonLanguageService.ts`, `src/jsonLanguageTypes.ts`, `src/jsonContributions.ts`, `src/example/sample.ts`
-- yaml-language-server: https://github.com/redhat-developer/yaml-language-server
+- yaml-language-server: <https://github.com/redhat-developer/yaml-language-server>
   (`src/languageservice/` + `src/languageserver/`; deps include `vscode-json-languageservice@4.1.8`)
-- azure-pipelines-language-server: https://github.com/microsoft/azure-pipelines-language-server
+- azure-pipelines-language-server: <https://github.com/microsoft/azure-pipelines-language-server>
   (two packages: `azure-pipelines-language-service` + `azure-pipelines-language-server`; forked from yaml-language-server)
-- taplo: https://github.com/tamasfe/taplo (`crates/{taplo,taplo-common,taplo-lsp,taplo-cli,taplo-wasm,lsp-async-stub}`;
-  npm `@taplo/lsp`@0.8.0: https://www.npmjs.com/package/@taplo/lsp ; docs https://taplo.tamasfe.dev/lib/javascript/lsp.html)
-- typescript-go: https://github.com/microsoft/typescript-go
+- taplo: <https://github.com/tamasfe/taplo> (`crates/{taplo,taplo-common,taplo-lsp,taplo-cli,taplo-wasm,lsp-async-stub}`;
+  npm `@taplo/lsp`@0.8.0: <https://www.npmjs.com/package/@taplo/lsp> ; docs <https://taplo.tamasfe.dev/lib/javascript/lsp.html>)
+- typescript-go: <https://github.com/microsoft/typescript-go>
   (`cmd/tsgo`, `internal/ls` = analysis, `internal/lsp` = protocol, `internal/fourslash` = cursor-marker tests, `testdata/`)

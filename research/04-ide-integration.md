@@ -53,6 +53,7 @@ The recommended approach is to register a **new language ID** (`hoverfly-simulat
     "engines": { "vscode": "^1.82.0" },
     "categories": ["Programming Languages", "Linters"],
     "activationEvents": [],
+
     "main": "./out/extension.js",
     "contributes": {
         "languages": [
@@ -66,6 +67,7 @@ The recommended approach is to register a **new language ID** (`hoverfly-simulat
                     "**/.hoverfly/**/*.json",
                     "hoverfly-simulation.json"
                 ],
+
                 "configuration": "./language-configuration.json"
             }
         ],
@@ -79,6 +81,7 @@ The recommended approach is to register a **new language ID** (`hoverfly-simulat
                 }
             }
         ],
+
         "configuration": {
             "title": "Hoverfly LSP",
             "properties": {
@@ -94,6 +97,7 @@ The recommended approach is to register a **new language ID** (`hoverfly-simulat
     "dependencies": {
         "vscode-languageclient": "^10.0.0"
     },
+
     "devDependencies": {
         "@types/vscode": "^1.82.0",
         "typescript": "^5.0.0"
@@ -190,6 +194,7 @@ export async function deactivate(): Promise<void> {
         { "open": "[", "close": "]" },
         { "open": "\"", "close": "\"" }
     ],
+
     "surroundingPairs": [
         ["{", "}"],
         ["[", "]"],
@@ -233,7 +238,7 @@ Zed also supports a simpler **settings-only** approach via `settings.json` for s
 
 ### 2.2 Extension directory layout
 
-```
+```text
 hoverfly-lsp-zed/
 ├── extension.toml          # Manifest (required)
 ├── Cargo.toml              # Rust workspace manifest
@@ -364,7 +369,7 @@ crate-type = ["cdylib"]
 zed_extension_api = "0.3.0"
 ```
 
-Check https://crates.io/crates/zed_extension_api for the current latest version.
+Check <https://crates.io/crates/zed_extension_api> for the current latest version.
 
 ### 2.7 Tree-sitter grammar (`highlights.scm`)
 
@@ -607,7 +612,7 @@ This is distinct from the cclsp third-party tool (which wraps LSP as MCP tools).
 
 A Claude Code plugin is a directory installed via `claude plugin install <path>` or the `/plugin` marketplace. The relevant files are:
 
-```
+```text
 hoverfly-lsp-claude/
 ├── plugin.json          # Plugin manifest
 └── .lsp.json            # LSP server configuration
@@ -641,6 +646,7 @@ hoverfly-lsp-claude/
                 "contentDetection": true
             }
         },
+
         "startupTimeout": 10000,
         "maxRestarts": 3
     }
@@ -807,6 +813,7 @@ When filename-based targeting is ambiguous (especially in Claude Code), the serv
 function isHoverflySimulation(content: string): boolean {
     try {
         const doc = JSON.parse(content);
+
         return (
             typeof doc === 'object' &&
             doc !== null &&
@@ -891,12 +898,14 @@ A plain JSON Schema gives basic validation and completion in any editor that sup
     "description": "Hoverfly v5 simulation file — describes request matchers and mocked responses",
     "type": "object",
     "required": ["data", "meta"],
+
     "additionalProperties": false,
     "properties": {
         "$schema": {
             "type": "string",
             "description": "JSON Schema reference (optional, used by editors for validation)"
         },
+
         "data": {
             "type": "object",
             "description": "Simulation data containing request-response pairs",
@@ -910,6 +919,7 @@ A plain JSON Schema gives basic validation and completion in any editor that sup
                 "globalActions": { "$ref": "#/definitions/globalActions" }
             }
         },
+
         "meta": {
             "type": "object",
             "description": "Simulation metadata",
@@ -924,6 +934,7 @@ A plain JSON Schema gives basic validation and completion in any editor that sup
                     "type": "string",
                     "description": "Hoverfly version that exported this simulation"
                 },
+
                 "timeExported": {
                     "type": "string",
                     "format": "date-time"
@@ -931,6 +942,7 @@ A plain JSON Schema gives basic validation and completion in any editor that sup
             }
         }
     },
+
     "definitions": {
         "pair": {
             "type": "object",
@@ -940,6 +952,7 @@ A plain JSON Schema gives basic validation and completion in any editor that sup
                 "response": { "$ref": "#/definitions/response" }
             }
         },
+
         "matcherValue": {
             "oneOf": [
                 {
@@ -955,6 +968,7 @@ A plain JSON Schema gives basic validation and completion in any editor that sup
                 { "type": "array", "items": { "$ref": "#/definitions/matcherValue" } }
             ]
         },
+
         "requestMatchers": {
             "type": "object",
             "properties": {
@@ -970,6 +984,7 @@ A plain JSON Schema gives basic validation and completion in any editor that sup
                         "items": { "$ref": "#/definitions/matcherValue" }
                     }
                 },
+
                 "method": { "type": "array", "items": { "$ref": "#/definitions/matcherValue" } },
                 "path": { "type": "array", "items": { "$ref": "#/definitions/matcherValue" } },
                 "query": { "type": "object" },
@@ -977,6 +992,7 @@ A plain JSON Schema gives basic validation and completion in any editor that sup
                 "scheme": { "type": "array", "items": { "$ref": "#/definitions/matcherValue" } }
             }
         },
+
         "response": {
             "type": "object",
             "required": ["status"],
@@ -992,6 +1008,7 @@ A plain JSON Schema gives basic validation and completion in any editor that sup
                 "templated": { "type": "boolean" },
                 "transitionsState": { "type": "object" },
                 "removesState": { "type": "array", "items": { "type": "string" } },
+
                 "fixedDelay": { "type": "integer", "description": "Fixed delay in milliseconds" },
                 "logNormalDelay": { "$ref": "#/definitions/logNormalDelay" }
             }
@@ -1005,6 +1022,7 @@ A plain JSON Schema gives basic validation and completion in any editor that sup
                 "median": { "type": "integer" }
             }
         },
+
         "globalActions": {
             "type": "object",
             "properties": {
@@ -1015,6 +1033,7 @@ A plain JSON Schema gives basic validation and completion in any editor that sup
                         "properties": {
                             "urlPattern": { "type": "string" },
                             "httpMethod": { "type": "string" },
+
                             "delay": { "type": "integer" }
                         }
                     }
@@ -1097,7 +1116,7 @@ Or via SchemaStore auto-sync (IntelliJ automatically pulls from SchemaStore cata
 
 Promote **`*.hoverfly.json`** as the canonical extension for Hoverfly simulation files.
 
-```
+```text
 api-service.hoverfly.json
 user-service.hoverfly.json
 simulation.hoverfly.json
@@ -1155,7 +1174,7 @@ These should be supported but not promoted as primary:
 
 ### 8.3 Zero-install fallback coverage
 
-```
+```text
 User has only VS Code (no extension):
   → Add to .vscode/settings.json: json.schemas with fileMatch "*.hoverfly.json"
   → OR: add "$schema" to simulation files → auto-detected

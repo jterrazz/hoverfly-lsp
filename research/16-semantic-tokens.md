@@ -161,7 +161,7 @@ acceptable "degrades to plain JSON text" worst case). No custom types, no modifi
 
 ### 3.1 `tokenTypes[]` — the exact ordered array (server advertises verbatim)
 
-```
+```text
 0  namespace
 1  keyword
 2  function
@@ -185,7 +185,7 @@ This order is the contract. `SEMANTIC_TOKEN_TYPES` in `legend.ts` is this array;
 | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `{{` `}}` `{{{` `}}}` mustache delimiters; `#` (block open) and `/` (block close) markers          | `MustacheNode` / `BlockNode` tag spans                                                     | `operator`                                                                             | punctuation/delimiters; `operator` is the standard "structural symbol" type. Worst case: plain text.                                                        |
 | inline helper name (`now`, `faker`, `replace`, `concat`, subexpression head)                       | `MustacheNode.path` / `SubExpression.path` whose head is a known **inline** helper         | `function`                                                                             | a helper _call_; `function` colors everywhere.                                                                                                              |
-| block-helper keyword (`if`, `unless`, `each`, `with`, `equal`, `first`)                            | `BlockNode.path` (or inline `log/lookup` which are builtins but inline → still `function`) | `keyword` for **block** builtins; control-flow reads as a keyword and colors strongly. |
+| block-helper keyword (`if`, `unless`, `each`, `with`, `equal`, `first`)                            | `BlockNode.path` (or inline `log/lookup` which are builtins but inline → still `function`) | `keyword` for **block** builtins; control-flow reads as a keyword and colors strongly. |                                                                                                                                                             |
 | path root that is a Hoverfly context object (`Request`, `State`, `Vars`, `Literals`, `Journal`, …) | first segment of a `PathExpression` (not data, not thisRef, not a helper)                  | `variable`                                                                             | a value source; `variable` is the canonical "identifier you read".                                                                                          |
 | subsequent path segments (`.Path`, `.Method`, `.QueryParam`, field names)                          | non-first string segments of a `PathExpression`                                            | `property`                                                                             | member access; `property` maps to `variable.other.property`.                                                                                                |
 | `@index` / `@first` / `@last` / `@key` and `this`                                                  | `PathExpression` with `data:true` or `thisRef:true`                                        | `parameter`                                                                            | loop/context-injected vars; `parameter` (→ `variable.parameter`) reads as "special bound var", colored everywhere, visually distinct from plain `variable`. |
@@ -259,7 +259,6 @@ so the server can pass a cached model or nothing.
 - `packages/analysis/src/semantic-tokens/legend.ts` — `SEMANTIC_TOKEN_TYPES`, `SEMANTIC_TOKEN_MODIFIERS`,
   `SemanticTokenType` const map (name → index).
 - `packages/analysis/src/semantic-tokens/producer.ts` — `getSemanticTokens`, `SemanticToken`.
-- `packages/analysis/src/semantic-tokens/index.ts` — barrel.
 - Re-exported from `packages/analysis/src/index.ts`.
 - Tests: `packages/analysis/test/semantic-tokens/{legend,producer}.test.ts`.
 

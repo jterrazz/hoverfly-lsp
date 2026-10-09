@@ -110,6 +110,7 @@ func JsonPathMatch(match interface{}, toMatch string) bool {
     if err != nil { return false }          // invalid JSONPath -> silent no-match
     return r != s
 }
+
 // jwt_jsonpath_match.go
 if !ok || path == "" { return false }       // empty JSONPath -> silent no-match (stricter)
 ```

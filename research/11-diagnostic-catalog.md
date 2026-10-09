@@ -156,13 +156,13 @@ standard value, Hint-only — both fields are OPEN sets Hoverfly compares verbat
 | HF603 | W   | UNKNOWN-KEY flagship — a key that does not (case-insensitively) match any allowed key for its object (per the `registry/structure.ts` matrix). SKIP the root (HF102), the user-keyed maps (`headers`/`query`/`requiresState`/`transitionsState`), and `request.method` (D5) | the unknown key | `Unknown key "{key}"{didYouMean} — silently ignored by Hoverfly`                                     |
 | HF604 | I   | A key that is a case-only variant of an allowed key (Go binds it case-insensitively, but it is non-canonical)                                                                                                                                                               | the key         | `Prefer canonical "{canonical}" — "{key}" works (Go matches case-insensitively) but is non-standard` |
 
-> `{didYouMean}` is a pre-formatted suffix the HF603 rule supplies (e.g. ` (did you mean
+> `{didYouMean}` is a pre-formatted suffix the HF603 rule supplies (e.g. `(did you mean
 "status"?)`) or the empty string. The allowed-key matrix, user-keyed-map skip list, and the
 > did-you-mean Levenshtein threshold live in `packages/analysis/src/registry/structure.ts`.
 
 This extension brings the catalog to **56 codes** (37 original + 17 structural-strictness + 2
-method/scheme well-known-value codes HF215/HF216). The exhaustive severity table in
-`packages/analysis/test/semantic/catalog.test.ts` pins all 56.
+method/scheme well-known-value codes HF215/HF216). The generated
+`docs/reference/diagnostics.md` lists all 56 with their severities.
 
 ### Method/scheme well-known-value did-you-mean (2026-06-11)
 

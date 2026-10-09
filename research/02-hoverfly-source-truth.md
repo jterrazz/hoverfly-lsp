@@ -200,6 +200,7 @@ referenced as `SimulationViewV5Schema` in `simulation_views.go`.
             },
             "type": "object"
         },
+
         "delay-log-normal": {
             "properties": {
                 "httpMethod": { "type": "string" },
@@ -211,6 +212,7 @@ referenced as `SimulationViewV5Schema` in `simulation_views.go`.
             },
             "type": "object"
         },
+
         "field-matchers": {
             "properties": {
                 "matcher": { "type": "string" },
@@ -225,6 +227,7 @@ referenced as `SimulationViewV5Schema` in `simulation_views.go`.
                 },
                 "doMatch": { "$ref": "#/definitions/field-matchers" }
             },
+
             "type": "object"
         },
         "headers": {
@@ -236,6 +239,7 @@ referenced as `SimulationViewV5Schema` in `simulation_views.go`.
             "required": ["name", "value"],
             "type": "object"
         },
+
         "meta": {
             "properties": {
                 "hoverflyVersion": { "type": "string" },
@@ -245,6 +249,7 @@ referenced as `SimulationViewV5Schema` in `simulation_views.go`.
             "required": ["schemaVersion"],
             "type": "object"
         },
+
         "request": {
             "properties": {
                 "body": { "items": { "$ref": "#/definitions/field-matchers" }, "type": "array" },
@@ -259,6 +264,7 @@ referenced as `SimulationViewV5Schema` in `simulation_views.go`.
                     "patternProperties": { ".{1,}": { "type": "string" } },
                     "type": "object"
                 },
+
                 "scheme": { "items": { "$ref": "#/definitions/field-matchers" }, "type": "array" }
             },
             "type": "object"
@@ -270,6 +276,7 @@ referenced as `SimulationViewV5Schema` in `simulation_views.go`.
             },
             "type": "object"
         },
+
         "request-queries": {
             "additionalProperties": {
                 "items": { "$ref": "#/definitions/field-matchers" },
@@ -277,6 +284,7 @@ referenced as `SimulationViewV5Schema` in `simulation_views.go`.
             },
             "type": "object"
         },
+
         "request-response-pair": {
             "properties": {
                 "labels": { "items": { "type": "string" }, "type": "array" },
@@ -286,6 +294,7 @@ referenced as `SimulationViewV5Schema` in `simulation_views.go`.
             "required": ["request", "response"],
             "type": "object"
         },
+
         "response": {
             "properties": {
                 "body": { "type": "string" },
@@ -301,6 +310,7 @@ referenced as `SimulationViewV5Schema` in `simulation_views.go`.
                         "min": { "type": "integer" }
                     }
                 },
+
                 "postServeAction": { "type": "string" },
                 "removesState": { "type": "array" },
                 "status": { "type": "integer" },
@@ -312,6 +322,7 @@ referenced as `SimulationViewV5Schema` in `simulation_views.go`.
             },
             "type": "object"
         },
+
         "variables": {
             "properties": {
                 "name": { "type": "string" },
@@ -322,6 +333,7 @@ referenced as `SimulationViewV5Schema` in `simulation_views.go`.
             "type": "object"
         }
     },
+
     "description": "Hoverfly simulation schema",
     "properties": {
         "data": {
@@ -337,6 +349,7 @@ referenced as `SimulationViewV5Schema` in `simulation_views.go`.
                     "type": "object"
                 },
                 "literals": { "items": { "$ref": "#/definitions/literals" }, "type": "array" },
+
                 "pairs": {
                     "items": { "$ref": "#/definitions/request-response-pair" },
                     "type": "array"
@@ -403,6 +416,7 @@ var Matchers = map[string]MatcherDetails{
     Array:         {MatcherFunction: ArrayMatchWithoutConfig, MatchValueGenerator: IdentityValueGenerator},
     JWT:           {MatcherFunction: JwtMatcher,        MatchValueGenerator: JwtMatchValueGenerator},
     JWTJsonPath:   {MatcherFunction: JwtJsonPathMatch,  MatchValueGenerator: JwtJsonPathMatchValueGenerator},
+
     Negation:      {MatcherFunction: NegationMatch,     MatchValueGenerator: IdentityValueGenerator},
 }
 
@@ -488,7 +502,7 @@ when `response.templated == true`.
 
 There are **52** registered helpers (the keys below are exactly the names usable in `{{ }}`):
 
-```
+```text
 now                    -> nowHelper
 randomString           -> randomString
 randomStringLength     -> randomStringLength
@@ -504,6 +518,7 @@ randomUuid             -> randomUuid
 replace                -> replace
 split                  -> split
 concat                 -> concat
+
 length                 -> length
 substring              -> substring
 rightmostCharacters    -> rightmostCharacters
@@ -519,6 +534,7 @@ matchesRegex           -> matchesRegex
 faker                  -> faker
 requestBody            -> requestBody
 csv                    -> fetchSingleFieldCsv
+
 csvMatchingRows        -> fetchMatchingRowsCsv
 csvAsArray             -> csvAsArray
 csvAsMap               -> csvAsMap
@@ -534,6 +550,7 @@ sum                    -> sum
 add                    -> add
 subtract               -> subtract
 multiply               -> multiply
+
 divide                 -> divide
 initArray              -> initArray
 addToArray             -> addToArray

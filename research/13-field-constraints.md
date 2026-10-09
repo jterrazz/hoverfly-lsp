@@ -313,7 +313,7 @@ matcher may be `glob`/`regex` where slashes are intentional. **Recommend info-on
 `exact`/empty matcher whose value contains `://` (a strong signal the author pasted a full URL). Even
 then, weigh false positives — propose as HF213 (I), off by default acceptable.
 
-### 3.4 `status` — covered by HF304 (100–599 warning). Schema = any integer; out-of-range imports clean.
+### 3.4 `status` — covered by HF304 (100–599 warning). Schema = any integer; out-of-range imports clean
 
 No additional proposal.
 
@@ -326,7 +326,7 @@ HF102 passthrough; also lets us suppress the noisy schema message per HF102's su
 
 `ValidateLogNormalDelayOptions` completely (all 4 fields, 8 constraints — see hf3xx.ts header). No gap.
 
-### 3.7 `delays[].httpMethod` — **STAY PERMISSIVE** (T20: `FOO` → 200; empty = all methods). No proposal.
+### 3.7 `delays[].httpMethod` — **STAY PERMISSIVE** (T20: `FOO` → 200; empty = all methods). No proposal
 
 ### 3.8 `delays[].delay` units — integer milliseconds; negative is meaningless. \*\*Negative fixedDelay is
 
@@ -334,7 +334,7 @@ HF306; the globalActions `delay` int is not validated for sign by Hoverfly** —
 is silently treated as no delay. Low value; propose **HF604 (I)\*\* optional (negative globalActions
 `delay`/lognormal field → ignored). Weigh against noise; acceptable to defer.
 
-### 3.9 `meta.hoverflyVersion` / `meta.timeExported` — **NOT validated; leave un-flagged** (§1.17). No proposal.
+### 3.9 `meta.hoverflyVersion` / `meta.timeExported` — **NOT validated; leave un-flagged** (§1.17). No proposal
 
 ### 3.10 `literals[].name` / `variables[].name` — templating-reference charset
 
@@ -355,7 +355,7 @@ ALSO rejected** (and even the built-ins are rejected — T13 `each` → 500). So
 message (better UX); HF511 is the catch-all for everything else (`notAHelper`, `randomStringX`,
 misspellings). Both are errors; HF510 takes precedence when the name is one of the 8 built-ins.
 
-### 3.12 `variables[].arguments` ARITY — **NOT import-enforced; silent drop at render** (T8/T21 → 200).
+### 3.12 `variables[].arguments` ARITY — **NOT import-enforced; silent drop at render** (T8/T21 → 200)
 
 So arity mismatch never fails import and never crashes; the variable just renders empty. Propose
 **HF512 (W)**: `arguments` length ≠ the helper's arity (from `registry/templating.ts`), for the known-52
@@ -363,7 +363,7 @@ functions. Warning, not error (Hoverfly tolerates it; consequence is a silently-
 mirrors HF504 (template-side arity) on the `variables[]` side. (Note `requestBody` needs exactly 2;
 variadic helpers like `concat` only enforce a minimum.)
 
-### 3.13 `requiresState`/`transitionsState` values must be strings — **400** (T9). Propose **HF404 (E)**:
+### 3.13 `requiresState`/`transitionsState` values must be strings — **400** (T9). Propose **HF404 (E)**
 
 non-string `requiresState`/`transitionsState` value (clearer targeted message + suppress HF102). The
 range is the offending value node.

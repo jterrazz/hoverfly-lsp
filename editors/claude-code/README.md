@@ -7,7 +7,7 @@ into its context, so it sees (and can fix) Hoverfly errors in the same turn.
 
 ## What's in here
 
-```
+```text
 editors/claude-code/
 ├── .claude-plugin/
 │   └── plugin.json     Plugin manifest (name, version, author, lspServers pointer)
@@ -112,7 +112,7 @@ printf '{ "name": "x", "version": "1.0.0" }' > "$SCRATCH/notes.json"
 
 Observed result:
 
-```
+```text
 broken.hoverfly.json → 1 diagnostic: HF201 (severity Error)
   "Unknown matcher \"xform\": Hoverfly panics at match time on unknown matchers"
 notes.json           → published, 0 diagnostics (fingerprint declined)

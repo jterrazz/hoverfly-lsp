@@ -48,6 +48,7 @@ var Matchers = map[string]MatcherDetails{
 	Array:        {MatcherFunction: ArrayMatchWithoutConfig, MatchValueGenerator: IdentityValueGenerator},
 	JWT:          {MatcherFunction: JwtMatcher,        MatchValueGenerator: JwtMatchValueGenerator},
 	JWTJsonPath:  {MatcherFunction: JwtJsonPathMatch,  MatchValueGenerator: JwtJsonPathMatchValueGenerator},
+
 	Negation:     {MatcherFunction: NegationMatch,     MatchValueGenerator: IdentityValueGenerator},
 }
 
@@ -101,6 +102,7 @@ func isMatching(field models.RequestFieldMatchers, toMatch string) bool {
 			matcherDetails = matchers.MatchersWithConfig[strings.ToLower(currentMatcher.Matcher)]
 			isMatched = matcherDetails.MatcherFunction.(func(interface{}, string, map[string]interface{}) bool)(currentMatcher.Value, actual, currentMatcher.Config)
 		}
+
 		if !isMatched {
 			return false
 		}
@@ -379,7 +381,7 @@ func JwtJsonPathMatch(match interface{}, toMatch string) bool {
 
 **Value type:** string only, AND **must be non-empty** (`path == ""` → no match — stricter than
 other string matchers which accept `""`). The `value` is a **JSONPath query**. The actual request
-value is decoded by `util.ParseJWTComposite` (3-segment JWT, strips a leading `bearer ` prefix
+value is decoded by `util.ParseJWTComposite` (3-segment JWT, strips a leading `bearer` prefix
 case-insensitively, base64-RawURL decode of header+payload into `{"header":..,"payload":..}`; bad
 token → no match). Path normalisation (`normalizeJWTJsonPath`):
 
@@ -467,7 +469,7 @@ severity** = what an LSP should emit for a _wrong value type_ on that matcher.
 3. **`xmltemplated` exists** and supports `{{ ignore }}` and `{{ regex: ... }}` leaf templates with
    order-independent child matching. (Source: `xml_templated_match.go`.)
 4. **`jwtjsonpath` exists** (recent, PR #1210) — value is a non-empty JSONPath; defaults to
-   `$.payload` scope; strips `bearer ` prefix on the actual token. (Source:
+   `$.payload` scope; strips `bearer` prefix on the actual token. (Source:
    `jwt_jsonpath_match.go`, `util/jwt.go`.)
 5. **Matcher-name lookup is case-insensitive** (engine lowercases). The registry key for the
    negation matcher is **`negate`**, not `negation`.
