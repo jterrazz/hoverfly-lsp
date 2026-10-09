@@ -7,7 +7,13 @@ import {
 import type { ClientCapabilities } from 'vscode-languageserver-protocol/node';
 
 import { integration } from '../integration.specification.js';
-import { hoverflyLsp, initialized, uninitialized } from './__setup__/server.js';
+import {
+    hoverflyLsp,
+    initialized,
+    initializeParams,
+    manifestVersion,
+    uninitialized,
+} from './__setup__/server.js';
 
 const SEMANTIC_TOKENS_CLIENT: ClientCapabilities = {
     textDocument: {
@@ -45,13 +51,14 @@ async function refusal(request: Promise<unknown>): Promise<unknown> {
 describe('lifecycle', () => {
     test('prints its version', async () => {
         // Given - the packed bin asked for its version
+        const version = manifestVersion();
         const result = await integration.call(async () => await hoverflyLsp(['--version']));
 
-        // Then - the manifest's version, and a clean exit
+        // Then - the manifest's version, whatever release it is at, and a clean exit
         expect(result.value).toMatch({
             exitCode: 0,
             stderr: '',
-            stdout: '0.1.0\n',
+            stdout: `${version}\n`,
         });
     });
 
@@ -163,12 +170,7 @@ describe('lifecycle', () => {
         const result = await integration.call(async () => {
             await using lsp = await initialized({});
             return await refusal(
-                lsp.connection.sendRequest(InitializeRequest.type, {
-                    capabilities: {},
-                    processId: process.pid,
-                    // oxlint-disable-next-line typescript/no-deprecated -- LSP 3.17 still requires rootUri in initialize, null when no folder is open
-                    rootUri: null,
-                }),
+                lsp.connection.sendRequest(InitializeRequest.type, initializeParams()),
             );
         });
 
