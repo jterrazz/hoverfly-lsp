@@ -1,10 +1,11 @@
 # Manual QA: editor integrations
 
-This file collects everything the phase-8 verifier could **not** exercise headlessly in the
-build environment. Each item needs a human running a real editor. Everything else (builds,
-type-checks, JSON/TOML syntax, `vsce package`, `cargo check`, the LSP `initialize` handshake
-over every launcher) was verified automatically; see the "Verified automatically" section at
-the end for what you do **not** need to re-check.
+The manual half of a release: every check no suite can run, because each needs a
+human in a real editor. [Release](release.md) walks it before a version ships.
+What is proven without an editor (builds, type-checks, JSON/TOML syntax,
+`vsce package`, `cargo check`, the LSP `initialize` handshake over every
+launcher) is listed under "Verified automatically" at the end, and is not
+re-checked by hand.
 
 All `testdata/...` paths are relative to the repo root. The canonical simulation filenames are
 `*.hoverfly.json` and `hoverfly-simulation.json`. The server is `hoverfly-lsp --stdio`.

@@ -88,7 +88,7 @@ Code, Zed, IntelliJ or Claude Code session. What has been verified without one â
 that every manifest parses, that the extension bundles and `vsce package`
 succeeds, that the Zed crate compiles, and that each launcher completes an
 `initialize` handshake â€” is listed under "Verified automatically" in
-[MANUAL-QA.md](../../MANUAL-QA.md), and of it only the vitest suites run on every
+[Manual QA](manual-qa.md), and of it only the vitest suites run on every
 commit. The behaviour above that line is checked by a human against the rest of
 that same checklist, which is why it is walked before a release
 ([Release](release.md)).

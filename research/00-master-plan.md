@@ -1,5 +1,9 @@
 # hoverfly-lsp — Master Plan
 
+> The plan the repository was first built by, kept as written when v0.1.0 shipped. It
+> records the phases and the scope v1 committed to; it is not maintained, and the
+> manual under `docs/` is what holds today.
+
 A production-quality Language Server for **Hoverfly JSON simulation files**, giving
 VS Code, Zed, IntelliJ and Claude Code agents real-time diagnostics, semantic
 "type checking", autocomplete and hover docs — everything `tsc`-grade tooling does,
@@ -70,7 +74,7 @@ reviewers); Fable directs, reviews between phases, and gates progression on gree
 5. **Completion & hover contributions.** _(task #7)_ ✅ **Done** — fields, matchers, helpers, faker, state keys, Vars/Literals; hover with docs links.
 6. **Reference corpus** — the big one: hundreds of valid/invalid fixtures covering every matcher × value type, every response field, templating, state machines, v1–v5.3; golden diagnostic snapshots; cursor-marker (`$0`) completion/hover tests. Grown continuously from phase 2, completed here with a coverage-audit agent. _(task #8)_ ✅ **Done** — 54 valid + 107 invalid goldens; ground-truth-verified against real Hoverfly v1.12.8 (see D9).
 7. **LSP server** — stdio bin, push+pull diagnostics, JSON-RPC integration tests. _(task #9)_ ✅ **Done.**
-8. **Editor integrations** — VS Code / Zed / IntelliJ / Claude Code, each verified end-to-end. _(task #10)_ ✅ **Done** — all four integrated; in-editor checks documented in MANUAL-QA.md.
+8. **Editor integrations** — VS Code / Zed / IntelliJ / Claude Code, each verified end-to-end. _(task #10)_ ✅ **Done** — all four integrated; in-editor checks documented in [Manual QA](../docs/guides/manual-qa.md).
 9. **Ship** — SchemaStore PR artifact, README + docs, schema-drift CI vs Hoverfly master, npm + Marketplace release pipeline. _(task #11)_ 🚧 **In progress** — README + generated docs (diagnostics, template reference) + docs-drift CI landed; npm publish, Marketplace/Open VSX release, and the SchemaStore submission remain.
 
 ## v0.1.0 — shipped scope
@@ -80,10 +84,10 @@ What v0.1.0 delivers (869 tests green):
 - **Format:** Hoverfly v5.x JSON simulations, fully featured; v1–v4 accepted with an upgrade hint
   (no completion investment), per architect decision D6.
 - **Diagnostics:** the frozen `HF1xx`–`HF6xx` catalog (37 codes), golden-tested, each carrying
-  `code` + `source: "hoverfly"` + `codeDescription.href`. See [docs/reference/diagnostics.md](./docs/reference/diagnostics.md).
+  `code` + `source: "hoverfly"` + `codeDescription.href`. See [docs/reference/diagnostics.md](../docs/reference/diagnostics.md).
 - **Templating:** block-aware Handlebars-subset parser; 52 Hoverfly helpers + 8 raymond built-ins
   with arity checks; `Vars`/`Literals` resolution; 210 faker types (gofakeit v6.28.0); `now`
-  offset validation. See [docs/reference/template-reference.md](./docs/reference/template-reference.md).
+  offset validation. See [docs/reference/template-reference.md](../docs/reference/template-reference.md).
 - **Completion & hover:** fields, matcher names, helper names, faker types, state keys,
   `Vars`/`Literals`; hover docs with docs.hoverfly.io links.
 - **Server:** stdio bin `hoverfly-lsp --stdio`, push **and** pull diagnostics (pull matters for
