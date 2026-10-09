@@ -12,7 +12,7 @@ const BUNDLE_RELATIVE = join('dist', 'cli.cjs');
 
 function bundleAt(candidate) {
     if (candidate === undefined || candidate === '' || !existsSync(candidate)) {
-        return undefined;
+        return;
     }
     if (statSync(candidate).isFile()) {
         return candidate;
@@ -35,7 +35,7 @@ function installedBundle() {
             // outside: `require.resolve` throws when no install is reachable from this base.
         }
     }
-    return undefined;
+    return;
 }
 
 const bundle =
