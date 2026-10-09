@@ -1,9 +1,0 @@
-{
-    "markers": {
-        "": {
-            "includes": [],
-            "excludes": ["@index", "Method", "faker", "this"],
-            "count": 0
-        }
-    }
-}

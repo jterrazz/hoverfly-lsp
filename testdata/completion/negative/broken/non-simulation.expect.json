@@ -1,7 +1,0 @@
-{
-    "markers": {
-        "": {
-            "excludes": ["exact", "regex", "glob", "form"]
-        }
-    }
-}

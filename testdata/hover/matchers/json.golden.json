@@ -1,0 +1,6 @@
+{
+    "diagnostics": [],
+    "markers": {
+        "": "### `json` matcher\n\nDeep JSON equality, value is a STRING containing JSON text (not a JSON object literal). Non-string or invalid-JSON never matches. https://docs.hoverfly.io/en/latest/pages/keyconcepts/matching/matchers.html\n\n**Value type:** `string`\n**Config:** not supported.\n**doMatch:** AND-semantics — re-tests the same input against the next matcher."
+    }
+}

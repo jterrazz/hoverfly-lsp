@@ -1,9 +1,0 @@
-{
-    "markers": {
-        "": {
-            "includes": ["wishlist"],
-            "excludes": ["sequence:"],
-            "count": 1
-        }
-    }
-}

@@ -1,7 +1,0 @@
-{
-    "markers": {
-        "": {
-            "excludes": ["matcher", "Value type:", "gofakeit", "inline helper", "CRASHES", "PANIC", "Unknown matcher"]
-        }
-    }
-}

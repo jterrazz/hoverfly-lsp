@@ -1,0 +1,6 @@
+{
+    "diagnostics": [],
+    "markers": {
+        "": "schemaVersion\n\nSimulation schema version\\. Hoverfly validates anything starting with v5 against the v5 schema; the current default is v5\\.3\\. Older v1\\-v4 files are auto\\-upgraded on import\\."
+    }
+}

@@ -1,0 +1,39 @@
+{
+    "diagnostics": [],
+    "markers": {
+        "": [
+            {
+                "kind": "Value",
+                "label": "\"v5.3\""
+            },
+            {
+                "kind": "Value",
+                "label": "\"v5.2\""
+            },
+            {
+                "kind": "Value",
+                "label": "\"v5.1\""
+            },
+            {
+                "kind": "Value",
+                "label": "\"v5\""
+            },
+            {
+                "kind": "EnumMember",
+                "label": "v5.3"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "v5"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "v5.1"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "v5.2"
+            }
+        ]
+    }
+}

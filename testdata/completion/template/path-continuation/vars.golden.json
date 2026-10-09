@@ -1,0 +1,15 @@
+{
+    "diagnostics": [],
+    "markers": {
+        "": [
+            {
+                "kind": "Variable",
+                "label": "token"
+            },
+            {
+                "kind": "Variable",
+                "label": "userId"
+            }
+        ]
+    }
+}

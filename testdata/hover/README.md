@@ -1,12 +1,12 @@
 # Hover corpus (`testdata/hover`)
 
 The on-disk **fourslash corpus** for hover — the browsable, ground-truth-able analogue of the
-diagnostics golden corpus (`testdata/{valid,invalid}` + `.diagnostics.golden`). Each case is a REAL
-Hoverfly simulation carrying one or more cursor markers; a sibling `.expect.json` sidecar pins what
-the rendered hover markdown must (and must not) contain at each marker.
+diagnostics golden corpus (`testdata/{valid,invalid}` + `.diagnostics.json`). Each case is a REAL
+Hoverfly simulation carrying one or more cursor markers; a sibling `.golden.json` holds, whole,
+the hover Markdown the language service renders at each marker.
 
-Runner: [`packages/analysis/specs/integration/contributions/corpus.spec.ts`](../../packages/analysis/specs/integration/contributions/corpus.spec.ts)
-(shared with the completion corpus). The completion corpus under
+Runner: [`packages/analysis/specs/integration/contributions/hover-corpus.spec.ts`](../../packages/analysis/specs/integration/contributions/hover-corpus.spec.ts)
+The completion corpus under
 [`testdata/completion`](../completion/README.md) has the same layout — read it for the full marker
 and validity-invariant explanation; this file documents only the hover-specific sidecar shape.
 
@@ -14,7 +14,7 @@ and validity-invariant explanation; this file documents only the hover-specific 
 
 ```
 testdata/hover/<context>/<case>.hoverfly.json   # marked simulation (the fixture)
-testdata/hover/<context>/<case>.expect.json     # the expectation sidecar
+testdata/hover/<context>/<case>.golden.json      # what the service answers, whole
 ```
 
 `<context>` groups by what is hovered:
@@ -51,43 +51,25 @@ Same marker rules as the completion corpus: `⟦⟧` (default) / `⟦name⟧` (n
 unless the fixture is under a `.../broken/` subdir. For an on-token hover, put the cursor at the
 start of the token: `"matcher": "⟦⟧jwt"` strips to `"matcher": "jwt"` with the cursor on `jwt`.
 
-## The sidecar (`.expect.json`)
+## The golden (`.golden.json`)
 
 ```jsonc
 {
-  // OPTIONAL: per-fixture service settings, passed to createHoverflyLanguageService.
-  "settings": { },
-
-  "markers": {
-    // Keyed by marker name. The single unnamed ⟦⟧ marker uses the key "".
-    "": {
-      // Substrings of the RENDERED hover markdown that MUST appear:
-      "includes": ["jwt", "JWT match", "Value type:"],
-      // Substrings that MUST NOT appear — pins the "no panic noise" hover policy:
-      "excludes": ["CRASHES", "PANIC", "Unknown matcher name", "⚠️"]
-    }
-  }
+  // the diagnostics of the marker-stripped fixture — `[]`, by the validity invariant; absent under broken/
+  "diagnostics": [],
+  // keyed by marker name, the single unnamed ⟦⟧ marker under "": the rendered Markdown, whole ("" when none)
+  "markers": { "": "### `jwt` matcher\n\n…" }
 }
 ```
 
-TypeScript types: `CorpusExpectation` / `HoverMarkerExpectation` in
-[`packages/analysis/specs/integration/fourslash/harness.ts`](../../packages/analysis/specs/integration/fourslash/harness.ts).
-
-- **`includes` / `excludes`** are substring assertions against the rendered markdown, sourced from
-  the real service (docs come from the registry — never hardcode a string the renderer does not
-  emit). `excludes` is where the hover-noise policy is enforced: a matcher hover describes THAT
-  matcher only and must not carry the generic "unknown matcher name panics" / "config panics"
-  warnings (HF201/HF204 diagnostics own that messaging). A matcher with no intrinsic footgun (e.g.
-  `regex`, `jwt`) carries no `⚠️` note, so `"⚠️"` belongs in its `excludes`.
-- Every marker in the fixture must have an entry here, and vice-versa — the runner flags either drift.
+The whole Markdown is the oracle, so the no-panic-noise policy is read in every golden: a matcher
+hover carries the notes intrinsic to that matcher (`array`'s config keys, `form`'s body-only rule,
+`negate`'s vacuous truth) and never the generic "unknown matcher name" or "config panics" warnings,
+which HF201 and HF204 raise where the mistake is made.
 
 ## Adding a fixture
 
 1. Write `<context>/<case>.hoverfly.json` with the cursor marker(s) on what you want hover for.
-2. Dump the ground truth:
-   `CORPUS_DUMP=<case> npx vitest --run packages/analysis/specs/integration/contributions/corpus.spec.ts`
-   (prints the rendered hover markdown at each marker; no `--disableConsoleIntercept` needed).
-3. Write `<case>.expect.json` — pick stable `includes` substrings, and add `excludes` to lock in
-   absence (the no-panic-noise policy, or any string that must not leak).
-4. Run `npx vitest --run packages/analysis/specs/integration/contributions/corpus.spec.ts` — green when the
-   stripped fixture validates (unless under `broken/`) and every marker matches its sidecar.
+2. Run `TEST_UPDATE=1 npm test` from the repository root: the golden is recorded beside it, and the
+   corpus index (`specs/integration/contributions/__expected__/hover-corpus.json`) gains the fixture.
+3. Review the recorded golden like code: the Markdown must say only what that token is.

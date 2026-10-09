@@ -1,9 +1,0 @@
-{
-    "markers": {
-        "": {
-            "includes": ["Scheme", "Method", "Path", "QueryParam", "Body"],
-            "excludes": ["faker", "Request"],
-            "kindOf": { "Method": "Field" }
-        }
-    }
-}

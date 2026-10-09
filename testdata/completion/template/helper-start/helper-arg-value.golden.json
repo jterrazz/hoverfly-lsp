@@ -1,0 +1,263 @@
+{
+    "diagnostics": [],
+    "markers": {
+        "": [
+            {
+                "kind": "Variable",
+                "label": "Request"
+            },
+            {
+                "kind": "Variable",
+                "label": "State"
+            },
+            {
+                "kind": "Variable",
+                "label": "Vars"
+            },
+            {
+                "kind": "Variable",
+                "label": "Literals"
+            },
+            {
+                "kind": "Method",
+                "label": "now"
+            },
+            {
+                "kind": "Method",
+                "label": "randomString"
+            },
+            {
+                "kind": "Method",
+                "label": "randomStringLength"
+            },
+            {
+                "kind": "Method",
+                "label": "randomBoolean"
+            },
+            {
+                "kind": "Method",
+                "label": "randomInteger"
+            },
+            {
+                "kind": "Method",
+                "label": "randomIntegerRange"
+            },
+            {
+                "kind": "Method",
+                "label": "randomFloat"
+            },
+            {
+                "kind": "Method",
+                "label": "randomFloatRange"
+            },
+            {
+                "kind": "Method",
+                "label": "randomEmail"
+            },
+            {
+                "kind": "Method",
+                "label": "randomIPv4"
+            },
+            {
+                "kind": "Method",
+                "label": "randomIPv6"
+            },
+            {
+                "kind": "Method",
+                "label": "randomUuid"
+            },
+            {
+                "kind": "Method",
+                "label": "replace"
+            },
+            {
+                "kind": "Method",
+                "label": "split"
+            },
+            {
+                "kind": "Method",
+                "label": "concat"
+            },
+            {
+                "kind": "Method",
+                "label": "length"
+            },
+            {
+                "kind": "Method",
+                "label": "substring"
+            },
+            {
+                "kind": "Method",
+                "label": "rightmostCharacters"
+            },
+            {
+                "kind": "Method",
+                "label": "isNumeric"
+            },
+            {
+                "kind": "Method",
+                "label": "isAlphanumeric"
+            },
+            {
+                "kind": "Method",
+                "label": "isBool"
+            },
+            {
+                "kind": "Method",
+                "label": "isGreaterThan"
+            },
+            {
+                "kind": "Method",
+                "label": "isGreaterThanOrEqual"
+            },
+            {
+                "kind": "Method",
+                "label": "isLessThan"
+            },
+            {
+                "kind": "Method",
+                "label": "isLessThanOrEqual"
+            },
+            {
+                "kind": "Method",
+                "label": "isBetween"
+            },
+            {
+                "kind": "Method",
+                "label": "matchesRegex"
+            },
+            {
+                "kind": "Method",
+                "label": "faker"
+            },
+            {
+                "kind": "Method",
+                "label": "requestBody"
+            },
+            {
+                "kind": "Method",
+                "label": "csv"
+            },
+            {
+                "kind": "Method",
+                "label": "csvMatchingRows"
+            },
+            {
+                "kind": "Method",
+                "label": "csvAsArray"
+            },
+            {
+                "kind": "Method",
+                "label": "csvAsMap"
+            },
+            {
+                "kind": "Method",
+                "label": "csvAddRow"
+            },
+            {
+                "kind": "Method",
+                "label": "csvDeleteRows"
+            },
+            {
+                "kind": "Method",
+                "label": "csvCountRows"
+            },
+            {
+                "kind": "Method",
+                "label": "csvSqlCommand"
+            },
+            {
+                "kind": "Method",
+                "label": "journal"
+            },
+            {
+                "kind": "Method",
+                "label": "hasJournalKey"
+            },
+            {
+                "kind": "Method",
+                "label": "setStatusCode"
+            },
+            {
+                "kind": "Method",
+                "label": "setHeader"
+            },
+            {
+                "kind": "Method",
+                "label": "sum"
+            },
+            {
+                "kind": "Method",
+                "label": "add"
+            },
+            {
+                "kind": "Method",
+                "label": "subtract"
+            },
+            {
+                "kind": "Method",
+                "label": "multiply"
+            },
+            {
+                "kind": "Method",
+                "label": "divide"
+            },
+            {
+                "kind": "Method",
+                "label": "initArray"
+            },
+            {
+                "kind": "Method",
+                "label": "addToArray"
+            },
+            {
+                "kind": "Method",
+                "label": "getArray"
+            },
+            {
+                "kind": "Method",
+                "label": "putValue"
+            },
+            {
+                "kind": "Method",
+                "label": "getValue"
+            },
+            {
+                "kind": "Method",
+                "label": "jsonFromJWT"
+            },
+            {
+                "kind": "Function",
+                "label": "if"
+            },
+            {
+                "kind": "Function",
+                "label": "unless"
+            },
+            {
+                "kind": "Function",
+                "label": "with"
+            },
+            {
+                "kind": "Function",
+                "label": "each"
+            },
+            {
+                "kind": "Function",
+                "label": "first"
+            },
+            {
+                "kind": "Method",
+                "label": "log"
+            },
+            {
+                "kind": "Method",
+                "label": "lookup"
+            },
+            {
+                "kind": "Function",
+                "label": "equal"
+            }
+        ]
+    }
+}

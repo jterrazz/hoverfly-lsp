@@ -1,0 +1,15 @@
+{
+    "diagnostics": [],
+    "markers": {
+        "": [
+            {
+                "kind": "Variable",
+                "label": "apiBase"
+            },
+            {
+                "kind": "Variable",
+                "label": "region"
+            }
+        ]
+    }
+}

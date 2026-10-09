@@ -1,0 +1,23 @@
+{
+    "diagnostics": [],
+    "markers": {
+        "": [
+            {
+                "kind": "EnumMember",
+                "label": "http"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "https"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "ws"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "wss"
+            }
+        ]
+    }
+}

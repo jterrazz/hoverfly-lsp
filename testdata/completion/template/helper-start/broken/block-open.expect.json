@@ -1,8 +1,0 @@
-{
-    "markers": {
-        "": {
-            "includes": ["if", "each", "equal", "unless", "with", "first"],
-            "excludes": []
-        }
-    }
-}

@@ -1,8 +1,0 @@
-{
-    "markers": {
-        "": {
-            "includes": ["cart", "sequence:"],
-            "excludes": ["session"]
-        }
-    }
-}

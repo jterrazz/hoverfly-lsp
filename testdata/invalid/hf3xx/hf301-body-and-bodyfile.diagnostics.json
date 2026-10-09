@@ -1,0 +1,17 @@
+[
+    {
+        "code": "HF301",
+        "severity": "warning",
+        "range": {
+            "start": [
+                10,
+                20
+            ],
+            "end": [
+                10,
+                30
+            ]
+        },
+        "message": "Response contains both body and bodyFile; please remove one of them, otherwise body is used if non-empty"
+    }
+]

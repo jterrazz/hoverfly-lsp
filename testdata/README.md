@@ -1,12 +1,10 @@
 # testdata — the reference corpus
 
 This tree is **the** behavioural contract for the Hoverfly LSP's semantic pipeline
-(`packages/analysis/src/semantic/`). It is exercised by two tests:
-
-- `packages/analysis/specs/integration/semantic/golden.spec.ts` — every `invalid/` fixture must produce
-  exactly the diagnostics frozen in its sibling `.diagnostics.golden`; every `valid/`
-  fixture must produce **zero** diagnostics end-to-end (parse → schema → template → HFxxx).
-- `packages/analysis/specs/integration/corpus/fingerprint.spec.ts` — corpus-wide structural invariants.
+(`packages/analysis/src/semantic/`). It is run by
+`packages/analysis/specs/integration/semantic/diagnostics-corpus.spec.ts`: every `invalid/` fixture
+must produce exactly the diagnostics its sibling `.diagnostics.json` holds, and every `valid/`
+fixture **zero** diagnostics end-to-end (parse → schema → template → HFxxx).
 
 ## Layout & conventions
 
@@ -14,7 +12,7 @@ This tree is **the** behavioural contract for the Hoverfly LSP's semantic pipeli
 testdata/
   valid/<domain>/<name>.hoverfly.json              # 0 diagnostics through the full pipeline
   invalid/<domain>/<name>.hoverfly.json            # triggers exactly one HFxxx code (its point)
-  invalid/<domain>/<name>.hoverfly.json.diagnostics.golden   # frozen expected diagnostics
+  invalid/<domain>/<name>.diagnostics.json         # its diagnostics, whole
 ```
 
 - Fixture files are named `*.hoverfly.json`. The base name describes the fixture's single point
@@ -35,7 +33,7 @@ v1.12.8 rejects `"doMatch": [ … ]` with HTTP 400. The entire corpus now uses t
 ## Regenerating goldens
 
 ```bash
-env UPDATE_GOLDENS=1 npx vitest --run packages/analysis/specs/integration/semantic/golden.spec.ts
+TEST_UPDATE=1 npm test
 ```
 
 Always **review** each regenerated golden: it must contain only the codes the fixture is

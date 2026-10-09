@@ -1,18 +1,18 @@
 # Completion corpus (`testdata/completion`)
 
 The on-disk **fourslash corpus** for completion — the browsable, ground-truth-able analogue of the
-diagnostics golden corpus (`testdata/{valid,invalid}` + `.diagnostics.golden`). Each case is a REAL
-Hoverfly simulation carrying one or more cursor markers; a sibling `.expect.json` sidecar pins what
-the language service must (and must not) offer at each marker.
+diagnostics golden corpus (`testdata/{valid,invalid}` + `.diagnostics.json`). Each case is a REAL
+Hoverfly simulation carrying one or more cursor markers; a sibling `.golden.json` holds, whole,
+what the language service offers at each marker.
 
-Runner: [`packages/analysis/specs/integration/contributions/corpus.spec.ts`](../../packages/analysis/specs/integration/contributions/corpus.spec.ts).
+Runner: [`packages/analysis/specs/integration/contributions/completion-corpus.spec.ts`](../../packages/analysis/specs/integration/contributions/completion-corpus.spec.ts).
 The hover corpus under [`testdata/hover`](../hover/README.md) follows the identical layout.
 
 ## Layout
 
 ```
 testdata/completion/<context>/<case>.hoverfly.json   # marked simulation (the fixture)
-testdata/completion/<context>/<case>.expect.json     # the expectation sidecar
+testdata/completion/<context>/<case>.golden.json      # what the service answers, whole
 ```
 
 `<context>` groups by completion situation (`matcher-name/`, `method-value/`, `http-values/`,
@@ -28,7 +28,7 @@ intentionally invalid (see [Validity invariant](#validity-invariant)).
   caught. Assert the full closed set there, not a filtered subset.
 - **`schemaVersion` carries schema-`examples` duplicates.** At a `meta.schemaVersion` value position
   the list is 8 entries: the 4 contribution `vN` EnumMembers PLUS 4 quoted `"vN"` Value labels the
-  bundled JSON schema injects from its `examples`. Assert with `includes`, never `count`.
+  bundled JSON schema injects from its `examples`; the golden holds all eight.
 - **Sibling keys are deduped.** A state-key completion never re-offers a key already present as a
   sibling in the same `requiresState`/`transitionsState` object (the JSON service dedupes existing
   keys). `state-keys/login-fetch-flow` shows this: `session` is already a sibling, so only the
@@ -52,53 +52,25 @@ asserts this. This keeps the corpus honest: a completion is exercised inside a r
 document, not an accidental error state. If you are deliberately testing mid-typing / broken-JSON
 completion, put the fixture under a `.../broken/` subdir and the validity check is skipped.
 
-## The sidecar (`.expect.json`)
+## The golden (`.golden.json`)
 
 ```jsonc
 {
-  // OPTIONAL: per-fixture service settings, passed to createHoverflyLanguageService.
-  // e.g. postServeAction completion needs the runtime allowlist:
-  "settings": { "registeredActions": ["webhook", "logger"] },
-
-  "markers": {
-    // Keyed by marker name. The single unnamed ⟦⟧ marker uses the key "".
-    "": {
-      "includes": ["exact", "regex", "form"],  // labels that MUST be present
-      "excludes": [],                            // labels that MUST NOT be present
-      "count": 14,                               // EXACT list size — closed sets only (see below)
-      "kindOf": { "GET": "EnumMember" }          // CompletionItemKind name per label (optional)
-    }
-  }
+  // the diagnostics of the marker-stripped fixture — `[]`, by the validity invariant; absent under broken/
+  "diagnostics": [],
+  // keyed by marker name, the single unnamed ⟦⟧ marker under "": the list as the editor shows it
+  "markers": { "": [{ "kind": "EnumMember", "label": "exact" }] }
 }
 ```
 
-TypeScript types: `CorpusExpectation` / `CompletionMarkerExpectation` in
-[`packages/analysis/specs/integration/fourslash/harness.ts`](../../packages/analysis/specs/integration/fourslash/harness.ts).
-
-- **`includes` / `excludes`** are exact-label assertions sourced from the real service — never
-  hardcode a label the service does not produce.
-- **`count`** pins the *complete* list size. Use it ONLY for CLOSED enum sets so the corpus stays
-  resilient to a later helper/faker/state-key being added. Known closed counts:
-  | context | count |
-  |---|---|
-  | matcher names, off-body (path/headers/method/scheme/…) | 13 |
-  | matcher names, on-body (adds `form`) | 14 |
-  | HTTP methods (exact `method` value) | 9 |
-  | URI schemes (exact `scheme` value) | 4 |
-
-  Do NOT pin `count` for open sets (helpers, fakers, state keys) or for `schemaVersion` (its list
-  carries harmless quoted-label duplicates from schema `examples`); assert those with `includes`.
-- **`kindOf`** asserts the `CompletionItemKind` *name* (e.g. `"Value"`, `"EnumMember"`,
-  `"Property"`, `"Snippet"`) for specific labels. Optional.
-- Every marker in the fixture must have an entry here, and vice-versa — the runner flags either drift.
+The whole list is the oracle: a label added, dropped or re-kinded fails the fixture, and a reviewed
+change is recorded with `TEST_UPDATE=1 npm test`. A fixture whose service needs settings — the
+`postServeAction` allowlist — reads them from a sibling `<case>.settings.json`
+(`{ "registeredActions": ["webhook", "logger"] }`), passed to `createHoverflyLanguageService`.
 
 ## Adding a fixture
 
-1. Pick/create a `<context>/` dir and write `<case>.hoverfly.json` with the cursor marker(s).
-2. Dump the ground truth:
-   `CORPUS_DUMP=<case> npx vitest --run packages/analysis/specs/integration/contributions/corpus.spec.ts`
-   (prints the actual labels + kinds at each marker; no `--disableConsoleIntercept` needed).
-3. Write `<case>.expect.json` from that output — `includes`/`excludes`, plus `count`/`kindOf` only
-   where they hold. Keep it meaningful but resilient (prefer `includes` over `count` for open sets).
-4. Run `npx vitest --run packages/analysis/specs/integration/contributions/corpus.spec.ts` — green when the
-   stripped fixture validates (unless under `broken/`) and every marker matches its sidecar.
+1. Pick or create a `<context>/` folder and write `<case>.hoverfly.json` with its cursor marker(s).
+2. Run `TEST_UPDATE=1 npm test` from the repository root: the golden is recorded beside it, and the
+   corpus index (`specs/integration/contributions/__expected__/completion-corpus.json`) gains the fixture.
+3. Review the recorded golden like code: every label must be one the service should offer there.

@@ -1,42 +1,21 @@
 import { describe, expect, test } from 'vitest';
 
-import { REGISTRY_MATCHER_NAMES } from '../../../src/registry/matchers.js';
-import { completionsAt, expectLabels } from '../fourslash/harness.js';
+import { completionsAt, labelsAt } from '../__setup__/fourslash.js';
 import { integration } from '../integration.specification.js';
 
-/**
- * COMPLETION COVERAGE MATRIX.
- *
- * One systematic sweep over every documented completion context, under the cursor conditions a
- * REAL editor produces. Each context is exercised at:
- *
- *   (a) empty quotes      `"⟦⟧"`              — cursor between two quotes (manual invoke / `"` trigger)
- *   (b) mid-word          `"au⟦⟧"`            — a partial token already typed (client filters by prefix)
- *   (c) bare position     `{⟦⟧` / `[⟦⟧`       — cursor before any quotes, right after `{` or `[`
- *
- * The fourth dimension editors add — WITH vs WITHOUT a trigger character — does not change the
- * contribution path: `vscode-json-languageservice`'s `doComplete` keys completions off the AST
- * position, not off a `CompletionContext.triggerCharacter` (the service signature used here takes
- * no context). A trigger character only INVOKES completion; the same position logic then runs.
- * The server advertises `"`, `{`, `.`, `#`, `@`, `'`, `(` as triggers (capabilities.ts), which is
- * exactly the set that reaches these positions, so trigger-vs-manual is behaviourally identical.
- *
- * The truth table this encodes is documented in packages/analysis/src/contributions/README.md.
- */
+// invariant: every completion context is met under the three cursor conditions a real editor produces —
+// (a) empty quotes `"⟦⟧"`, (b) mid-word `"au⟦⟧"`, (c) a bare position after `{` or `[`. A trigger
+// character only invokes completion: the service keys the list off the AST position, so a run with
+// and without one is the same run. The truth table is packages/analysis/src/contributions/README.md's.
 
-const NAMED_MATCHERS = REGISTRY_MATCHER_NAMES.filter((name) => name !== '');
-
-/** Wrap a matcher `value` expression on a request field into a full simulation document. */
 function matcherDoc(field: string, inner: string): string {
     return `{"data":{"pairs":[{"request":{"${field}":[{"matcher":${inner}}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
 }
 
-/** Wrap a `meta.schemaVersion` value expression. */
 function schemaVersionDoc(inner: string): string {
     return `{"data":{"pairs":[]},"meta":{"schemaVersion":${inner}}}`;
 }
 
-/** A pair that DECLARES a state key — `requiresState` on the request, the rest on the response. */
 function producerPair(
     kind: 'removesState' | 'requiresState' | 'transitionsState',
     body: string,
@@ -47,7 +26,6 @@ function producerPair(
     return `{"request":{"path":[{"matcher":"exact","value":"/p"}]},"response":{"status":200,"${kind}":${body}}}`;
 }
 
-/** A consumer pair typing a new `requiresState` (request) or `transitionsState` (response) KEY. */
 function consumerPair(kind: 'requiresState' | 'transitionsState', typedKey: string): string {
     if (kind === 'requiresState') {
         return `{"request":{"path":[{"matcher":"exact","value":"/q"}],"requiresState":${typedKey}},"response":{"status":200}}`;
@@ -55,222 +33,433 @@ function consumerPair(kind: 'requiresState' | 'transitionsState', typedKey: stri
     return `{"request":{"path":[{"matcher":"exact","value":"/q"}]},"response":{"status":200,"transitionsState":${typedKey}}}`;
 }
 
-/** Glue a producer + consumer pair into a full simulation document. */
 function stateDoc(producer: string, consumer: string): string {
     return `{"data":{"pairs":[${producer},${consumer}]},"meta":{"schemaVersion":"v5.3"}}`;
 }
 
-/** A producer's requiresState `auth` plus a consumer pair whose removesState array is being typed. */
 function removesStateDoc(inner: string): string {
-    const producer = `{"request":{"path":[{"matcher":"exact","value":"/p"}],"requiresState":{"auth":"yes"}},"response":{"status":200}}`;
-    const consumer = `{"request":{"path":[{"matcher":"exact","value":"/q"}]},"response":{"status":200,"removesState":${inner}}}`;
-    return `{"data":{"pairs":[${producer},${consumer}]},"meta":{"schemaVersion":"v5.3"}}`;
+    return stateDoc(
+        producerPair('requiresState', `{"auth":"yes"}`),
+        `{"request":{"path":[{"matcher":"exact","value":"/q"}]},"response":{"status":200,"removesState":${inner}}}`,
+    );
 }
 
-/** Wrap a `response.postServeAction` value expression. */
 function postServeDoc(inner: string): string {
     return `{"data":{"pairs":[{"request":{"path":[]},"response":{"status":200,"postServeAction":${inner}}}]},"meta":{"schemaVersion":"v5.3"}}`;
 }
 
-/* ----------------------------------- matcher names ------------------------------------- */
+async function insertions(
+    doc: string,
+    options = {},
+): Promise<{ insertText: string | undefined; label: string }[]> {
+    return (await completionsAt(doc, '', options)).map(({ insertText, label }) => ({
+        insertText,
+        label,
+    }));
+}
 
-describe('coverage: matcher-name value (request.path)', () => {
-    test('(a) empty quotes offers the full named registry set', async () => {
-        const completions = await integration.call(
-            async () => await completionsAt(matcherDoc('path', `"⟦⟧"`), ''),
+const fromTransitions = producerPair('transitionsState', `{"auth":"yes"}`);
+const fromRequires = producerPair('requiresState', `{"step":"1"}`);
+const actions = { settings: { registeredActions: ['webhook', 'logger'] } };
+
+describe('coverage matrix', () => {
+    test('matcher name on request.path, (a) empty quotes: the named registry set', async () => {
+        // Given - empty quotes in a path matcher value
+        const result = await integration.call(
+            async () => await labelsAt(matcherDoc('path', `"⟦⟧"`)),
         );
-        expectLabels(completions.value.value, { exact: NAMED_MATCHERS });
+
+        // Then - every named matcher
+        expect(result.value).toMatch([
+            'exact',
+            'negate',
+            'glob',
+            'regex',
+            'xml',
+            'xmltemplated',
+            'xpath',
+            'json',
+            'jsonpartial',
+            'jsonpath',
+            'jwt',
+            'jwtjsonpath',
+            'array',
+        ]);
     });
 
-    test('(b) mid-word still offers matchers (client filters by prefix)', async () => {
-        const completions = await integration.call(
-            async () => await completionsAt(matcherDoc('path', `"ex⟦⟧"`), ''),
+    test('matcher name on request.path, (b) mid-word: the whole set, the client filtering by prefix', async () => {
+        // Given - a partial matcher name typed
+        const result = await integration.call(
+            async () => await labelsAt(matcherDoc('path', `"ex⟦⟧"`)),
         );
-        expectLabels(completions.value.value, { contains: ['exact', 'regex'] });
+
+        // Then - the same set, unfiltered
+        expect(result.value).toMatch([
+            'exact',
+            'negate',
+            'glob',
+            'regex',
+            'xml',
+            'xmltemplated',
+            'xpath',
+            'json',
+            'jsonpartial',
+            'jsonpath',
+            'jwt',
+            'jwtjsonpath',
+            'array',
+        ]);
     });
 
-    test('(c) bare position (no quotes) offers matchers; insertText quotes them', async () => {
-        const completions = await integration.call(
-            async () => await completionsAt(matcherDoc('path', `⟦⟧`), ''),
+    test('matcher name on request.path, (c) bare position: quoted on insert', async () => {
+        // Given - no quotes yet
+        const result = await integration.call(
+            async () => await insertions(matcherDoc('path', '⟦⟧')),
         );
-        const items = completions.value.value;
-        expectLabels(items, {
-            contains: ['exact'],
-        });
-        expect(items.find((i) => i.label === 'exact')?.insertText).toBe('"exact"');
-    });
-});
 
-describe('coverage: matcher-name value (request.body adds form)', () => {
-    test('(a) empty quotes includes form', async () => {
-        const completions = await integration.call(
-            async () => await completionsAt(matcherDoc('body', `"⟦⟧"`), ''),
+        // Then - each matcher, its insert text quoting it
+        expect(result.value).toMatch([
+            {
+                insertText: '"exact"',
+                label: 'exact',
+            },
+            {
+                insertText: '"negate"',
+                label: 'negate',
+            },
+            {
+                insertText: '"glob"',
+                label: 'glob',
+            },
+            {
+                insertText: '"regex"',
+                label: 'regex',
+            },
+            {
+                insertText: '"xml"',
+                label: 'xml',
+            },
+            {
+                insertText: '"xmltemplated"',
+                label: 'xmltemplated',
+            },
+            {
+                insertText: '"xpath"',
+                label: 'xpath',
+            },
+            {
+                insertText: '"json"',
+                label: 'json',
+            },
+            {
+                insertText: '"jsonpartial"',
+                label: 'jsonpartial',
+            },
+            {
+                insertText: '"jsonpath"',
+                label: 'jsonpath',
+            },
+            {
+                insertText: '"jwt"',
+                label: 'jwt',
+            },
+            {
+                insertText: '"jwtjsonpath"',
+                label: 'jwtjsonpath',
+            },
+            {
+                insertText: '"array"',
+                label: 'array',
+            },
+        ]);
+    });
+
+    test('matcher name on request.body, (a) empty quotes: form joins the set', async () => {
+        // Given - empty quotes in a body matcher value
+        const result = await integration.call(
+            async () => await labelsAt(matcherDoc('body', `"⟦⟧"`)),
         );
-        expectLabels(completions.value.value, {
-            exact: [...NAMED_MATCHERS, 'form'],
-        });
+
+        // Then - the named matchers and form
+        expect(result.value).toMatch([
+            'exact',
+            'negate',
+            'glob',
+            'regex',
+            'xml',
+            'xmltemplated',
+            'xpath',
+            'json',
+            'jsonpartial',
+            'jsonpath',
+            'jwt',
+            'jwtjsonpath',
+            'array',
+            'form',
+        ]);
     });
 
-    test('(b) mid-word still offers form', async () => {
-        const completions = await integration.call(
-            async () => await completionsAt(matcherDoc('body', `"fo⟦⟧"`), ''),
+    test('matcher name on request.body, (b) mid-word: form stays offered', async () => {
+        // Given - a partial name typed on the body
+        const result = await integration.call(
+            async () => await labelsAt(matcherDoc('body', `"fo⟦⟧"`)),
         );
-        expectLabels(completions.value.value, { contains: ['form'] });
+
+        // Then - the body set, unfiltered
+        expect(result.value).toMatch([
+            'exact',
+            'negate',
+            'glob',
+            'regex',
+            'xml',
+            'xmltemplated',
+            'xpath',
+            'json',
+            'jsonpartial',
+            'jsonpath',
+            'jwt',
+            'jwtjsonpath',
+            'array',
+            'form',
+        ]);
     });
 
-    test('(c) bare position includes form', async () => {
-        const completions = await integration.call(
-            async () => await completionsAt(matcherDoc('body', `⟦⟧`), ''),
+    test('matcher name on request.body, (c) bare position: form stays offered', async () => {
+        // Given - no quotes yet on the body
+        const result = await integration.call(async () => await labelsAt(matcherDoc('body', '⟦⟧')));
+
+        // Then - the body set
+        expect(result.value).toMatch([
+            'exact',
+            'negate',
+            'glob',
+            'regex',
+            'xml',
+            'xmltemplated',
+            'xpath',
+            'json',
+            'jsonpartial',
+            'jsonpath',
+            'jwt',
+            'jwtjsonpath',
+            'array',
+            'form',
+        ]);
+    });
+
+    test('meta.schemaVersion, (a) empty quotes: the version enum', async () => {
+        // Given - empty quotes in the version value
+        const result = await integration.call(async () => await labelsAt(schemaVersionDoc(`"⟦⟧"`)));
+
+        // Then - the four versions and the schema's quoted examples
+        expect(result.value).toMatch([
+            '"v5.3"',
+            '"v5.2"',
+            '"v5.1"',
+            '"v5"',
+            'v5.3',
+            'v5',
+            'v5.1',
+            'v5.2',
+        ]);
+    });
+
+    test('meta.schemaVersion, (b) mid-word: the version enum', async () => {
+        // Given - a partial version typed
+        const result = await integration.call(
+            async () => await labelsAt(schemaVersionDoc(`"v5⟦⟧"`)),
         );
-        expectLabels(completions.value.value, { contains: ['form', 'exact'] });
-    });
-});
 
-/* ----------------------------------- schemaVersion ------------------------------------- */
-
-describe('coverage: meta.schemaVersion value', () => {
-    test('(a) empty quotes offers the version enum', async () => {
-        const completions = await integration.call(
-            async () => await completionsAt(schemaVersionDoc(`"⟦⟧"`), ''),
-        );
-        expectLabels(completions.value.value, {
-            contains: ['v5.3', 'v5', 'v5.1', 'v5.2'],
-        });
+        // Then - the same enum
+        expect(result.value).toMatch([
+            '"v5.3"',
+            '"v5.2"',
+            '"v5.1"',
+            '"v5"',
+            'v5.3',
+            'v5',
+            'v5.1',
+            'v5.2',
+        ]);
     });
 
-    test('(b) mid-word offers the version enum', async () => {
-        const completions = await integration.call(
-            async () => await completionsAt(schemaVersionDoc(`"v5⟦⟧"`), ''),
-        );
-        expectLabels(completions.value.value, { contains: ['v5.3'] });
+    test('meta.schemaVersion, (c) bare position: quoted on insert', async () => {
+        // Given - no quotes yet
+        const result = await integration.call(async () => await insertions(schemaVersionDoc('⟦⟧')));
+
+        // Then - each version, quoted on insert
+        expect(result.value).toMatch([
+            {
+                insertText: '"v5.3"',
+                label: '"v5.3"',
+            },
+            {
+                insertText: '"v5.2"',
+                label: '"v5.2"',
+            },
+            {
+                insertText: '"v5.1"',
+                label: '"v5.1"',
+            },
+            {
+                insertText: '"v5"',
+                label: '"v5"',
+            },
+            {
+                insertText: '"v5.3"',
+                label: 'v5.3',
+            },
+            {
+                insertText: '"v5"',
+                label: 'v5',
+            },
+            {
+                insertText: '"v5.1"',
+                label: 'v5.1',
+            },
+            {
+                insertText: '"v5.2"',
+                label: 'v5.2',
+            },
+        ]);
     });
 
-    test('(c) bare position offers the version enum; insertText quotes it', async () => {
-        const completions = await integration.call(
-            async () => await completionsAt(schemaVersionDoc(`⟦⟧`), ''),
-        );
-        const items = completions.value.value;
-        expectLabels(items, { contains: ['v5.3'] });
-        expect(items.find((i) => i.label === 'v5.3')?.insertText).toBe('"v5.3"');
-    });
-});
-
-/* -------------------------------- requiresState KEYS ----------------------------------- */
-
-describe('coverage: request.requiresState KEY (cross-ref)', () => {
-    const fromTransitions = producerPair('transitionsState', `{"auth":"yes"}`);
-
-    test('(a) empty quotes offers cross-referenced requiresState keys + sequence:', async () => {
+    test('requiresState key, (a) empty quotes: the cross-referenced keys and sequence:', async () => {
+        // Given - a key set only by another pair's transitionsState
         const doc = stateDoc(fromTransitions, consumerPair('requiresState', `{"⟦⟧":""}`));
-        const completions = await integration.call(async () => await completionsAt(doc, ''));
-        expectLabels(completions.value.value, { contains: ['auth', 'sequence:'] });
+        const result = await integration.call(async () => await labelsAt(doc));
+
+        // Then - that key, and the sequence: snippet
+        expect(result.value).toMatch(['auth', 'sequence:']);
     });
 
-    test('(b) mid-word offers the keys (client filters by prefix)', async () => {
+    test('requiresState key, (b) mid-word: the keys, unfiltered', async () => {
+        // Given - a partial key typed
         const doc = stateDoc(fromTransitions, consumerPair('requiresState', `{"au⟦⟧":""}`));
-        const completions = await integration.call(async () => await completionsAt(doc, ''));
-        expectLabels(completions.value.value, { contains: ['auth'] });
+        const result = await integration.call(async () => await labelsAt(doc));
+
+        // Then - the same keys
+        expect(result.value).toMatch(['au', 'auth', 'sequence:']);
     });
 
-    test('(c) bare position right after `{` offers keys; insertText appends the value', async () => {
-        const doc = stateDoc(fromTransitions, consumerPair('requiresState', `{⟦⟧}`));
-        const completions = await integration.call(async () => await completionsAt(doc, ''));
-        const items = completions.value.value;
-        expectLabels(items, { contains: ['auth'] });
-        // The `addValue` flag is true at the bare `{` position, so the snippet inserts `"key": "$1"`.
-        expect(items.find((i) => i.label === 'auth')?.insertText).toBe('"auth": "$1"');
+    test('requiresState key, (c) bare position: the insert text appends the value', async () => {
+        // Given - a cursor right after `{`
+        const doc = stateDoc(fromTransitions, consumerPair('requiresState', '{⟦⟧}'));
+        const result = await integration.call(async () => await insertions(doc));
+
+        // Then - each key inserts `"key": "$1"`
+        expect(result.value).toMatch([
+            {
+                insertText: '"auth": "$1"',
+                label: 'auth',
+            },
+            {
+                insertText: '"sequence:${1:name}": "$2"',
+                label: 'sequence:',
+            },
+        ]);
     });
 
-    test('tHE BUG: a key declared only via transitionsState is offered in requiresState', async () => {
-        // Reproduces the reported gap: `auth` set by a producer's transitionsState, consumed here.
-        const doc = stateDoc(fromTransitions, consumerPair('requiresState', `{"⟦⟧":""}`));
-        const completions = await integration.call(async () => await completionsAt(doc, ''));
-        expectLabels(completions.value.value, { contains: ['auth'] });
+    test('requiresState key: a key declared only through removesState is offered too', async () => {
+        // Given - a key the producer only removes
+        const doc = stateDoc(
+            producerPair('removesState', `["auth"]`),
+            consumerPair('requiresState', `{"⟦⟧":""}`),
+        );
+        const result = await integration.call(async () => await labelsAt(doc));
+
+        // Then - the removed key joins the union
+        expect(result.value).toMatch(['auth', 'sequence:']);
     });
 
-    test('also unions keys declared only via removesState', async () => {
-        const fromRemoves = producerPair('removesState', `["auth"]`);
-        const doc = stateDoc(fromRemoves, consumerPair('requiresState', `{"⟦⟧":""}`));
-        const completions = await integration.call(async () => await completionsAt(doc, ''));
-        expectLabels(completions.value.value, { contains: ['auth'] });
-    });
-});
-
-/* ------------------------------- transitionsState KEYS --------------------------------- */
-
-describe('coverage: response.transitionsState KEY (cross-ref)', () => {
-    const fromRequires = producerPair('requiresState', `{"step":"1"}`);
-
-    test('(a) empty quotes offers cross-referenced keys WITHOUT a sequence: snippet', async () => {
+    test('transitionsState key, (a) empty quotes: the cross-referenced keys, no sequence:', async () => {
+        // Given - a key another pair requires
         const doc = stateDoc(fromRequires, consumerPair('transitionsState', `{"⟦⟧":""}`));
-        const completions = await integration.call(async () => await completionsAt(doc, ''));
-        expectLabels(completions.value.value, { contains: ['step'], notContains: ['sequence:'] });
+        const result = await integration.call(async () => await labelsAt(doc));
+
+        // Then - that key alone
+        expect(result.value).toMatch(['step']);
     });
 
-    test('(b) mid-word offers the keys', async () => {
+    test('transitionsState key, (b) mid-word: the keys, unfiltered', async () => {
+        // Given - a partial key typed
         const doc = stateDoc(fromRequires, consumerPair('transitionsState', `{"st⟦⟧":""}`));
-        const completions = await integration.call(async () => await completionsAt(doc, ''));
-        expectLabels(completions.value.value, { contains: ['step'] });
+        const result = await integration.call(async () => await labelsAt(doc));
+
+        // Then - the same keys
+        expect(result.value).toMatch(['st', 'step']);
     });
 
-    test('(c) bare position offers keys with an appended value', async () => {
-        const doc = stateDoc(fromRequires, consumerPair('transitionsState', `{⟦⟧}`));
-        const completions = await integration.call(async () => await completionsAt(doc, ''));
-        const items = completions.value.value;
-        expectLabels(items, { contains: ['step'] });
-        expect(items.find((i) => i.label === 'step')?.insertText).toBe('"step": "$1"');
+    test('transitionsState key, (c) bare position: the insert text appends the value', async () => {
+        // Given - a cursor right after `{`
+        const doc = stateDoc(fromRequires, consumerPair('transitionsState', '{⟦⟧}'));
+        const result = await integration.call(async () => await insertions(doc));
+
+        // Then - each key inserts `"key": "$1"`
+        expect(result.value).toMatch([
+            {
+                insertText: '"step": "$1"',
+                label: 'step',
+            },
+        ]);
     });
-});
 
-/* -------------------------------- removesState (by design) ----------------------------- */
-
-describe('coverage: response.removesState array entry (by design: no completion)', () => {
-    // Array string ELEMENTS invoke neither collectPropertyCompletions (no object) nor
-    // CollectValueCompletions (that hook only fires for object property values, with a propertyKey).
-    // Vscode-json-languageservice exposes no contribution hook for a plain array-of-strings element,
-    // So cross-ref completion here is not achievable through the JSONWorkerContribution API. We
-    // Assert the (intended) absence so the limitation is pinned rather than silently regressing.
-
-    test('(a) empty quotes inside the array offers no cross-referenced state key', async () => {
-        const completions = await integration.call(
-            async () => await completionsAt(removesStateDoc(`["⟦⟧"]`), ''),
+    // outside: vscode-json-languageservice calls no contribution for a string element of an array, so a
+    // removesState entry gets no cross-referenced key; the two specs below pin that absence.
+    test('removesState entry, (a) empty quotes: no state key', async () => {
+        // Given - empty quotes inside a removesState array
+        const result = await integration.call(
+            async () => await labelsAt(removesStateDoc(`["⟦⟧"]`)),
         );
-        expectLabels(completions.value.value, { notContains: ['auth'] });
+
+        // Then - nothing cross-referenced
+        expect(result.value).toMatch([]);
     });
 
-    test('(c) bare array position offers no cross-referenced state key', async () => {
-        const completions = await integration.call(
-            async () => await completionsAt(removesStateDoc(`[⟦⟧]`), ''),
-        );
-        expectLabels(completions.value.value, { notContains: ['auth'] });
-    });
-});
+    test('removesState entry, (c) bare position: no state key', async () => {
+        // Given - a bare position inside a removesState array
+        const result = await integration.call(async () => await labelsAt(removesStateDoc('[⟦⟧]')));
 
-/* -------------------------------- postServeAction value -------------------------------- */
-
-describe('coverage: response.postServeAction value (settings-gated)', () => {
-    const settings = { settings: { registeredActions: ['webhook', 'logger'] } } as const;
-
-    test('(a) empty quotes offers the registered actions', async () => {
-        const completions = await integration.call(
-            async () => await completionsAt(postServeDoc(`"⟦⟧"`), '', settings),
-        );
-        expectLabels(completions.value.value, { contains: ['webhook', 'logger'] });
+        // Then - nothing cross-referenced
+        expect(result.value).toMatch([]);
     });
 
-    test('(b) mid-word offers the registered actions', async () => {
-        const completions = await integration.call(
-            async () => await completionsAt(postServeDoc(`"web⟦⟧"`), '', settings),
+    test('postServeAction, (a) empty quotes: the registered actions', async () => {
+        // Given - two registered actions
+        const result = await integration.call(
+            async () => await labelsAt(postServeDoc(`"⟦⟧"`), '', actions),
         );
-        expectLabels(completions.value.value, { contains: ['webhook'] });
+
+        // Then - both
+        expect(result.value).toMatch(['webhook', 'logger']);
     });
 
-    test('(c) bare position offers the actions; insertText quotes them', async () => {
-        const completions = await integration.call(
-            async () => await completionsAt(postServeDoc(`⟦⟧`), '', settings),
+    test('postServeAction, (b) mid-word: the registered actions, unfiltered', async () => {
+        // Given - a partial action typed
+        const result = await integration.call(
+            async () => await labelsAt(postServeDoc(`"web⟦⟧"`), '', actions),
         );
-        const items = completions.value.value;
-        expectLabels(items, { contains: ['webhook'] });
-        expect(items.find((i) => i.label === 'webhook')?.insertText).toBe('"webhook"');
+
+        // Then - both
+        expect(result.value).toMatch(['webhook', 'logger']);
+    });
+
+    test('postServeAction, (c) bare position: quoted on insert', async () => {
+        // Given - no quotes yet
+        const result = await integration.call(
+            async () => await insertions(postServeDoc('⟦⟧'), actions),
+        );
+
+        // Then - each action, quoted on insert
+        expect(result.value).toMatch([
+            {
+                insertText: '"webhook"',
+                label: 'webhook',
+            },
+            {
+                insertText: '"logger"',
+                label: 'logger',
+            },
+        ]);
     });
 });

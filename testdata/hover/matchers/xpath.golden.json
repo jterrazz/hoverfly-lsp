@@ -1,0 +1,6 @@
+{
+    "diagnostics": [],
+    "markers": {
+        "": "### `xpath` matcher\n\nXPath expression match (ChrisTrenkamp/xsel engine). doMatch chains the XPath result. Non-string value never matches. https://docs.hoverfly.io/en/latest/pages/keyconcepts/matching/matchers.html\n\n**Value type:** `string`\n**Config:** not supported.\n**doMatch:** transforms/extracts a value for the next chained matcher (not a re-test of the same input)."
+    }
+}

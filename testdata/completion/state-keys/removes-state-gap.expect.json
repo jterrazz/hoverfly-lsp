@@ -1,8 +1,0 @@
-{
-    "markers": {
-        "": {
-            "excludes": ["session", "sequence:"],
-            "count": 0
-        }
-    }
-}

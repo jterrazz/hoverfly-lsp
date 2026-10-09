@@ -1,0 +1,15 @@
+{
+    "diagnostics": [],
+    "markers": {
+        "": [
+            {
+                "kind": "Property",
+                "label": "loggedIn"
+            },
+            {
+                "kind": "Snippet",
+                "label": "sequence:"
+            }
+        ]
+    }
+}

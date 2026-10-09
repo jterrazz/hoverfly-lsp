@@ -1,0 +1,15 @@
+{
+    "diagnostics": [],
+    "markers": {
+        "": [
+            {
+                "kind": "Variable",
+                "label": "cart"
+            },
+            {
+                "kind": "Variable",
+                "label": "checkout"
+            }
+        ]
+    }
+}

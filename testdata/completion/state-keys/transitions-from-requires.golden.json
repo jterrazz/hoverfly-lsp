@@ -1,0 +1,11 @@
+{
+    "diagnostics": [],
+    "markers": {
+        "": [
+            {
+                "kind": "Property",
+                "label": "wishlist"
+            }
+        ]
+    }
+}

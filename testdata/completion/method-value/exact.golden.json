@@ -1,0 +1,43 @@
+{
+    "diagnostics": [],
+    "markers": {
+        "": [
+            {
+                "kind": "EnumMember",
+                "label": "GET"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "HEAD"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "POST"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "PUT"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "DELETE"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "CONNECT"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "OPTIONS"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "TRACE"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "PATCH"
+            }
+        ]
+    }
+}

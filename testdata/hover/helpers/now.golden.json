@@ -1,0 +1,6 @@
+{
+    "diagnostics": [],
+    "markers": {
+        "": "### `now` — inline helper\n\n`now [offset: string] [format: string]`\n\nCurrent time, optionally offset and formatted. format \"\" => RFC3339, \"unix\" => seconds, \"epoch\" => MILLISECONDS (misnamed), else a Go time layout. https://docs.hoverfly.io/en/latest/pages/keyconcepts/templating/templating.html\n\n**Kind:** inline helper · **Arity:** 0–2 argument(s) · **Source:** Hoverfly helper\n\nExample: `{{now '-1d' 'unix'}}`"
+    }
+}

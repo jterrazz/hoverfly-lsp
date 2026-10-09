@@ -1,0 +1,847 @@
+{
+    "diagnostics": [],
+    "markers": {
+        "": [
+            {
+                "kind": "Value",
+                "label": "AchAccount"
+            },
+            {
+                "kind": "Value",
+                "label": "AchRouting"
+            },
+            {
+                "kind": "Value",
+                "label": "Address"
+            },
+            {
+                "kind": "Value",
+                "label": "Animal"
+            },
+            {
+                "kind": "Value",
+                "label": "AnimalType"
+            },
+            {
+                "kind": "Value",
+                "label": "AppAuthor"
+            },
+            {
+                "kind": "Value",
+                "label": "AppName"
+            },
+            {
+                "kind": "Value",
+                "label": "AppVersion"
+            },
+            {
+                "kind": "Value",
+                "label": "BeerAlcohol"
+            },
+            {
+                "kind": "Value",
+                "label": "BeerBlg"
+            },
+            {
+                "kind": "Value",
+                "label": "BeerHop"
+            },
+            {
+                "kind": "Value",
+                "label": "BeerIbu"
+            },
+            {
+                "kind": "Value",
+                "label": "BeerMalt"
+            },
+            {
+                "kind": "Value",
+                "label": "BeerName"
+            },
+            {
+                "kind": "Value",
+                "label": "BeerStyle"
+            },
+            {
+                "kind": "Value",
+                "label": "BeerYeast"
+            },
+            {
+                "kind": "Value",
+                "label": "Bird"
+            },
+            {
+                "kind": "Value",
+                "label": "BitcoinAddress"
+            },
+            {
+                "kind": "Value",
+                "label": "BitcoinPrivateKey"
+            },
+            {
+                "kind": "Value",
+                "label": "Blurb"
+            },
+            {
+                "kind": "Value",
+                "label": "Book"
+            },
+            {
+                "kind": "Value",
+                "label": "BookAuthor"
+            },
+            {
+                "kind": "Value",
+                "label": "BookGenre"
+            },
+            {
+                "kind": "Value",
+                "label": "BookTitle"
+            },
+            {
+                "kind": "Value",
+                "label": "Bool"
+            },
+            {
+                "kind": "Value",
+                "label": "Breakfast"
+            },
+            {
+                "kind": "Value",
+                "label": "BS"
+            },
+            {
+                "kind": "Value",
+                "label": "BuzzWord"
+            },
+            {
+                "kind": "Value",
+                "label": "Car"
+            },
+            {
+                "kind": "Value",
+                "label": "CarFuelType"
+            },
+            {
+                "kind": "Value",
+                "label": "CarMaker"
+            },
+            {
+                "kind": "Value",
+                "label": "CarModel"
+            },
+            {
+                "kind": "Value",
+                "label": "CarTransmissionType"
+            },
+            {
+                "kind": "Value",
+                "label": "CarType"
+            },
+            {
+                "kind": "Value",
+                "label": "Cat"
+            },
+            {
+                "kind": "Value",
+                "label": "CelebrityActor"
+            },
+            {
+                "kind": "Value",
+                "label": "CelebrityBusiness"
+            },
+            {
+                "kind": "Value",
+                "label": "CelebritySport"
+            },
+            {
+                "kind": "Value",
+                "label": "ChromeUserAgent"
+            },
+            {
+                "kind": "Value",
+                "label": "City"
+            },
+            {
+                "kind": "Value",
+                "label": "Color"
+            },
+            {
+                "kind": "Value",
+                "label": "Company"
+            },
+            {
+                "kind": "Value",
+                "label": "CompanySuffix"
+            },
+            {
+                "kind": "Value",
+                "label": "Contact"
+            },
+            {
+                "kind": "Value",
+                "label": "Country"
+            },
+            {
+                "kind": "Value",
+                "label": "CountryAbr"
+            },
+            {
+                "kind": "Value",
+                "label": "CreditCard"
+            },
+            {
+                "kind": "Value",
+                "label": "CreditCardCvv"
+            },
+            {
+                "kind": "Value",
+                "label": "CreditCardExp"
+            },
+            {
+                "kind": "Value",
+                "label": "CreditCardType"
+            },
+            {
+                "kind": "Value",
+                "label": "Currency"
+            },
+            {
+                "kind": "Value",
+                "label": "CurrencyLong"
+            },
+            {
+                "kind": "Value",
+                "label": "CurrencyShort"
+            },
+            {
+                "kind": "Value",
+                "label": "Cusip"
+            },
+            {
+                "kind": "Value",
+                "label": "Date"
+            },
+            {
+                "kind": "Value",
+                "label": "Day"
+            },
+            {
+                "kind": "Value",
+                "label": "Dessert"
+            },
+            {
+                "kind": "Value",
+                "label": "Digit"
+            },
+            {
+                "kind": "Value",
+                "label": "Dinner"
+            },
+            {
+                "kind": "Value",
+                "label": "Dog"
+            },
+            {
+                "kind": "Value",
+                "label": "DomainName"
+            },
+            {
+                "kind": "Value",
+                "label": "DomainSuffix"
+            },
+            {
+                "kind": "Value",
+                "label": "Drink"
+            },
+            {
+                "kind": "Value",
+                "label": "Email"
+            },
+            {
+                "kind": "Value",
+                "label": "Emoji"
+            },
+            {
+                "kind": "Value",
+                "label": "EmojiAlias"
+            },
+            {
+                "kind": "Value",
+                "label": "EmojiCategory"
+            },
+            {
+                "kind": "Value",
+                "label": "EmojiDescription"
+            },
+            {
+                "kind": "Value",
+                "label": "EmojiTag"
+            },
+            {
+                "kind": "Value",
+                "label": "Error"
+            },
+            {
+                "kind": "Value",
+                "label": "ErrorDatabase"
+            },
+            {
+                "kind": "Value",
+                "label": "ErrorGRPC"
+            },
+            {
+                "kind": "Value",
+                "label": "ErrorHTTP"
+            },
+            {
+                "kind": "Value",
+                "label": "ErrorHTTPClient"
+            },
+            {
+                "kind": "Value",
+                "label": "ErrorHTTPServer"
+            },
+            {
+                "kind": "Value",
+                "label": "ErrorObject"
+            },
+            {
+                "kind": "Value",
+                "label": "ErrorRuntime"
+            },
+            {
+                "kind": "Value",
+                "label": "ErrorValidation"
+            },
+            {
+                "kind": "Value",
+                "label": "FarmAnimal"
+            },
+            {
+                "kind": "Value",
+                "label": "FileExtension"
+            },
+            {
+                "kind": "Value",
+                "label": "FileMimeType"
+            },
+            {
+                "kind": "Value",
+                "label": "FirefoxUserAgent"
+            },
+            {
+                "kind": "Value",
+                "label": "FirstName"
+            },
+            {
+                "kind": "Value",
+                "label": "FlipACoin"
+            },
+            {
+                "kind": "Value",
+                "label": "Float32"
+            },
+            {
+                "kind": "Value",
+                "label": "Float64"
+            },
+            {
+                "kind": "Value",
+                "label": "Fruit"
+            },
+            {
+                "kind": "Value",
+                "label": "FutureDate"
+            },
+            {
+                "kind": "Value",
+                "label": "Gamertag"
+            },
+            {
+                "kind": "Value",
+                "label": "Gender"
+            },
+            {
+                "kind": "Value",
+                "label": "HackerAbbreviation"
+            },
+            {
+                "kind": "Value",
+                "label": "HackerAdjective"
+            },
+            {
+                "kind": "Value",
+                "label": "HackeringVerb"
+            },
+            {
+                "kind": "Value",
+                "label": "HackerNoun"
+            },
+            {
+                "kind": "Value",
+                "label": "HackerPhrase"
+            },
+            {
+                "kind": "Value",
+                "label": "HackerVerb"
+            },
+            {
+                "kind": "Value",
+                "label": "HexColor"
+            },
+            {
+                "kind": "Value",
+                "label": "HexUint128"
+            },
+            {
+                "kind": "Value",
+                "label": "HexUint16"
+            },
+            {
+                "kind": "Value",
+                "label": "HexUint256"
+            },
+            {
+                "kind": "Value",
+                "label": "HexUint32"
+            },
+            {
+                "kind": "Value",
+                "label": "HexUint64"
+            },
+            {
+                "kind": "Value",
+                "label": "HexUint8"
+            },
+            {
+                "kind": "Value",
+                "label": "Hobby"
+            },
+            {
+                "kind": "Value",
+                "label": "Hour"
+            },
+            {
+                "kind": "Value",
+                "label": "HTTPMethod"
+            },
+            {
+                "kind": "Value",
+                "label": "HTTPStatusCode"
+            },
+            {
+                "kind": "Value",
+                "label": "HTTPStatusCodeSimple"
+            },
+            {
+                "kind": "Value",
+                "label": "HTTPVersion"
+            },
+            {
+                "kind": "Value",
+                "label": "InputName"
+            },
+            {
+                "kind": "Value",
+                "label": "Int16"
+            },
+            {
+                "kind": "Value",
+                "label": "Int32"
+            },
+            {
+                "kind": "Value",
+                "label": "Int64"
+            },
+            {
+                "kind": "Value",
+                "label": "Int8"
+            },
+            {
+                "kind": "Value",
+                "label": "IPv4Address"
+            },
+            {
+                "kind": "Value",
+                "label": "IPv6Address"
+            },
+            {
+                "kind": "Value",
+                "label": "Isin"
+            },
+            {
+                "kind": "Value",
+                "label": "Job"
+            },
+            {
+                "kind": "Value",
+                "label": "JobDescriptor"
+            },
+            {
+                "kind": "Value",
+                "label": "JobLevel"
+            },
+            {
+                "kind": "Value",
+                "label": "JobTitle"
+            },
+            {
+                "kind": "Value",
+                "label": "Language"
+            },
+            {
+                "kind": "Value",
+                "label": "LanguageAbbreviation"
+            },
+            {
+                "kind": "Value",
+                "label": "LanguageBCP"
+            },
+            {
+                "kind": "Value",
+                "label": "LastName"
+            },
+            {
+                "kind": "Value",
+                "label": "Latitude"
+            },
+            {
+                "kind": "Value",
+                "label": "Letter"
+            },
+            {
+                "kind": "Value",
+                "label": "Longitude"
+            },
+            {
+                "kind": "Value",
+                "label": "LoremIpsumWord"
+            },
+            {
+                "kind": "Value",
+                "label": "Lunch"
+            },
+            {
+                "kind": "Value",
+                "label": "MacAddress"
+            },
+            {
+                "kind": "Value",
+                "label": "Map"
+            },
+            {
+                "kind": "Value",
+                "label": "MiddleName"
+            },
+            {
+                "kind": "Value",
+                "label": "MinecraftAnimal"
+            },
+            {
+                "kind": "Value",
+                "label": "MinecraftArmorPart"
+            },
+            {
+                "kind": "Value",
+                "label": "MinecraftArmorTier"
+            },
+            {
+                "kind": "Value",
+                "label": "MinecraftBiome"
+            },
+            {
+                "kind": "Value",
+                "label": "MinecraftDye"
+            },
+            {
+                "kind": "Value",
+                "label": "MinecraftFood"
+            },
+            {
+                "kind": "Value",
+                "label": "MinecraftMobBoss"
+            },
+            {
+                "kind": "Value",
+                "label": "MinecraftMobHostile"
+            },
+            {
+                "kind": "Value",
+                "label": "MinecraftMobNeutral"
+            },
+            {
+                "kind": "Value",
+                "label": "MinecraftMobPassive"
+            },
+            {
+                "kind": "Value",
+                "label": "MinecraftOre"
+            },
+            {
+                "kind": "Value",
+                "label": "MinecraftTool"
+            },
+            {
+                "kind": "Value",
+                "label": "MinecraftVillagerJob"
+            },
+            {
+                "kind": "Value",
+                "label": "MinecraftVillagerLevel"
+            },
+            {
+                "kind": "Value",
+                "label": "MinecraftVillagerStation"
+            },
+            {
+                "kind": "Value",
+                "label": "MinecraftWeapon"
+            },
+            {
+                "kind": "Value",
+                "label": "MinecraftWeather"
+            },
+            {
+                "kind": "Value",
+                "label": "MinecraftWood"
+            },
+            {
+                "kind": "Value",
+                "label": "Minute"
+            },
+            {
+                "kind": "Value",
+                "label": "Month"
+            },
+            {
+                "kind": "Value",
+                "label": "MonthString"
+            },
+            {
+                "kind": "Value",
+                "label": "Movie"
+            },
+            {
+                "kind": "Value",
+                "label": "MovieGenre"
+            },
+            {
+                "kind": "Value",
+                "label": "MovieName"
+            },
+            {
+                "kind": "Value",
+                "label": "Name"
+            },
+            {
+                "kind": "Value",
+                "label": "NamePrefix"
+            },
+            {
+                "kind": "Value",
+                "label": "NameSuffix"
+            },
+            {
+                "kind": "Value",
+                "label": "NanoSecond"
+            },
+            {
+                "kind": "Value",
+                "label": "NiceColors"
+            },
+            {
+                "kind": "Value",
+                "label": "OperaUserAgent"
+            },
+            {
+                "kind": "Value",
+                "label": "PastDate"
+            },
+            {
+                "kind": "Value",
+                "label": "Person"
+            },
+            {
+                "kind": "Value",
+                "label": "PetName"
+            },
+            {
+                "kind": "Value",
+                "label": "Phone"
+            },
+            {
+                "kind": "Value",
+                "label": "PhoneFormatted"
+            },
+            {
+                "kind": "Value",
+                "label": "Product"
+            },
+            {
+                "kind": "Value",
+                "label": "ProductCategory"
+            },
+            {
+                "kind": "Value",
+                "label": "ProductDescription"
+            },
+            {
+                "kind": "Value",
+                "label": "ProductFeature"
+            },
+            {
+                "kind": "Value",
+                "label": "ProductMaterial"
+            },
+            {
+                "kind": "Value",
+                "label": "ProductName"
+            },
+            {
+                "kind": "Value",
+                "label": "ProductUPC"
+            },
+            {
+                "kind": "Value",
+                "label": "ProgrammingLanguage"
+            },
+            {
+                "kind": "Value",
+                "label": "ProgrammingLanguageBest"
+            },
+            {
+                "kind": "Value",
+                "label": "RGBColor"
+            },
+            {
+                "kind": "Value",
+                "label": "SafariUserAgent"
+            },
+            {
+                "kind": "Value",
+                "label": "SafeColor"
+            },
+            {
+                "kind": "Value",
+                "label": "School"
+            },
+            {
+                "kind": "Value",
+                "label": "Second"
+            },
+            {
+                "kind": "Value",
+                "label": "Slogan"
+            },
+            {
+                "kind": "Value",
+                "label": "Snack"
+            },
+            {
+                "kind": "Value",
+                "label": "SSN"
+            },
+            {
+                "kind": "Value",
+                "label": "State"
+            },
+            {
+                "kind": "Value",
+                "label": "StateAbr"
+            },
+            {
+                "kind": "Value",
+                "label": "Street"
+            },
+            {
+                "kind": "Value",
+                "label": "StreetName"
+            },
+            {
+                "kind": "Value",
+                "label": "StreetNumber"
+            },
+            {
+                "kind": "Value",
+                "label": "StreetPrefix"
+            },
+            {
+                "kind": "Value",
+                "label": "StreetSuffix"
+            },
+            {
+                "kind": "Value",
+                "label": "TimeZone"
+            },
+            {
+                "kind": "Value",
+                "label": "TimeZoneAbv"
+            },
+            {
+                "kind": "Value",
+                "label": "TimeZoneFull"
+            },
+            {
+                "kind": "Value",
+                "label": "TimeZoneOffset"
+            },
+            {
+                "kind": "Value",
+                "label": "TimeZoneRegion"
+            },
+            {
+                "kind": "Value",
+                "label": "Uint16"
+            },
+            {
+                "kind": "Value",
+                "label": "Uint32"
+            },
+            {
+                "kind": "Value",
+                "label": "Uint64"
+            },
+            {
+                "kind": "Value",
+                "label": "Uint8"
+            },
+            {
+                "kind": "Value",
+                "label": "URL"
+            },
+            {
+                "kind": "Value",
+                "label": "UserAgent"
+            },
+            {
+                "kind": "Value",
+                "label": "Username"
+            },
+            {
+                "kind": "Value",
+                "label": "UUID"
+            },
+            {
+                "kind": "Value",
+                "label": "Vegetable"
+            },
+            {
+                "kind": "Value",
+                "label": "Vowel"
+            },
+            {
+                "kind": "Value",
+                "label": "WeekDay"
+            },
+            {
+                "kind": "Value",
+                "label": "Year"
+            },
+            {
+                "kind": "Value",
+                "label": "Zip"
+            }
+        ]
+    }
+}

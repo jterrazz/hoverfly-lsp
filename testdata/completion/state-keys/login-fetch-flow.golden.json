@@ -1,0 +1,15 @@
+{
+    "diagnostics": [],
+    "markers": {
+        "": [
+            {
+                "kind": "Property",
+                "label": "cart"
+            },
+            {
+                "kind": "Snippet",
+                "label": "sequence:"
+            }
+        ]
+    }
+}

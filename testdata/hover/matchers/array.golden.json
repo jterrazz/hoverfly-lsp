@@ -1,0 +1,6 @@
+{
+    "diagnostics": [],
+    "markers": {
+        "": "### `array` matcher\n\nArray match, value MUST be a JSON array (a plain string is rejected; the ';'-split applies to the incoming request value, NOT the matcher value). The ONLY matcher that accepts `config` (booleans `ignoreUnknown`/`ignoreOrder`/`ignoreOccurrences`). https://docs.hoverfly.io/en/latest/pages/keyconcepts/matching/matchers.html\n\n**Value type:** `array`\n**Config:** supported — booleans `ignoreUnknown`, `ignoreOrder`, `ignoreOccurrences`.\n**doMatch:** AND-semantics — re-tests the same input against the next matcher.\n\n⚠️ Each `config` value must be a JSON boolean — a string like `\"true\"` or a number is a mistake."
+    }
+}

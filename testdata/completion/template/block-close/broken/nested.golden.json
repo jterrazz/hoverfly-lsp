@@ -1,0 +1,14 @@
+{
+    "markers": {
+        "": [
+            {
+                "kind": "Keyword",
+                "label": "each"
+            },
+            {
+                "kind": "Keyword",
+                "label": "with"
+            }
+        ]
+    }
+}

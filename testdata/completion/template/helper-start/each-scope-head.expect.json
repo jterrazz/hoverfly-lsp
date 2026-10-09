@@ -1,9 +1,0 @@
-{
-    "markers": {
-        "": {
-            "includes": ["@index", "@first", "@last", "@key", "this", "now", "faker", "Request"],
-            "excludes": [],
-            "kindOf": { "this": "Variable", "@index": "Variable" }
-        }
-    }
-}

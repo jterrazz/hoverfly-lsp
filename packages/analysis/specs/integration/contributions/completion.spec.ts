@@ -1,244 +1,423 @@
 import { describe, expect, test } from 'vitest';
 
-import { REGISTRY_MATCHER_NAMES } from '../../../src/registry/matchers.js';
-import { completionsAt, expectLabels } from '../fourslash/harness.js';
+import { completionsAt, labelsAt } from '../__setup__/fourslash.js';
 import { integration } from '../integration.specification.js';
 
-/** Matcher names offered everywhere = the registry names minus the empty default matcher. */
-const NAMED_MATCHERS = REGISTRY_MATCHER_NAMES.filter((name) => name !== '');
+function documentationOf(
+    items: Awaited<ReturnType<typeof completionsAt>>,
+    label: string,
+): { detail: string | undefined; documentation: string; insertText: string | undefined } {
+    const item = items.find((candidate) => candidate.label === label);
+    const documentation = item?.documentation;
+    return {
+        detail: item?.detail,
+        documentation:
+            typeof documentation === 'string' ? documentation : (documentation?.value ?? ''),
+        insertText: item?.insertText,
+    };
+}
 
-describe('matcher-name completions', () => {
-    test('offers the named registry matchers on request.path (quoted value)', async () => {
+describe('completion', () => {
+    test('offers the named registry matchers on request.path', async () => {
         // Given - a cursor inside the quoted matcher value on request.path
         const doc = `{"data":{"pairs":[{"request":{"path":[{"matcher":"⟦⟧"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
-        /*
-         * Then - the dropdown is EXACTLY the body-excluded registry names: no `form` (path is not
-         * body), no empty default, and crucially no quoted-label `"form"`/`"exact"` duplicates from
-         * schema `examples`. Asserting the full label set (not just `notContains: ["form"]`) is what
-         * catches the quoted-label leak the schema previously produced.
-         */
-        const completions = await integration.call(async () => await completionsAt(doc, ''));
-        expectLabels(completions.value.value, { exact: NAMED_MATCHERS });
+        const result = await integration.call(async () => await labelsAt(doc));
+
+        // Then - the dropdown is the registry's named matchers, with no quoted duplicate from the schema's examples
+        expect(result.value).toMatch([
+            'exact',
+            'negate',
+            'glob',
+            'regex',
+            'xml',
+            'xmltemplated',
+            'xpath',
+            'json',
+            'jsonpartial',
+            'jsonpath',
+            'jwt',
+            'jwtjsonpath',
+            'array',
+        ]);
     });
 
-    test('offers matchers on an UNQUOTED matcher value position', async () => {
-        // Given - a bare (unquoted) value position after the colon
+    test('offers matchers on an unquoted matcher value position', async () => {
+        // Given - a bare value position after the colon
         const doc = `{"data":{"pairs":[{"request":{"path":[{"matcher":⟦⟧}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
-        // Then - the same named matchers are offered (insertText quotes them)
-        const completions = await integration.call(async () => await completionsAt(doc, ''));
-        expectLabels(completions.value.value, { contains: ['exact', 'regex', 'jsonpath'] });
+        const result = await integration.call(async () => await labelsAt(doc));
+
+        // Then - the same named matchers are offered
+        expect(result.value).toMatch([
+            'exact',
+            'negate',
+            'glob',
+            'regex',
+            'xml',
+            'xmltemplated',
+            'xpath',
+            'json',
+            'jsonpartial',
+            'jsonpath',
+            'jwt',
+            'jwtjsonpath',
+            'array',
+        ]);
     });
 
-    test('adds `form` ONLY on request.body', async () => {
+    test('adds form on request.body', async () => {
         // Given - a matcher value on request.body
         const doc = `{"data":{"pairs":[{"request":{"body":[{"matcher":"⟦⟧"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
-        /*
-         * Then - the dropdown is EXACTLY the registry names INCLUDING the body-only `form`, with no
-         * duplicate quoted-label items (schema `examples` no longer contribute matcher names).
-         */
-        const completions = await integration.call(async () => await completionsAt(doc, ''));
-        expectLabels(completions.value.value, { exact: [...NAMED_MATCHERS, 'form'] });
+        const result = await integration.call(async () => await labelsAt(doc));
+
+        // Then - the registry's named matchers and the body-only form
+        expect(result.value).toMatch([
+            'exact',
+            'negate',
+            'glob',
+            'regex',
+            'xml',
+            'xmltemplated',
+            'xpath',
+            'json',
+            'jsonpartial',
+            'jsonpath',
+            'jwt',
+            'jwtjsonpath',
+            'array',
+            'form',
+        ]);
     });
 
-    test('offers matchers inside a header matcher array', async () => {
+    test('offers matchers inside a header matcher array, without form', async () => {
         // Given - a matcher value inside request.headers.<name>[]
         const doc = `{"data":{"pairs":[{"request":{"headers":{"Accept":[{"matcher":"⟦⟧"}]}},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
-        // Then - registry matchers are offered but not `form` (headers are not body)
-        const completions = await integration.call(async () => await completionsAt(doc, ''));
-        expectLabels(completions.value.value, { contains: ['exact'], notContains: ['form'] });
+        const result = await integration.call(async () => await labelsAt(doc));
+
+        // Then - the registry matchers, a header being no body
+        expect(result.value).toMatch([
+            'exact',
+            'negate',
+            'glob',
+            'regex',
+            'xml',
+            'xmltemplated',
+            'xpath',
+            'json',
+            'jsonpartial',
+            'jsonpath',
+            'jwt',
+            'jwtjsonpath',
+            'array',
+        ]);
     });
 
     test('offers matchers inside a doMatch chain link', async () => {
         // Given - a matcher value inside a nested doMatch
         const doc = `{"data":{"pairs":[{"request":{"path":[{"matcher":"jsonpath","value":"$.x","doMatch":{"matcher":"⟦⟧"}}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
+        const result = await integration.call(async () => await labelsAt(doc));
+
         // Then - matcher names are offered in the chained position too
-        const completions = await integration.call(async () => await completionsAt(doc, ''));
-        expectLabels(completions.value.value, { contains: ['exact', 'regex'] });
+        expect(result.value).toMatch([
+            'exact',
+            'negate',
+            'glob',
+            'regex',
+            'xml',
+            'xmltemplated',
+            'xpath',
+            'json',
+            'jsonpartial',
+            'jsonpath',
+            'jwt',
+            'jwtjsonpath',
+            'array',
+        ]);
     });
 
-    test('carries documentation, detail, and a quoted insertText on each item', async () => {
-        // Given - a matcher value position
+    test('documents a matcher item from the registry and quotes its insert text', async () => {
+        // Given - a matcher value position, the regex item read whole
         const doc = `{"data":{"pairs":[{"request":{"path":[{"matcher":"⟦⟧"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
-        // When - completions are produced
-        const completions = await integration.call(async () => await completionsAt(doc, ''));
-        const items = completions.value.value;
-        expectLabels(items, { contains: ['regex'] });
-        const regex = items.find((i) => i.label === 'regex');
-        // Then - the item sources docs/detail from the registry and quotes its insert text
-        expect(regex?.detail).toContain('value:');
-        const documentation = regex?.documentation;
-        const docText = typeof documentation === 'string' ? documentation : documentation?.value;
-        expect(docText).toContain('Regular-expression match');
-        expect(docText).toContain('Value type:');
-        expect(regex?.insertText).toBe('"regex"');
+        const result = await integration.call(async () =>
+            documentationOf(await completionsAt(doc), 'regex'),
+        );
+
+        // Then - its detail, its documentation and a quoted insert text, with no generic panic note
+        expect(result.value).toMatch({
+            detail: 'Hoverfly matcher · value: string',
+            documentation:
+                '### `regex` matcher\n\nRegular-expression match. Non-string value never matches; an invalid pattern silently never matches. https://docs.hoverfly.io/en/latest/pages/keyconcepts/matching/matchers.html\n\n**Value type:** `string`\n**Config:** not supported.\n**doMatch:** AND-semantics — re-tests the same input against the next matcher.',
+            insertText: '"regex"',
+        });
     });
 
-    test('keeps completion documentation consistent with the hover policy (no generic panic notes)', async () => {
-        // Given - a matcher value position; documentation shares the docs.ts renderer with hover
+    test("carries the array matcher's own config-keys note, never the generic panic", async () => {
+        // Given - a matcher value position, the array item read whole
         const doc = `{"data":{"pairs":[{"request":{"path":[{"matcher":"⟦⟧"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
-        const completions = await integration.call(async () => await completionsAt(doc, ''));
-        const items = completions.value.value;
-        expectLabels(items, { contains: ['regex', 'array'] });
-        const docOf = (label: string): string => {
-            const documentation = items.find((i) => i.label === label)?.documentation;
-            return typeof documentation === 'string' ? documentation : (documentation?.value ?? '');
-        };
-        // Then - regex (no footgun) carries no ⚠️ note and no generic panic text
-        const regexDoc = docOf('regex');
-        expect(regexDoc).not.toContain('⚠️');
-        expect(regexDoc).not.toContain('Unknown matcher name');
-        expect(regexDoc).toContain('**Config:** not supported.');
-        // And - array still carries its OWN config-keys footgun, but not the generic panic
-        const arrayDoc = docOf('array');
-        expect(arrayDoc).toContain('⚠️');
-        expect(arrayDoc).toContain('must be a JSON boolean');
-        expect(arrayDoc).not.toContain('Unknown matcher name');
-    });
-});
+        const result = await integration.call(async () =>
+            documentationOf(await completionsAt(doc), 'array'),
+        );
 
-describe('matcher-name completions — negative contexts', () => {
-    test('does NOT offer matcher names in a non-simulation JSON document', async () => {
-        // Given - arbitrary JSON whose shape coincidentally has a "matcher" key but no sim fingerprint
+        // Then - the documentation the hover renders, its config footgun included
+        expect(result.value).toMatch({
+            detail: 'Hoverfly matcher · value: array',
+            documentation:
+                '### `array` matcher\n\nArray match, value MUST be a JSON array (a plain string is rejected; the \';\'-split applies to the incoming request value, NOT the matcher value). The ONLY matcher that accepts `config` (booleans `ignoreUnknown`/`ignoreOrder`/`ignoreOccurrences`). https://docs.hoverfly.io/en/latest/pages/keyconcepts/matching/matchers.html\n\n**Value type:** `array`\n**Config:** supported — booleans `ignoreUnknown`, `ignoreOrder`, `ignoreOccurrences`.\n**doMatch:** AND-semantics — re-tests the same input against the next matcher.\n\n⚠️ Each `config` value must be a JSON boolean — a string like `"true"` or a number is a mistake.',
+            insertText: '"array"',
+        });
+    });
+
+    test('offers no matcher name in a document that is no simulation', async () => {
+        // Given - arbitrary JSON whose shape has a "matcher" key but no simulation fingerprint
         const doc = `{"random":{"matcher":"⟦⟧"}}`;
-        // Then - no Hoverfly matcher completions are injected (path is not a request matcher position)
-        const completions = await integration.call(async () => await completionsAt(doc, ''));
-        expectLabels(completions.value.value, { notContains: NAMED_MATCHERS });
+        const result = await integration.call(async () => await labelsAt(doc));
+
+        // Then - only what the bundled schema offers there
+        expect(result.value).toMatch([]);
     });
 
-    test('does not offer matcher names on a response field', async () => {
-        // Given - a cursor in the response.body string (not a matcher position)
+    test('offers no matcher name in a response body', async () => {
+        // Given - a cursor in the response.body string
         const doc = `{"data":{"pairs":[{"request":{"path":[]},"response":{"status":200,"body":"⟦⟧"}}]},"meta":{"schemaVersion":"v5.3"}}`;
-        // Then - no matcher-name completions appear
-        const completions = await integration.call(async () => await completionsAt(doc, ''));
-        expectLabels(completions.value.value, { notContains: NAMED_MATCHERS });
+        const result = await integration.call(async () => await labelsAt(doc));
+
+        // Then - nothing Hoverfly-specific
+        expect(result.value).toMatch([]);
     });
 
-    test('does not crash and offers nothing Hoverfly-specific on broken JSON', async () => {
+    test('answers a list on broken JSON rather than refusing', async () => {
         // Given - a structurally broken document with a dangling matcher value
         const doc = `{"data":{"pairs":[{"request":{"path":[{"matcher":"⟦⟧"`;
-        const result = await integration.call(async () => await completionsAt(doc, ''));
-        // Then - the service stays alive: completion may or may not fire, but the call answered a list rather than refusing
-        expect(result.error.text).toBe('');
-        expect(Array.isArray(result.value.value)).toBe(true);
-    });
-});
+        const result = await integration.call(async () => await labelsAt(doc));
 
-describe('method/scheme value completions', () => {
-    test('offers the standard HTTP methods on an exact method value', async () => {
+        // Then - the service stays alive and answers what it can
+        expect(result.value).toMatch([
+            'exact',
+            'negate',
+            'glob',
+            'regex',
+            'xml',
+            'xmltemplated',
+            'xpath',
+            'json',
+            'jsonpartial',
+            'jsonpath',
+            'jwt',
+            'jwtjsonpath',
+            'array',
+        ]);
+    });
+
+    test('offers the standard HTTP methods on an exact method value, quoted on insert', async () => {
         // Given - a cursor in a method matcher value with an exact matcher
         const doc = `{"data":{"pairs":[{"request":{"method":[{"matcher":"exact","value":"⟦⟧"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
-        // Then - the IANA core methods are offered, quoted on insert
-        const completions = await integration.call(async () => await completionsAt(doc, ''));
-        const items = completions.value.value;
-        expectLabels(items, {
-            contains: ['GET', 'POST', 'DELETE', 'PATCH'],
-        });
-        const get = items.find((i) => i.label === 'GET');
-        expect(get?.insertText).toBe('"GET"');
+        const result = await integration.call(async () =>
+            (await completionsAt(doc)).map(({ insertText, label }) => ({ insertText, label })),
+        );
+
+        // Then - the IANA core methods
+        expect(result.value).toMatch([
+            {
+                insertText: '"GET"',
+                label: 'GET',
+            },
+            {
+                insertText: '"HEAD"',
+                label: 'HEAD',
+            },
+            {
+                insertText: '"POST"',
+                label: 'POST',
+            },
+            {
+                insertText: '"PUT"',
+                label: 'PUT',
+            },
+            {
+                insertText: '"DELETE"',
+                label: 'DELETE',
+            },
+            {
+                insertText: '"CONNECT"',
+                label: 'CONNECT',
+            },
+            {
+                insertText: '"OPTIONS"',
+                label: 'OPTIONS',
+            },
+            {
+                insertText: '"TRACE"',
+                label: 'TRACE',
+            },
+            {
+                insertText: '"PATCH"',
+                label: 'PATCH',
+            },
+        ]);
     });
 
-    test('offers methods when the matcher key is absent (default-exact)', async () => {
-        // Given - a method matcher with no `matcher` key (defaults to exact)
+    test('offers methods when the matcher key is absent (default exact)', async () => {
+        // Given - a method matcher with no matcher key
         const doc = `{"data":{"pairs":[{"request":{"method":[{"value":"⟦⟧"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
-        // Then - methods are still offered (default-exact is enum-shaped)
-        const completions = await integration.call(async () => await completionsAt(doc, ''));
-        expectLabels(completions.value.value, { contains: ['GET', 'OPTIONS'] });
+        const result = await integration.call(async () => await labelsAt(doc));
+
+        // Then - methods are still offered, default exact being enum-shaped
+        expect(result.value).toMatch([
+            'GET',
+            'HEAD',
+            'POST',
+            'PUT',
+            'DELETE',
+            'CONNECT',
+            'OPTIONS',
+            'TRACE',
+            'PATCH',
+        ]);
     });
 
-    test('offers http/https/ws/wss on an exact scheme value', async () => {
+    test('offers http, https, ws and wss on an exact scheme value', async () => {
         // Given - a cursor in a scheme matcher value with an exact matcher
         const doc = `{"data":{"pairs":[{"request":{"scheme":[{"matcher":"exact","value":"⟦⟧"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
-        // Then - the common schemes are offered
-        const completions = await integration.call(async () => await completionsAt(doc, ''));
-        expectLabels(completions.value.value, { exact: ['http', 'https', 'ws', 'wss'] });
+        const result = await integration.call(async () => await labelsAt(doc));
+
+        // Then - the four schemes
+        expect(result.value).toMatch(['http', 'https', 'ws', 'wss']);
     });
 
-    test('offers NOTHING on a regex method value (a pattern, not an enum)', async () => {
+    test('offers no method on a regex method value, a pattern being no enum', async () => {
         // Given - a method matcher whose matcher is regex
         const doc = `{"data":{"pairs":[{"request":{"method":[{"matcher":"regex","value":"⟦⟧"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
-        // Then - no method-value completions appear (the values are not offered for a pattern)
-        const completions = await integration.call(async () => await completionsAt(doc, ''));
-        expectLabels(completions.value.value, { notContains: ['GET', 'POST', 'DELETE'] });
+        const result = await integration.call(async () => await labelsAt(doc));
+
+        // Then - no method value
+        expect(result.value).toMatch([]);
     });
 
-    test('offers NOTHING on a glob scheme value', async () => {
+    test('offers no scheme on a glob scheme value', async () => {
         // Given - a scheme matcher whose matcher is glob
         const doc = `{"data":{"pairs":[{"request":{"scheme":[{"matcher":"glob","value":"⟦⟧"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
-        // Then - no scheme-value completions appear
-        const completions = await integration.call(async () => await completionsAt(doc, ''));
-        expectLabels(completions.value.value, { notContains: ['http', 'https'] });
+        const result = await integration.call(async () => await labelsAt(doc));
+
+        // Then - no scheme value
+        expect(result.value).toMatch([]);
     });
 
-    test('does not offer method values on a free-string field like path', async () => {
-        // Given - a cursor in a path matcher value (path is a free string, not an enum)
+    test('offers no method or scheme on a free-string field like path', async () => {
+        // Given - a cursor in a path matcher value
         const doc = `{"data":{"pairs":[{"request":{"path":[{"matcher":"exact","value":"⟦⟧"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
-        // Then - no method/scheme enum values leak onto path
-        const completions = await integration.call(async () => await completionsAt(doc, ''));
-        expectLabels(completions.value.value, { notContains: ['GET', 'http'] });
-    });
-});
+        const result = await integration.call(async () => await labelsAt(doc));
 
-describe('schemaVersion completions', () => {
-    test('offers v5.3 (preferred) plus v5/v5.1/v5.2', async () => {
+        // Then - no enum value leaks onto path
+        expect(result.value).toMatch([]);
+    });
+
+    test('offers v5.3 preselected first, then v5, v5.1 and v5.2', async () => {
         // Given - a cursor in the meta.schemaVersion value
         const doc = `{"data":{"pairs":[]},"meta":{"schemaVersion":"⟦⟧"}}`;
-        // Then - the four version values are offered: the contribution's labels are unquoted, and the schema's `examples` add harmless quoted-label duplicates
-        const completions = await integration.call(async () => await completionsAt(doc, ''));
-        const items = completions.value.value;
-        expectLabels(items, {
-            contains: ['v5.3', 'v5', 'v5.1', 'v5.2'],
-        });
-        const preferred = items.find((i) => i.label === 'v5.3');
-        // Then - v5.3 is preselected and sorts first
-        expect(preferred?.preselect).toBeTruthy();
-        expect(preferred?.sortText).toBe('0');
-        expect(preferred?.insertText).toBe('"v5.3"');
-    });
-});
+        const result = await integration.call(async () =>
+            (await completionsAt(doc)).map(({ insertText, label, preselect, sortText }) => ({
+                insertText,
+                label,
+                preselect,
+                sortText,
+            })),
+        );
 
-describe('postServeAction completions', () => {
-    test('offers registered actions when the setting is provided', async () => {
+        // Then - the contribution's four versions, and the quoted duplicates the schema's examples add
+        expect(result.value).toMatch([
+            {
+                insertText: '"v5.3"',
+                label: '"v5.3"',
+            },
+            {
+                insertText: '"v5.2"',
+                label: '"v5.2"',
+            },
+            {
+                insertText: '"v5.1"',
+                label: '"v5.1"',
+            },
+            {
+                insertText: '"v5"',
+                label: '"v5"',
+            },
+            {
+                insertText: '"v5.3"',
+                label: 'v5.3',
+                preselect: true,
+                sortText: '0',
+            },
+            {
+                insertText: '"v5"',
+                label: 'v5',
+                preselect: false,
+                sortText: '1-1',
+            },
+            {
+                insertText: '"v5.1"',
+                label: 'v5.1',
+                preselect: false,
+                sortText: '1-2',
+            },
+            {
+                insertText: '"v5.2"',
+                label: 'v5.2',
+                preselect: false,
+                sortText: '1-3',
+            },
+        ]);
+    });
+
+    test('offers the registered actions on postServeAction when the setting names them', async () => {
         // Given - a cursor in response.postServeAction and a registeredActions allowlist
         const doc = `{"data":{"pairs":[{"request":{"path":[]},"response":{"status":200,"postServeAction":"⟦⟧"}}]},"meta":{"schemaVersion":"v5.3"}}`;
-        // Then - the configured action names are offered
-        const completions = await integration.call(
+        const result = await integration.call(
             async () =>
-                await completionsAt(doc, '', {
-                    settings: { registeredActions: ['webhook', 'logger'] },
-                }),
+                await labelsAt(doc, '', { settings: { registeredActions: ['webhook', 'logger'] } }),
         );
-        expectLabels(completions.value.value, { contains: ['webhook', 'logger'] });
+
+        // Then - the configured action names
+        expect(result.value).toMatch(['webhook', 'logger']);
     });
 
-    test('offers nothing when no registeredActions are configured', async () => {
-        // Given - a postServeAction position but no settings
+    test('offers nothing on postServeAction when no action is registered', async () => {
+        // Given - a postServeAction position and no settings
         const doc = `{"data":{"pairs":[{"request":{"path":[]},"response":{"status":200,"postServeAction":"⟦⟧"}}]},"meta":{"schemaVersion":"v5.3"}}`;
-        // Then - no postServeAction completions (runtime-registered, unknowable from the file)
-        const completions = await integration.call(async () => await completionsAt(doc, ''));
-        expect(completions.value.value).toHaveLength(0);
-    });
-});
+        const result = await integration.call(async () => await labelsAt(doc));
 
-describe('state-key cross-reference completions', () => {
-    test('offers requiresState keys declared elsewhere in the file, plus a sequence: snippet', async () => {
-        // Given - one pair declares requiresState keys; a second pair is typing a new requiresState key
+        // Then - nothing, the actions being registered at runtime
+        expect(result.value).toMatch([]);
+    });
+
+    test('offers the requiresState keys declared elsewhere in the file, plus a sequence: snippet', async () => {
+        // Given - one pair declares requiresState keys; a second pair types a new requiresState key
         const doc = `{"data":{"pairs":[
       {"request":{"path":[{"matcher":"exact","value":"/a"}],"requiresState":{"cart":"full","loggedIn":"yes"}},"response":{"status":200}},
       {"request":{"path":[{"matcher":"exact","value":"/b"}],"requiresState":{"⟦⟧":""}},"response":{"status":200}}
     ]},"meta":{"schemaVersion":"v5.3"}}`;
-        // Then - the cross-referenced keys are offered as property completions, plus sequence:
-        const completions = await integration.call(async () => await completionsAt(doc, ''));
-        expectLabels(completions.value.value, { contains: ['cart', 'loggedIn', 'sequence:'] });
+        const result = await integration.call(async () => await labelsAt(doc));
+
+        // Then - the cross-referenced keys and sequence:
+        expect(result.value).toMatch(['cart', 'loggedIn', 'sequence:']);
     });
 
-    test('offers requiresState keys as transitionsState key completions (cross-ref)', async () => {
+    test('offers the requiresState keys as transitionsState keys, without the sequence: snippet', async () => {
         // Given - a requiresState key declared on one pair; another pair types a transitionsState key
         const doc = `{"data":{"pairs":[
       {"request":{"path":[{"matcher":"exact","value":"/a"}],"requiresState":{"step":"1"}},"response":{"status":200}},
       {"request":{"path":[{"matcher":"exact","value":"/b"}]},"response":{"status":200,"transitionsState":{"⟦⟧":""}}}
     ]},"meta":{"schemaVersion":"v5.3"}}`;
-        // Then - the requiresState key is offered; the sequence: snippet is NOT (transitionsState side)
-        const completions = await integration.call(async () => await completionsAt(doc, ''));
-        expectLabels(completions.value.value, { contains: ['step'], notContains: ['sequence:'] });
+        const result = await integration.call(async () => await labelsAt(doc));
+
+        // Then - the requiresState key
+        expect(result.value).toMatch(['step']);
+    });
+
+    test('offers request, response and labels inside an empty pair', async () => {
+        // Given - a cursor inside an empty pair object
+        const doc = `{"data":{"pairs":[{⟦⟧}]},"meta":{"schemaVersion":"v5.3"}}`;
+        const result = await integration.call(async () => await labelsAt(doc));
+
+        // Then - the pair's three properties
+        expect(result.value).toMatch(['labels', 'request', 'response']);
     });
 });

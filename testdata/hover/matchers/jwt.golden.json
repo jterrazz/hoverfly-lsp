@@ -1,0 +1,6 @@
+{
+    "diagnostics": [],
+    "markers": {
+        "": "### `jwt` matcher\n\nJWT match, value is a STRING of JSON text describing the expected {\"header\":..,\"payload\":..} subset (same rules as jsonpartial). doMatch chains the decoded composite. https://docs.hoverfly.io/en/latest/pages/keyconcepts/matching/matchers.html\n\n**Value type:** `string`\n**Config:** not supported.\n**doMatch:** transforms/extracts a value for the next chained matcher (not a re-test of the same input)."
+    }
+}

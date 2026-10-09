@@ -1,0 +1,23 @@
+{
+    "diagnostics": [],
+    "markers": {
+        "": [
+            {
+                "kind": "Variable",
+                "label": "@index"
+            },
+            {
+                "kind": "Variable",
+                "label": "@first"
+            },
+            {
+                "kind": "Variable",
+                "label": "@last"
+            },
+            {
+                "kind": "Variable",
+                "label": "@key"
+            }
+        ]
+    }
+}

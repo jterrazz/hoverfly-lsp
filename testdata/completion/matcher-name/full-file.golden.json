@@ -1,0 +1,151 @@
+{
+    "diagnostics": [],
+    "markers": {
+        "body": [
+            {
+                "kind": "EnumMember",
+                "label": "exact"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "negate"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "glob"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "regex"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "xml"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "xmltemplated"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "xpath"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "json"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "jsonpartial"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "jsonpath"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "jwt"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "jwtjsonpath"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "array"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "form"
+            }
+        ],
+        "path": [
+            {
+                "kind": "EnumMember",
+                "label": "exact"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "negate"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "glob"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "regex"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "xml"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "xmltemplated"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "xpath"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "json"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "jsonpartial"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "jsonpath"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "jwt"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "jwtjsonpath"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "array"
+            }
+        ],
+        "version": [
+            {
+                "kind": "Value",
+                "label": "\"v5.3\""
+            },
+            {
+                "kind": "Value",
+                "label": "\"v5.2\""
+            },
+            {
+                "kind": "Value",
+                "label": "\"v5.1\""
+            },
+            {
+                "kind": "Value",
+                "label": "\"v5\""
+            },
+            {
+                "kind": "EnumMember",
+                "label": "v5.3"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "v5"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "v5.1"
+            },
+            {
+                "kind": "EnumMember",
+                "label": "v5.2"
+            }
+        ]
+    }
+}

@@ -1,0 +1,27 @@
+{
+    "diagnostics": [],
+    "markers": {
+        "": [
+            {
+                "kind": "Value",
+                "label": "-1d"
+            },
+            {
+                "kind": "Value",
+                "label": "+1h"
+            },
+            {
+                "kind": "Value",
+                "label": "-30m"
+            },
+            {
+                "kind": "Value",
+                "label": "1y"
+            },
+            {
+                "kind": "Value",
+                "label": "-1.5h"
+            }
+        ]
+    }
+}

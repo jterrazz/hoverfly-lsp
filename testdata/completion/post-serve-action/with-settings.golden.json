@@ -1,0 +1,15 @@
+{
+    "diagnostics": [],
+    "markers": {
+        "": [
+            {
+                "kind": "Value",
+                "label": "webhook"
+            },
+            {
+                "kind": "Value",
+                "label": "logger"
+            }
+        ]
+    }
+}

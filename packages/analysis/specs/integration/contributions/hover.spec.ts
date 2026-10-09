@@ -1,106 +1,118 @@
 import { describe, expect, test } from 'vitest';
 
-import { expectHoverIncludes, hoverAt } from '../fourslash/harness.js';
+import { hoverAt } from '../__setup__/fourslash.js';
 import { integration } from '../integration.specification.js';
 
-/*
- * Hover content policy (issue: hover noise). A matcher hover describes THAT matcher only — its
- * semantics, value type, doMatch behaviour, config support, docs link, and notes intrinsic to
- * the matcher in hand. It must NOT carry the generic "unknown matcher name panics" or "config on
- * a non-array matcher panics" warnings; HF201/HF204 diagnostics own that messaging at the point
- * the mistake is actually made. These tests pin that contract.
- */
+// invariant: a matcher hover describes that matcher alone — its semantics, value type, doMatch
+// behaviour, config support, docs link and the notes intrinsic to it. The generic "unknown matcher
+// panics" and "config on a non-array matcher panics" warnings are HF201's and HF204's, raised where
+// the mistake is made.
 
-describe('matcher-name hover', () => {
-    test('renders registry docs, value type, config, and doMatch for a matcher name', async () => {
-        // Given - the cursor on a "glob" matcher name string
+describe('hover', () => {
+    test('renders the registry docs of a glob matcher name', async () => {
+        // Given - the cursor on a "glob" matcher name
         const doc = `{"data":{"pairs":[{"request":{"path":[{"matcher":"⟦⟧glob","value":"x"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
-        // Then - the hover surfaces the registry-sourced docs and metadata lines
-        const hovered = await integration.call(async () => await hoverAt(doc, ''));
-        expectHoverIncludes(hovered.value.text, [
-            'glob',
-            'Glob (wildcard) match',
-            'Value type:',
-            'Config:',
-            'doMatch:',
-            'docs.hoverfly.io',
-        ]);
+        const result = await integration.call(async () => await hoverAt(doc));
+
+        // Then - its docs, value type, config, doMatch and docs link
+        expect(result.value).toMatch(`
+            ### \`glob\` matcher
+
+            Glob (wildcard) match, e.g. \`*.example.com\`. Non-string value never matches. https://docs.hoverfly.io/en/latest/pages/keyconcepts/matching/matchers.html
+
+            **Value type:** \`string\`
+            **Config:** not supported.
+            **doMatch:** AND-semantics — re-tests the same input against the next matcher.`);
     });
 
-    test('does NOT append the generic unknown-matcher panic warning to a valid matcher hover', async () => {
-        // Given - a perfectly valid "regex" matcher name (the user's reported scenario)
+    test('renders a valid regex matcher with no panic note', async () => {
+        // Given - a valid "regex" matcher name
         const doc = `{"data":{"pairs":[{"request":{"path":[{"matcher":"⟦⟧regex","value":"x"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
-        // When - the matcher hover renders
-        const hovered = await integration.call(async () => await hoverAt(doc, ''));
-        const { text } = hovered.value;
-        // Then - the registry docs are present, but neither generic panic note appears
-        expect(text).toContain('Regular-expression match');
-        expect(text).not.toContain('Unknown matcher name');
-        expect(text).not.toContain('CRASHES');
-        expect(text).not.toContain('config` key on any matcher other than');
-        // And - a non-config matcher's config line stays a neutral one-liner (no panic phrasing)
-        expect(text).toContain('**Config:** not supported.');
-        expect(text).not.toContain('panics');
-        // And - regex carries NO ⚠️ note (it has no matcher-specific footgun)
-        expect(text).not.toContain('⚠️');
+        const result = await integration.call(async () => await hoverAt(doc));
+
+        // Then - the registry docs, a neutral config line and no ⚠️
+        expect(result.value).toMatch(`
+            ### \`regex\` matcher
+
+            Regular-expression match. Non-string value never matches; an invalid pattern silently never matches. https://docs.hoverfly.io/en/latest/pages/keyconcepts/matching/matchers.html
+
+            **Value type:** \`string\`
+            **Config:** not supported.
+            **doMatch:** AND-semantics — re-tests the same input against the next matcher.`);
     });
 
-    test("surfaces array's own config-keys note (ON array, not the generic config panic)", async () => {
-        // Given - the cursor on an "array" matcher name (the only config-bearing matcher)
+    test("renders the array matcher's own config-keys note", async () => {
+        // Given - the cursor on an "array" matcher name, the one config-bearing matcher
         const doc = `{"data":{"pairs":[{"request":{"path":[{"matcher":"⟦⟧array","value":[]}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
-        // When
-        const hovered = await integration.call(async () => await hoverAt(doc, ''));
-        const { text } = hovered.value;
-        // Then - config support, its keys, and the array-specific non-bool footgun appear...
-        expect(text).toContain('Config:** supported');
-        expect(text).toContain('ignoreOrder');
-        expect(text).toContain('⚠️');
-        expect(text).toContain('must be a JSON boolean');
-        // ...but NOT the generic any-matcher panic notes
-        expect(text).not.toContain('Unknown matcher name');
+        const result = await integration.call(async () => await hoverAt(doc));
+
+        // Then - its config keys and the non-boolean footgun, not the generic panic
+        expect(result.value).toMatch(`
+            ### \`array\` matcher
+
+            Array match, value MUST be a JSON array (a plain string is rejected; the ';'-split applies to the incoming request value, NOT the matcher value). The ONLY matcher that accepts \`config\` (booleans \`ignoreUnknown\`/\`ignoreOrder\`/\`ignoreOccurrences\`). https://docs.hoverfly.io/en/latest/pages/keyconcepts/matching/matchers.html
+
+            **Value type:** \`array\`
+            **Config:** supported — booleans \`ignoreUnknown\`, \`ignoreOrder\`, \`ignoreOccurrences\`.
+            **doMatch:** AND-semantics — re-tests the same input against the next matcher.
+
+            ⚠️ Each \`config\` value must be a JSON boolean — a string like \`"true"\` or a number is a mistake.`);
     });
 
-    test("surfaces form's own body-only + case-sensitivity note when hovered under request.body", async () => {
+    test("renders form's body-only and case-sensitivity note under request.body", async () => {
         // Given - a "form" matcher name on request.body
         const doc = `{"data":{"pairs":[{"request":{"body":[{"matcher":"⟦⟧form","value":{}}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
-        // When
-        const hovered = await integration.call(async () => await hoverAt(doc, ''));
-        const { text } = hovered.value;
-        // Then - the body-only form docs and its OWN placement/case note appear (no generic panic)
-        expect(text).toContain('Body-layer pseudo-matcher');
-        expect(text).toContain('⚠️');
-        expect(text).toContain('only as a top-level matcher');
-        expect(text).not.toContain('Unknown matcher name');
+        const result = await integration.call(async () => await hoverAt(doc));
+
+        // Then - the pseudo-matcher's own placement note
+        expect(result.value).toMatch(`
+            ### \`form\` matcher
+
+            Body-layer pseudo-matcher (NOT in the registry). Value is an object {fieldName: [matchers...]}. Valid ONLY on the request \`body\` and ONLY as a top-level matcher; the literal name \`form\` is case-SENSITIVE (\`Form\`/\`FORM\` or non-body placement is not recognised). https://docs.hoverfly.io/en/latest/pages/keyconcepts/matching/matchers.html
+
+            **Value type:** \`object\`
+            **Config:** not supported.
+            **doMatch:** AND-semantics — re-tests the same input against the next matcher.
+
+            ⚠️ Valid ONLY on the request \`body\`, only as a top-level matcher, and case-SENSITIVE (\`form\`, not \`Form\`/\`FORM\`).`);
     });
 
-    test("surfaces negate's vacuous-true footgun (ON negate)", async () => {
-        // Given - a "negate" matcher name (the only vacuous-true matcher)
+    test("renders negate's vacuous-true footgun", async () => {
+        // Given - a "negate" matcher name
         const doc = `{"data":{"pairs":[{"request":{"path":[{"matcher":"⟦⟧negate","value":"x"}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;
-        // When
-        const hovered = await integration.call(async () => await hoverAt(doc, ''));
-        const { text } = hovered.value;
-        // Then - the negate-specific vacuous-true note appears
-        expect(text).toContain('⚠️');
-        expect(text).toContain('matches vacuously');
-        expect(text).not.toContain('Unknown matcher name');
+        const result = await integration.call(async () => await hoverAt(doc));
+
+        // Then - the vacuous-true note
+        expect(result.value).toMatch(`
+            ### \`negate\` matcher
+
+            Matches when the value is NOT equal to the request value. A non-string value matches vacuously (always true), almost always a mistake. Registry key is \`negate\` (NOT \`negation\`). https://docs.hoverfly.io/en/latest/pages/keyconcepts/matching/matchers.html
+
+            **Value type:** \`string\`
+            **Config:** not supported.
+            **doMatch:** AND-semantics — re-tests the same input against the next matcher.
+
+            ⚠️ A non-string value matches vacuously (always true) — almost always a mistake.`);
     });
 
-    test('does NOT hijack hover on a non-matcher field (schema hover still works)', async () => {
-        // Given - the cursor on the schemaVersion key (a schema-documented field, not a matcher)
+    test('leaves a field that is no matcher to the schema hover', async () => {
+        // Given - the cursor on the schemaVersion value
         const doc = `{"data":{"pairs":[]},"meta":{"schemaVersion":"⟦⟧v5.3"}}`;
-        // Then - the schema-driven hover content (not matcher docs) is rendered
-        const hovered = await integration.call(async () => await hoverAt(doc, ''));
-        const { text } = hovered.value;
-        expect(text).toContain('schema version');
-        expect(text).not.toContain('Value type:');
+        const result = await integration.call(async () => await hoverAt(doc));
+
+        // Then - the schema's own description of the field
+        expect(result.value).toMatch(`
+            schemaVersion
+
+            Simulation schema version\\. Hoverfly validates anything starting with v5 against the v5 schema; the current default is v5\\.3\\. Older v1\\-v4 files are auto\\-upgraded on import\\.`);
     });
 
-    test('returns no matcher hover for a non-simulation document', async () => {
-        // Given - arbitrary JSON with a coincidental matcher key, no simulation fingerprint
+    test('renders no matcher docs in a document that is no simulation', async () => {
+        // Given - arbitrary JSON with a "matcher" key and no simulation fingerprint
         const doc = `{"foo":{"matcher":"⟦⟧glob"}}`;
-        // Then - no matcher-docs hover is injected
-        const hovered = await integration.call(async () => await hoverAt(doc, ''));
-        const { text } = hovered.value;
-        expect(text).not.toContain('Glob (wildcard) match');
+        const result = await integration.call(async () => await hoverAt(doc));
+
+        // Then - no hover
+        expect(result.value).toMatch('');
     });
 });

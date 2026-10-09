@@ -1,8 +1,0 @@
-{
-    "markers": {
-        "": {
-            "includes": ["now", "faker", "Request", "each"],
-            "excludes": []
-        }
-    }
-}

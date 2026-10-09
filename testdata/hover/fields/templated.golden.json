@@ -1,0 +1,6 @@
+{
+    "diagnostics": [],
+    "markers": {
+        "": "templated\n\nWhen true, enables Handlebars\\-style response templating \\(\\{\\{ \\.\\.\\. \\}\\}\\) in body and headers\\. Defaults to false\\."
+    }
+}

@@ -1,0 +1,39 @@
+{
+    "diagnostics": [],
+    "markers": {
+        "": [
+            {
+                "kind": "Field",
+                "label": "Scheme"
+            },
+            {
+                "kind": "Field",
+                "label": "Method"
+            },
+            {
+                "kind": "Field",
+                "label": "Host"
+            },
+            {
+                "kind": "Field",
+                "label": "Path"
+            },
+            {
+                "kind": "Field",
+                "label": "QueryParam"
+            },
+            {
+                "kind": "Field",
+                "label": "Header"
+            },
+            {
+                "kind": "Field",
+                "label": "FormData"
+            },
+            {
+                "kind": "Method",
+                "label": "Body"
+            }
+        ]
+    }
+}

@@ -1,0 +1,6 @@
+{
+    "diagnostics": [],
+    "markers": {
+        "": "body\n\nResponse body\\. If both body and bodyFile are present, body takes precedence\\."
+    }
+}
