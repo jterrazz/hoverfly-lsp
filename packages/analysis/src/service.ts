@@ -108,17 +108,12 @@ export function createHoverflyLanguageService(
     settings: HoverflyServiceSettings = {},
 ): HoverflyLanguageService {
     // outside: the contribution API hands a URI and a JSON path, never the text, so the documents
-    // the last completion, hover or parse saw are kept for the contribution to resolve.
+    // the last completion or hover saw are kept for the contribution to resolve.
     const seenDocuments = new Map<string, TextDocument>();
     const service = jsonServiceWith([
         createHoverflyContribution(settings, (uri) => seenDocuments.get(uri)),
         ...contributions,
     ]);
-
-    function parse(document: TextDocument): JSONDocument {
-        seenDocuments.set(document.uri, document);
-        return service.parseJSONDocument(document);
-    }
 
     function opened(
         document: TextDocument,
@@ -126,14 +121,14 @@ export function createHoverflyLanguageService(
     ): { normalized: TextDocument; parsed: JSONDocument } {
         const normalized = stripLeadingBom(document);
         seenDocuments.set(normalized.uri, normalized);
-        return { normalized, parsed: jsonDocument ?? parse(normalized) };
+        return { normalized, parsed: jsonDocument ?? service.parseJSONDocument(normalized) };
     }
 
     return {
-        parse: (document) => parse(stripLeadingBom(document)),
+        parse: (document) => service.parseJSONDocument(stripLeadingBom(document)),
         doValidation: async (document, jsonDocument) => {
             const normalized = stripLeadingBom(document);
-            const parsed = jsonDocument ?? parse(normalized);
+            const parsed = jsonDocument ?? service.parseJSONDocument(normalized);
             return await validated({ document: normalized, parsed }, service, settings);
         },
         doComplete: async (document, position, jsonDocument) => {
