@@ -27,29 +27,19 @@ export class TokenEmitter {
     }
 
     emitDocSpan(startOffset: number, endOffset: number, type: SemanticTokenTypeName): void {
-        if (endOffset <= startOffset) {
-            return;
-        }
         const tokenType = SEMANTIC_TOKEN_TYPES.indexOf(type);
         let cursor = startOffset;
         while (cursor < endOffset) {
             const start = this.document.positionAt(cursor);
             const lineEndOffset = this.document.offsetAt({ line: start.line + 1, character: 0 });
             const segmentEnd = Math.min(endOffset, lineEndOffset);
-            const end = this.document.positionAt(segmentEnd);
-            const length =
-                end.line === start.line
-                    ? end.character - start.character
-                    : this.document.offsetAt({ line: start.line + 1, character: 0 }) - cursor;
-            if (length > 0) {
-                this.tokens.push({
-                    line: start.line,
-                    startChar: start.character,
-                    length,
-                    tokenType,
-                    tokenModifiers: 0,
-                });
-            }
+            this.tokens.push({
+                line: start.line,
+                startChar: start.character,
+                length: segmentEnd - cursor,
+                tokenType,
+                tokenModifiers: 0,
+            });
             cursor = segmentEnd;
         }
     }

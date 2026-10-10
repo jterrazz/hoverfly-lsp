@@ -214,6 +214,13 @@ describe('structure', () => {
             ],
         },
         {
+            expected: [
+                'HF308 error 0:86-0:89 Response header values must be an array of strings; wrap it in [ … ]',
+            ],
+            label: 'response header not an array of strings — skips a header with no value and judges the next',
+            input: '{"data":{"pairs":[{"request":{"path":[]},"response":{"status":200,"headers":{"A":,"B":"x"}}}]},"meta":{"schemaVersion":"v5.3"}}',
+        },
+        {
             expected: [],
             label: 'shapes that are no object — a delay item, a matcher, a request and a response',
             input: [{ path: ['x'] }, 'r', { globalActions: { delays: [5] } }],

@@ -13,8 +13,9 @@ export function findOpenMustache(decoded: string, cursor: number): OpenMustache 
     if (hasCloseBetween(decoded, head + 2, cursor)) {
         return undefined;
     }
-    const contentStart = decoded.startsWith('{{{', head) ? head + 3 : head + 2;
-    return { contentStart: Math.min(contentStart, cursor) };
+    // invariant: the last `{{` before the cursor, so a `{{{` is found at its second brace and the
+    // content starts two characters on whatever the opener.
+    return { contentStart: head + 2 };
 }
 
 function hasCloseBetween(decoded: string, from: number, to: number): boolean {
@@ -42,9 +43,9 @@ type InnerSegment = {
 };
 
 export function innermostOpenSubexpression(inner: string): InnerSegment {
-    let depth = 0;
-    let lastOpen = -1;
+    const opens: number[] = [];
     let quote: string | undefined;
+    // Stryker disable next-line EqualityOperator: equivalent — the character read past the end is undefined, which opens, closes and escapes nothing
     for (let i = 0; i < inner.length; i += 1) {
         const ch = inner[i];
         if (quote !== undefined) {
@@ -56,50 +57,23 @@ export function innermostOpenSubexpression(inner: string): InnerSegment {
         if (ch === "'" || ch === '"') {
             quote = ch;
         } else if (ch === '(') {
-            depth += 1;
-            lastOpen = i;
+            opens.push(i);
         } else if (ch === ')') {
-            depth -= 1;
-            lastOpen = lastOpenBefore(inner, i);
+            opens.pop();
         }
     }
-    if (depth <= 0 || lastOpen === -1) {
-        return { text: inner, atMustacheHead: true };
-    }
-    return { text: inner.slice(lastOpen + 1), atMustacheHead: false };
-}
-
-function lastOpenBefore(inner: string, pos: number): number {
-    let depth = 0;
-    let quote: string | undefined;
-    let last = -1;
-    for (let i = 0; i < pos; i += 1) {
-        const ch = inner[i];
-        if (quote !== undefined) {
-            if (ch === quote) {
-                quote = undefined;
-            }
-            continue;
-        }
-        if (ch === "'" || ch === '"') {
-            quote = ch;
-        } else if (ch === '(') {
-            depth += 1;
-            if (depth === 1) {
-                last = i;
-            }
-        } else if (ch === ')') {
-            depth -= 1;
-        }
-    }
-    return depth > 0 ? last : -1;
+    const innermost = opens.at(-1);
+    return innermost === undefined
+        ? { text: inner, atMustacheHead: true }
+        : { text: inner.slice(innermost + 1), atMustacheHead: false };
 }
 
 export function openStringQuote(
     body: string,
 ): undefined | { before: string; quote: string; typed: string } {
     let quote: string | undefined;
-    let quoteStart = -1;
+    let quoteStart = 0;
+    // Stryker disable next-line EqualityOperator: equivalent — the character read past the end is undefined, which opens, closes and escapes nothing
     for (let i = 0; i < body.length; i += 1) {
         const ch = body[i];
         if (quote !== undefined) {
@@ -109,7 +83,6 @@ export function openStringQuote(
             }
             if (ch === quote) {
                 quote = undefined;
-                quoteStart = -1;
             }
             continue;
         }
@@ -118,7 +91,7 @@ export function openStringQuote(
             quoteStart = i;
         }
     }
-    if (quote === undefined || quoteStart === -1) {
+    if (quote === undefined) {
         return undefined;
     }
     return {
@@ -134,9 +107,9 @@ const DEPTH_STEP: ReadonlyMap<string, number> = new Map([
 ]);
 
 function quotedUnit(body: string, index: number, quote: string): { closes: boolean; text: string } {
-    const ch = body[index] ?? '';
+    const ch = body.charAt(index);
     return ch === '\\'
-        ? { closes: false, text: ch + (body[index + 1] ?? '') }
+        ? { closes: false, text: ch + body.charAt(index + 1) }
         : { closes: ch === quote, text: ch };
 }
 
@@ -153,7 +126,7 @@ export function splitTopLevelTokens(body: string): string[] {
             quote = unit.closes ? undefined : quote;
             continue;
         }
-        const ch = body[index] ?? '';
+        const ch = body.charAt(index);
         index += 1;
         if (depth === 0 && /\s/u.test(ch)) {
             tokens.push(current);
@@ -161,6 +134,7 @@ export function splitTopLevelTokens(body: string): string[] {
             continue;
         }
         quote = ch === "'" || ch === '"' ? ch : undefined;
+        // Stryker disable next-line AssignmentOperator: equivalent — only whether the depth is zero is read, which a flipped sign leaves unchanged
         depth += DEPTH_STEP.get(ch) ?? 0;
         current += ch;
     }

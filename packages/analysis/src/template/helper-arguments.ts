@@ -8,13 +8,10 @@ const FAKER_NAME_SET: ReadonlySet<string> = new Set(FAKER_NAMES);
 const FAKER_PANIC_SET: ReadonlySet<string> = new Set(FAKER_PARAMETERIZED_PANICS);
 
 const NOW_OFFSET_RE = new RegExp(
-    `^[-+]?(?:\\d+(?:\\.\\d+)?(?:${NOW_OFFSET_UNITS.map(escapeRegExp).join('|')}))+$`,
+    `^[-+]?(?:\\d+(?:\\.\\d+)?(?:${NOW_OFFSET_UNITS.join('|')}))+$`,
+    // Stryker disable next-line StringLiteral: equivalent — every unit is a BMP letter, which the pattern reads the same with or without the flag
     'u',
 );
-
-function escapeRegExp(text: string): string {
-    return text.replaceAll(/[.*+?^${}()|[\]\\]/gu, String.raw`\$&`);
-}
 
 // outside: raymond does not enforce arity, so HF504 checks the intended contract; the catalog still
 // rates it an Error (D4).
@@ -53,7 +50,7 @@ export function checkArity(
 
 function describeArity(spec: HelperSpec, required: number, max: number): string {
     if (spec.variadic === true) {
-        return required === 0 ? 'any number of arguments' : `at least ${plural(required)}`;
+        return `at least ${plural(required)}`;
     }
     if (required === max) {
         return plural(required);
