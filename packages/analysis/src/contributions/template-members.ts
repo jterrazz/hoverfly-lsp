@@ -120,4 +120,5 @@ const EACH_DATA_VARIABLES: readonly DataVariable[] = [
     { name: 'key', docs: 'The current key when iterating a map/object with `#each`.' },
 ];
 
+export type { RequestMember };
 export { EACH_DATA_VARIABLES, PATH_ROOTS, REQUEST_MEMBERS };

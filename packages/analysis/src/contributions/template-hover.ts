@@ -16,13 +16,10 @@ import { parse } from '../template/parser.js';
 import { findTemplateLocation } from './template-location.js';
 import type { TemplateLocation } from './template-location.js';
 import { REQUEST_MEMBERS } from './template-members.js';
+import type { RequestMember } from './template-members.js';
 
-const HELPER_BY_NAME: ReadonlyMap<string, HelperSpec> = new Map(
-    ALL_HELPERS.map((spec) => [spec.name, spec]),
-);
 const FAKER_NAME_SET: ReadonlySet<string> = new Set(FAKER_NAMES);
 const FAKER_PANIC_SET: ReadonlySet<string> = new Set(FAKER_PARAMETERIZED_PANICS);
-const REQUEST_MEMBER_BY_NAME = new Map(REQUEST_MEMBERS.map((m) => [m.name, m]));
 
 function getTemplateHover(
     document: TextDocument,
@@ -60,7 +57,9 @@ function findHover(statements: readonly Statement[], cursor: number): HoverHit |
                 return mustacheHover(statement, cursor);
             }
             case 'BlockNode': {
-                const onName = pathHover(statement.path, true);
+                const onName = spans(statement.path, cursor)
+                    ? pathHover(statement.path, true)
+                    : undefined;
                 if (onName) {
                     return onName;
                 }
@@ -132,20 +131,20 @@ function pathHover(path: PathExpression, asCall: boolean): HoverHit | undefined 
 }
 
 function requestMemberHover(path: PathExpression): HoverHit | undefined {
-    if (path.parts[0] !== 'Request' || path.parts.length < 2) {
-        return undefined;
-    }
-    const member = REQUEST_MEMBER_BY_NAME.get(path.parts[1] ?? '');
+    const member =
+        path.parts[0] === 'Request'
+            ? REQUEST_MEMBERS.find(({ name }) => name === path.parts[1])
+            : undefined;
     return member === undefined
         ? undefined
-        : { end: path.end, markdown: requestMemberMarkdown(member.name), start: path.start };
+        : { end: path.end, markdown: requestMemberMarkdown(member), start: path.start };
 }
 
 function helperHover(path: PathExpression, asCall: boolean): HoverHit | undefined {
-    if (path.parts.length !== 1) {
-        return undefined;
-    }
-    const spec = HELPER_BY_NAME.get(path.parts[0] ?? '');
+    const spec =
+        path.parts.length === 1
+            ? ALL_HELPERS.find(({ name }) => name === path.parts[0])
+            : undefined;
     return spec !== undefined && (asCall || spec.args.length === 0)
         ? { end: path.end, markdown: helperMarkdown(spec), start: path.start }
         : undefined;
@@ -180,11 +179,7 @@ function helperMarkdown(spec: HelperSpec): string {
     ].join('\n');
 }
 
-function requestMemberMarkdown(name: string): string {
-    const member = REQUEST_MEMBER_BY_NAME.get(name);
-    if (!member) {
-        return '';
-    }
+function requestMemberMarkdown(member: RequestMember): string {
     const kind = member.methodCall ? 'method call' : 'field';
     return [
         `### \`Request.${member.name}\` — ${kind}`,
