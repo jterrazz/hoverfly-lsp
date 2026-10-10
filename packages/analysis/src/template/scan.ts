@@ -69,8 +69,7 @@ export function tokenEnd(source: string, cursor: number, to: number): number {
 export function skipWhitespace(source: string, from: number, to = source.length): number {
     let i = from;
     while (i < to) {
-        const ch = source[i];
-        if (ch === undefined || !/\s/u.test(ch)) {
+        if (!/\s/u.test(source.charAt(i))) {
             break;
         }
         i += 1;
