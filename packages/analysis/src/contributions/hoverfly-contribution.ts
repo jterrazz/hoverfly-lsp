@@ -24,6 +24,7 @@ import {
     collectMethodSchemeValueCompletions,
     collectPostServeActionCompletions,
     collectSchemaVersionCompletions,
+    collectSequencePrefixCompletion,
     collectStateKeyCompletions,
 } from './value-completions.js';
 
@@ -45,7 +46,7 @@ function modelOf(uri: string, resolveDocument: ResolveDocument): SimulationModel
 // at this path; a bare Markdown string renders as Markdown, a { language, value } pair as a fenced
 // code block.
 function matcherHover(uri: string, location: JSONPath, resolveDocument: ResolveDocument): Hover {
-    const position = matchMatcherNamePosition(location, { requireMatcherKey: true });
+    const position = matchMatcherNamePosition(location);
     if (position === undefined) {
         return NO_HOVER;
     }
@@ -63,9 +64,7 @@ function collectValueCompletions(
     }: { resolveDocument: ResolveDocument; settings: HoverflyServiceSettings },
 ): void {
     if (propertyKey === 'matcher') {
-        const position = matchMatcherNamePosition([...location, 'matcher'], {
-            requireMatcherKey: true,
-        });
+        const position = matchMatcherNamePosition([...location, 'matcher']);
         if (position !== undefined) {
             collectMatcherNameCompletions(result, position.isBody);
         }
@@ -91,13 +90,10 @@ function createHoverflyContribution(
             ...[uri, location, , addValue, , result]: PropertyCompletionArguments
         ) => {
             if (isRequiresStateKeyPosition(location)) {
-                collectStateKeyCompletions(result, modelOf(uri, resolveDocument), addValue, {
-                    includeSequence: true,
-                });
+                collectStateKeyCompletions(result, modelOf(uri, resolveDocument), addValue);
+                collectSequencePrefixCompletion(result, addValue);
             } else if (isTransitionsStateKeyPosition(location)) {
-                collectStateKeyCompletions(result, modelOf(uri, resolveDocument), addValue, {
-                    includeSequence: false,
-                });
+                collectStateKeyCompletions(result, modelOf(uri, resolveDocument), addValue);
             }
         },
         collectValueCompletions: async (uri, location, propertyKey, result) => {

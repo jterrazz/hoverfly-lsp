@@ -8,10 +8,11 @@ import { HTTP_METHODS, URI_SCHEMES } from '../registry/http.js';
 import { MATCHER_SPECS } from '../registry/matchers.js';
 import type { HoverflyServiceSettings, SimulationModel } from '../semantic/rule.js';
 import { matcherDetail, matcherMarkdown } from './docs.js';
+import type { ValueField } from './paths.js';
 
 // outside: Hoverfly compares method and scheme verbatim (research/13 §3.1, §3.2), so these values
 // are offered and never enforced.
-const VALUE_ENUMS: Readonly<Record<string, { values: readonly string[]; detail: string }>> = {
+const VALUE_ENUMS: Readonly<Record<ValueField, { values: readonly string[]; detail: string }>> = {
     method: {
         values: HTTP_METHODS,
         detail: 'Standard HTTP method (custom verbs are also allowed)',
@@ -61,12 +62,9 @@ export function collectMatcherNameCompletions(result: CompletionsCollector, isBo
 // literal, so a quoted insert text fits both positions.
 export function collectMethodSchemeValueCompletions(
     result: CompletionsCollector,
-    field: string,
+    field: ValueField,
 ): void {
     const enumeration = VALUE_ENUMS[field];
-    if (!enumeration) {
-        return;
-    }
     for (const value of enumeration.values) {
         result.add({
             label: value,
@@ -107,10 +105,8 @@ export function collectStateKeyCompletions(
     result: CompletionsCollector,
     simulation: SimulationModel | undefined,
     addValue: boolean,
-    options: { includeSequence: boolean },
 ): void {
-    const keys = collectStateKeys(simulation);
-    for (const key of keys) {
+    for (const key of collectStateKeys(simulation)) {
         result.add({
             label: key,
             kind: CompletionItemKind.Property,
@@ -119,22 +115,24 @@ export function collectStateKeyCompletions(
             insertTextFormat: InsertTextFormat.Snippet,
         });
     }
-    if (options.includeSequence) {
-        const namePlaceholder = `sequence:${tabStop(1, 'name')}`;
-        result.add({
-            label: 'sequence:',
-            kind: CompletionItemKind.Snippet,
-            detail: 'Sequence-state key prefix (ordered sequence responses)',
-            documentation: {
-                kind: MarkupKind.Markdown,
-                value: 'A `requiresState` key prefixed `sequence:` drives ordered sequence responses (Hoverfly increments the sequence as each pair is served).',
-            },
-            insertText: addValue
-                ? `${jsonString(namePlaceholder)}: "${tabStop(2)}"`
-                : namePlaceholder,
-            insertTextFormat: InsertTextFormat.Snippet,
-        });
-    }
+}
+
+export function collectSequencePrefixCompletion(
+    result: CompletionsCollector,
+    addValue: boolean,
+): void {
+    const namePlaceholder = `sequence:${tabStop(1, 'name')}`;
+    result.add({
+        label: 'sequence:',
+        kind: CompletionItemKind.Snippet,
+        detail: 'Sequence-state key prefix (ordered sequence responses)',
+        documentation: {
+            kind: MarkupKind.Markdown,
+            value: 'A `requiresState` key prefixed `sequence:` drives ordered sequence responses (Hoverfly increments the sequence as each pair is served).',
+        },
+        insertText: addValue ? `${jsonString(namePlaceholder)}: "${tabStop(2)}"` : namePlaceholder,
+        insertTextFormat: InsertTextFormat.Snippet,
+    });
 }
 
 export function collectPostServeActionCompletions(

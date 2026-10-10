@@ -27,34 +27,15 @@ type MatcherPosition = {
     readonly isBody: boolean;
 };
 
-function matchMatcherNamePosition(
-    path: JSONPath,
-    options: { readonly requireMatcherKey: boolean },
-): MatcherPosition | undefined {
-    let segments = path;
-    let endsWithMatcherKey = false;
-    if (isString(segments.at(-1)) && segments.at(-1) === 'matcher') {
-        segments = segments.slice(0, -1);
-        endsWithMatcherKey = true;
-    }
-    if (options.requireMatcherKey && !endsWithMatcherKey) {
+function matchMatcherNamePosition(path: JSONPath): MatcherPosition | undefined {
+    if (path.at(-1) !== 'matcher') {
         return undefined;
     }
-
-    let trimmed = [...segments];
+    let trimmed = path.slice(0, -1);
     while (trimmed.at(-1) === 'doMatch') {
         trimmed = trimmed.slice(0, -1);
     }
-
-    const last = trimmed.at(-1);
-    if (!isIndex(last)) {
-        if (endsWithMatcherKey || segments.at(-1) === 'doMatch') {
-            return classifyByField(trimmed);
-        }
-        return undefined;
-    }
-
-    return classifyByField(trimmed.slice(0, -1));
+    return classifyByField(isIndex(trimmed.at(-1)) ? trimmed.slice(0, -1) : trimmed);
 }
 
 function classifyByField(beforeIndex: JSONPath): MatcherPosition | undefined {
@@ -93,23 +74,21 @@ function isTransitionsStateKeyPosition(path: JSONPath): boolean {
     return path.at(-1) === 'transitionsState' && path.at(-2) === 'response';
 }
 
-const VALUE_ENUM_FIELDS: ReadonlySet<string> = new Set(['method', 'scheme']);
+/** The request fields whose matcher value is offered as an enumeration. */
+type ValueField = 'method' | 'scheme';
 
 function matchMethodSchemeValuePosition(
     path: JSONPath,
     options: { readonly propertyKey?: string } = {},
-): string | undefined {
+): undefined | ValueField {
     if (options.propertyKey !== 'value') {
         return undefined;
     }
-    const index = path.at(-1);
     const field = path.at(-2);
-    const request = path.at(-3);
     if (
-        isIndex(index) &&
-        isString(field) &&
-        VALUE_ENUM_FIELDS.has(field) &&
-        request === 'request'
+        isIndex(path.at(-1)) &&
+        (field === 'method' || field === 'scheme') &&
+        path.at(-3) === 'request'
     ) {
         return field;
     }
@@ -128,6 +107,7 @@ function isPostServeActionPosition(
     return options.propertyKey === 'postServeAction' && last === 'response';
 }
 
+export type { ValueField };
 export {
     isPostServeActionPosition,
     isRequiresStateKeyPosition,
