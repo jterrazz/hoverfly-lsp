@@ -31,7 +31,6 @@ export default defineConfig({
             schemas:
                 'the JSON Schema published to SchemaStore, with the upstream baseline the drift watcher compares',
             scripts: 'the generator that projects docs/reference/ from the built analysis package',
-            testdata: 'the reference corpus: the behavioural contract the analysis specs read',
         },
     },
 });
