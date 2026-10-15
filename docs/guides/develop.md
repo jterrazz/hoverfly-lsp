@@ -109,8 +109,9 @@ Decisions taken after this manual exists are recorded as ADRs in
 ## Where this repository diverges from the house preset
 
 Each member declares its kind and platform in its own `jterrazz.config.ts`; the
-root declares the workspace and the few exceptions the toolchain cannot derive,
-each with its reason beside it.
+root lists the members in `package.json`'s `workspaces`, declares no kind, and
+keeps the few exceptions the toolchain cannot derive, each with its reason
+beside it.
 
 - **Two bundlers.** `packages/analysis` builds with `typescript build`, as a
   house library does. `packages/server` bundles its bin into one CommonJS file
