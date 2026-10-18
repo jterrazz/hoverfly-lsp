@@ -25,9 +25,9 @@ function rangesOverlap(a: Range, b: Range): boolean {
     return !(isBefore(a.end, b.start) || isBefore(b.end, a.start));
 }
 
-// invariant: a code here replaces the schema message on its node — every HF2xx code, and
+// invariant: a code here replaces the schema message on its node: every HF2xx code, and
 // HF308/HF404/HF405, each a targeted restatement of an import-400 gojsonschema also reports
-// (reports 13 §3.5, §3.13, §3.14) — so the overlapping schema diagnostic is dropped (decision D5).
+// (reports 13 §3.5, §3.13, §3.14). So the overlapping schema diagnostic is dropped (decision D5).
 const VALUE_SHAPE_SUPPRESSORS: ReadonlySet<string> = new Set(['HF308', 'HF404', 'HF405']);
 
 function suppressesSchema(code: Diagnostic['code']): boolean {
@@ -73,7 +73,7 @@ export function runRules(rules: readonly SemanticRule[], context: RuleContext): 
         try {
             out.push(...rule.run(context));
         } catch {
-            // invariant: a rule never fails the validation — a rule that throws loses its own
+            // invariant: a rule never fails the validation: a rule that throws loses its own
             // output alone.
         }
     }

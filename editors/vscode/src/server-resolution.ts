@@ -23,7 +23,7 @@ function normalizeConfigured(value: string | undefined): string | undefined {
     return trimmed.length > 0 ? trimmed : undefined;
 }
 
-// invariant: always answers — the bundled server is the fallback, so the extension never fails to
+// invariant: always answers. The bundled server is the fallback, so the extension never fails to
 // find one to launch.
 function resolveServer(input: ResolveServerInput): ResolvedServer {
     const configured = normalizeConfigured(input.configuredPath);

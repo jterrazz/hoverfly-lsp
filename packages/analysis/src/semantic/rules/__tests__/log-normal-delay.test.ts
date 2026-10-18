@@ -56,7 +56,7 @@ describe('logNormalDelayViolation', () => {
         },
     ])(
         // Given - a delay of $delay.min to $delay.max, mean $delay.mean and median $delay.median
-        // Then - the first constraint Hoverfly refuses it for, in Go's order, and the field it lands on — or none
+        // Then - the first constraint Hoverfly refuses it for, in Go's order, and the field it lands on, or none
         'logNormalDelayViolation — min $delay.min, max $delay.max, mean $delay.mean, median $delay.median',
         ({ delay, violation }) => {
             expect(logNormalDelayViolation(delay)).toStrictEqual(violation);

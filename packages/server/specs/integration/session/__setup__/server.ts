@@ -43,8 +43,8 @@ export function corpusFile(path: string): string {
     return readFileSync(join(folder, 'testdata', path), 'utf8');
 }
 
-// outside: a stdio language server has no specification of @jterrazz/test — `packed()` lays a tarball
-// only for a cli chain, whose one-shot `.exec()` cannot hold an LSP conversation — so the spec packs
+// outside: a stdio language server has no specification of @jterrazz/test. `packed()` lays a tarball
+// only for a cli chain, whose one-shot `.exec()` cannot hold an LSP conversation, so the spec packs
 // the package once per test process, from what its build left in dist/, and runs the bin a consumer gets.
 const installed = (async (): Promise<string> => {
     const destination = await mkdtemp(join(tmpdir(), 'hoverfly-lsp-packed-'));

@@ -66,7 +66,7 @@ export type ContentNode = Span & {
     readonly value: string;
 };
 
-/** A mustache `{{path arg…}}`; `escaped` is false for the triple-stache `{{{…}}}` raymond leaves unescaped. */
+/** A mustache `{{path arg...}}`; `escaped` is false for the triple-stache `{{{...}}}` raymond leaves unescaped. */
 export type MustacheNode = Span & {
     readonly type: 'MustacheNode';
     /** The leading path (helper name or path lookup). */
@@ -78,9 +78,9 @@ export type MustacheNode = Span & {
 };
 
 /** A block `{{#helper params}} program {{else}} inverse {{/helper}}`; its tag spans cover the literal open and close mustaches. */
-export type BlockNode = {
+export type BlockNode = Span & {
     readonly type: 'BlockNode';
-    /** The block-helper path (`each`, `if`, `equal`, …). */
+    /** The block-helper path (`each`, `if`, `equal` and the like). */
     readonly path: PathExpression;
     /** Positional arguments to the block helper. */
     readonly params: readonly Expression[];
@@ -88,11 +88,11 @@ export type BlockNode = {
     readonly program: readonly Statement[];
     /** The `{{else}}` branch statements, or `undefined` when there is no `{{else}}`. */
     readonly inverse: readonly Statement[] | undefined;
-    /** Span of the opening `{{#…}}` mustache. */
+    /** Span of the opening `{{#...}}` mustache. */
     readonly openTag: Span;
-    /** Span of the closing `{{/…}}` mustache (`undefined` when the block was never closed). */
+    /** Span of the closing `{{/...}}` mustache (`undefined` when the block was never closed). */
     readonly closeTag: Span | undefined;
-} & Span;
+};
 
 /** A top-level / block-body statement. */
 export type Statement = BlockNode | ContentNode | MustacheNode;

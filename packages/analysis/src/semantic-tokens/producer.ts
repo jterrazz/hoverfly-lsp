@@ -74,7 +74,7 @@ function emitModel(emitter: TokenEmitter, document: TextDocument, model: Simulat
     }
 }
 
-/** The absolute, sorted tokens of a document — none unless it is a simulation or named for Hoverfly; never throws. */
+/** The absolute, sorted tokens of a document, none unless it is a simulation or named for Hoverfly; never throws. */
 function getSemanticTokens(
     document: TextDocument,
     jsonDocument: JSONDocument,

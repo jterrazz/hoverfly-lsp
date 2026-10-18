@@ -10,7 +10,7 @@ import type {
 // Handlebars mustache, path, block, each-variable or argument.
 const COMPLETION_TRIGGER_CHARACTERS = ['"', '{', '.', '#', '@', "'", '('] as const;
 
-// invariant: the legend is the analysis package's own arrays, verbatim and in order — the producer
+// invariant: the legend is the analysis package's own arrays, verbatim and in order: the producer
 // emits indices into them, so a retyped copy would shift every color.
 const SEMANTIC_TOKENS_LEGEND: SemanticTokensLegend = {
     tokenTypes: [...SEMANTIC_TOKEN_TYPES],
@@ -37,8 +37,8 @@ export function clientSupportsSemanticTokens(capabilities: ClientCapabilities): 
     return capabilities.textDocument?.semanticTokens !== undefined;
 }
 
-// invariant: a simulation is one self-contained file — no diagnostic depends on another document,
-// and a full token pass is cheap — so no range or delta provider is advertised.
+// invariant: a simulation is one self-contained file (no diagnostic depends on another document)
+// and a full token pass is cheap, so no range or delta provider is advertised.
 /** The capabilities answered at initialize; semantic tokens only for a client that reads them. */
 export function buildServerCapabilities(
     clientCapabilities: ClientCapabilities,

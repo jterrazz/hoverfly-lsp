@@ -1,4 +1,4 @@
-// value: case-insensitive — Go folds case for keys and schemes, and for a method a measure that
+// value: case-insensitive. Go folds case for keys and schemes, and for a method a measure that
 // ignores case still fires on a typo alone.
 
 /** Case-insensitive Levenshtein edit distance between `a` and `b`. */

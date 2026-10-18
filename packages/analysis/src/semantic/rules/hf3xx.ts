@@ -1,6 +1,6 @@
 // outside: Hoverfly discards a base64 decode error (core/models/payload.go), ignores a fixedDelay
 // that is not positive (core/hoverfly.go applyResponseDelay), and fails the whole import on a
-// logNormalDelay it refuses — HF307 stays a Warning because the catalog pins every severity.
+// logNormalDelay it refuses. HF307 stays a Warning because the catalog pins every severity.
 
 import type { ASTNode } from 'vscode-json-languageservice';
 import type { Diagnostic } from 'vscode-languageserver-types';
@@ -9,11 +9,11 @@ import { makeDiagnostic } from '../diagnostics.js';
 import type { ResponseModel, RuleContext, SemanticRule } from '../rule.js';
 import { logNormalDelayViolation } from './log-normal-delay.js';
 
-// value: Hoverfly treats 100–599 as in range, both ends included.
+// value: Hoverfly treats 100 to 599 as in range, both ends included.
 const MIN_HTTP_STATUS = 100;
 const MAX_HTTP_STATUS = 599;
 
-// outside: Go's base64.StdEncoding — no URL-safe character, padding required.
+// outside: Go's base64.StdEncoding: no URL-safe character, padding required.
 const BASE64_STD_PATTERN = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/u;
 
 const CONTENT_LENGTH = 'content-length';

@@ -1,4 +1,4 @@
-// outside: Go's ValidateLogNormalDelayOptions (core/delay/log_normal_generator.go), in its order —
+// outside: Go's ValidateLogNormalDelayOptions (core/delay/log_normal_generator.go), in its order:
 // the first violation is the one reported; an absent field is Go's int zero value, 0. Go guards the
 // two "less than min" checks with min != 0, which the positive mean and median already imply.
 

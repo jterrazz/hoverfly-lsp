@@ -4,13 +4,13 @@ import type { Diagnostic, Range } from 'vscode-languageserver-types';
 import { makeDiagnostic } from '../diagnostics.js';
 import type { SemanticRule } from '../rule.js';
 
-// value: decision C4 — `v`, digits, an optional `.digits`.
+// value: decision C4: `v`, digits, an optional `.digits`.
 const SCHEMA_VERSION_PATTERN = /^v\d+(?:\.\d+)?$/u;
 
-// outside: Hoverfly upgrades v1–v4 on import.
+// outside: Hoverfly upgrades v1 to v4 on import.
 const LEGACY_MAJORS = new Set([1, 2, 3, 4]);
 
-/** HF101 on the document's first line: named for Hoverfly, yet no simulation — built by the service gate, which alone knows both. */
+/** HF101 on the document's first line: named for Hoverfly, yet no simulation; built by the service gate, which alone knows both. */
 export function hf101NotASimulation(document: TextDocument): Diagnostic {
     const firstLine = document.getText().replace(/\n[\s\S]*/u, '');
     const range: Range = {

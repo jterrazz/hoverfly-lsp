@@ -1,5 +1,5 @@
-// invariant: HF510 and HF511 never fire together — a raymond built-in is HF510, any other unknown
-// function HF511 — so one rule decides both.
+// invariant: HF510 and HF511 never fire together (a raymond built-in is HF510, any other unknown
+// function HF511), so one rule decides both.
 
 import type { ASTNode, ObjectASTNode } from 'vscode-json-languageservice';
 import type { Diagnostic } from 'vscode-languageserver-types';

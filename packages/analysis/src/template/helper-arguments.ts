@@ -9,7 +9,7 @@ const FAKER_PANIC_SET: ReadonlySet<string> = new Set(FAKER_PARAMETERIZED_PANICS)
 
 const NOW_OFFSET_RE = new RegExp(
     `^[-+]?(?:\\d+(?:\\.\\d+)?(?:${NOW_OFFSET_UNITS.join('|')}))+$`,
-    // Stryker disable next-line StringLiteral: equivalent — every unit is a BMP letter, which the pattern reads the same with or without the flag
+    // Stryker disable next-line StringLiteral: equivalent; every unit is a BMP letter, which the pattern reads the same with or without the flag
     'u',
 );
 
@@ -62,7 +62,7 @@ function plural(count: number): string {
     return count === 1 ? '1 argument' : `${count} arguments`;
 }
 
-// invariant: only a string-literal argument is judged — a path or a subexpression is unknowable
+// invariant: only a string-literal argument is judged; a path or a subexpression is unknowable
 // statically.
 export function checkSpecialHelperArgs(
     spec: HelperSpec,

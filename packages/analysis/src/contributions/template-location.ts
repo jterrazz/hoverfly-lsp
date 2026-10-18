@@ -1,5 +1,5 @@
 // invariant: a string is templatable when it is a response body or header value and `templated` is
-// true, or when it already holds `{{` — the author is mid-typing, and HF501 asks for `templated`.
+// true, or when it already holds `{{` (the author is mid-typing, and HF501 asks for `templated`).
 
 import type {
     ASTNode,
@@ -19,7 +19,7 @@ type TemplateLocation = {
     readonly decoded: string;
     /** The cursor as a decoded-string offset. */
     readonly decodedCursor: number;
-    /** Document↔decoded offset bridge for this string token. */
+    /** The bridge between document and decoded offsets for this string token. */
     readonly sourceMap: StringSourceMap;
     /** The string AST node the cursor sits in. */
     readonly node: StringASTNode;

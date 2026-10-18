@@ -44,7 +44,7 @@ export type FieldContainer = 'headers' | 'query' | 'request';
 export type RequestField = {
     /** Field name as written (`path`, `method`, `body`, or a header/query key). */
     readonly fieldName: string;
-    /** Where this field lives — top-level request field, or inside headers/query. */
+    /** Where this field lives: top-level request field, or inside headers/query. */
     readonly container: FieldContainer;
     /** The key node for this field (the property key string node). */
     readonly keyNode: ASTNode | undefined;
@@ -103,7 +103,7 @@ export type HeaderEntry = {
     readonly valueNode: ASTNode | undefined;
 };
 
-/** A `requiresState` / `transitionsState` map entry (state key → value), AST-anchored. */
+/** A `requiresState` / `transitionsState` map entry (state key to value), AST-anchored. */
 export type StateEntry = {
     readonly key: string;
     readonly keyNode: ASTNode | undefined;

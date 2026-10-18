@@ -13,7 +13,7 @@ import { levenshtein } from '../levenshtein.js';
 import type { RuleContext, SemanticRule } from '../rule.js';
 import { checkRemovesState, checkResponseHeaders, checkStateValues } from './value-shapes.js';
 
-// value: the nearest allowed key within the distance, the first in code-unit order on a tie — a
+// value: the nearest allowed key within the distance, the first in code-unit order on a tie, a
 // comparison no locale can reorder.
 function didYouMean(key: string, allowed: readonly string[]): string {
     const [nearest] = allowed
@@ -22,7 +22,7 @@ function didYouMean(key: string, allowed: readonly string[]): string {
         .toSorted(
             (a, b) =>
                 a.distance - b.distance ||
-                // Stryker disable next-line EqualityOperator: equivalent — the allowed keys of a kind are distinct, so two candidates are never equal
+                // Stryker disable next-line EqualityOperator: equivalent; the allowed keys of a kind are distinct, so two candidates are never equal
                 (a.candidate < b.candidate ? -1 : 1),
         );
     return nearest === undefined ? '' : ` (did you mean "${nearest.candidate}"?)`;
@@ -112,7 +112,7 @@ function walkMatcherArray(
     }
 }
 
-// invariant: headers and query are maps keyed by user data — their keys are never judged, their
+// invariant: headers and query are maps keyed by user data: their keys are never judged, their
 // matcher arrays are.
 function walkRequestMatcherMap(
     context: RuleContext,
@@ -236,7 +236,7 @@ const structureRule: SemanticRule = {
     run(context: RuleContext): Diagnostic[] {
         const diagnostics: Diagnostic[] = [];
         const { root } = context.model;
-        // value: the root is not judged for unknown keys — additionalProperties:false already
+        // value: the root is not judged for unknown keys; additionalProperties:false already
         // reports them as HF102 (report 13 §6).
         walkData(context, propValue(root, 'data'), diagnostics);
 

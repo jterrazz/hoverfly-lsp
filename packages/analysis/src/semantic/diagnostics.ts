@@ -46,10 +46,10 @@ export function resolveRange(document: TextDocument, target: RangeTarget): Range
 /**
  * Build a catalog-backed {@link Diagnostic}.
  *
- * @param document the source document (for offset→position).
+ * @param document the source document (for offset to position).
  * @param code     the HFxxx code; pulls severity and template from the catalog.
  * @param target   the AST node to point at, or an explicit Range.
- * @param args     template substitution args (`{name}` → args.name). For passthrough codes
+ * @param args     template substitution args (`{name}` reads args.name). For passthrough codes
  *                 (HF102/HF307/HF502) pass the full text as `{ message }` / `{ explain }`.
  */
 export function makeDiagnostic(

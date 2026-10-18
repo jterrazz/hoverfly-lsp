@@ -1,4 +1,4 @@
-// value: a template's tokens, in decoded offsets — the producer maps them onto the document.
+// value: a template's tokens, in decoded offsets; the producer maps them onto the document.
 
 import { FAKER_NAMES } from '../registry/faker.js';
 import { ALL_HELPERS } from '../registry/templating.data.js';

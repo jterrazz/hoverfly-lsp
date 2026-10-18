@@ -136,7 +136,7 @@ function rendered(hover: Hover | null): string {
     return contents.value;
 }
 
-/** The hover the service answers at `marker`, as the Markdown an editor renders — empty when none. */
+/** The hover the service answers at `marker`, as the Markdown an editor renders, empty when none. */
 export async function hoverAt(
     source: MarkedDocument | string,
     marker = '',

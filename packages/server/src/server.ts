@@ -46,7 +46,7 @@ function pickSettings(raw: unknown): HoverflyServiceSettings {
         : {};
 }
 
-// outside: LSP 3.17 Lifecycle — a request before initialize succeeds fails with
+// outside: LSP 3.17 Lifecycle. A request before initialize succeeds fails with
 // ServerNotInitialized (-32002), a second initialize with InvalidRequest (-32600).
 function notInitialized<E>(): ResponseError<E> {
     return new ResponseError<E>(
@@ -247,11 +247,11 @@ class HoverflyServer {
 
     private cancelPush(uri: string): void {
         clearTimeout(this.pushTimers.get(uri));
-        // Stryker disable next-line CallExpression: equivalent — it only frees the handle, and clearing a fired or cleared timer does nothing
+        // Stryker disable next-line CallExpression: equivalent; it only frees the handle, and clearing a fired or cleared timer does nothing
         this.pushTimers.delete(uri);
     }
 
-    // invariant: a client advertising pull asks for its diagnostics, any other gets them pushed —
+    // invariant: a client advertising pull asks for its diagnostics, any other gets them pushed,
     // never both (decision D1). A newer version cancels the push still waiting, and TextDocuments
     // updates a document in place, so a push always validates the version it publishes.
     private schedulePush(document: TextDocument): void {

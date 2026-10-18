@@ -1,9 +1,9 @@
 // outside: transcribed from research/13 §1, verified against Hoverfly's Go view structs
-// (core/handlers/v2/simulation_views{,_v5}.go) and a v1.12.8 run — additionalProperties:false holds
+// (core/handlers/v2/simulation_views{,_v5}.go) and a v1.12.8 run. additionalProperties:false holds
 // at the root alone, so no schema catches a typo deeper down: Go silently drops it, and binds the
 // other keys case-insensitively. The user-keyed maps are no object kind here (report 13 §6).
 
-/** The closed object kinds whose keys come from a fixed Go struct; the root is none — its unknown keys are already HF102. */
+/** The closed object kinds whose keys come from a fixed Go struct; the root is none, its unknown keys being already HF102. */
 export type StructureObjectKind =
     | 'data'
     | 'delaysItem'
@@ -78,7 +78,7 @@ export const STRUCTURE_ALLOWED_KEYS: Readonly<Record<StructureObjectKind, readon
     meta: ['schemaVersion', 'hoverflyVersion', 'timeExported'],
 };
 
-/** The user-keyed maps the unknown-key rule never judges (report 13 §6 guard a) — documentation, read by no rule. */
+/** The user-keyed maps the unknown-key rule never judges (report 13 §6 guard a): documentation, read by no rule. */
 export const USER_KEYED_MAP_PATHS: readonly string[] = [
     'request.headers',
     'request.query',

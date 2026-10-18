@@ -1,4 +1,4 @@
-// invariant: never throws on bad input — any shape may be wrong, and an absent or wrong-shaped node
+// invariant: never throws on bad input. Any shape may be wrong, and an absent or wrong-shaped node
 // resolves to undefined or an empty list for the rules to skip.
 
 import type {

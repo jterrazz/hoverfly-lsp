@@ -1,5 +1,5 @@
 {
-    "_comment": "Baseline SHA-256 hashes of the upstream Hoverfly Go source files our matcher registry (research/07) and templating spec (research/08) were transcribed from. The schema-drift CI job re-fetches each file at HOVERFLY_COMMIT and compares; any mismatch means the source we modelled has moved and the registry/templating catalogs may need re-verification. Regenerate by running .github/workflows/schema-drift.yml logic locally. DO NOT hand-edit hashes to silence drift — investigate first.",
+    "_comment": "Baseline SHA-256 hashes of the upstream Hoverfly Go source files our matcher registry (research/07) and templating spec (research/08) were transcribed from. The schema-drift CI job re-fetches each file at HOVERFLY_COMMIT and compares; any mismatch means the source we modelled has moved and the registry/templating catalogs may need re-verification. Regenerate by running .github/workflows/schema-drift.yml logic locally. DO NOT hand-edit hashes to silence drift; investigate first.",
     "commit": "aeff9058b3251bc1896c453c4e99f88cac06a284",
     "algorithm": "sha256",
     "files": {

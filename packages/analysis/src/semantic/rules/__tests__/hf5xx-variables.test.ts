@@ -217,7 +217,7 @@ describe('hf5xx-variables', () => {
         },
     ])(
         // Given - data, and a request, holding the case $label names
-        // Then - every HF510–HF512, HF213 and HF214 diagnostic, its severity, its range and its message, or none
+        // Then - every HF510 to HF512, HF213 and HF214 diagnostic, its severity, its range and its message, or none
         'hf5xxVariablesRule — $label',
         ({ expected, input }) => {
             expect(run(input)).toStrictEqual(expected);

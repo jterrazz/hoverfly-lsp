@@ -1,6 +1,6 @@
 // outside: raymond reads a leading token as a helper when one is registered and as a context path
-// otherwise (report 08 §4), so a bare argument-less `{{foo}}` is a path — raymond renders it empty,
-// no panic — and only a call with arguments, a block open or a subexpression head is HF503; a
+// otherwise (report 08 §4), so a bare argument-less `{{foo}}` is a path (raymond renders it empty,
+// no panic), and only a call with arguments, a block open or a subexpression head is HF503; a
 // dotted, `@` or `this` path is never a helper, the Request.Body method call (report 08 §6)
 // included.
 

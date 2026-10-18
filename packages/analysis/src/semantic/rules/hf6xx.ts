@@ -47,12 +47,12 @@ function hf602(context: RuleContext): Diagnostic[] {
     return out;
 }
 
-/** HF601 — invalid globalActions delay urlPattern. */
+/** HF601: invalid globalActions delay urlPattern. */
 export const hf601DelayPatternRule: SemanticRule = {
     run: hf601,
 };
 
-/** HF602 — postServeAction not in the configured allowlist. */
+/** HF602: postServeAction not in the configured allowlist. */
 export const hf602PostServeActionRule: SemanticRule = {
     run: hf602,
 };

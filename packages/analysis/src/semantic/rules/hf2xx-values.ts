@@ -39,7 +39,7 @@ function checkValue(
         return;
     }
     const { value } = valueNode;
-    // value: case is folded — a case variant of a standard verb is not the typo HF215 targets,
+    // value: case is folded, since a case variant of a standard verb is not the typo HF215 targets,
     // though Hoverfly compares methods case-sensitively.
     const lower = value.toLowerCase();
     if (domain.standard.some((candidate) => candidate.toLowerCase() === lower)) {

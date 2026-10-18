@@ -1,4 +1,4 @@
-// value: decision D3 — a simulation is an object root with a `data` object and a `meta` object
+// value: decision D3. A simulation is an object root with a `data` object and a `meta` object
 // whose `schemaVersion` is a string starting with `v`; `data.pairs` is optional, as in the official
 // schema.
 
@@ -23,7 +23,7 @@ export function isHoverflySimulationAst(root: ASTNode | undefined): boolean {
     return schemaVersionNode?.type === 'string' && schemaVersionNode.value.startsWith('v');
 }
 
-/** Whether a URI or path names a Hoverfly file — `*.hoverfly.json`, `*.hfy` or `hoverfly-simulation.json`, case-insensitively (D3). */
+/** Whether a URI or path names a Hoverfly file (`*.hoverfly.json`, `*.hfy` or `hoverfly-simulation.json`), case-insensitively (D3). */
 export function hasHoverflyFilename(uri: string): boolean {
     const path = uri.replace(/[?#].*/su, '');
     const segment = path.slice(path.lastIndexOf('/') + 1).toLowerCase();

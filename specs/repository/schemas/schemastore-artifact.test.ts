@@ -9,7 +9,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-// invariant: the two documented deltas — SchemaStore's $id, and the matcher names the LSP contribution
+// invariant: the two documented deltas are SchemaStore's $id and the matcher names the LSP contribution
 // offers in their place, which a schema-only consumer has no other way to see.
 function withDeltas(schema: unknown): unknown {
     const definitions = isRecord(schema) ? schema.definitions : undefined;

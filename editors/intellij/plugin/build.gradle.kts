@@ -31,7 +31,7 @@ dependencies {
             providers.gradleProperty("platformVersion").get(),
         )
 
-        // LSP4IJ — auto-installed by IntelliJ when the plugin is loaded.
+        // LSP4IJ, auto-installed by IntelliJ when the plugin is loaded.
         plugins("com.redhat.devtools.lsp4ij:${providers.gradleProperty("lsp4ijVersion").get()}")
 
         pluginVerifier()

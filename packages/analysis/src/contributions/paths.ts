@@ -1,5 +1,5 @@
 // outside: the library hands completion the path of the object owning the property, its key apart,
-// and hover the path of the hovered value, key included — so a matcher position is matched by its
+// and hover the path of the hovered value, key included, so a matcher position is matched by its
 // shape, the trailing `matcher` segment optional.
 
 import type { JSONPath, Segment } from 'vscode-json-languageservice';

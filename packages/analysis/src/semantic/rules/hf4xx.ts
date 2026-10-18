@@ -62,7 +62,7 @@ function buildStateFlowIndex(model: SimulationModel): StateFlowIndex {
     };
 }
 
-// invariant: a key required and set in the same pair alone still warns — the response that sets it
+// invariant: a key required and set in the same pair alone still warns: the response that sets it
 // fires after the match, so on first encounter the state is unset.
 /** HF401: a required state key no transitionsState sets, one warning per occurrence, on its key. */
 export const hf401RequiresNeverSet: SemanticRule = {

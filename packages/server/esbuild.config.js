@@ -1,4 +1,4 @@
-// outside: one self-contained CommonJS file — vscode-languageserver and its dependencies are
+// outside: one self-contained CommonJS file. vscode-languageserver and its dependencies are
 // CommonJS, every editor launcher resolves dist/cli.cjs by path with no node_modules, and the
 // version is defined at build so the bundle reads no package.json.
 import { build } from 'esbuild';

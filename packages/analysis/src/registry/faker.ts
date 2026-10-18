@@ -220,7 +220,7 @@ export const FAKER_NAMES: readonly string[] = [
     'Zip',
 ];
 
-/** Parameterized gofakeit methods that panic as a zero-argument faker type (report 08 §3.2) — the common offenders, not every one. */
+/** Parameterized gofakeit methods that panic as a zero-argument faker type (report 08 §3.2): the common offenders, not every one. */
 export const FAKER_PARAMETERIZED_PANICS: readonly string[] = [
     'Number',
     'Sentence',

@@ -1,5 +1,5 @@
 // invariant: HF203 owns a value of the wrong type and HF211 an empty one, so these rules judge only
-// a correctly typed, non-empty value; glob is never judged — ryanuber/go-glob has no invalid
+// a correctly typed, non-empty value; glob is never judged, as ryanuber/go-glob has no invalid
 // syntax, `*` alone being special (research/14 §3.2, §4, §7).
 
 import { SyntaxValidator } from 'fast-xml-validator';
@@ -87,7 +87,7 @@ function checkTemplatedRegexes(
     diagnostics: Diagnostic[],
 ): void {
     for (const match of valueNode.value.matchAll(TEMPLATED_REGEX)) {
-        // Stryker disable next-line OptionalChaining,StringLiteral: equivalent — the named group always participates, so it is always a string
+        // Stryker disable next-line OptionalChaining,StringLiteral: equivalent; the named group always participates, so it is always a string
         if (!isValidRe2(match.groups?.pattern ?? '')) {
             diagnostics.push(makeDiagnostic(context.textDocument, 'HF230', valueNode));
         }

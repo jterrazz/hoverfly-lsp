@@ -228,7 +228,7 @@ describe('getSemanticTokens', () => {
         },
     ])(
         // Given - a document holding $label
-        // Then - every token in document order, on the characters it colors, typed by the legend — or none
+        // Then - every token in document order, on the characters it colors, typed by the legend, or none
         '$label',
         ({ expected, input }) => {
             expect(run(input)).toStrictEqual(expected);

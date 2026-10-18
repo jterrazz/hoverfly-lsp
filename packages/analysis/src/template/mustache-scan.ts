@@ -2,7 +2,7 @@ type OpenMustache = {
     readonly contentStart: number;
 };
 
-// invariant: quote-aware — a `}}` inside a string literal does not close the mustache.
+// invariant: quote-aware, so a `}}` inside a string literal does not close the mustache.
 export function findOpenMustache(decoded: string, cursor: number): OpenMustache | undefined {
     const head = decoded.lastIndexOf('{{', cursor - 2);
     // invariant: lastIndexOf clamps a negative start to 0, so a cursor before or between the braces
@@ -45,7 +45,7 @@ type InnerSegment = {
 export function innermostOpenSubexpression(inner: string): InnerSegment {
     const opens: number[] = [];
     let quote: string | undefined;
-    // Stryker disable next-line EqualityOperator: equivalent — the character read past the end is undefined, which opens, closes and escapes nothing
+    // Stryker disable next-line EqualityOperator: equivalent; the character read past the end is undefined, which opens, closes and escapes nothing
     for (let i = 0; i < inner.length; i += 1) {
         const ch = inner[i];
         if (quote !== undefined) {
@@ -73,7 +73,7 @@ export function openStringQuote(
 ): undefined | { before: string; quote: string; typed: string } {
     let quote: string | undefined;
     let quoteStart = 0;
-    // Stryker disable next-line EqualityOperator: equivalent — the character read past the end is undefined, which opens, closes and escapes nothing
+    // Stryker disable next-line EqualityOperator: equivalent; the character read past the end is undefined, which opens, closes and escapes nothing
     for (let i = 0; i < body.length; i += 1) {
         const ch = body[i];
         if (quote !== undefined) {
@@ -134,7 +134,7 @@ export function splitTopLevelTokens(body: string): string[] {
             continue;
         }
         quote = ch === "'" || ch === '"' ? ch : undefined;
-        // Stryker disable next-line AssignmentOperator: equivalent — only whether the depth is zero is read, which a flipped sign leaves unchanged
+        // Stryker disable next-line AssignmentOperator: equivalent; only whether the depth is zero is read, which a flipped sign leaves unchanged
         depth += DEPTH_STEP.get(ch) ?? 0;
         current += ch;
     }

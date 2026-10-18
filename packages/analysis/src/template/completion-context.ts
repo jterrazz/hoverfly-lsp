@@ -87,14 +87,14 @@ function classifySegment(
 
     const tokens = splitTopLevelTokens(body);
     const lastIsPartial = !/\s$/u.test(body);
-    // Stryker disable next-line StringLiteral: equivalent — a body with no trailing space splits into one token at least
+    // Stryker disable next-line StringLiteral: equivalent; a body with no trailing space splits into one token at least
     const current = lastIsPartial ? (tokens.at(-1) ?? '') : '';
 
     if (tokens.length <= 1 && (lastIsPartial || body.trim().length === 0)) {
         return headContext(current, blockStack, inEachScope, blockOpen);
     }
     return argumentContext(
-        // Stryker disable next-line StringLiteral: equivalent — an argument context has a head token
+        // Stryker disable next-line StringLiteral: equivalent; an argument context has a head token
         { current, head: tokens[0] ?? '', slot: argSlot(tokens, lastIsPartial) },
         blockStack,
         inEachScope,
@@ -171,7 +171,7 @@ function stringArgContext(
 ): TemplateCompletionContext {
     // invariant: the segment's block marker was stripped before the quote was found.
     const tokens = splitTopLevelTokens(before);
-    // Stryker disable next-line StringLiteral: equivalent — with no head token, neither faker nor now is named
+    // Stryker disable next-line StringLiteral: equivalent; with no head token, neither faker nor now is named
     const head = tokens[0] ?? '';
     if (head === FAKER_HELPER) {
         return { kind: 'fakerArg', word: typed, blockStack, inEachScope };
@@ -206,7 +206,7 @@ function isPathContinuation(token: string): boolean {
 }
 
 // invariant: the parser extends an unclosed block's end to the end of the text, so a still-open
-// `{{#each}}…{{` encloses the cursor.
+// `{{#each}}...{{` encloses the cursor.
 function enclosingBlockStack(decoded: string, offset: number): string[] {
     const { ast } = parse(decoded);
     const stack: string[] = [];

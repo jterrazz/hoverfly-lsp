@@ -4,7 +4,7 @@ import { insertionsAt, labelsAt } from '../__setup__/fourslash.js';
 import { integration } from '../integration.specification.js';
 
 // invariant: every state-key and action context is met under the cursor conditions a real editor
-// produces — (a) empty quotes, (b) mid-word, (c) a bare position after `{` or `[`.
+// produces: (a) empty quotes, (b) mid-word, (c) a bare position after `{` or `[`.
 
 function producerPair(
     kind: 'removesState' | 'requiresState' | 'transitionsState',

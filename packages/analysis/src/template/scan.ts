@@ -1,8 +1,8 @@
-// invariant: quote-aware — a `}}` inside a quoted string does not close the mustache.
+// invariant: quote-aware, so a `}}` inside a quoted string does not close the mustache.
 export function findClose(source: string, from: number, marker: string): number {
     let i = from;
     let quote: string | undefined;
-    // Stryker disable next-line EqualityOperator: equivalent — the character read past the end is undefined, which opens and closes nothing, and no marker starts there
+    // Stryker disable next-line EqualityOperator: equivalent; the character read past the end is undefined, which opens and closes nothing, and no marker starts there
     while (i < source.length) {
         const ch = source[i];
         if (quote !== undefined) {

@@ -82,8 +82,8 @@ function jsonServiceWith(contributions: JSONWorkerContribution[]): LanguageServi
     return service;
 }
 
-// invariant: a document that is no simulation answers nothing — HF101 alone when its name claims
-// Hoverfly — so a non-simulation file gets no schema or semantic noise.
+// invariant: a document that is no simulation answers nothing (HF101 alone when its name claims
+// Hoverfly), so a non-simulation file gets no schema or semantic noise.
 async function validated(
     { document, parsed }: { document: TextDocument; parsed: JSONDocument },
     service: LanguageService,
@@ -134,7 +134,7 @@ export function createHoverflyLanguageService(
         doComplete: async (document, position, jsonDocument) => {
             const { normalized, parsed } = opened(document, jsonDocument);
             // invariant: inside a templatable string the template completions replace the schema's
-            // — the cursor is inside a JSON string value — and they are computed here, where the
+            // (the cursor is inside a JSON string value), and they are computed here, where the
             // position is known.
             const templateItems = getTemplateCompletions(normalized, parsed, position);
             return templateItems === undefined

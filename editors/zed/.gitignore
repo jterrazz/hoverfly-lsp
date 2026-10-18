@@ -6,8 +6,8 @@
 /node_modules/
 
 # Tree-sitter grammars and the compiled wasm Zed drops in the extension root on
-# install — paths Zed fixes and cannot be told to move.
+# install: paths Zed fixes and cannot be told to move.
 /grammars/
 /*.wasm
 
-# Cargo.lock IS committed — extensions should build reproducibly.
+# Cargo.lock IS committed, so extensions build reproducibly.

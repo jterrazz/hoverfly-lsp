@@ -1,4 +1,4 @@
-// value: a lint, not a parser — brackets pair up and quotes close, a bracket inside a quote being
+// value: a lint, not a parser: brackets pair up and quotes close, a bracket inside a quote being
 // text (research/14 §3.4, §3.6).
 
 const CLOSERS: ReadonlyMap<string, string> = new Map([

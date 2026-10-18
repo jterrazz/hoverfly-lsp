@@ -1,4 +1,4 @@
-// invariant: the families' order is a tie-break only — the engine re-sorts the diagnostics by
+// invariant: the families' order is a tie-break only; the engine re-sorts the diagnostics by
 // range.
 
 import type { SemanticRule } from '../rule.js';

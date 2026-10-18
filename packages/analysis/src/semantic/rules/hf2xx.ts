@@ -113,7 +113,7 @@ function checkValue(
 
     const lower = spec.name.toLowerCase();
 
-    // value: HF207 takes precedence over HF203 for negate — a vacuous match is the accurate
+    // value: HF207 takes precedence over HF203 for negate: a vacuous match is the accurate
     // warning, not a match that never happens.
     if (lower === 'negate') {
         if (valueNode.type !== 'string') {
@@ -133,7 +133,7 @@ function checkValue(
     }
 
     if (
-        // Stryker disable next-line ConditionalExpression: equivalent — the three never-matching matchers accept a string alone, so any other value returned at HF203
+        // Stryker disable next-line ConditionalExpression: equivalent; the three never-matching matchers accept a string alone, so any other value returned at HF203
         valueNode.type === 'string' &&
         valueNode.value === '' &&
         EMPTY_VALUE_NEVER_MATCHES.has(lower)

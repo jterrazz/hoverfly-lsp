@@ -3,7 +3,7 @@ import { describe, expect, test } from 'vitest';
 import { insertionsAt, labelsAt } from '../__setup__/fourslash.js';
 import { integration } from '../integration.specification.js';
 
-// invariant: every completion context is met under the three cursor conditions a real editor produces —
+// invariant: every completion context is met under the three cursor conditions a real editor produces:
 // (a) empty quotes `"⟦⟧"`, (b) mid-word `"au⟦⟧"`, (c) a bare position after `{` or `[`. A trigger
 // character only invokes completion: the service keys the list off the AST position, so a run with
 // and without one is the same run. The truth table is packages/analysis/src/contributions/README.md's.

@@ -210,7 +210,7 @@ describe('createStringSourceMap', () => {
         },
     ])(
         // Given - the JSON string token $raw at document offset $at
-        // Then - its decoded text, and where every offset maps each way — one past each end included, so the clamps are read too
+        // Then - its decoded text, and where every offset maps each way (one past each end included), so the clamps are read too
         'maps $raw at $at',
         ({ at, map, raw }) => {
             expect(described(raw, at)).toStrictEqual(map);

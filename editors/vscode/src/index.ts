@@ -11,7 +11,7 @@ import { resolveServer } from './server-resolution.js';
 
 let client: LanguageClient | undefined;
 
-// hazard: the .cjs bundle, never the bin launcher — vscode-languageclient forks the module under
+// hazard: the .cjs bundle, never the bin launcher. vscode-languageclient forks the module under
 // the editor's Electron Node, where the `.js` launcher's reliance on `"type": "module"` can fail to
 // load.
 const BUNDLED_SERVER_MODULE = join('server', 'dist', 'cli.cjs');

@@ -23,7 +23,7 @@ const SIMPLE_ESCAPES: Readonly<Record<string, string>> = {
     t: '\t',
 };
 
-// invariant: a malformed escape — a lone trailing `\` or `\z` — passes its backslash through, so
+// invariant: a malformed escape (a lone trailing `\` or `\z`) passes its backslash through, so
 // the mapping stays total.
 function unitAt(raw: string, index: number): { text: string; width: number } {
     const ch = raw.charAt(index);
@@ -51,7 +51,7 @@ function toDocOffset({ decoded, endDocOffset, offsets }: Mapping, decodedOffset:
 }
 
 // invariant: offsets never decreases; a document offset maps to the count of decoded units whose
-// source starts strictly before it — half-open like toDocOffset, never inside an escape, and
+// source starts strictly before it: half-open like toDocOffset, never inside an escape, and
 // clamped to the content by the search itself.
 function toDecodedOffset({ decoded, endDocOffset, offsets }: Mapping, docOffset: number): number {
     let lo = 0;
