@@ -12,8 +12,6 @@ export default defineConfig({
         },
         oxfmt: {
             ignore: {
-                'research/**':
-                    'the research reports decisions D1 to D9 were taken from, kept as written: their fences quote upstream Go source, schema and payloads verbatim',
                 'schemas/schemastore-submission/**':
                     "the ready-to-submit SchemaStore bundle, byte-identical to what SchemaStore's own checks run",
                 'schemas/upstream/**':
@@ -26,7 +24,10 @@ export default defineConfig({
             assets: 'the logo the README and the editor listings show',
             editors:
                 'the thin launcher of each editor: VS Code (a workspace member), Claude Code, IntelliJ and Zed',
-            research: 'the research reports the binding decisions D1 to D9 were taken from',
+            research: {
+                reason: 'the research reports the binding decisions D1 to D9 were taken from, kept as written: their prose is the record those decisions cite, and their fences quote upstream Go source, schema and payloads verbatim',
+                verbatim: true,
+            },
             schemas:
                 'the JSON Schema published to SchemaStore, with the upstream baseline the drift watcher compares',
             scripts: 'the generator that projects docs/reference/ from the built analysis package',
