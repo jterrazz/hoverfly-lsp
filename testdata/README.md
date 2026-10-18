@@ -1,10 +1,10 @@
-# testdata — the reference corpus
+# testdata, the reference corpus
 
 This tree is **the** behavioural contract for the Hoverfly LSP's semantic pipeline
 (`packages/analysis/src/semantic/`). It is run by
 `packages/analysis/specs/integration/semantic/diagnostics-corpus.spec.ts`: every `invalid/` fixture
 must produce exactly the diagnostics its sibling `.diagnostics.json` holds, and every `valid/`
-fixture **zero** diagnostics end-to-end (parse → schema → template → HFxxx).
+fixture **zero** diagnostics end-to-end (parse, then schema, then template, then HFxxx).
 
 ## Layout & conventions
 
@@ -18,17 +18,17 @@ testdata/
 - Fixture files are named `*.hoverfly.json`. The base name describes the fixture's single point
   (e.g. `hf210-domatch-after-glob`, `jwt-on-authorization-header`).
 - `<domain>` groups by feature area (`matchers`, `templating`, `response`, `state`, `versions`,
-  `realworld`, `globalactions`, `meta`, `parse`) or by code family (`hf2xx`, `hf3xx`, …).
-- Fixtures are realistic API-mocking scenarios — real-looking paths/payloads, small but complete.
+  `realworld`, `globalactions`, `meta`, `parse`) or by code family (`hf2xx`, `hf3xx` and so on).
+- Fixtures are realistic API-mocking scenarios: real-looking paths/payloads, small but complete.
 - An `invalid/` fixture must trigger **exactly** its intended code (no incidental extra diagnostics).
-- A `valid/` fixture producing any diagnostic is either a fixture bug or a validator false-positive —
+- A `valid/` fixture producing any diagnostic is either a fixture bug or a validator false-positive:
   fix the fixture or report the bug; never delete the check.
 
 ### `doMatch` shape (important)
 
 Hoverfly's official v5.x schema requires `doMatch` to be a **single object**
-(`"doMatch": { "matcher": …, "value": … }`), recursive. It is **not** an array. Real Hoverfly
-v1.12.8 rejects `"doMatch": [ … ]` with HTTP 400. The entire corpus now uses the object form.
+(`"doMatch": { "matcher": ..., "value": ... }`), recursive. It is **not** an array. Real Hoverfly
+v1.12.8 rejects `"doMatch": [ ... ]` with HTTP 400. The entire corpus now uses the object form.
 
 ## Regenerating goldens
 
@@ -38,7 +38,7 @@ TEST_UPDATE=1 npm test
 
 Always **review** each regenerated golden: it must contain only the codes the fixture is
 designed to trigger. An unexpected extra code means the fixture has a side problem (fix the
-fixture); a missing code means a validator gap (report it — do not paper over).
+fixture); a missing code means a validator gap (report it; do not paper over).
 
 ## Counts (this revision)
 
@@ -54,7 +54,7 @@ templating 11, versions 3, root 2.
 
 ## Coverage matrix (computed, this revision)
 
-**HF codes — count of invalid fixtures triggering each** (target ≥2; HF1xx ≥1;
+**HF codes: count of invalid fixtures triggering each** (target ≥2; HF1xx ≥1;
 HF602 and the HF101/HF102 families are settings-gated and exempt):
 
 ```
@@ -67,10 +67,10 @@ exempt: HF101 HF102 HF602
 
 All non-exempt codes meet their target.
 
-- **Matchers** — all 14 registry matchers (`array exact form glob json jsonpartial jsonpath
+- **Matchers**: all 14 registry matchers (`array exact form glob json jsonpartial jsonpath
   jwt jwtjsonpath negate regex xml xmltemplated xpath`) appear in ≥1 valid fixture.
-- **Helpers** — all 52 Hoverfly helpers + 8 raymond built-ins are used validly in the valid corpus (60/60).
-- **Response fields** — all 11 (`status body bodyFile encodedBody headers templated fixedDelay
+- **Helpers**: all 52 Hoverfly helpers + 8 raymond built-ins are used validly in the valid corpus (60/60).
+- **Response fields**: all 11 (`status body bodyFile encodedBody headers templated fixedDelay
   logNormalDelay postServeAction removesState transitionsState`) appear in valid fixtures.
 
 ## Ground-truth verification

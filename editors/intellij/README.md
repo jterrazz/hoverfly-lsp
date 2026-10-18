@@ -11,19 +11,19 @@ The plugin works across the **entire JetBrains IDE family**: IntelliJ IDEA, PyCh
 GoLand, PhpStorm, RubyMine, CLion, Rider, DataGrip, and Android Studio (Community and paid
 editions alike). It depends only on the universal platform module (`com.intellij.modules.platform`)
 plus [LSP4IJ](https://github.com/redhat-developer/lsp4ij), so it carries no IDE-specific (Java,
-Python, Go, JS…) requirement. Users only need LSP4IJ, which the IDE offers to auto-install when
+Python, Go, JS and so on) requirement. Users only need LSP4IJ, which the IDE offers to auto-install when
 the plugin is installed.
 
 Compatibility is proven with the JetBrains Plugin Verifier (`./gradlew verifyPlugin`) against a
 representative cross-family set at the since-build floor (2025.2 / build 252) and a recent build
 (2026.1), all report **Compatible**:
 
-| IDE           | Floor (2025.2) | Recent (2026.1) |
-| ------------- | -------------- | --------------- |
-| IntelliJ IDEA | ✅ Community   | ✅ (unified)    |
-| PyCharm       | ✅ Community   | ✅ (unified)    |
-| WebStorm      | ✅             | ✅              |
-| GoLand        | ✅             | ✅              |
+| IDE           | Floor (2025.2)  | Recent (2026.1) |
+| ------------- | --------------- | --------------- |
+| IntelliJ IDEA | Yes (Community) | Yes (unified)   |
+| PyCharm       | Yes (Community) | Yes (unified)   |
+| WebStorm      | Yes             | Yes             |
+| GoLand        | Yes             | Yes             |
 
 (The Community distributions of IDEA and PyCharm are no longer published from 2025.3 onwards, so
 the 2026.1 IDEA/PyCharm checks use the unified distributions; the plugin stays Community-compatible
@@ -60,8 +60,8 @@ The plugin appears at `editors/intellij/plugin/.artifacts/gradle/distributions/H
 
 ### 2. Install it in the IDE
 
-1. Open **Settings → Plugins**.
-2. Click the **gear icon** (⚙) → **Install Plugin from Disk…**.
+1. Open **Settings > Plugins**.
+2. Click the **gear icon**, then **Install Plugin from Disk...**.
 3. Select `Hoverfly-0.1.0.zip`.
 4. IntelliJ prompts to install the required **LSP4IJ** dependency; accept it
    (or install LSP4IJ first from **Marketplace**; plugin id `com.redhat.devtools.lsp4ij`).
@@ -90,8 +90,8 @@ launchctl setenv HOVERFLY_LSP_NODE /absolute/path/to/node   # macOS, applies to 
 ### 4. Verify
 
 Open any `*.hoverfly.json` file. The **Hoverfly** server should appear as **Running** under
-**Settings → Languages & Frameworks → Language Servers** (or the LSP console:
-**View → Tool Windows → LSP**). Removing a required `response.status` field should surface a red
+**Settings > Languages & Frameworks > Language Servers** (or the LSP console:
+**View > Tool Windows > LSP**). Removing a required `response.status` field should surface a red
 diagnostic; hovering `schemaVersion` should show docs. See the
 [Manual QA checklist](#manual-qa-checklist) for the full smoke test.
 
@@ -201,7 +201,7 @@ hoverfly-lsp --version   # verify
 
 ## Step 2: Install LSP4IJ
 
-1. Open **Settings → Plugins → Marketplace**.
+1. Open **Settings > Plugins > Marketplace**.
 2. Search for **LSP4IJ**.
 3. Click **Install** and restart the IDE.
 
@@ -213,8 +213,8 @@ Plugin page: <https://plugins.jetbrains.com/plugin/23257-lsp4ij>
 
 LSP4IJ supports importing a pre-built user-defined language server template.
 
-1. Open **Settings → Tools → Language Servers**.
-2. Click the **+** icon, then **Import from template...** (or **New Language Server → Import**).
+1. Open **Settings > Tools > Language Servers**.
+2. Click the **+** icon, then **Import from template...** (or **New Language Server > Import**).
 3. Select the file [`editors/intellij/template.json`](./template.json) from this repository.
 4. Click **OK**; the server named **Hoverfly** appears in the list.
 5. Proceed to Step 5.
@@ -229,8 +229,8 @@ LSP4IJ supports importing a pre-built user-defined language server template.
 Use this if your LSP4IJ version does not have template import, or if you want to customise
 individual fields.
 
-1. Open **Settings → Tools → Language Servers**.
-2. Click **+** → **New Language Server**.
+1. Open **Settings > Tools > Language Servers**.
+2. Click **+**, then **New Language Server**.
 
 ### Server tab
 
@@ -308,7 +308,7 @@ Trigger a diagnostic:
 Verify the server is running:
 
 ```text
-Settings → Tools → Language Servers
+Settings > Tools > Language Servers
 ```
 
 The **Hoverfly** row should show **Running** status.
@@ -316,7 +316,7 @@ The **Hoverfly** row should show **Running** status.
 Check the LSP4IJ logs if the server fails to start:
 
 ```text
-View → Tool Windows → LSP → Console (select "Hoverfly" in the dropdown)
+View > Tool Windows > LSP > Console (select "Hoverfly" in the dropdown)
 ```
 
 Common failure: `hoverfly-lsp: command not found`. Run `which hoverfly-lsp` in a terminal to
@@ -350,13 +350,13 @@ types, matcher-name enums) is colored beyond what the JSON file type provides.
 Notes specific to LSP4IJ / JetBrains:
 
 - **Enable it if it is off.** Some LSP4IJ versions gate semantic tokens behind a per-server toggle.
-  Open **Settings → Languages & Frameworks → Language Servers → Hoverfly**, and on the server's
+  Open **Settings > Languages & Frameworks > Language Servers > Hoverfly**, and on the server's
   configuration there ensure semantic-token / "Semantic highlighting" support is enabled (LSP4IJ
   exposes this as a server feature; recent versions also surface a **Semantic tokens** color mapping
   page). If you see no template coloring, this toggle is the first thing to check.
 - The legend uses only standard LSP token types; LSP4IJ ships a default mapping from those to the
   IDE color scheme, so no manual color setup is required for the tokens to take effect. You can
-  refine the colors under **Settings → Editor → Color Scheme** if desired.
+  refine the colors under **Settings > Editor > Color Scheme** if desired.
 - Semantic tokens are a server feature: they only appear once the **Hoverfly** server shows
   **Running**.
 
@@ -366,8 +366,8 @@ Run through these steps after any change to the server or this integration:
 
 - [ ] `hoverfly-lsp --version` prints a version string from a terminal
 - [ ] `hoverfly-lsp --stdio` starts without error and waits for LSP input
-- [ ] LSP4IJ plugin is installed (Settings → Plugins → Installed)
-- [ ] Language server entry "Hoverfly" appears in Settings → Tools → Language Servers
+- [ ] LSP4IJ plugin is installed (Settings > Plugins > Installed)
+- [ ] Language server entry "Hoverfly" appears in Settings > Tools > Language Servers
 - [ ] Opening `*.hoverfly.json` shows "Hoverfly: Running" in the status bar
 - [ ] A missing `response.status` field produces a red diagnostic underline
 - [ ] Hovering over `schemaVersion` shows a documentation popup

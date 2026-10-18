@@ -11,7 +11,7 @@ results for non-simulations, so activation is safe even when the fallback select
 ## Features
 
 - **Diagnostics**: schema and semantic checks (unknown matchers, dangling state, templating
-  errors, …) surfaced as squiggles, both pushed live and available via pull.
+  errors and more) surfaced as squiggles, both pushed live and available via pull.
 - **Completion**: matcher names, template helpers, faker types, and `postServeAction` names.
 - **Hover**: registry docs for matchers and helpers.
 - Syntax highlighting reuses VS Code's built-in JSON grammar (`source.json`).
@@ -30,7 +30,7 @@ npm run build --workspace=hoverfly-lsp-vscode     # bundles the extension + copi
 npm run package --workspace=hoverfly-lsp-vscode   # -> editors/vscode/.artifacts/vsce/hoverfly-lsp-vscode-0.1.0.vsix
 ```
 
-Then in VS Code: **Extensions** view → `…` menu → **Install from VSIX…**, or:
+Then in VS Code: **Extensions** view, the `...` menu, **Install from VSIX...**, or:
 
 ```bash
 code --install-extension editors/vscode/.artifacts/vsce/hoverfly-lsp-vscode-0.1.0.vsix
@@ -100,8 +100,8 @@ ls editors/vscode/.artifacts/vsce/*.vsix
 
 The server advertises an LSP **semantic tokens** provider, so VS Code colors the Hoverfly-specific
 constructs a plain JSON grammar cannot see, chiefly the Handlebars template syntax inside templated
-response body/header strings (`{{ faker 'Name' }}`, `{{ Request.Path.[1] }}`, `{{#each …}}`) and
-matcher-name enums (`exact`, `regex`, `jwt`, …).
+response body/header strings (`{{ faker 'Name' }}`, `{{ Request.Path.[1] }}`, `{{#each ...}}`) and
+matcher-name enums (`exact`, `regex`, `jwt` and the rest).
 
 This works **out of the box** with no settings to flip:
 
@@ -109,12 +109,12 @@ This works **out of the box** with no settings to flip:
   to `"configuredByTheme"`, and every built-in theme opts in). You only need to touch it if you
   previously set it to `false`.
 - The legend uses only **standard** LSP token types (`function`, `keyword`, `variable`, `property`,
-  `enumMember`, `string`, `number`, `operator`, …), which every shipped theme already colors, so
+  `enumMember`, `string`, `number`, `operator` and the like), which every shipped theme already colors, so
   no custom `editor.tokenColorCustomizations` / `editor.semanticTokenColorCustomizations` are
   required. (You may still add them to taste.)
 
 To confirm tokens are flowing, open a templated `*.hoverfly.json`, run **Developer: Inspect Editor
-Tokens and Scopes** from the command palette, and click inside a `{{ … }}`; the "semantic token
+Tokens and Scopes** from the command palette, and click inside a `{{ ... }}`; the "semantic token
 type" line should read `function` on a helper name, `operator` on the `{{`, etc.
 
 ### Manual QA checklist
@@ -130,7 +130,7 @@ VS Code window:
     - `testdata/invalid/hf4xx/dangling-states.hoverfly.json`: should show **squiggles** for
       `HF401`/`HF402`/`HF403` dangling-state diagnostics.
 3. In a `*.hoverfly.json` file, type a matcher value `{ "matcher": "" }` and trigger completion
-   inside the quotes; expect matcher names (`exact`, `regex`, `jsonpath`, …).
+   inside the quotes; expect matcher names (`exact`, `regex`, `jsonpath` and the rest).
 4. In a templated body (`"templated": true`, `"body": "{{ faker 'Name' }}"`), confirm the template
    syntax is colored: the helper name (`faker`) reads as a function, the `{{`/`}}` as operators,
    and a known faker type (`'Name'`) as an enum member (use **Developer: Inspect Editor Tokens and

@@ -15,7 +15,7 @@ operations, what is automated, what stays manual, and why.
 | the Zed extension             | the `zed-industries/extensions` PR | a human, from a fork           |
 
 `@hoverfly-lsp/analysis` is private, never published, and inlined into the server
-bundle by esbuild — the npm tarball carries no dependency on it.
+bundle by esbuild, so the npm tarball carries no dependency on it.
 
 The two npm-versioned manifests (`packages/analysis`, `packages/server`) must agree
 with the release tag; the workflow refuses to publish otherwise
@@ -25,11 +25,11 @@ Marketplace-only fix must be able to move without an npm release.
 
 ## Cutting a release
 
-1. Walk the parts of [Manual QA](manual-qa.md) that need a real editor —
+1. Walk the parts of [Manual QA](manual-qa.md) that need a real editor,
    in practice VS Code and IntelliJ. Once a version is on npm it cannot be
    replaced ([Test](test.md) says why this step is not optional).
 2. Bump the version in every manifest that ships: `packages/analysis`,
-   `packages/server`, the root `package.json`, and — when they move —
+   `packages/server`, the root `package.json`, and, when they move,
    `editors/vscode`, `editors/zed/extension.toml`,
    `editors/claude-code/.claude-plugin/plugin.json`.
 3. Cut the release, which is the trigger:
@@ -44,7 +44,7 @@ Marketplace-only fix must be able to move without an npm release.
 5. Push the `.vsix` to the two extension registries (below), and refresh the
    IntelliJ and Zed artefacts if they moved.
 
-`release.yml` fires on `release: published` — the trigger that fires whether the
+`release.yml` fires on `release: published`, the trigger that fires whether the
 release goes out directly or is saved as a draft first, unlike `created`. It
 runs the shared house gate on Node 24, verifies the tag, publishes, and uploads
 the `.vsix`. The publish step is idempotent: a version already on npm is
@@ -53,8 +53,8 @@ skipped rather than failed, so re-cutting a release still attaches its asset.
 ## Authentication
 
 npm publishing is **tokenless**. The workflow authenticates through OIDC trusted
-publishing — `npm publish --provenance` with `id-token: write` and no
-`NODE_AUTH_TOKEN` — exactly as the other `@jterrazz` packages do. It required
+publishing (`npm publish --provenance` with `id-token: write` and no
+`NODE_AUTH_TOKEN`), exactly as the other `@jterrazz` packages do. It required
 one setup, done once per package on npmjs.com: a Trusted Publisher on
 `@jterrazz/hoverfly-lsp` pointing at repository `jterrazz/hoverfly-lsp`,
 workflow `release.yml`. There is no npm secret in this repository.
@@ -87,7 +87,7 @@ marketplace refresh. Neither blocks a usable release.
 
 ## The footprint a user carries
 
-The server is a single self-contained CommonJS bundle plus its bin shim —
+The server is a single self-contained CommonJS bundle plus its bin shim:
 `npm install -g @jterrazz/hoverfly-lsp` leaves one `hoverfly-lsp` on `$PATH` and
 nothing else. It speaks stdio and holds no state between sessions, and its
 schema resolver answers the one bundled URI from memory and rejects every other,

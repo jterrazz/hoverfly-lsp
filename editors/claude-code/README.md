@@ -94,7 +94,7 @@ All commands below were run on this machine (macOS, Claude Code 2.1.173) and pas
 
 ```bash
 claude plugin validate ./editors/claude-code --strict
-# → "Validation passed"
+# prints "Validation passed"
 ```
 
 ### 2. Server-side contract over the launcher (no Claude needed)
@@ -113,9 +113,9 @@ printf '{ "name": "x", "version": "1.0.0" }' > "$SCRATCH/notes.json"
 Observed result:
 
 ```text
-broken.hoverfly.json → 1 diagnostic: HF201 (severity Error)
+broken.hoverfly.json: 1 diagnostic, HF201 (severity Error)
   "Unknown matcher \"xform\": Hoverfly panics at match time on unknown matchers"
-notes.json           → published, 0 diagnostics (fingerprint declined)
+notes.json:          published, 0 diagnostics (fingerprint declined)
 launcher exit 0
 ```
 

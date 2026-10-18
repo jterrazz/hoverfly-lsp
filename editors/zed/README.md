@@ -117,9 +117,9 @@ Because `hoverfly-lsp` is not on npm yet, make the server resolvable first.
     `npm install /absolute/path/to/hoverfly-lsp/packages/server`.
 
 2. Install the dev extension in Zed:
-    - Command palette → **`zed: install dev extension`** → select this
+    - Command palette, **`zed: install dev extension`**, then select this
       `editors/zed` directory.
-    - Or: Extensions panel → **Install Dev Extension** → choose `editors/zed`.
+    - Or: Extensions panel, **Install Dev Extension**, then choose `editors/zed`.
 
     Zed compiles `src/lib.rs` to wasm and loads it. If a published version is
     installed, Zed auto-uninstalls it while the dev version is loaded.
@@ -214,8 +214,8 @@ is enabled, the **Hoverfly LSP** server is running, and check `~/.local/share/ze
 
 A ready-to-submit bundle lives in [`registry-submission/`](registry-submission/):
 
-- [`SUBMISSION.md`](registry-submission/SUBMISSION.md): exact fork → add
-  submodule → edit `extensions.toml` → `pnpm sort-extensions` → open PR steps,
+- [`SUBMISSION.md`](registry-submission/SUBMISSION.md): the exact steps (fork, add the
+  submodule, edit `extensions.toml`, `pnpm sort-extensions`, open the PR),
   with cited URLs. The extension is referenced as a subdirectory via
   `path = "editors/zed"` (supported by the registry), so no root move is needed.
 - [`registry-submission/extensions-toml-entry.toml`](registry-submission/extensions-toml-entry.toml)

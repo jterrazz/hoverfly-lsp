@@ -22,20 +22,20 @@ The end-to-end editor behaviour cannot run headlessly (no extension host in CI).
 (or open `editors/vscode` and press **F5** for an Extension Development Host).
 
 - [ ] Bottom-right language indicator reads **Hoverfly** when a `*.hoverfly.json` is open.
-- [ ] `testdata/valid/minimal.hoverfly.json` → **no** diagnostics.
-- [ ] `testdata/valid/rich-stateful-templated.hoverfly.json` → no errors; hover over a matcher
+- [ ] `testdata/valid/minimal.hoverfly.json` shows **no** diagnostics.
+- [ ] `testdata/valid/rich-stateful-templated.hoverfly.json` shows no errors; hover over a matcher
       name (e.g. `"glob"`) shows registry docs.
-- [ ] `testdata/invalid/hf4xx/dangling-states.hoverfly.json` → squiggles for `HF401/HF402/HF403`.
-- [ ] Type a matcher value `{ "matcher": "" }` and trigger completion inside the quotes → matcher
-      names appear (`exact`, `regex`, `jsonpath`, …).
+- [ ] `testdata/invalid/hf4xx/dangling-states.hoverfly.json` shows squiggles for `HF401/HF402/HF403`.
+- [ ] Type a matcher value `{ "matcher": "" }` and trigger completion inside the quotes: matcher
+      names appear (`exact`, `regex`, `jsonpath` and the rest).
 - [ ] **Semantic highlighting:** open a templated body (`"templated": true`,
-      `"body": "{{ faker 'Name' }}"`) → the template syntax is colored (helper `faker` as a function,
+      `"body": "{{ faker 'Name' }}"`): the template syntax is colored (helper `faker` as a function,
       `{{`/`}}` as operators, faker type `'Name'` as enum member). Confirm via **Developer: Inspect
       Editor Tokens and Scopes** (the semantic token type line). Default
       `editor.semanticHighlighting.enabled` (`configuredByTheme`) needs no change; standard themes
       color the standard token types. A plain `.json` shows no template coloring.
-- [ ] Open an unrelated `.json` (e.g. `package.json`) → **no** Hoverfly diagnostics, normal JSON mode.
-- [ ] Set `"hoverfly.trace.server": "verbose"` → the **Hoverfly LSP** output channel shows the handshake.
+- [ ] Open an unrelated `.json` (e.g. `package.json`): **no** Hoverfly diagnostics, normal JSON mode.
+- [ ] Set `"hoverfly.trace.server": "verbose"`: the **Hoverfly LSP** output channel shows the handshake.
 - [ ] `hoverfly.server.path` override: point it at a built `packages/server/bin/hoverfly-lsp.js`
       and confirm the server still starts (resolution priority 1).
 - [ ] Workspace install path: `npm install @jterrazz/hoverfly-lsp` in the workspace (once published)
@@ -88,8 +88,8 @@ work until it is published.
       operators). Inspect with `dev: open highlights tree view`. Without the setting, no semantic
       coloring appears (expected).
 - [ ] The **Hoverfly LSP** server starts (visible in the language-server logs).
-- [ ] Introduce an error (e.g. bad `meta.schemaVersion`) → a diagnostic appears.
-- [ ] Open an unrelated `.json` (e.g. `package.json`) → NOT detected as Hoverfly, no diagnostics.
+- [ ] Introduce an error (e.g. bad `meta.schemaVersion`): a diagnostic appears.
+- [ ] Open an unrelated `.json` (e.g. `package.json`): NOT detected as Hoverfly, no diagnostics.
 - [ ] With a project-local `node_modules/.bin/hoverfly-lsp`, confirm it is preferred over a global
       install (resolution step 1 over step 2).
 - [ ] **Published path (future):** once `hoverfly-lsp` is on npm, Zed's managed npm install
@@ -116,17 +116,17 @@ server binary (dev: `npm link --workspace packages/server`; future: `npm install
 
 - [ ] `hoverfly-lsp --version` and `hoverfly-lsp --stdio` work from a terminal (both verified on
       the build host; re-check on the QA machine's PATH).
-- [ ] LSP4IJ installed (Settings → Plugins → Installed).
-- [ ] Import `editors/intellij/template.json` via Settings → Tools → Language Servers → **+** →
-      _Import from template_ → the server **Hoverfly** appears. (If import is absent in your
+- [ ] LSP4IJ installed (Settings > Plugins > Installed).
+- [ ] Import `editors/intellij/template.json` via Settings > Tools > Language Servers > **+** >
+      _Import from template_; the server **Hoverfly** appears. (If import is absent in your
       LSP4IJ version, configure manually per README Step 4.)
 - [ ] Opening `*.hoverfly.json` shows **Hoverfly: Running** in the status bar.
 - [ ] A missing `response.status` field produces a red diagnostic underline.
 - [ ] Hovering over `schemaVersion` shows a documentation popup.
 - [ ] **Semantic highlighting:** in a templated body (`"templated": true`,
       `"body": "{{ faker 'Name' }}"`), the template syntax is colored (helper, `{{`/`}}`, faker type).
-      If absent, enable the server's semantic-tokens support in **Settings → Languages & Frameworks →
-      Language Servers → Hoverfly** (some LSP4IJ versions gate it behind a toggle).
+      If absent, enable the server's semantic-tokens support in **Settings > Languages & Frameworks >
+      Language Servers > Hoverfly** (some LSP4IJ versions gate it behind a toggle).
 - [ ] Completion triggers in `"matcher":` value position.
 - [ ] Opening an unrelated `package.json` does **not** trigger Hoverfly LSP.
 - [ ] On Windows: server starts with `cmd /C hoverfly-lsp --stdio` (the `programArgs.windows` value).
@@ -143,10 +143,10 @@ No editor dir: the client is configured by hand (`nvim-lspconfig` snippet in the
 `cmd = { "hoverfly-lsp", "--stdio" }`, and `filetypes = { "json", "jsonc" }`.
 
 - [ ] **Semantic highlighting:** open a templated `*.hoverfly.json` body
-      (`"templated": true`, `"body": "{{ faker 'Name' }}"`) → the template syntax is colored.
+      (`"templated": true`, `"body": "{{ faker 'Name' }}"`): the template syntax is colored.
       `vim.lsp.semantic_tokens` is on by default on Neovim 0.9+ and the default client capabilities
       advertise semantic tokens, so no extra setup is needed. Inspect with
-      `:Inspect` on a `{{ … }}` character → an `@lsp.type.*` group (e.g. `@lsp.type.function` on a
+      `:Inspect` on a `{{ ... }}` character shows an `@lsp.type.*` group (e.g. `@lsp.type.function` on a
       helper name). A plain `.json` shows no `@lsp.*` template groups.
 - [ ] Diagnostics surface (`:lua vim.diagnostic.open_float()` over a broken simulation) and stay
       silent on a non-simulation `.json`.
@@ -165,7 +165,7 @@ below need a real Claude Code install / a second `.json` plugin and could not be
 `claude plugin install hoverfly-lsp --scope user`, and
 `export HOVERFLY_LSP_PATH=/ABS/PATH/.../packages/server/dist/cli.cjs`.
 
-- [ ] `claude plugin validate ./editors/claude-code --strict` → "Validation passed".
+- [ ] `claude plugin validate ./editors/claude-code --strict` prints "Validation passed".
 - [ ] `claude plugin install` enables the plugin; `claude plugin details` lists `LSP servers (1) hoverfly`.
 - [ ] **Coexistence with another `.json`-mapped LSP plugin** (research/09 §9, §13). The
       `.lsp.json` maps `.json`; confirm that installing a second plugin that also maps `.json`

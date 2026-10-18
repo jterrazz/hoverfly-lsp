@@ -6,7 +6,7 @@ file a given change opens, and what it owes before it is committed.
 ## Setup
 
 Node 24 (`.nvmrc` pins 24), npm workspaces, no other runtime. The published
-server still runs on Node 20 — esbuild targets it — but the toolchain does not:
+server still runs on Node 20 (esbuild targets it), but the toolchain does not:
 `@jterrazz/typescript` is the one devDependency and it asks for 24.
 
 ```bash
@@ -19,7 +19,7 @@ make check             # lint, test and mutation: the whole verdict
 ```
 
 `make test` reinstalls only when `package-lock.json` moved. The `docs` target
-is the one gate the toolchain does not carry — `make lint` runs it first, and
+is the one gate the toolchain does not carry: `make lint` runs it first, and
 the section below says what it refuses.
 
 Every pull request keeps `build`, `lint`, `test` and `mutation` green.
@@ -33,20 +33,20 @@ main` in each member it touched gives the verdict CI will give.
 
 ## Which file a change opens
 
-| Changing…                          | Open                                                                                |
-| ---------------------------------- | ----------------------------------------------------------------------------------- |
-| A diagnostic's severity or message | `packages/analysis/src/semantic/catalog.data.ts` — the only place either is written |
-| The behaviour behind a code        | the matching rule family in `packages/analysis/src/semantic/rules/`                 |
-| A matcher, helper or faker fact    | `packages/analysis/src/registry/` — never inline the fact in a rule                 |
-| Hover or completion content        | `packages/analysis/src/contributions/` (its README carries the content policy)      |
-| Template parsing or analysis       | `packages/analysis/src/template/`                                                   |
-| What the server advertises         | `packages/server/src/capabilities.ts`                                               |
-| How an editor finds the server     | the launcher under `editors/<editor>/`                                              |
-| The bundled schema                 | `packages/analysis/src/schema/` and `schemas/` together, at a re-pinned commit      |
+| To change                          | Open                                                                               |
+| ---------------------------------- | ---------------------------------------------------------------------------------- |
+| A diagnostic's severity or message | `packages/analysis/src/semantic/catalog.data.ts`, the only place either is written |
+| The behaviour behind a code        | the matching rule family in `packages/analysis/src/semantic/rules/`                |
+| A matcher, helper or faker fact    | `packages/analysis/src/registry/`; never inline the fact in a rule                 |
+| Hover or completion content        | `packages/analysis/src/contributions/` (its README carries the content policy)     |
+| Template parsing or analysis       | `packages/analysis/src/template/`                                                  |
+| What the server advertises         | `packages/server/src/capabilities.ts`                                              |
+| How an editor finds the server     | the launcher under `editors/<editor>/`                                             |
+| The bundled schema                 | `packages/analysis/src/schema/` and `schemas/` together, at a re-pinned commit     |
 
 ## Adding a diagnostic
 
-The five steps, in order — the last two are not optional, and CI enforces both:
+The five steps, in order. The last two are not optional, and CI enforces both:
 
 1. Register the code in `packages/analysis/src/semantic/catalog.data.ts` with its
    severity and message template; its href is derived from the code.
@@ -54,7 +54,7 @@ The five steps, in order — the last two are not optional, and CI enforces both
    `makeDiagnostic()` only, ranged at the smallest node the user must change.
    The full recipe is `packages/analysis/src/semantic/README.md`.
 3. Add at least one `invalid/` fixture (and ideally a `valid/` counterpart) to
-   `testdata/`, then regenerate its golden — see [Test](test.md).
+   `testdata/`, then regenerate its golden (see [Test](test.md)).
 4. Add the rule's rows to its family's table under
    `packages/analysis/src/semantic/rules/__tests__/`.
 5. Add the code's trigger/range prose to `DIAGNOSTIC_PROSE` in
@@ -94,7 +94,7 @@ and that trail is `research/`.
 | `research/01-05`                      | format, source truth, LSP architecture, IDE integration, prior art |
 | `research/06`                         | the gaps and contradictions round one surfaced                     |
 | `research/07-09`                      | matcher value types, the templating spec, the Claude Code plugin   |
-| `research/10-architect-decisions.md`  | the binding decisions D1–D9 — the tie-breaker                      |
+| `research/10-architect-decisions.md`  | the binding decisions D1 to D9, the tie-breaker                    |
 | `research/11-diagnostic-catalog.md`   | the frozen `HFxxx` catalog spec                                    |
 | `research/12-ground-truth-results.md` | importing every valid fixture into real Hoverfly v1.12.8           |
 

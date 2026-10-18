@@ -25,16 +25,16 @@ Sources:
   (raw: <https://raw.githubusercontent.com/SchemaStore/schemastore/master/CONTRIBUTING.md>)
 - Catalog: <https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/api/json/catalog.json>
 
-- **Schema file** → `src/schemas/json/<schemaName>.json` (here `hoverfly-simulation.json`).
-- **Catalog** → `src/api/json/catalog.json`, an object pushed into the `schemas` array. Field
+- **Schema file**: `src/schemas/json/<schemaName>.json` (here `hoverfly-simulation.json`).
+- **Catalog**: `src/api/json/catalog.json`, an object pushed into the `schemas` array. Field
   order: `name`, `description`, `fileMatch` (optional), `url`, `versions` (optional). The catalog
   is **not** strictly alphabetised in practice, but adding near other entries alphabetically by
   `name` is the convention and keeps diffs clean. We have no multiple versions, so no `versions`.
-- **Positive tests** → `src/test/<schemaName>/`: the directory name **must match the schema
+- **Positive tests**: `src/test/<schemaName>/`. The directory name **must match the schema
   filename** (`hoverfly-simulation`). Files are matched to the schema by living in this directory,
   not by filename pattern, so any descriptive `.json` name works. (`.json`, `.toml`, `.yml`,
   `.yaml` are all supported; ours are JSON.)
-- **Negative tests** → `src/negative_test/<schemaName>/`: **supported and recommended** (not
+- **Negative tests**: `src/negative_test/<schemaName>/`, **supported and recommended** (not
   strictly required). Files here must FAIL validation.
 - **`fileMatch` policy**: avoid generic patterns that cause false positives across tools (e.g. a
   bare `config.json` / `simulation.json`). Ours are all specific: `*.hoverfly.json` and `*.hfy`
@@ -109,17 +109,17 @@ Sources:
 
 ## Test files
 
-### Positive (`test/` → `src/test/hoverfly-simulation/`): must validate
+### Positive (`test/`, copied to `src/test/hoverfly-simulation/`): must validate
 
 | File                              | Covers                                                              |
 | --------------------------------- | ------------------------------------------------------------------- |
 | `minimal.json`                    | Smallest complete simulation (one pair, exact matchers, `meta`).    |
 | `rich-stateful-templated.json`    | State transitions + response templating + varied matchers.          |
-| `all-request-fields-combined.json`| Every request field with matchers (method/scheme/path/query/body…). |
-| `stateful-login-machine.json`     | Multi-pair state machine (login → fetch → update → logout).         |
+| `all-request-fields-combined.json`| Every request field with matchers (method/scheme/path/query/body). |
+| `stateful-login-machine.json`     | Multi-pair state machine (login, fetch, update, logout).            |
 | `realworld-oauth2.json`           | Real-world OAuth2 token + userinfo flow.                            |
 
-### Negative (`negative_test/` → `src/negative_test/hoverfly-simulation/`): must be rejected
+### Negative (`negative_test/`, copied to `src/negative_test/hoverfly-simulation/`): must be rejected
 
 | File                            | Why the schema rejects it                                              |
 | ------------------------------- | ---------------------------------------------------------------------- |

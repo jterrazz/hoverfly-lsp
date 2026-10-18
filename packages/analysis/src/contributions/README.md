@@ -1,4 +1,4 @@
-# Hoverfly JSON contributions — hover & completion
+# Hoverfly JSON contributions: hover and completion
 
 This directory layers Hoverfly-specific IntelliSense on top of `vscode-json-languageservice` via
 a single [`JSONWorkerContribution`](./hoverfly-contribution.ts). The schema engine handles
@@ -15,9 +15,9 @@ A matcher hover/completion describes **that matcher only**:
 
 - its semantics + docs link (from the registry `docs` string),
 - its accepted **value type**,
-- its **config** support (neutral one-liner: `Config: supported …` / `Config: not supported.`),
+- its **config** support (neutral one-liner: `Config: supported, booleans ...` / `Config: not supported.`),
 - its **doMatch** behaviour (transform vs AND-semantics re-test),
-- and notes **intrinsic to the matcher in hand** — nothing generic.
+- and notes **intrinsic to the matcher in hand**, nothing generic.
 
 The generic "unknown matcher name panics" and "config on a non-array matcher panics" warnings are
 **not** appended. They describe misuse the user is not committing while hovering a _valid_ matcher,
@@ -28,7 +28,7 @@ and the diagnostics own that messaging at the point the mistake is actually made
 | Unknown / misspelled matcher name | **HF201**                              |
 | `config` on a non-`array` matcher | **HF204**                              |
 
-Only matcher-specific ⚠️ notes are surfaced in hover/completion:
+Only matcher-specific warning notes are surfaced in hover/completion:
 
 | Matcher  | Note (intrinsic to that matcher)                                      |
 | -------- | --------------------------------------------------------------------- |
@@ -40,30 +40,30 @@ Only matcher-specific ⚠️ notes are surfaced in hover/completion:
 
 Cursor conditions mirror how real editors (VS Code / Zed) invoke completion:
 
-- **(a) empty quotes** `"⟦⟧"` — cursor between two quotes (manual invoke, or the `"` trigger char)
-- **(b) mid-word** `"au⟦⟧"` — a partial token already typed; the client filters items by prefix
-- **(c) bare position** `{⟦⟧` / `[⟦⟧` — cursor before any quotes, right after `{` or `[`
+- **(a) empty quotes** `"⟦⟧"`: cursor between two quotes (manual invoke, or the `"` trigger char)
+- **(b) mid-word** `"au⟦⟧"`: a partial token already typed; the client filters items by prefix
+- **(c) bare position** `{⟦⟧` / `[⟦⟧`: cursor before any quotes, right after `{` or `[`
 
-A fourth editor dimension — **with vs without a trigger character** — does **not** change behaviour.
+A fourth editor dimension, **with vs without a trigger character**, does **not** change behaviour.
 `doComplete` keys completions off the AST position, not off a `CompletionContext.triggerCharacter`;
 a trigger character only _invokes_ completion, after which the same position logic runs. The server
-advertises `"`, `{`, `.`, `#`, `@`, `'`, `(` as trigger characters (`capabilities.ts`) — exactly the
-set that reaches these positions — so trigger-vs-manual is behaviourally identical.
+advertises `"`, `{`, `.`, `#`, `@`, `'`, `(` as trigger characters (`capabilities.ts`), exactly the
+set that reaches these positions, so trigger-vs-manual is behaviourally identical.
 
 | Context                                                                                            | (a) empty `""` | (b) mid-word | (c) bare `{`/`[` | Source hook                  |
 | -------------------------------------------------------------------------------------------------- | -------------- | ------------ | ---------------- | ---------------------------- |
-| Matcher name — `request.path` (non-body)                                                           | ✓              | ✓            | ✓                | `collectValueCompletions`    |
-| Matcher name — `request.body` (adds `form`)                                                        | ✓              | ✓            | ✓                | `collectValueCompletions`    |
-| Matcher name — `headers`/`query` maps, `doMatch` chains                                            | ✓              | ✓            | ✓                | `collectValueCompletions`    |
-| `meta.schemaVersion`                                                                               | ✓              | ✓            | n/a¹             | `collectValueCompletions`    |
-| `request.requiresState` **KEY**                                                                    | ✓              | ✓            | ✓²               | `collectPropertyCompletions` |
-| `response.transitionsState` **KEY**                                                                | ✓              | ✓            | ✓²               | `collectPropertyCompletions` |
-| `response.removesState` array entry                                                                | —              | —            | —                | **by design³**               |
-| `response.postServeAction` (settings-gated)                                                        | ✓              | ✓            | n/a¹             | `collectValueCompletions`    |
-| Template helper / faker / path (`Request.`/`State.`/`Vars.`/`Literals.`/`now`/`#each`/block close) | ✓              | ✓            | n/a⁴             | `service.ts` (offset-driven) |
+| Matcher name, `request.path` (non-body)                                                            | yes            | yes          | yes              | `collectValueCompletions`    |
+| Matcher name, `request.body` (adds `form`)                                                         | yes            | yes          | yes              | `collectValueCompletions`    |
+| Matcher name, `headers`/`query` maps, `doMatch` chains                                             | yes            | yes          | yes              | `collectValueCompletions`    |
+| `meta.schemaVersion`                                                                               | yes            | yes          | n/a¹             | `collectValueCompletions`    |
+| `request.requiresState` **KEY**                                                                    | yes            | yes          | yes²             | `collectPropertyCompletions` |
+| `response.transitionsState` **KEY**                                                                | yes            | yes          | yes²             | `collectPropertyCompletions` |
+| `response.removesState` array entry                                                                | no             | no           | no               | **by design³**               |
+| `response.postServeAction` (settings-gated)                                                        | yes            | yes          | n/a¹             | `collectValueCompletions`    |
+| Template helper / faker / path (`Request.`/`State.`/`Vars.`/`Literals.`/`now`/`#each`/block close) | yes            | yes          | n/a⁴             | `service.ts` (offset-driven) |
 
 ¹ A scalar string value has no "bare object/array" position; (a)/(b) cover it. The bare value slot
-(cursor right after `:` with no quotes) is also covered — `insertText` quotes the inserted value.
+(cursor right after `:` with no quotes) is also covered: `insertText` quotes the inserted value.
 
 ² At a bare `{` position the library passes `addValue = true`, so the inserted snippet is
 `"<key>": "$1"` (key + value). At an empty-quotes position `addValue = false`, so only the quoted
@@ -84,11 +84,11 @@ offset), so its conditions are the mid-mustache states, not JSON quote/brace pos
 
 State keys are ONE namespace shared across the three places a pair touches state:
 `requiresState` (consumer), `transitionsState` (producer), and `removesState` (eraser). The
-cross-reference union now feeds from **all three** — see `collectStateKeys` in
-[`hoverfly-contribution.ts`](./hoverfly-contribution.ts).
+cross-reference union now feeds from **all three** (see `collectStateKeys` in
+[`hoverfly-contribution.ts`](./hoverfly-contribution.ts)).
 
 The bug: the union previously scanned `requiresState` entries only. A key set by a producer's
-`transitionsState` (the overwhelmingly common "log in here → require auth there" flow) was invisible
+`transitionsState` (the overwhelmingly common "log in here, require auth there" flow) was invisible
 when the user started typing it into another pair's `requiresState`, so they got **no completion**.
 Including `transitionsState` and `removesState` keys in the union fixes it.
 

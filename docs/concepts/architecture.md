@@ -6,18 +6,18 @@ binary. This chapter draws the lines and says why they are where they are.
 
 ## The three layers
 
-Dependency direction is strict and one-way: `editors → server → analysis`. Nothing
+Dependency direction is strict and one-way: `editors` reach `server`, which reaches `analysis`. Nothing
 below ever reaches up.
 
 | Layer               | Package                  | What it is                                                                           |
 | ------------------- | ------------------------ | ------------------------------------------------------------------------------------ |
 | `packages/analysis` | `@hoverfly-lsp/analysis` | The analysis library: parse, schema, registries, templates, rules. Private, bundled. |
 | `packages/server`   | `@jterrazz/hoverfly-lsp` | The LSP transport: `initialize`, capabilities, document sync, `bin: hoverfly-lsp`.   |
-| `editors/`          | four launchers           | VS Code, Zed, IntelliJ, Claude Code — locate the server and start it, nothing more.  |
+| `editors/`          | four launchers           | VS Code, Zed, IntelliJ, Claude Code: locate the server and start it, nothing more.   |
 
 `packages/analysis` carries **zero LSP transport dependencies**: the JSON language
 service, the LSP _types_, a text-document model, and the two engines the rules
-need (`re2js`, `fast-xml-validator`) — nothing that speaks a wire protocol (the
+need (`re2js`, `fast-xml-validator`), and nothing that speaks a wire protocol (the
 `dependencies` of `packages/analysis/package.json`). It builds with
 `typescript build`, as a house library does, and the server consumes what that
 build leaves in `dist/`: the JavaScript and its declarations (decision D1). A
@@ -27,7 +27,7 @@ watch for.
 `@hoverfly-lsp/analysis` is `"private": true` and is never published. esbuild inlines
 it into the server's single-file CommonJS bundle
 (`packages/server/esbuild.config.js`), so the published tarball has no runtime
-dependency on it — the `files` of `packages/server/package.json` ship exactly
+dependency on it: the `files` of `packages/server/package.json` ship exactly
 `bin/` and `dist/cli.cjs`.
 
 ## Inside the analysis library
@@ -36,15 +36,15 @@ The library is a pipeline over one text document. Each stage is a directory
 under `packages/analysis/src/`, and `service.ts` is the facade that composes them
 into `createHoverflyLanguageService()`.
 
-| Directory          | Owns                                                                                           |
-| ------------------ | ---------------------------------------------------------------------------------------------- |
-| `fingerprint.ts`   | Whether a `.json` file is a Hoverfly simulation at all — filename set plus content fingerprint |
-| `schema/`          | The bundled enhanced JSON Schema, generated into a TS module, plus the upstream provenance pin |
-| `registry/`        | The matcher table, the templating helpers, the faker types, HTTP and structure facts           |
-| `template/`        | A Handlebars-subset parser, analyzer, AST and string source map for `{{ … }}` inside bodies    |
-| `semantic/`        | The frozen `HFxxx` catalog, the rule engine, and one rule file per code family                 |
-| `contributions/`   | Hover and completion, layered onto `vscode-json-languageservice` as a `JSONWorkerContribution` |
-| `semantic-tokens/` | The frozen token legend and the pure producer that emits template-aware tokens                 |
+| Directory          | Owns                                                                                             |
+| ------------------ | ------------------------------------------------------------------------------------------------ |
+| `fingerprint.ts`   | Whether a `.json` file is a Hoverfly simulation at all, by filename set plus content fingerprint |
+| `schema/`          | The bundled enhanced JSON Schema, generated into a TS module, plus the upstream provenance pin   |
+| `registry/`        | The matcher table, the templating helpers, the faker types, HTTP and structure facts             |
+| `template/`        | A Handlebars-subset parser, analyzer, AST and string source map for `{{ ... }}` inside bodies    |
+| `semantic/`        | The frozen `HFxxx` catalog, the rule engine, and one rule file per code family                   |
+| `contributions/`   | Hover and completion, layered onto `vscode-json-languageservice` as a `JSONWorkerContribution`   |
+| `semantic-tokens/` | The frozen token legend and the pure producer that emits template-aware tokens                   |
 
 Two of those directories carry their own close-up notes, kept beside the code
 they describe: `packages/analysis/src/semantic/README.md` (how to add a rule family)
@@ -62,7 +62,7 @@ one place and the golden snapshots stay stable.
 Codes are a **stable API**: once a code is frozen its meaning never changes, new
 codes may be added, and a deprecated code is never reused. The href each code
 carries resolves to `https://hoverfly-lsp.dev/diagnostics/<code>`
-(`diagnosticHref` in `packages/analysis/src/semantic/diagnostics.ts`) — a published address, not a path in
+(`diagnosticHref` in `packages/analysis/src/semantic/diagnostics.ts`): a published address, not a path in
 this tree, so moving a page in this repository never moves a diagnostic's link.
 
 ### The registries are transcribed and pinned
@@ -115,7 +115,7 @@ fork; `editors/zed/registry-submission/` holds what that submission carries.
 
 ## What is not a layer
 
-`testdata/` is the reference corpus — the behavioural contract the semantic
+`testdata/` is the reference corpus, the behavioural contract the semantic
 pipeline is judged against, not a source layer
 ([Test](../guides/test.md)).
 
@@ -130,4 +130,4 @@ library bundles, kept separate because SchemaStore consumes a plain file.
 `research/` is the provenance trail: the two multi-agent research rounds against
 the Hoverfly Go source, the ground-truth run against a real Hoverfly v1.12.8, and
 `research/10-architect-decisions.md`, which is this repository's binding decision
-log (D1–D9) and the tie-breaker when two reports disagree.
+log (D1 to D9) and the tie-breaker when two reports disagree.

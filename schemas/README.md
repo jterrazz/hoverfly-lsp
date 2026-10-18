@@ -73,7 +73,7 @@ In `.vscode/settings.json` (or user settings):
 
 ### IntelliJ / WebStorm: JSON Schema mapping
 
-Settings → Languages & Frameworks → Schemas and DTDs → **JSON Schema Mappings** → add a mapping:
+Settings > Languages & Frameworks > Schemas and DTDs > **JSON Schema Mappings**, then add a mapping:
 
 - Schema file or URL: `https://json.schemastore.org/hoverfly-simulation.json`
 - Schema version: **JSON Schema version 7**
@@ -88,7 +88,7 @@ We have **not** submitted this yet. A complete, copy-paste-ready bundle lives at
 [`schemastore-submission/`](./schemastore-submission/): the schema copy, the exact
 `catalog.json` entry, 5 positive tests, and 3 negative tests, all verified against the schema with
 ajv (draft-07). Follow [`schemastore-submission/SUBMISSION.md`](./schemastore-submission/SUBMISSION.md)
-for the fork → copy → `node ./cli.js check` / `npm test` → open-PR steps and the cited SchemaStore
+for the steps (fork, copy, `node ./cli.js check` / `npm test`, open the PR) and the cited SchemaStore
 paths (`src/schemas/json/`, `src/api/json/catalog.json`, `src/test/hoverfly-simulation/`,
 `src/negative_test/hoverfly-simulation/`).
 

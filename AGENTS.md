@@ -1,4 +1,4 @@
-# Agent brief — hoverfly-lsp
+# The hoverfly-lsp agent brief
 
 A language server for Hoverfly JSON simulation files: one pure analysis library,
 one stdio server, four thin editor launchers. This file **routes**; the manual is
@@ -6,7 +6,7 @@ one stdio server, four thin editor launchers. This file **routes**; the manual i
 
 ## Mental model
 
-- **Dependency direction is one-way**: `editors → server → analysis`. `packages/analysis`
+- **Dependency direction is one-way**: `editors` reach `server`, which reaches `analysis`. `packages/analysis`
   carries no LSP transport dependency, and adding one is the regression to catch
   in review.
 - **The catalog is the single source of truth.** A diagnostic's severity and message
@@ -23,7 +23,7 @@ one stdio server, four thin editor launchers. This file **routes**; the manual i
 
 ## Where knowledge lives (route here first)
 
-| Working on…                                               | Read                                      |
+| Working on                                                | Read                                      |
 | --------------------------------------------------------- | ----------------------------------------- |
 | Layers, the analysis library's directories, the launchers | `docs/concepts/architecture.md`           |
 | The toolchain, and which file a change opens              | `docs/guides/develop.md`                  |
@@ -51,7 +51,7 @@ TEST_UPDATE=1 make test # record the goldens a change moved; review each by hand
 - **Never edit a generated file.** `docs/reference/*` comes from its generator;
   change the source and regenerate.
 - **A new code owes five things**, listed once in `docs/guides/develop.md` under
-  "Adding a diagnostic" — catalog entry, rule, fixture and golden, unit test,
+  "Adding a diagnostic": catalog entry, rule, fixture and golden, unit test,
   generator prose. CI fails on the last two being skipped.
-- **Cite the decision.** A behavioural change names the `D1`–`D9` decision or the
+- **Cite the decision.** A behavioural change names the decision (`D1` to `D9`) or the
   research report behind it, ideally with the Go source path.

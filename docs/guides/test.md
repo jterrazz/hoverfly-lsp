@@ -14,12 +14,12 @@ make test       # builds, then each workspace member's own `test` script
 Each member collects its own tests through its own `vitest.config.ts`
 (`@jterrazz/test`'s `vitestConfig()`): `*.test.ts` under `src/**/__tests__/`
 are the module tests, `specs/integration/**/*.spec.ts` the integration specs,
-and the root `specs/` member holds the repository suite — tests that judge the
+and the root `specs/` member holds the repository suite: tests that judge the
 tree itself rather than one package.
 
 A module test sits in the `__tests__/` folder beside the module it covers, and
 asserts a whole outcome through a table. What stands on something OUTSIDE its
-module — the reference corpus, a golden on disk, the packed binary — is an
+module (the reference corpus, a golden on disk, the packed binary) is an
 integration spec: it lives under a member's `specs/integration/<domain>/` as
 `<aspect>.spec.ts`, and runs its subject through the `integration.call()` of the
 runner `integration.specification.ts` at that facet root constructs.
@@ -36,17 +36,17 @@ runner `integration.specification.ts` at that facet root constructs.
 ## The reference corpus
 
 `testdata/` is **the** behavioural contract for the semantic pipeline. Its rules
-are owned by [testdata/README.md](../../testdata/README.md) — the layout, the
+are owned by [testdata/README.md](../../testdata/README.md): the layout, the
 per-domain counts and the coverage matrix live there, not here. What matters to
 a change is the two-sided invariant it enforces:
 
 - a `valid/` fixture produces **zero** diagnostics through the full pipeline
-  (parse → schema → template → `HFxxx`);
+  (parse, then schema, then template, then `HFxxx`);
 - an `invalid/` fixture triggers **exactly** its one intended code, with the
   expected diagnostics frozen in a sibling `<case>.diagnostics.json`.
 
 A `valid/` fixture that produces a diagnostic is either a fixture bug or a
-validator false positive. Fix the fixture or report the bug — never delete the
+validator false positive. Fix the fixture or report the bug; never delete the
 check.
 
 ### Regenerating a golden
@@ -64,9 +64,9 @@ second problem (fix the fixture), and a missing code means a validator gap
 
 Completion and hover are tested through a fourslash-style harness
 (`packages/analysis/specs/integration/__setup__/fourslash.ts`). A cursor is written into a fixture
-as `⟦⟧`, or `⟦name⟧` for several positions in one document — an ordinary
+as `⟦⟧`, or `⟦name⟧` for several positions in one document. The marker is an ordinary
 character inside a JSON string, so the document stays valid JSON once the marker
-is stripped, and one that never appears in real Hoverfly content.
+is stripped, and it never appears in real Hoverfly content.
 
 ## Ground truth, and where it stops
 
@@ -77,17 +77,17 @@ is what the zero-false-positive policy rests on, and it is a deliberate act, not
 a suite: re-running it is a decision taken when the pinned upstream commit moves.
 
 Two watchers guard the same ground continuously. `make lint` regenerates
-`docs/reference/` and fails if the committed projection is stale — the `docs`
-target of the `Makefile`, which the shared CI reaches through `make lint`.
+`docs/reference/` and fails if the committed projection is stale (the `docs`
+target of the `Makefile`, which the shared CI reaches through `make lint`).
 `.github/workflows/schema-drift.yml` runs weekly, diffs Hoverfly's live schema
 and the cited Go source files against the pinned baseline, and opens a single
-tracking issue when they move — it never updates anything itself.
+tracking issue when they move; it never updates anything itself.
 
 **Nothing mechanical proves an editor integration.** No suite drives a real VS
-Code, Zed, IntelliJ or Claude Code session. What has been verified without one —
-that every manifest parses, that the extension bundles and `vsce package`
+Code, Zed, IntelliJ or Claude Code session. What has been verified without one
+(that every manifest parses, that the extension bundles and `vsce package`
 succeeds, that the Zed crate compiles, and that each launcher completes an
-`initialize` handshake — is listed under "Verified automatically" in
+`initialize` handshake) is listed under "Verified automatically" in
 [Manual QA](manual-qa.md), and of it only the vitest suites run on every
 commit. The behaviour above that line is checked by a human against the rest of
 that same checklist, which is why it is walked before a release

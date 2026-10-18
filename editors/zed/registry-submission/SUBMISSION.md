@@ -132,7 +132,7 @@ LSP extension whose server is the published npm package
 
 ### 6. Wait for CI / review
 
-CI will build the extension (Rust 1.90 → `wasm32-wasip2`), run
+CI will build the extension (Rust 1.90, targeting `wasm32-wasip2`), run
 `pnpm package-extensions`, and check sorting. A Zed maintainer reviews and
 merges; the extension then appears in Zed's in-app extension list.
 
