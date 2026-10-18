@@ -1,6 +1,6 @@
 {
     "diagnostics": [],
     "markers": {
-        "": "### `isGreaterThan` — inline helper\n\n`isGreaterThan value1: string value2: string`\n\nReturns bool: value1 > value2. (Short form `isGreater` does NOT exist.) https://docs.hoverfly.io/en/latest/pages/keyconcepts/templating/templating.html\n\n**Kind:** inline helper · **Arity:** 2 argument(s) · **Source:** Hoverfly helper\n\nExample: `{{#if (isGreaterThan a b)}}…{{/if}}`"
+        "": "### `isGreaterThan` (inline helper)\n\n`isGreaterThan value1: string value2: string`\n\nReturns bool: value1 > value2. (Short form `isGreater` does NOT exist.) https://docs.hoverfly.io/en/latest/pages/keyconcepts/templating/templating.html\n\n**Kind:** inline helper · **Arity:** 2 argument(s) · **Source:** Hoverfly helper\n\nExample: `{{#if (isGreaterThan a b)}}...{{/if}}`"
     }
 }

@@ -1,6 +1,6 @@
 {
     "diagnostics": [],
     "markers": {
-        "": "### `form` matcher\n\nBody-layer pseudo-matcher (NOT in the registry). Value is an object {fieldName: [matchers...]}. Valid ONLY on the request `body` and ONLY as a top-level matcher; the literal name `form` is case-SENSITIVE (`Form`/`FORM` or non-body placement is not recognised). https://docs.hoverfly.io/en/latest/pages/keyconcepts/matching/matchers.html\n\n**Value type:** `object`\n**Config:** not supported.\n**doMatch:** AND-semantics — re-tests the same input against the next matcher.\n\n⚠️ Valid ONLY on the request `body`, only as a top-level matcher, and case-SENSITIVE (`form`, not `Form`/`FORM`)."
+        "": "### `form` matcher\n\nBody-layer pseudo-matcher (NOT in the registry). Value is an object {fieldName: [matchers...]}. Valid ONLY on the request `body` and ONLY as a top-level matcher; the literal name `form` is case-SENSITIVE (`Form`/`FORM` or non-body placement is not recognised). https://docs.hoverfly.io/en/latest/pages/keyconcepts/matching/matchers.html\n\n**Value type:** `object`\n**Config:** not supported.\n**doMatch:** AND-semantics; re-tests the same input against the next matcher.\n\n**Warning:** valid ONLY on the request `body`, only as a top-level matcher, and case-SENSITIVE (`form`, not `Form`/`FORM`)."
     }
 }

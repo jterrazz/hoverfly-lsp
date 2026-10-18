@@ -1,6 +1,6 @@
 {
     "diagnostics": [],
     "markers": {
-        "": "### `Request.Method` — field\n\nThe HTTP method (`GET`, `POST`, …). https://docs.hoverfly.io/en/latest/pages/keyconcepts/templating/templating.html\n\nExample: `{{Request.Method}}`"
+        "": "### `Request.Method` (field)\n\nThe HTTP method (`GET`, `POST` and the rest). https://docs.hoverfly.io/en/latest/pages/keyconcepts/templating/templating.html\n\nExample: `{{Request.Method}}`"
     }
 }

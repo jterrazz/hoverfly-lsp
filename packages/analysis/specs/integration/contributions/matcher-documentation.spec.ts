@@ -29,7 +29,7 @@ describe('matcher-documentation', () => {
         expect(result.value).toMatch({
             detail: 'Hoverfly matcher · value: string',
             documentation:
-                '### `regex` matcher\n\nRegular-expression match. Non-string value never matches; an invalid pattern silently never matches. https://docs.hoverfly.io/en/latest/pages/keyconcepts/matching/matchers.html\n\n**Value type:** `string`\n**Config:** not supported.\n**doMatch:** AND-semantics — re-tests the same input against the next matcher.',
+                '### `regex` matcher\n\nRegular-expression match. Non-string value never matches; an invalid pattern silently never matches. https://docs.hoverfly.io/en/latest/pages/keyconcepts/matching/matchers.html\n\n**Value type:** `string`\n**Config:** not supported.\n**doMatch:** AND-semantics; re-tests the same input against the next matcher.',
             insertText: '"regex"',
         });
     });
@@ -45,7 +45,7 @@ describe('matcher-documentation', () => {
         expect(result.value).toMatch({
             detail: 'Hoverfly matcher · value: array',
             documentation:
-                '### `array` matcher\n\nArray match, value MUST be a JSON array (a plain string is rejected; the \';\'-split applies to the incoming request value, NOT the matcher value). The ONLY matcher that accepts `config` (booleans `ignoreUnknown`/`ignoreOrder`/`ignoreOccurrences`). https://docs.hoverfly.io/en/latest/pages/keyconcepts/matching/matchers.html\n\n**Value type:** `array`\n**Config:** supported — booleans `ignoreUnknown`, `ignoreOrder`, `ignoreOccurrences`.\n**doMatch:** AND-semantics — re-tests the same input against the next matcher.\n\n⚠️ Each `config` value must be a JSON boolean — a string like `"true"` or a number is a mistake.',
+                '### `array` matcher\n\nArray match, value MUST be a JSON array (a plain string is rejected; the \';\'-split applies to the incoming request value, NOT the matcher value). The ONLY matcher that accepts `config` (booleans `ignoreUnknown`/`ignoreOrder`/`ignoreOccurrences`). https://docs.hoverfly.io/en/latest/pages/keyconcepts/matching/matchers.html\n\n**Value type:** `array`\n**Config:** supported, booleans `ignoreUnknown`, `ignoreOrder`, `ignoreOccurrences`.\n**doMatch:** AND-semantics; re-tests the same input against the next matcher.\n\n**Warning:** each `config` value must be a JSON boolean; a string like `"true"` or a number is a mistake.',
             insertText: '"array"',
         });
     });

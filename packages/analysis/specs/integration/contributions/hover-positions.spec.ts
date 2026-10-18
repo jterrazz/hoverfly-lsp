@@ -21,7 +21,7 @@ const SCHEMA_FIELD_MATCHER =
     "field\\-matcher\n\nA single matcher applied to a request field\\. The matcher name selects the matching strategy; the value's interpretation depends on the matcher\\. Must be a JSON object: Hoverfly's official schema types this \\`object\\`, so a non\\-object \\(e\\.g\\. an array\\-shaped \\`doMatch\\`\\) is rejected at import\\.";
 
 const RANDOM_UUID = [
-    '### `randomUuid` — inline helper',
+    '### `randomUuid` (inline helper)',
     '',
     '`randomUuid`',
     '',
@@ -33,7 +33,7 @@ const RANDOM_UUID = [
 ].join('\n');
 
 const REPLACE = [
-    '### `replace` — inline helper',
+    '### `replace` (inline helper)',
     '',
     '`replace target: string oldValue: string newValue: string`',
     '',
@@ -51,7 +51,7 @@ const EXACT = [
     '',
     '**Value type:** `string`',
     '**Config:** not supported.',
-    '**doMatch:** AND-semantics — re-tests the same input against the next matcher.',
+    '**doMatch:** AND-semantics; re-tests the same input against the next matcher.',
 ].join('\n');
 
 describe('hover positions', () => {
@@ -230,7 +230,7 @@ describe('hover positions', () => {
         {
             body: "{{csvAsA⟦⟧rray 'pets'}}",
             hover: [
-                '### `csvAsArray` — inline helper',
+                '### `csvAsArray` (inline helper)',
                 '',
                 '`csvAsArray dataSourceName: string`',
                 '',
@@ -238,20 +238,20 @@ describe('hover positions', () => {
                 '',
                 '**Kind:** inline helper · **Arity:** 1 argument(s) · **Source:** Hoverfly helper',
                 '',
-                "Example: `{{#each (csvAsArray 'pets')}}…{{/each}}`",
+                "Example: `{{#each (csvAsArray 'pets')}}...{{/each}}`",
             ].join('\n'),
             label: 'a plain helper',
         },
         {
             body: "{{conc⟦⟧at 'a' 'b'}}",
             hover: [
-                '### `concat` — inline helper',
+                '### `concat` (inline helper)',
                 '',
-                '`concat …`',
+                '`concat ...`',
                 '',
                 'Concatenate all arguments into one string; flattens any []interface{} argument. https://docs.hoverfly.io/en/latest/pages/keyconcepts/templating/templating.html',
                 '',
-                '**Kind:** inline helper · **Arity:** ≥ 0 argument(s) · **Source:** Hoverfly helper',
+                '**Kind:** inline helper · **Arity:** at least 0 argument(s) · **Source:** Hoverfly helper',
                 '',
                 "Example: `{{concat 'a' 'b' (getArray 'x')}}`",
             ].join('\n'),
@@ -260,13 +260,13 @@ describe('hover positions', () => {
         {
             body: "{{no⟦⟧w '1d'}}",
             hover: [
-                '### `now` — inline helper',
+                '### `now` (inline helper)',
                 '',
                 '`now [offset: string] [format: string]`',
                 '',
                 'Current time, optionally offset and formatted. format "" => RFC3339, "unix" => seconds, "epoch" => MILLISECONDS (misnamed), else a Go time layout. https://docs.hoverfly.io/en/latest/pages/keyconcepts/templating/templating.html',
                 '',
-                '**Kind:** inline helper · **Arity:** 0–2 argument(s) · **Source:** Hoverfly helper',
+                '**Kind:** inline helper · **Arity:** 0 to 2 argument(s) · **Source:** Hoverfly helper',
                 '',
                 "Example: `{{now '-1d' 'unix'}}`",
             ].join('\n'),

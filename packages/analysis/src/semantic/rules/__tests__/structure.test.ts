@@ -96,8 +96,8 @@ describe('structure', () => {
         },
         {
             expected: [
-                'HF308 error 15:17-15:20 Response header values must be an array of strings; wrap it in [ … ]',
-                'HF308 error 16:17-19:13 Response header values must be an array of strings; wrap it in [ … ]',
+                'HF308 error 15:17-15:20 Response header values must be an array of strings; wrap it in [ ... ]',
+                'HF308 error 16:17-19:13 Response header values must be an array of strings; wrap it in [ ... ]',
             ],
             label: 'response header not an array of strings — flags a plain-string header and an array with a non-string element',
             input: [
@@ -215,7 +215,7 @@ describe('structure', () => {
         },
         {
             expected: [
-                'HF308 error 0:86-0:89 Response header values must be an array of strings; wrap it in [ … ]',
+                'HF308 error 0:86-0:89 Response header values must be an array of strings; wrap it in [ ... ]',
             ],
             label: 'response header not an array of strings — skips a header with no value and judges the next',
             input: '{"data":{"pairs":[{"request":{"path":[]},"response":{"status":200,"headers":{"A":,"B":"x"}}}]},"meta":{"schemaVersion":"v5.3"}}',

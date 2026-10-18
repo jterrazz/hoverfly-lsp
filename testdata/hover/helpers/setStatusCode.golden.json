@@ -1,6 +1,6 @@
 {
     "diagnostics": [],
     "markers": {
-        "": "### `setStatusCode` — inline helper\n\n`setStatusCode statusCode: string`\n\nOverride the response status (validated 100..599). Side effect; returns \"\". https://docs.hoverfly.io/en/latest/pages/keyconcepts/templating/templating.html\n\n**Kind:** inline helper · **Arity:** 1 argument(s) · **Source:** Hoverfly helper\n\nExample: `{{setStatusCode '404'}}`"
+        "": "### `setStatusCode` (inline helper)\n\n`setStatusCode statusCode: string`\n\nOverride the response status (validated 100..599). Side effect; returns \"\". https://docs.hoverfly.io/en/latest/pages/keyconcepts/templating/templating.html\n\n**Kind:** inline helper · **Arity:** 1 argument(s) · **Source:** Hoverfly helper\n\nExample: `{{setStatusCode '404'}}`"
     }
 }

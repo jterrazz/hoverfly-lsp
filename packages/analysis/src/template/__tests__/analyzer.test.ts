@@ -7,7 +7,7 @@ describe('analyze', () => {
         {
             findings: [
                 {
-                    args: { message: 'Unclosed mustache — missing closing braces' },
+                    args: { message: 'Unclosed mustache: missing closing braces' },
                     end: 12,
                     kind: 'HF502',
                     start: 6,
@@ -20,7 +20,7 @@ describe('analyze', () => {
         {
             findings: [
                 {
-                    args: { message: 'Unclosed block {{#each}} — missing {{/each}}' },
+                    args: { message: 'Unclosed block {{#each}}: missing {{/each}}' },
                     end: 12,
                     kind: 'HF502',
                     start: 0,
@@ -215,7 +215,7 @@ describe('analyze', () => {
         {
             findings: [
                 {
-                    args: { message: 'Block open {{#…}} is missing a helper name' },
+                    args: { message: 'Block open {{#...}} is missing a helper name' },
                     end: 5,
                     kind: 'HF502',
                     start: 0,
@@ -255,7 +255,7 @@ describe('analyze', () => {
         { findings: [], literals: [], template: '{{ concat Vars }}', variables: [] },
     ])(
         // Given - $template, with the variables and literals the document declares
-        // Then - every HF502–HF509 finding, its span and its message arguments, or none
+        // Then - every HF502 to HF509 finding, its span and its message arguments, or none
         'analyzes $template',
         ({ findings, literals, template, variables }) => {
             expect(

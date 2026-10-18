@@ -1,6 +1,6 @@
 {
     "diagnostics": [],
     "markers": {
-        "": "### `jsonpartial` matcher\n\nPartial JSON containment, value is a STRING of JSON text representing the expected subset. Registry key is single-token lowercase `jsonpartial`. https://docs.hoverfly.io/en/latest/pages/keyconcepts/matching/matchers.html\n\n**Value type:** `string`\n**Config:** not supported.\n**doMatch:** AND-semantics — re-tests the same input against the next matcher."
+        "": "### `jsonpartial` matcher\n\nPartial JSON containment, value is a STRING of JSON text representing the expected subset. Registry key is single-token lowercase `jsonpartial`. https://docs.hoverfly.io/en/latest/pages/keyconcepts/matching/matchers.html\n\n**Value type:** `string`\n**Config:** not supported.\n**doMatch:** AND-semantics; re-tests the same input against the next matcher."
     }
 }

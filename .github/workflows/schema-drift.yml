@@ -1,6 +1,6 @@
 name: Schema drift
 
-# invariant: read-only — it never updates the bundled schema or a registry; it opens or refreshes one
+# invariant: read-only. It never updates the bundled schema or a registry; it opens or refreshes one
 # issue when Hoverfly's schema or the Go sources the registries were transcribed from move away from
 # the pinned HOVERFLY_COMMIT, so a person re-verifies and bumps the pin.
 
@@ -41,7 +41,7 @@ jobs:
                   set -euo pipefail
                   manifest_commit="$(jq -r '.commit' schemas/upstream-source-hashes.json)"
                   if [ "$manifest_commit" != "${{ steps.pin.outputs.commit }}" ]; then
-                    echo "::error::provenance.ts HOVERFLY_COMMIT (${{ steps.pin.outputs.commit }}) != schemas/upstream-source-hashes.json commit ($manifest_commit). The baseline is internally inconsistent — fix before trusting drift output."
+                    echo "::error::provenance.ts HOVERFLY_COMMIT (${{ steps.pin.outputs.commit }}) != schemas/upstream-source-hashes.json commit ($manifest_commit). The baseline is internally inconsistent; fix before trusting drift output."
                     exit 1
                   fi
                   echo "Provenance pin and baseline manifest agree on $manifest_commit"
@@ -95,7 +95,7 @@ jobs:
                     echo "## What to do"
                     echo "1. Review the diff(s) below against \`research/07-matcher-value-types.md\` and \`research/08-templating-spec.md\`."
                     echo "2. If the change is meaningful, update the bundled schema / matcher registry / templating catalog, then re-pin \`HOVERFLY_COMMIT\`, refresh \`schemas/upstream/schema.json\` and \`schemas/upstream-source-hashes.json\`, and re-run the standalone artifact generation."
-                    echo "3. This job NEVER auto-updates anything — the pin bump is a deliberate, reviewed change."
+                    echo "3. This job NEVER auto-updates anything: the pin bump is a deliberate, reviewed change."
                     echo
                     if [ "${{ steps.schema.outputs.drift }}" = "true" ]; then
                       echo "## Official schema drift (\`core/handlers/v2/schema.json\`)"

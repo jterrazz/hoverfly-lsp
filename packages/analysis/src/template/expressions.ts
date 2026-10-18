@@ -69,7 +69,7 @@ function parseSubExpression(scope: Scope, open: number, to: number): SubExpressi
 
     if (closeParen === -1) {
         scope.errors.push({
-            message: "Unclosed subexpression — missing ')'",
+            message: "Unclosed subexpression: missing ')'",
             start: open,
             end: to,
         });
@@ -77,7 +77,7 @@ function parseSubExpression(scope: Scope, open: number, to: number): SubExpressi
 
     if (!parsed) {
         scope.errors.push({
-            message: 'Empty subexpression — expected a helper',
+            message: 'Empty subexpression: expected a helper',
             start: open,
             end,
         });
@@ -95,7 +95,7 @@ function parseSubExpression(scope: Scope, open: number, to: number): SubExpressi
 function parseStringLiteral(scope: Scope, open: number, to: number): StringLiteral {
     const quote = scope.source[open] === '"' ? '"' : "'";
     let i = open + 1;
-    // Stryker disable next-line EqualityOperator: equivalent — a literal unclosed at `to` is unclosed whatever the scan reads past it, and its value is clamped to `to`
+    // Stryker disable next-line EqualityOperator: equivalent; a literal unclosed at `to` is unclosed whatever the scan reads past it, and its value is clamped to `to`
     while (i < to) {
         const ch = scope.source[i];
         if (ch === '\\') {

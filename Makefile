@@ -16,7 +16,7 @@ docs: build
 	npm run docs:diagnostics; \
 	if diff -r "$$tmp/reference" docs/reference > /dev/null; then rm -rf "$$tmp"; else \
 		diff -r "$$tmp/reference" docs/reference; rm -rf "$$tmp"; \
-		echo "docs/reference/ was stale — the regenerated projection is in your tree; commit it."; \
+		echo "docs/reference/ was stale: the regenerated projection is in your tree; commit it."; \
 		exit 1; \
 	fi
 

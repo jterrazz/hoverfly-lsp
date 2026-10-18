@@ -169,7 +169,7 @@ function helperRow(spec) {
             ? 'none'
             : spec.args
                   .map((arg) => `${arg.name}: ${arg.type}${arg.optional ? '?' : ''}`)
-                  .join(', ') + (spec.variadic ? ', …' : '');
+                  .join(', ') + (spec.variadic ? ', ...' : '');
     const kind = spec.block ? 'block' : 'inline';
     // value: the registry ends every docs string with a link; the page links each entry itself.
     const doc = spec.docs.replace(/\s*https?:\/\/\S+\s*$/u, '').trim();
@@ -208,7 +208,7 @@ function fakerSection() {
         `Hoverfly's \`{{faker 'X'}}\` dispatches by reflection over \`*gofakeit.Faker\` (pinned to ` +
             `gofakeit **v${GOFAKEIT_VERSION}**). Only the **${FAKER_NAMES.length} zero-argument** method names ` +
             'below are valid, and they are **case-sensitive**. Parameterized methods (`Number`, ' +
-            '`Sentence`, `Password`, `Regex`, …) panic at render time when called with no arguments; ' +
+            '`Sentence`, `Password`, `Regex` and others) panic at render time when called with no arguments; ' +
             'the LSP flags those (HF508). The authoritative list lives in ' +
             '[`packages/analysis/src/registry/faker.ts`](../../packages/analysis/src/registry/faker.ts).',
         '',

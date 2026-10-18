@@ -1,6 +1,6 @@
 name: Release
 
-# outside: creating a GitHub Release publishes — npm tokenlessly, through OIDC trusted publishing
+# outside: creating a GitHub Release publishes to npm tokenlessly, through OIDC trusted publishing
 # (`--provenance` and `id-token: write`, configured once on npmjs.com for this repository and this
 # workflow). The single-package release-npm workflow cannot serve a monorepo: this one publishes
 # @jterrazz/hoverfly-lsp alone and attaches the .vsix; the editor registries stay manual
@@ -66,13 +66,13 @@ jobs:
                   check packages/server/package.json
                   exit $fail
 
-            # value: idempotent — a version already on npm is skipped, so cutting the GitHub release still
+            # value: idempotent. A version already on npm is skipped, so cutting the GitHub release still
             # attaches the .vsix; the analysis package is private and inlined in the server's bundle.
             - name: Publish @jterrazz/hoverfly-lsp (skip if already on npm)
               run: |
                   VER="$(node -p "require('./packages/server/package.json').version")"
                   if npm view "@jterrazz/hoverfly-lsp@$VER" version >/dev/null 2>&1; then
-                    echo "@jterrazz/hoverfly-lsp@$VER is already published — skipping publish."
+                    echo "@jterrazz/hoverfly-lsp@$VER is already published; skipping publish."
                   else
                     npm publish --workspace @jterrazz/hoverfly-lsp --access public --provenance
                   fi

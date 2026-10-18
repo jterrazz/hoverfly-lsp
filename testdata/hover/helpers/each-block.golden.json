@@ -1,6 +1,6 @@
 {
     "diagnostics": [],
     "markers": {
-        "": "### `each` — block helper\n\n`#each iterable: any`\n\nBlock: iterate arrays/slices/maps/structs; sets @index/@key/@first/@last and this. https://handlebarsjs.com/guide/builtin-helpers.html\n\n**Kind:** block helper · **Arity:** 1 argument(s) · **Source:** raymond built-in\n\nExample: `{{#each (csvAsMap 'pets')}}{{this.name}}{{/each}}`"
+        "": "### `each` (block helper)\n\n`#each iterable: any`\n\nBlock: iterate arrays/slices/maps/structs; sets @index/@key/@first/@last and this. https://handlebarsjs.com/guide/builtin-helpers.html\n\n**Kind:** block helper · **Arity:** 1 argument(s) · **Source:** raymond built-in\n\nExample: `{{#each (csvAsMap 'pets')}}{{this.name}}{{/each}}`"
     }
 }

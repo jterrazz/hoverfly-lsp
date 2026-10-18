@@ -10,7 +10,7 @@ export const DIAGNOSTIC_PROSE = {
             'Schema violation (re-tagged from vscode-json-languageservice; noisy union messages are suppressed when a more specific HF2xx fires on the same node).',
         range: 'as reported by the schema engine',
     },
-    HF103: { trigger: '`schemaVersion` in v1–v4.', range: 'the version string' },
+    HF103: { trigger: '`schemaVersion` in v1 to v4.', range: 'the version string' },
     HF104: {
         trigger: '`schemaVersion` does not match `^v\\d+(\\.\\d+)?$`.',
         range: 'the version string',
@@ -76,17 +76,17 @@ export const DIAGNOSTIC_PROSE = {
     },
     HF215: {
         trigger:
-            'A `method` value (under an `exact`/default matcher) that is a near-miss (Levenshtein ≤ 1) of a standard IANA HTTP method but is not itself one, i.e. a typo (`GT`→`GET`). Hint-only: the method field is an OPEN set Hoverfly compares verbatim, so a bespoke verb (`PURGE`, `PROPFIND`) far from every standard verb stays silent.',
+            'A `method` value (under an `exact`/default matcher) that is a near-miss (Levenshtein ≤ 1) of a standard IANA HTTP method but is not itself one, i.e. a typo (`GT` for `GET`). Hint-only: the method field is an OPEN set Hoverfly compares verbatim, so a bespoke verb (`PURGE`, `PROPFIND`) far from every standard verb stays silent.',
         range: 'value node',
     },
     HF216: {
         trigger:
-            'A `scheme` value (under an `exact`/default matcher) that is a near-miss (Levenshtein ≤ 1) of a common URI scheme (`http`/`https`/`ws`/`wss`) but is not itself one (`htttp`→`http`). Hint-only: scheme is string-compared verbatim, so a custom scheme (`ftp`, …) stays silent.',
+            'A `scheme` value (under an `exact`/default matcher) that is a near-miss (Levenshtein ≤ 1) of a common URI scheme (`http`/`https`/`ws`/`wss`) but is not itself one (`htttp` for `http`). Hint-only: scheme is string-compared verbatim, so a custom scheme (`ftp` and the like) stays silent.',
         range: 'value node',
     },
     HF230: {
         trigger:
-            "A `regex` value (or an `xmltemplated` `{{regex:…}}` leaf) is not a valid Go RE2 pattern. Validated with a true RE2 engine (`re2js`), never `new RegExp`. Shared with HF601's urlPattern check.",
+            "A `regex` value (or an `xmltemplated` `{{regex:...}}` leaf) is not a valid Go RE2 pattern. Validated with a true RE2 engine (`re2js`), never `new RegExp`. Shared with HF601's urlPattern check.",
         range: 'value node',
     },
     HF231: {
@@ -106,7 +106,7 @@ export const DIAGNOSTIC_PROSE = {
     },
     HF234: {
         trigger:
-            'An `xml`/`xmltemplated` value is not well-formed XML (after neutralizing `{{ignore}}`/`{{regex:…}}` template tokens). Validated with `fast-xml-parser`.',
+            'An `xml`/`xmltemplated` value is not well-formed XML (after neutralizing `{{ignore}}`/`{{regex:...}}` template tokens). Validated with `fast-xml-parser`.',
         range: 'value node',
     },
     HF235: {
@@ -129,7 +129,7 @@ export const DIAGNOSTIC_PROSE = {
             '`Content-Length` ≠ byte length of `body` (skipped when `templated`, `bodyFile`, or `encodedBody`).',
         range: 'header value',
     },
-    HF304: { trigger: '`status` outside 100–599.', range: 'status value' },
+    HF304: { trigger: '`status` outside 100 to 599.', range: 'status value' },
     HF305: { trigger: '`encodedBody: true` but `body` is not valid base64.', range: 'body value' },
     HF306: { trigger: 'Negative `fixedDelay`.', range: 'the value' },
     HF307: {
@@ -181,7 +181,7 @@ export const DIAGNOSTIC_PROSE = {
         range: 'the arg',
     },
     HF508: {
-        trigger: 'Parameterized gofakeit method (Number, Sentence, Password, Regex, …).',
+        trigger: 'Parameterized gofakeit method (Number, Sentence, Password, Regex and others).',
         range: 'the arg',
     },
     HF509: {

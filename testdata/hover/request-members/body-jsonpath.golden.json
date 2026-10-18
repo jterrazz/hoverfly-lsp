@@ -1,6 +1,6 @@
 {
     "diagnostics": [],
     "markers": {
-        "": "### `Request.Body` — method call\n\nInvoked as a function with two string args: `Request.Body '<queryType>' '<query>'`, where `queryType` ∈ {`jsonpath`, `xpath`, `jsonpathfromxml`} (equivalent to the `requestBody` helper). The JSONPath engine is **kubectl** (`k8s.io/client-go/util/jsonpath`), NOT Jayway/RFC9535; XPath is `ChrisTrenkamp/xsel` and returns a single string. https://docs.hoverfly.io/en/latest/pages/keyconcepts/templating/templating.html\n\nExample: `{{Request.Body 'jsonpath' '$.id'}}`"
+        "": "### `Request.Body` (method call)\n\nInvoked as a function with two string args: `Request.Body '<queryType>' '<query>'`, where `queryType` ∈ {`jsonpath`, `xpath`, `jsonpathfromxml`} (equivalent to the `requestBody` helper). The JSONPath engine is **kubectl** (`k8s.io/client-go/util/jsonpath`), NOT Jayway/RFC9535; XPath is `ChrisTrenkamp/xsel` and returns a single string. https://docs.hoverfly.io/en/latest/pages/keyconcepts/templating/templating.html\n\nExample: `{{Request.Body 'jsonpath' '$.id'}}`"
     }
 }

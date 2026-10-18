@@ -70,7 +70,7 @@ describe('lifecycle', () => {
         expect(result.value).toMatch({
             exitCode: 0,
             stderr: '',
-            stdout: 'hoverfly-lsp — Language Server for Hoverfly JSON simulation files\n\nUsage: hoverfly-lsp [transport] [options]\n\nTransports (default: --stdio):\n  --stdio             Communicate over stdin/stdout (default)\n  --node-ipc          Communicate over Node IPC (parent process channel)\n  --socket=PORT       Connect over a TCP socket on PORT\n  --pipe=NAME         Communicate over a named pipe\n\nOptions:\n  --version, -v       Print the version and exit\n  --help, -h          Print this help and exit\n',
+            stdout: 'hoverfly-lsp: Language Server for Hoverfly JSON simulation files\n\nUsage: hoverfly-lsp [transport] [options]\n\nTransports (default: --stdio):\n  --stdio             Communicate over stdin/stdout (default)\n  --node-ipc          Communicate over Node IPC (parent process channel)\n  --socket=PORT       Connect over a TCP socket on PORT\n  --pipe=NAME         Communicate over a named pipe\n\nOptions:\n  --version, -v       Print the version and exit\n  --help, -h          Print this help and exit\n',
         });
     });
 

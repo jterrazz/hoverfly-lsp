@@ -101,7 +101,7 @@ describe('template-arguments', () => {
 
         // Then - unix, epoch and the Go layouts
         expect(result.value).toMatch([
-            '(empty → RFC3339)',
+            '(empty, for RFC3339)',
             'unix',
             'epoch',
             '2006-01-02',

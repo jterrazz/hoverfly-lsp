@@ -3,7 +3,7 @@ import { startServer } from './server.js';
 // outside: esbuild defines the manifest's version at build time, so the bundle reads no package.json.
 declare const HOVERFLY_LSP_VERSION: string;
 
-const HELP = `hoverfly-lsp — Language Server for Hoverfly JSON simulation files
+const HELP = `hoverfly-lsp: Language Server for Hoverfly JSON simulation files
 
 Usage: hoverfly-lsp [transport] [options]
 

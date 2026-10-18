@@ -105,7 +105,7 @@ function helperItem(spec: HelperSpec, context: TemplateCompletionContext): Compl
 function helperSignature(spec: HelperSpec): string {
     const args = spec.args.map((a) => (a.optional ? `[${a.name}]` : a.name));
     if (spec.variadic === true) {
-        args.push('…');
+        args.push('...');
     }
     const prefix = spec.block ? '#' : '';
     return [`${prefix}${spec.name}`, ...args].join(' ');
@@ -208,7 +208,7 @@ function fakerItems(): CompletionItem[] {
 
 function nowFormatItems(): CompletionItem[] {
     const items: CompletionItem[] = NOW_FORMAT_EXAMPLES.map((example) => ({
-        label: example.value === '' ? '(empty → RFC3339)' : example.value,
+        label: example.value === '' ? '(empty, for RFC3339)' : example.value,
         kind: CompletionItemKind.Value,
         detail: example.detail,
         documentation: { kind: MarkupKind.Markdown, value: NOW_FORMAT_NOTES.formats },

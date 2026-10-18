@@ -1,5 +1,5 @@
 {
     "markers": {
-        "": "### faker `'Number'`\n\n⚠️ `Number` is a PARAMETERIZED gofakeit method — calling it with no arguments panics at render time."
+        "": "### faker `'Number'`\n\n**Warning:** `Number` is a PARAMETERIZED gofakeit method; calling it with no arguments panics at render time."
     }
 }

@@ -12,6 +12,6 @@
                 67
             ]
         },
-        "message": "jwt value should be a partial {\"header\":…,\"payload\":…} spec; key \"username\" can never match a JWT"
+        "message": "jwt value should be a partial {\"header\":...,\"payload\":...} spec; key \"username\" can never match a JWT"
     }
 ]

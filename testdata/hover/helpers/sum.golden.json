@@ -1,6 +1,6 @@
 {
     "diagnostics": [],
     "markers": {
-        "": "### `sum` — inline helper\n\n`sum numbers: array format: string`\n\nSum a []string of numbers, formatted. https://docs.hoverfly.io/en/latest/pages/keyconcepts/templating/templating.html\n\n**Kind:** inline helper · **Arity:** 2 argument(s) · **Source:** Hoverfly helper\n\nExample: `{{sum (getArray 'subtotal') '0.00'}}`"
+        "": "### `sum` (inline helper)\n\n`sum numbers: array format: string`\n\nSum a []string of numbers, formatted. https://docs.hoverfly.io/en/latest/pages/keyconcepts/templating/templating.html\n\n**Kind:** inline helper · **Arity:** 2 argument(s) · **Source:** Hoverfly helper\n\nExample: `{{sum (getArray 'subtotal') '0.00'}}`"
     }
 }

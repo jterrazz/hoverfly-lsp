@@ -12,6 +12,6 @@
                 52
             ]
         },
-        "message": "Unclosed mustache — missing closing braces"
+        "message": "Unclosed mustache: missing closing braces"
     }
 ]

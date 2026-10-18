@@ -45,7 +45,7 @@ describe('hf5xx', () => {
             input: [{ status: 200, body: 'a\\nb {{x}}' }],
         },
         {
-            expected: ['HF502 error 14:19-14:25 Unclosed mustache — missing closing braces'],
+            expected: ['HF502 error 14:19-14:25 Unclosed mustache: missing closing braces'],
             label: 'parse errors via doValidation glue — reports an unclosed mustache in a templated body',
             input: [{ status: 200, body: '{{oops', templated: true }],
         },

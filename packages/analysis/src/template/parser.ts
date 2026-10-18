@@ -1,6 +1,6 @@
 // outside: hand-rolled (D8; report 08 §5.2 forbids a handlebars dependency) to keep exact offsets
-// into the decoded source and the raymond fork's quirks — the `equal` and `first` blocks, `@data`
-// variables, the Request.Body method call, single or double quotes; an unclosed mustache or block,
+// into the decoded source and the raymond fork's quirks (the `equal` and `first` blocks, `@data`
+// variables, the Request.Body method call, single or double quotes); an unclosed mustache or block,
 // a mismatched close or a bad token is recorded and skipped to the next `{{`, so the rest of the
 // template is still analysed.
 
@@ -49,7 +49,7 @@ class Parser {
         return { ast, errors: this.errors };
     }
 
-    // invariant: inside a block body, a `{{/…}}` or `{{else}}` ends the statements, left unconsumed
+    // invariant: inside a block body, a `{{/...}}` or `{{else}}` ends the statements, left unconsumed
     // for the block to read.
     private parseStatements(insideBlock = false): Statement[] {
         const out: Statement[] = [];
@@ -101,7 +101,7 @@ class Parser {
         const close = findClose(this.source, open + openLen, closeMarker);
         if (close === -1) {
             this.errors.push({
-                message: 'Unclosed mustache — missing closing braces',
+                message: 'Unclosed mustache: missing closing braces',
                 start: open,
                 end: this.source.length,
             });
@@ -119,7 +119,7 @@ class Parser {
         if (inner.startsWith('/')) {
             const name = inner.slice(1).trim();
             this.errors.push({
-                message: `Unexpected closing block {{/${name}}} — no matching open block`,
+                message: `Unexpected closing block {{/${name}}}: no matching open block`,
                 start: open,
                 end: tagEnd,
             });
@@ -147,7 +147,7 @@ class Parser {
         const parsed = parseCallParts(this.scope, inner.start, inner.end);
         if (!parsed) {
             this.errors.push({
-                message: 'Empty mustache — expected a path or helper',
+                message: 'Empty mustache: expected a path or helper',
                 start,
                 end,
             });
@@ -185,7 +185,7 @@ class Parser {
         };
         if (!parsed) {
             this.errors.push({
-                message: 'Block open {{#…}} is missing a helper name',
+                message: 'Block open {{#...}} is missing a helper name',
                 start: open,
                 end: openTagEnd,
             });
@@ -240,7 +240,7 @@ class Parser {
         const close = findClose(this.source, open + 2, '}}');
         if (close === -1) {
             this.errors.push({
-                message: `Unclosed block {{#${blockName}}} — missing {{/${blockName}}}`,
+                message: `Unclosed block {{#${blockName}}}: missing {{/${blockName}}}`,
                 start: openStart,
                 end: openEnd,
             });

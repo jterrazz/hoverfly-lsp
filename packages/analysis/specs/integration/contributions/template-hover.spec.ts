@@ -15,7 +15,7 @@ describe('template-hover', () => {
 
         // Then - the registry's entry for replace
         expect(result.value).toMatch(`
-            ### \`replace\` — inline helper
+            ### \`replace\` (inline helper)
 
             \`replace target: string oldValue: string newValue: string\`
 
@@ -33,7 +33,7 @@ describe('template-hover', () => {
 
         // Then - a block helper, built into raymond
         expect(result.value).toMatch(`
-            ### \`each\` — block helper
+            ### \`each\` (block helper)
 
             \`#each iterable: any\`
 
@@ -51,7 +51,7 @@ describe('template-hover', () => {
 
         // Then - the helper's entry
         expect(result.value).toMatch(`
-            ### \`randomUuid\` — inline helper
+            ### \`randomUuid\` (inline helper)
 
             \`randomUuid\`
 
@@ -83,7 +83,7 @@ describe('template-hover', () => {
         expect(result.value).toMatch(`
             ### faker \`'Number'\`
 
-            ⚠️ \`Number\` is a PARAMETERIZED gofakeit method — calling it with no arguments panics at render time.`);
+            **Warning:** \`Number\` is a PARAMETERIZED gofakeit method; calling it with no arguments panics at render time.`);
     });
 
     test('documents Request.Body with its kubectl-JSONPath and xsel dialects', async () => {
@@ -93,7 +93,7 @@ describe('template-hover', () => {
 
         // Then - the method-call form and the dialect note
         expect(result.value).toMatch(`
-            ### \`Request.Body\` — method call
+            ### \`Request.Body\` (method call)
 
             Invoked as a function with two string args: \`Request.Body '<queryType>' '<query>'\`, where \`queryType\` ∈ {\`jsonpath\`, \`xpath\`, \`jsonpathfromxml\`} (equivalent to the \`requestBody\` helper). The JSONPath engine is **kubectl** (\`k8s.io/client-go/util/jsonpath\`), NOT Jayway/RFC9535; XPath is \`ChrisTrenkamp/xsel\` and returns a single string. https://docs.hoverfly.io/en/latest/pages/keyconcepts/templating/templating.html
 
@@ -107,9 +107,9 @@ describe('template-hover', () => {
 
         // Then - the field's entry
         expect(result.value).toMatch(`
-            ### \`Request.Method\` — field
+            ### \`Request.Method\` (field)
 
-            The HTTP method (\`GET\`, \`POST\`, …). https://docs.hoverfly.io/en/latest/pages/keyconcepts/templating/templating.html
+            The HTTP method (\`GET\`, \`POST\` and the rest). https://docs.hoverfly.io/en/latest/pages/keyconcepts/templating/templating.html
 
             Example: \`{{Request.Method}}\``);
     });

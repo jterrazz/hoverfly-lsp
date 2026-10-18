@@ -66,7 +66,7 @@ describe('parse', () => {
                 '{{y<y>@4-5}}@2-7',
                 '" then "@7-13',
                 '"x and more"@15-25',
-                'error Unclosed mustache — missing closing braces@13-25',
+                'error Unclosed mustache: missing closing braces@13-25',
             ],
             source: 'a {{y}} then {{x and more',
         },
@@ -74,7 +74,7 @@ describe('parse', () => {
             outline: [
                 'program@0-16',
                 '#each<each>@3-7 xs<xs>@8-10 ["item"@12-16] open 0-12 close unclosed@0-16',
-                'error Unclosed block {{#each}} — missing {{/each}}@0-12',
+                'error Unclosed block {{#each}}: missing {{/each}}@0-12',
             ],
             source: '{{#each xs}}item',
         },
@@ -91,12 +91,12 @@ describe('parse', () => {
                 'program@0-17',
                 '"text "@0-5',
                 '" more"@12-17',
-                'error Unexpected closing block {{/if}} — no matching open block@5-12',
+                'error Unexpected closing block {{/if}}: no matching open block@5-12',
             ],
             source: 'text {{/if}} more',
         },
         {
-            outline: ['program@0-4', 'error Empty mustache — expected a path or helper@0-4'],
+            outline: ['program@0-4', 'error Empty mustache: expected a path or helper@0-4'],
             source: '{{}}',
         },
         {
@@ -109,11 +109,11 @@ describe('parse', () => {
             source: '{{#if x}}a{{/each}}{{ok}}',
         },
         {
-            outline: ['program@0-2', 'error Unclosed mustache — missing closing braces@0-2'],
+            outline: ['program@0-2', 'error Unclosed mustache: missing closing braces@0-2'],
             source: '{{',
         },
         {
-            outline: ['program@0-3', 'error Unclosed mustache — missing closing braces@0-3'],
+            outline: ['program@0-3', 'error Unclosed mustache: missing closing braces@0-3'],
             source: '{{{',
         },
         {
@@ -124,15 +124,15 @@ describe('parse', () => {
             outline: [
                 'program@0-5',
                 '#<>@3-3 [] open 0-5 close unclosed@0-5',
-                'error Block open {{#…}} is missing a helper name@0-5',
-                'error Unclosed block {{#}} — missing {{/}}@0-5',
+                'error Block open {{#...}} is missing a helper name@0-5',
+                'error Unclosed block {{#}}: missing {{/}}@0-5',
             ],
             source: '{{#}}',
         },
         {
             outline: [
                 'program@0-5',
-                'error Unexpected closing block {{/}} — no matching open block@0-5',
+                'error Unexpected closing block {{/}}: no matching open block@0-5',
             ],
             source: '{{/}}',
         },
@@ -140,7 +140,7 @@ describe('parse', () => {
             outline: [
                 'program@0-11',
                 '#<>@3-3 [] open 0-6 close 6-11@0-11',
-                'error Block open {{#…}} is missing a helper name@0-6',
+                'error Block open {{#...}} is missing a helper name@0-6',
             ],
             source: '{{# }}{{/}}',
         },
@@ -149,7 +149,7 @@ describe('parse', () => {
                 'program@0-34',
                 '#each<each>@3-7 [] else [] open 0-9 close 17-25@0-25',
                 'error Mismatched closing block: expected {{/each}} but found {{/}}@17-25',
-                'error Unexpected closing block {{/each}} — no matching open block@25-34',
+                'error Unexpected closing block {{/each}}: no matching open block@25-34',
             ],
             source: '{{#each}}{{else}}{{else}}{{/each}}',
         },
@@ -181,7 +181,7 @@ describe('parse', () => {
             outline: [
                 'program@0-16',
                 '#if<if>@3-5 x<x>@6-7 ["a"@9-10] else [] open 0-9 close unclosed@0-16',
-                'error Unclosed block {{#if}} — missing {{/if}}@0-9',
+                'error Unclosed block {{#if}}: missing {{/if}}@0-9',
             ],
             source: '{{#if x}}a{{else',
         },
@@ -202,7 +202,7 @@ describe('parse', () => {
         {
             outline: [
                 'program@0-9',
-                'error Unexpected closing block {{/x}} — no matching open block@0-9',
+                'error Unexpected closing block {{/x}}: no matching open block@0-9',
             ],
             source: '{{ / x }}',
         },
@@ -214,7 +214,7 @@ describe('parse', () => {
             outline: [
                 'program@0-25',
                 '#if<if>@3-5 x<x>@6-7 ["a"@9-10] else [] open 0-9 close unclosed@0-25',
-                'error Unclosed block {{#if}} — missing {{/if}}@0-9',
+                'error Unclosed block {{#if}}: missing {{/if}}@0-9',
             ],
             source: '{{#if x}}a{{else b{{/if}}',
         },
@@ -224,13 +224,13 @@ describe('parse', () => {
                 '#if<if>@3-5 x<x>@6-7 ["a"@9-10] else ["b"@18-19] open 0-9 close 19-27@0-27',
                 '"c"@27-28',
                 'error Mismatched closing block: expected {{/if}} but found {{/}}@19-27',
-                'error Unexpected closing block {{/if}} — no matching open block@28-35',
+                'error Unexpected closing block {{/if}}: no matching open block@28-35',
             ],
             source: '{{#if x}}a{{else}}b{{else}}c{{/if}}',
         },
     ])(
         // Given - $source, decoded
-        // Then - the whole program — each node with its span, every recorded error — and no throw
+        // Then - the whole program (each node with its span, every recorded error) and no throw
         'parses $source',
         ({ outline: expected, source }) => {
             expect(outline(parse(source))).toStrictEqual(expected);

@@ -1,6 +1,6 @@
 {
     "diagnostics": [],
     "markers": {
-        "": "### `csvAsMap` — inline helper\n\n`csvAsMap dataSourceName: string`\n\nReturn the CSV as []RowMap; iterate with #each and access this.field. https://docs.hoverfly.io/en/latest/pages/keyconcepts/templating/templating.html\n\n**Kind:** inline helper · **Arity:** 1 argument(s) · **Source:** Hoverfly helper\n\nExample: `{{#each (csvAsMap 'pets')}}{{this.name}}{{/each}}`"
+        "": "### `csvAsMap` (inline helper)\n\n`csvAsMap dataSourceName: string`\n\nReturn the CSV as []RowMap; iterate with #each and access this.field. https://docs.hoverfly.io/en/latest/pages/keyconcepts/templating/templating.html\n\n**Kind:** inline helper · **Arity:** 1 argument(s) · **Source:** Hoverfly helper\n\nExample: `{{#each (csvAsMap 'pets')}}{{this.name}}{{/each}}`"
     }
 }

@@ -86,7 +86,7 @@ describe('matcher-syntax', () => {
         },
         {
             expected: [
-                'HF235 warning 8:23-8:49 jwt value should be a partial {"header":…,"payload":…} spec; key "username" can never match a JWT',
+                'HF235 warning 8:23-8:49 jwt value should be a partial {"header":...,"payload":...} spec; key "username" can never match a JWT',
             ],
             label: 'jwt value with non-header/payload top-level keys — warns when a top-level key is not header/payload',
             request: { body: [{ matcher: 'jwt', value: '{"username":"alice"}' }] },

@@ -1,6 +1,6 @@
 {
     "diagnostics": [],
     "markers": {
-        "": "### `xml` matcher\n\nStructural XML equality (both sides minified). Value is XML text. Non-string or unparseable XML never matches. https://docs.hoverfly.io/en/latest/pages/keyconcepts/matching/matchers.html\n\n**Value type:** `string`\n**Config:** not supported.\n**doMatch:** AND-semantics — re-tests the same input against the next matcher."
+        "": "### `xml` matcher\n\nStructural XML equality (both sides minified). Value is XML text. Non-string or unparseable XML never matches. https://docs.hoverfly.io/en/latest/pages/keyconcepts/matching/matchers.html\n\n**Value type:** `string`\n**Config:** not supported.\n**doMatch:** AND-semantics; re-tests the same input against the next matcher."
     }
 }

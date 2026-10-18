@@ -70,7 +70,7 @@ describe('parseCallParts', () => {
             outline: [
                 'outer<outer>@0-5',
                 "(inner<inner>@7-12 'a'@13-16)@6-16",
-                "error Unclosed subexpression \u2014 missing ')'@6-16",
+                "error Unclosed subexpression: missing ')'@6-16",
             ],
         },
         { call: "x 'abc", outline: ['x<x>@0-1', "'abc'@2-6", 'error Unclosed string literal@2-6'] },
@@ -82,7 +82,7 @@ describe('parseCallParts', () => {
             call: 'x ()',
             outline: [
                 'x<x>@0-1',
-                'error Empty subexpression — expected a helper@2-4',
+                'error Empty subexpression: expected a helper@2-4',
                 'error Unexpected token in arguments: "()"@2-4',
             ],
         },

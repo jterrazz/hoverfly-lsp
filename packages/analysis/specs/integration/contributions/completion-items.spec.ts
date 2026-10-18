@@ -121,7 +121,7 @@ describe('completion items', () => {
                 detail: 'Hoverfly schema version (current default)',
                 documentation: {
                     kind: 'markdown',
-                    value: '`v5.3` — the current default schema version.',
+                    value: '`v5.3`: the current default schema version.',
                 },
                 insertText: '"v5.3"',
                 insertTextFormat: 1,
@@ -134,7 +134,7 @@ describe('completion items', () => {
                 detail: 'Hoverfly schema version',
                 documentation: {
                     kind: 'markdown',
-                    value: '`v5` — Hoverfly validates any `v5.x` against the same v5 schema.',
+                    value: '`v5`: Hoverfly validates any `v5.x` against the same v5 schema.',
                 },
                 insertText: '"v5"',
                 insertTextFormat: 1,
@@ -305,7 +305,7 @@ describe('completion items', () => {
         // Then - optional arguments bracketed, a variadic helper ended by an ellipsis
         expect(result.value).toMatch([
             { detail: 'now [offset] [format] · Hoverfly helper', label: 'now' },
-            { detail: 'concat … · Hoverfly helper', label: 'concat' },
+            { detail: 'concat ... · Hoverfly helper', label: 'concat' },
         ]);
     });
 });

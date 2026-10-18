@@ -12,6 +12,6 @@
                 67
             ]
         },
-        "message": "Unclosed block {{#each}} — missing {{/each}}"
+        "message": "Unclosed block {{#each}}: missing {{/each}}"
     }
 ]

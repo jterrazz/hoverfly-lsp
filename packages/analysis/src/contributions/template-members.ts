@@ -12,8 +12,8 @@ type RequestMember = {
     readonly example: string;
 };
 
-// outside: Hoverfly's Request.Body is a function field invoked with a query type — jsonpath, xpath
-// or jsonpathfromxml — and an expression; the other members are fields read by path.
+// outside: Hoverfly's Request.Body is a function field invoked with a query type (jsonpath, xpath
+// or jsonpathfromxml) and an expression; the other members are fields read by path.
 const REQUEST_MEMBERS: readonly RequestMember[] = [
     {
         name: 'Scheme',
@@ -26,7 +26,7 @@ const REQUEST_MEMBERS: readonly RequestMember[] = [
         name: 'Method',
         methodCall: false,
         indexed: false,
-        docs: `The HTTP method (\`GET\`, \`POST\`, …). ${DOCS_TEMPLATING}`,
+        docs: `The HTTP method (\`GET\`, \`POST\` and the rest). ${DOCS_TEMPLATING}`,
         example: '{{Request.Method}}',
     },
     {

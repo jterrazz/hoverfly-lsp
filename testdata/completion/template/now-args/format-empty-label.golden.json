@@ -4,7 +4,7 @@
         "": [
             {
                 "kind": "Value",
-                "label": "(empty → RFC3339)"
+                "label": "(empty, for RFC3339)"
             },
             {
                 "kind": "Value",

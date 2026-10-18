@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://json.schemastore.org/hoverfly-simulation.json",
   "title": "Hoverfly simulation",
-  "description": "A Hoverfly v5 simulation: a set of request-matcher/response pairs plus global actions and metadata. Enhanced (titles, descriptions, examples, snippets) but a faithful superset of Hoverfly's official core/handlers/v2/schema.json — never stricter.",
+  "description": "A Hoverfly v5 simulation: a set of request-matcher/response pairs plus global actions and metadata. Enhanced (titles, descriptions, examples, snippets) but a faithful superset of Hoverfly's official core/handlers/v2/schema.json, never stricter.",
   "additionalProperties": false,
   "type": "object",
   "required": ["data", "meta"],
@@ -14,7 +14,7 @@
       "properties": {
         "pairs": {
           "title": "pairs",
-          "description": "Array of request-matcher / response pairs — the core of a simulation. An incoming request matches a pair when every matcher present passes.",
+          "description": "Array of request-matcher / response pairs, the core of a simulation. An incoming request matches a pair when every matcher present passes.",
           "type": "array",
           "items": {
             "$ref": "#/definitions/request-response-pair"
@@ -191,7 +191,7 @@
         },
         "doMatch": {
           "title": "doMatch",
-          "description": "Matcher chaining: a single chained matcher object whose match runs against this matcher's extracted value. Recursive (a `doMatch` may itself carry a `doMatch`). Must be one object, not an array — Hoverfly rejects an array-shaped doMatch at import.",
+          "description": "Matcher chaining: a single chained matcher object whose match runs against this matcher's extracted value. Recursive (a `doMatch` may itself carry a `doMatch`). Must be one object, not an array: Hoverfly rejects an array-shaped doMatch at import.",
           "$ref": "#/definitions/field-matchers"
         }
       }

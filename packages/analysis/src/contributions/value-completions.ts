@@ -32,7 +32,7 @@ function jsonString(value: string): string {
     return JSON.stringify(value);
 }
 
-// hazard: built by concatenation — a literal `${…}` in a plain string reads as a botched template
+// hazard: built by concatenation, since a literal `${...}` in a plain string reads as a botched template
 // literal to no-template-curly-in-string.
 function tabStop(index: number, placeholder?: string): string {
     const open = '$'.concat('{');
@@ -87,8 +87,8 @@ export function collectSchemaVersionCompletions(result: CompletionsCollector): v
             documentation: {
                 kind: MarkupKind.Markdown,
                 value: entry.preferred
-                    ? `\`${entry.value}\` — the current default schema version.`
-                    : `\`${entry.value}\` — Hoverfly validates any \`v5.x\` against the same v5 schema.`,
+                    ? `\`${entry.value}\`: the current default schema version.`
+                    : `\`${entry.value}\`: Hoverfly validates any \`v5.x\` against the same v5 schema.`,
             },
             insertText: jsonString(entry.value),
             insertTextFormat: InsertTextFormat.PlainText,
@@ -99,7 +99,7 @@ export function collectSchemaVersionCompletions(result: CompletionsCollector): v
     }
 }
 
-// value: `addValue` mirrors the schema completion — `: "$1"` is appended at a bare `{`, never when
+// value: `addValue` mirrors the schema completion: `: "$1"` is appended at a bare `{`, never when
 // the key already carries its value.
 export function collectStateKeyCompletions(
     result: CompletionsCollector,
@@ -150,7 +150,7 @@ export function collectPostServeActionCompletions(
     }
 }
 
-// invariant: requiresState, transitionsState and removesState share one namespace — a key one pair
+// invariant: requiresState, transitionsState and removesState share one namespace: a key one pair
 // sets is the key another requires, so all three feed the cross-reference.
 function collectStateKeys(simulation: SimulationModel | undefined): string[] {
     if (!simulation) {

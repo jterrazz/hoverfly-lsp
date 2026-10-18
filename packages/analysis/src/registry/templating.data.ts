@@ -1,6 +1,6 @@
 // outside: transcribed from research/08, verified against Hoverfly's helperMethodMap
 // (core/templating/templating.go, template_helpers.go) and the SpectoLabs/raymond fork (helper.go)
-// — 52 inline Hoverfly helpers and 8 raymond built-ins, `first` and `equal` the fork's own; raymond
+// (52 inline Hoverfly helpers and 8 raymond built-ins, `first` and `equal` the fork's own); raymond
 // supplies a trailing *raymond.Options itself and never enforces arity, so `args` leaves it out and
 // a mismatch is a warning.
 
@@ -25,7 +25,7 @@ export type HelperSpec = {
     args: HelperArg[];
     /** Whether the helper takes a variable number of trailing arguments. */
     variadic?: boolean;
-    /** Whether the helper is a block helper (`{{#name}}…{{/name}}`). */
+    /** Whether the helper is a block helper (`{{#name}}...{{/name}}`). */
     block: boolean;
     /** True for raymond built-ins; false for Hoverfly-registered helpers. */
     builtin: boolean;
@@ -211,7 +211,7 @@ export const HOVERFLY_HELPERS: readonly HelperSpec[] = [
         block: false,
         builtin: false,
         docs: `Returns bool, typically wrapped in #if. ${DOCS_TEMPLATING}`,
-        example: '{{#if (isNumeric x)}}…{{/if}}',
+        example: '{{#if (isNumeric x)}}...{{/if}}',
     },
     {
         name: 'isAlphanumeric',
@@ -238,7 +238,7 @@ export const HOVERFLY_HELPERS: readonly HelperSpec[] = [
         block: false,
         builtin: false,
         docs: `Returns bool: value1 > value2. (Short form \`isGreater\` does NOT exist.) ${DOCS_TEMPLATING}`,
-        example: '{{#if (isGreaterThan a b)}}…{{/if}}',
+        example: '{{#if (isGreaterThan a b)}}...{{/if}}',
     },
     {
         name: 'isGreaterThanOrEqual',
@@ -249,7 +249,7 @@ export const HOVERFLY_HELPERS: readonly HelperSpec[] = [
         block: false,
         builtin: false,
         docs: `Returns bool: value1 >= value2. ${DOCS_TEMPLATING}`,
-        example: '{{#if (isGreaterThanOrEqual a b)}}…{{/if}}',
+        example: '{{#if (isGreaterThanOrEqual a b)}}...{{/if}}',
     },
     {
         name: 'isLessThan',
@@ -260,7 +260,7 @@ export const HOVERFLY_HELPERS: readonly HelperSpec[] = [
         block: false,
         builtin: false,
         docs: `Returns bool: value1 < value2. (Short form \`isLess\` does NOT exist.) ${DOCS_TEMPLATING}`,
-        example: '{{#if (isLessThan a b)}}…{{/if}}',
+        example: '{{#if (isLessThan a b)}}...{{/if}}',
     },
     {
         name: 'isLessThanOrEqual',
@@ -271,7 +271,7 @@ export const HOVERFLY_HELPERS: readonly HelperSpec[] = [
         block: false,
         builtin: false,
         docs: `Returns bool: value1 <= value2. ${DOCS_TEMPLATING}`,
-        example: '{{#if (isLessThanOrEqual a b)}}…{{/if}}',
+        example: '{{#if (isLessThanOrEqual a b)}}...{{/if}}',
     },
     {
         name: 'isBetween',
@@ -338,7 +338,7 @@ export const HOVERFLY_HELPERS: readonly HelperSpec[] = [
         block: false,
         builtin: false,
         docs: `Return all matching CSV rows ([]RowMap); iterate with #each. ${DOCS_TEMPLATING}`,
-        example: "{{#each (csvMatchingRows 'pets' 'category' 'dogs')}}…{{/each}}",
+        example: "{{#each (csvMatchingRows 'pets' 'category' 'dogs')}}...{{/each}}",
     },
     {
         name: 'csvAsArray',
@@ -346,7 +346,7 @@ export const HOVERFLY_HELPERS: readonly HelperSpec[] = [
         block: false,
         builtin: false,
         docs: `Return the CSV as \`[][]string\`; iterate with #each. ${DOCS_TEMPLATING}`,
-        example: "{{#each (csvAsArray 'pets')}}…{{/each}}",
+        example: "{{#each (csvAsArray 'pets')}}...{{/each}}",
     },
     {
         name: 'csvAsMap',
@@ -394,7 +394,8 @@ export const HOVERFLY_HELPERS: readonly HelperSpec[] = [
         block: false,
         builtin: false,
         docs: `Run a SQL command over CSV data sources; returns []RowMap, iterate with #each. ${DOCS_TEMPLATING}`,
-        example: '{{#each (csvSqlCommand "SELECT * FROM pets WHERE category=\'dogs\'")}}…{{/each}}',
+        example:
+            '{{#each (csvSqlCommand "SELECT * FROM pets WHERE category=\'dogs\'")}}...{{/each}}',
     },
     {
         name: 'journal',
@@ -419,7 +420,7 @@ export const HOVERFLY_HELPERS: readonly HelperSpec[] = [
         block: false,
         builtin: false,
         docs: `Returns bool: whether a journal index has the key. Typically wrapped in #if. ${DOCS_TEMPLATING}`,
-        example: "{{#if (hasJournalKey 'orderId' '123')}}…{{/if}}",
+        example: "{{#if (hasJournalKey 'orderId' '123')}}...{{/if}}",
     },
     {
         name: 'setStatusCode',
@@ -568,7 +569,7 @@ export const RAYMOND_BUILTINS: readonly HelperSpec[] = [
         block: true,
         builtin: true,
         docs: `Block: render the body when the condition is truthy; {{else}} otherwise. ${DOCS_HANDLEBARS}`,
-        example: '{{#if cond}}…{{else}}…{{/if}}',
+        example: '{{#if cond}}...{{else}}...{{/if}}',
     },
     {
         name: 'unless',
@@ -576,7 +577,7 @@ export const RAYMOND_BUILTINS: readonly HelperSpec[] = [
         block: true,
         builtin: true,
         docs: `Block: inverse of #if. ${DOCS_HANDLEBARS}`,
-        example: '{{#unless cond}}…{{/unless}}',
+        example: '{{#unless cond}}...{{/unless}}',
     },
     {
         name: 'with',
@@ -630,14 +631,14 @@ export const RAYMOND_BUILTINS: readonly HelperSpec[] = [
         block: true,
         builtin: true,
         docs: `Block (SpectoLabs fork extra): render body when Str(a) == Str(b); {{else}} otherwise. ${DOCS_HANDLEBARS}`,
-        example: '{{#equal a b}}…{{else}}…{{/equal}}',
+        example: '{{#equal a b}}...{{else}}...{{/equal}}',
     },
 ];
 
 /** All recognised helper names: the 52 Hoverfly helpers plus the 8 raymond built-ins. */
 export const ALL_HELPERS: readonly HelperSpec[] = [...HOVERFLY_HELPERS, ...RAYMOND_BUILTINS];
 
-// outside: parse_duration.go's unitMap — both micro signs (µs U+00B5, μs U+03BC), no week, no
+// outside: parse_duration.go's unitMap: both micro signs (µs U+00B5, μs U+03BC), no week, no
 // month; Hoverfly silently ignores an invalid offset (report 08 §2).
 /** The units a `now` offset accepts. */
 export const NOW_OFFSET_UNITS: readonly string[] = [

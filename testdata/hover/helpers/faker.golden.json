@@ -1,6 +1,6 @@
 {
     "diagnostics": [],
     "markers": {
-        "": "### `faker` — inline helper\n\n`faker fakerType: string`\n\nGenerate fake data via reflection over *gofakeit.Faker (v6.28.0). Only zero-arg method names are valid. https://docs.hoverfly.io/en/latest/pages/keyconcepts/templating/templating.html\n\n**Kind:** inline helper · **Arity:** 1 argument(s) · **Source:** Hoverfly helper\n\nExample: `{{faker 'Name'}}`"
+        "": "### `faker` (inline helper)\n\n`faker fakerType: string`\n\nGenerate fake data via reflection over *gofakeit.Faker (v6.28.0). Only zero-arg method names are valid. https://docs.hoverfly.io/en/latest/pages/keyconcepts/templating/templating.html\n\n**Kind:** inline helper · **Arity:** 1 argument(s) · **Source:** Hoverfly helper\n\nExample: `{{faker 'Name'}}`"
     }
 }

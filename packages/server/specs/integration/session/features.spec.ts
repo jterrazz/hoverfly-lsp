@@ -255,7 +255,7 @@ describe('features', () => {
         // Then - the Markdown and the range of the name
         expect(result.value).toMatch({
             contents: [
-                '### `glob` matcher\n\nGlob (wildcard) match, e.g. `*.example.com`. Non-string value never matches. https://docs.hoverfly.io/en/latest/pages/keyconcepts/matching/matchers.html\n\n**Value type:** `string`\n**Config:** not supported.\n**doMatch:** AND-semantics — re-tests the same input against the next matcher.',
+                '### `glob` matcher\n\nGlob (wildcard) match, e.g. `*.example.com`. Non-string value never matches. https://docs.hoverfly.io/en/latest/pages/keyconcepts/matching/matchers.html\n\n**Value type:** `string`\n**Config:** not supported.\n**doMatch:** AND-semantics; re-tests the same input against the next matcher.',
             ],
             range: {
                 start: {

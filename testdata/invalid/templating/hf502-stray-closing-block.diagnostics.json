@@ -12,6 +12,6 @@
                 76
             ]
         },
-        "message": "Unexpected closing block {{/each}} — no matching open block"
+        "message": "Unexpected closing block {{/each}}: no matching open block"
     }
 ]

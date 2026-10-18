@@ -13,14 +13,14 @@
 //! (`zed-industries/zed` html, `zed-extensions/vue`, `.../svelte`): install the
 //! server npm package into the extension's work dir, check
 //! `npm_package_installed_version` against `npm_package_latest_version`, reinstall
-//! on update, and launch it via `node_binary_path()`. Steps 1–2 (project-local /
+//! on update, and launch it via `node_binary_path()`. Steps 1 and 2 (project-local /
 //! `$PATH`) additionally let a locally-built server win, like vue/svelte's
 //! project-local lookups.
 //!
 //! Note: we deliberately do NOT bundle `dist/cli.cjs` as a committed extension
 //! asset. Zed's wasm sandbox preopens only the extension *work* dir as cwd
 //! (`crates/extension_host/.../wasm_host.rs`), and the published archive contains
-//! only `extension.toml`, `extension.wasm`, `languages/`, `grammars/` — the
+//! only `extension.toml`, `extension.wasm`, `languages/`, `grammars/`: the
 //! *installed* dir (where committed files live) is never reachable from wasm. So
 //! shipping the server file as an asset is unusable at runtime; npm install into
 //! the work dir is the only viable distribution.
@@ -86,7 +86,7 @@ impl HoverflyExtension {
                 "could not resolve the '{PACKAGE_NAME}' npm package ({error}). \
                  Install the server so Zed can find it: run `npm install {PACKAGE_NAME}` \
                  in your project, or `npm install -g {PACKAGE_NAME}`. \
-                 (The package may not be published yet — see editors/zed/README.md > Dev install.)"
+                 (The package may not be published yet; see editors/zed/README.md > Dev install.)"
             )
         })?;
         let needs_install = !script_exists

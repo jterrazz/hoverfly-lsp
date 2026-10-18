@@ -179,7 +179,7 @@ export const DIAGNOSTIC_CATALOG: Readonly<Record<DiagnosticCode, CatalogEntry>> 
         messageTemplate:
             'Name "{n}" contains a character that breaks "{{Literals.{n}}}" / "{{Vars.{n}}}" templating references',
     },
-    // value: Hint only (D4) — Hoverfly compares method and scheme verbatim and never validates them
+    // value: Hint only (D4). Hoverfly compares method and scheme verbatim and never validates them
     // (research/13 §3.1, §3.2), so only a near-miss of a standard value fires.
     HF215: {
         code: 'HF215',
@@ -221,7 +221,7 @@ export const DIAGNOSTIC_CATALOG: Readonly<Record<DiagnosticCode, CatalogEntry>> 
         code: 'HF235',
         severity: W,
         messageTemplate:
-            'jwt value should be a partial {"header":…,"payload":…} spec; key "{k}" can never match a JWT',
+            'jwt value should be a partial {"header":...,"payload":...} spec; key "{k}" can never match a JWT',
     },
     HF236: {
         code: 'HF236',
@@ -272,7 +272,7 @@ export const DIAGNOSTIC_CATALOG: Readonly<Record<DiagnosticCode, CatalogEntry>> 
     HF308: {
         code: 'HF308',
         severity: E,
-        messageTemplate: 'Response header values must be an array of strings; wrap it in [ … ]',
+        messageTemplate: 'Response header values must be an array of strings; wrap it in [ ... ]',
     },
 
     HF401: {
@@ -378,7 +378,7 @@ export const DIAGNOSTIC_CATALOG: Readonly<Record<DiagnosticCode, CatalogEntry>> 
         severity: I,
         messageTemplate: 'Action "{a}" is not in your configured registeredActions',
     },
-    // value: a Warning — the document still imports, and the key is silently lost (report 13 §6).
+    // value: a Warning, since the document still imports, and the key is silently lost (report 13 §6).
     HF603: {
         code: 'HF603',
         severity: W,

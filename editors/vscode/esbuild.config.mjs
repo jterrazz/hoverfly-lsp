@@ -40,7 +40,7 @@ if (watch) {
     const ctx = await context(buildOptions);
     await ctx.watch();
     // oxlint-disable-next-line no-console -- the watch loop's only feedback is this line.
-    console.log('[hoverfly vscode] watching for changes…');
+    console.log('[hoverfly vscode] watching for changes');
 } else {
     await build(buildOptions);
 }

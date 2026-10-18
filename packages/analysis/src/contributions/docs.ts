@@ -10,7 +10,7 @@ function valueTypeLine(spec: MatcherSpec): string {
 function configLine(spec: MatcherSpec): string {
     if (spec.supportsConfig) {
         const keys = (spec.configKeys ?? []).map((k) => `\`${k}\``).join(', ');
-        return `**Config:** supported — booleans ${keys}.`;
+        return `**Config:** supported, booleans ${keys}.`;
     }
     return '**Config:** not supported.';
 }
@@ -19,17 +19,17 @@ function matcherSpecificNotes(spec: MatcherSpec): string[] {
     const notes: string[] = [];
     if (spec.supportsConfig) {
         notes.push(
-            '⚠️ Each `config` value must be a JSON boolean — a string like `"true"` or a number is a mistake.',
+            '**Warning:** each `config` value must be a JSON boolean; a string like `"true"` or a number is a mistake.',
         );
     }
     if (spec.bodyOnly === true) {
         notes.push(
-            '⚠️ Valid ONLY on the request `body`, only as a top-level matcher, and case-SENSITIVE (`form`, not `Form`/`FORM`).',
+            '**Warning:** valid ONLY on the request `body`, only as a top-level matcher, and case-SENSITIVE (`form`, not `Form`/`FORM`).',
         );
     }
     if (spec.wrongTypeBehavior === 'vacuous-true') {
         notes.push(
-            '⚠️ A non-string value matches vacuously (always true) — almost always a mistake.',
+            '**Warning:** a non-string value matches vacuously (always true), which is almost always a mistake.',
         );
     }
     return notes;
@@ -51,9 +51,7 @@ export function matcherMarkdown(spec: MatcherSpec): string {
             '**doMatch:** transforms/extracts a value for the next chained matcher (not a re-test of the same input).',
         );
     } else {
-        lines.push(
-            '**doMatch:** AND-semantics — re-tests the same input against the next matcher.',
-        );
+        lines.push('**doMatch:** AND-semantics; re-tests the same input against the next matcher.');
     }
     const notes = matcherSpecificNotes(spec);
     if (notes.length > 0) {

@@ -155,7 +155,7 @@ function helperMarkdown(spec: HelperSpec): string {
         a.optional ? `[${a.name}: ${a.type}]` : `${a.name}: ${a.type}`,
     );
     if (spec.variadic === true) {
-        args.push('…');
+        args.push('...');
     }
     const prefix = spec.block ? '#' : '';
     const signature = [`${prefix}${spec.name}`, ...args].join(' ');
@@ -164,10 +164,10 @@ function helperMarkdown(spec: HelperSpec): string {
     const required = spec.args.filter((a) => !a.optional).length;
     const arity =
         spec.variadic === true
-            ? `≥ ${required} argument(s)`
-            : `${required}${required === spec.args.length ? '' : `–${spec.args.length}`} argument(s)`;
+            ? `at least ${required} argument(s)`
+            : `${required}${required === spec.args.length ? '' : ` to ${spec.args.length}`} argument(s)`;
     return [
-        `### \`${spec.name}\` — ${kind}`,
+        `### \`${spec.name}\` (${kind})`,
         '',
         `\`${signature}\``,
         '',
@@ -182,7 +182,7 @@ function helperMarkdown(spec: HelperSpec): string {
 function requestMemberMarkdown(member: RequestMember): string {
     const kind = member.methodCall ? 'method call' : 'field';
     return [
-        `### \`Request.${member.name}\` — ${kind}`,
+        `### \`Request.${member.name}\` (${kind})`,
         '',
         member.docs,
         '',
@@ -198,7 +198,7 @@ function fakerMarkdown(type: string): string {
         lines.push(`A zero-arg gofakeit (v${GOFAKEIT_VERSION}) method.`);
     } else if (panics) {
         lines.push(
-            `⚠️ \`${type}\` is a PARAMETERIZED gofakeit method — calling it with no arguments panics at render time.`,
+            `**Warning:** \`${type}\` is a PARAMETERIZED gofakeit method; calling it with no arguments panics at render time.`,
         );
     } else {
         lines.push(
