@@ -31,13 +31,13 @@
         "test": "vitest --run"
     },
     "dependencies": {
-        "vscode-languageclient": "^10.0.0"
+        "vscode-languageclient": "^10.1.2"
     },
     "devDependencies": {
         "@jterrazz/hoverfly-lsp": "^0.1.0",
         "@types/vscode": "^1.91.0",
-        "@vscode/vsce": "^3.9.2",
-        "esbuild": "^0.25.12"
+        "@vscode/vsce": "^4.0.0",
+        "esbuild": "^0.28.2"
     },
     "contributes": {
         "languages": [
