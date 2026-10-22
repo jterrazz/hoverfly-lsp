@@ -26,7 +26,7 @@ describe('matcher-syntax', () => {
                 'HF230 error 8:23-8:31 Invalid RE2 regex; Hoverfly (Go regexp) silently never matches this',
             ],
             label: 'invalid RE2 regex (via re2js, not new RegExp) — catches a backreference (invalid in RE2)',
-            request: { path: [{ matcher: 'regex', value: '(x)\\1' }] },
+            request: { path: [{ matcher: 'regex', value: String.raw`(x)\1` }] },
         },
         {
             expected: [],
@@ -36,7 +36,7 @@ describe('matcher-syntax', () => {
         {
             expected: [],
             label: 'invalid RE2 regex (via re2js, not new RegExp) — does NOT flag a complex valid RE2 pattern',
-            request: { path: [{ matcher: 'regex', value: '^/v[0-9]+/[a-z-]+(\\?.*)?$' }] },
+            request: { path: [{ matcher: 'regex', value: String.raw`^/v[0-9]+/[a-z-]+(\?.*)?$` }] },
         },
         {
             expected: [],
@@ -193,7 +193,7 @@ describe('matcher-syntax', () => {
         {
             expected: [],
             label: 'glob — deliberately silent (no invalid syntax exists) — never flags any glob value (2)',
-            request: { path: [{ matcher: 'glob', value: 'a[b?c\\d' }] },
+            request: { path: [{ matcher: 'glob', value: String.raw`a[b?c\d` }] },
         },
         {
             expected: [

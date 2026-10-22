@@ -294,7 +294,7 @@ export const HOVERFLY_HELPERS: readonly HelperSpec[] = [
         block: false,
         builtin: false,
         docs: `Returns bool: value matches the regex pattern. ${DOCS_TEMPLATING}`,
-        example: "{{matchesRegex x '^\\d+$'}}",
+        example: String.raw`{{matchesRegex x '^\d+$'}}`,
     },
     {
         name: 'faker',
@@ -657,7 +657,7 @@ export const NOW_OFFSET_UNITS: readonly string[] = [
 /** Human-facing notes on the `now` offset/format behaviour (report 08 §2). */
 export const NOW_FORMAT_NOTES = {
     /** Validates an offset literal (or empty string) against the supported units. */
-    offsetPattern: '^[-+]?(\\d+(\\.\\d+)?(ns|us|µs|μs|ms|s|m|h|d|y))+$',
+    offsetPattern: String.raw`^[-+]?(\d+(\.\d+)?(ns|us|µs|μs|ms|s|m|h|d|y))+$`,
     /** `d` = 24h, `y` = 365d; `w`/`mo`/`M` are unsupported and silently ignored at render. */
     units: 'Units: ns, us, µs, μs, ms, s, m, h, d (=24h), y (=365d). No w/mo/M. Invalid offsets are silently ignored.',
     /** The four `format` arg behaviours; `epoch` is milliseconds despite the name. */

@@ -42,7 +42,7 @@ describe('hf5xx', () => {
                 'HF501 warning 14:25-14:27 Body contains template syntax but "templated" is not true; it will be sent literally',
             ],
             label: 'template syntax in a non-templated body — points HF501 at the first mustache, source-mapped through escapes',
-            input: [{ status: 200, body: 'a\\nb {{x}}' }],
+            input: [{ status: 200, body: String.raw`a\nb {{x}}` }],
         },
         {
             expected: ['HF502 error 14:19-14:25 Unclosed mustache: missing closing braces'],

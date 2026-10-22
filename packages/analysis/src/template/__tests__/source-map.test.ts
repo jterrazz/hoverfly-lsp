@@ -110,7 +110,7 @@ describe('createStringSourceMap', () => {
         {
             at: 0,
             map: {
-                decoded: 'a\\zb',
+                decoded: String.raw`a\zb`,
                 toDecodedOffset: '-1:0 0:0 1:0 2:1 3:2 4:3 5:4 6:4 7:4',
                 toDocOffset: '-1:1 0:1 1:2 2:3 3:4 4:5 5:5',
             },
@@ -157,7 +157,7 @@ describe('createStringSourceMap', () => {
         {
             at: 0,
             map: {
-                decoded: '\\z1234',
+                decoded: String.raw`\z1234`,
                 toDecodedOffset: '-1:0 0:0 1:1 2:2 3:3 4:4 5:5 6:6 7:6',
                 toDocOffset: '-1:0 0:0 1:1 2:2 3:3 4:4 5:5 6:6 7:6',
             },
@@ -166,7 +166,7 @@ describe('createStringSourceMap', () => {
         {
             at: 0,
             map: {
-                decoded: '\\u12zz',
+                decoded: String.raw`\u12zz`,
                 toDecodedOffset: '-1:0 0:0 1:1 2:2 3:3 4:4 5:5 6:6 7:6',
                 toDocOffset: '-1:0 0:0 1:1 2:2 3:3 4:4 5:5 6:6 7:6',
             },
