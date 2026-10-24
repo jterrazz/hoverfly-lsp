@@ -29,7 +29,7 @@ fix: build
 	npx typescript fix
 
 test: build
-	npm test
+	npx typescript test
 
 mutation: build
 	npx typescript mutation

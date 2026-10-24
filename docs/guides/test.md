@@ -8,7 +8,7 @@ mechanical proof stops.
 ## The run
 
 ```bash
-make test       # builds, then each workspace member's own `test` script
+make test       # builds, then typescript test: each workspace member's own `test` script, none on a proven tree
 ```
 
 Each member collects its own tests through its own `vitest.config.ts`

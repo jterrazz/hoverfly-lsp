@@ -12,7 +12,7 @@ server still runs on Node 20 (esbuild targets it), but the toolchain does not:
 ```bash
 make install           # npm ci, lockfile-pinned, behind an install sentinel
 make build             # every member: the analysis library, the server bin, the extension
-make test              # build, then each member's vitest run
+make test              # build, then typescript test: each member's vitest run, none on a proven tree
 make lint              # build, regenerate docs/reference/, then typescript check
 make fix               # typescript fix: format, autofixable lint, Markdown
 make check             # lint, test and mutation: the whole verdict
