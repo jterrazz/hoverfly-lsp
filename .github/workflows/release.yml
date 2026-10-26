@@ -15,7 +15,7 @@ on:
 jobs:
     # invariant: a release whose commit fails the shared gate never publishes.
     validate:
-        uses: jterrazz/jterrazz-actions/.github/workflows/validate.yaml@main
+        uses: jterrazz/studio-actions/.github/workflows/validate.yaml@main
         with:
             node-version: '24'
 

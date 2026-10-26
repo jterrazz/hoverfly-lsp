@@ -24,7 +24,7 @@ the section below says what it refuses.
 
 Every pull request keeps `build`, `lint`, `test` and `mutation` green.
 `.github/workflows/validate.yaml` calls the house reusable
-(`jterrazz/jterrazz-actions`) on Node 24, which runs `make build`, `make lint`
+(`jterrazz/studio-actions`) on Node 24, which runs `make build`, `make lint`
 and `make test`, then `make mutation` over what changed since the base branch
 (`TYPESCRIPT_MUTATION_SINCE`). A change therefore leaves no surviving mutant in
 the lines it touches. Locally, `make check` on a clean tree measures only the
@@ -108,7 +108,7 @@ Decisions taken after this manual exists are recorded as ADRs in
 
 ## Where this repository diverges from the house preset
 
-Each member declares its kind and platform in its own `jterrazz.config.ts`; the
+Each member declares its kind and platform in its own `studio.config.ts`; the
 root lists the members in `package.json`'s `workspaces`, declares no kind, and
 keeps the few exceptions the toolchain cannot derive, each with its reason
 beside it.
