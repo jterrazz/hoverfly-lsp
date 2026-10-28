@@ -1,4 +1,4 @@
-name: Schema drift
+name: Watch
 
 # invariant: read-only. It never updates the bundled schema or a registry; it opens or refreshes one
 # issue when Hoverfly's schema or the Go sources the registries were transcribed from move away from
@@ -17,8 +17,8 @@ env:
     ISSUE_TITLE: 'Upstream Hoverfly drift detected'
 
 jobs:
-    drift:
-        name: Detect upstream Hoverfly drift
+    schema-drift:
+        name: Schema drift
         runs-on: ubuntu-26.04-arm
         steps:
             - name: Checkout

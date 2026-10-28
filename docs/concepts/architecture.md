@@ -73,7 +73,7 @@ a pinned commit, recorded as `HOVERFLY_COMMIT` in
 `packages/analysis/src/schema/provenance.ts` and mirrored in
 `schemas/upstream-source-hashes.json`. A weekly workflow diffs upstream against
 that baseline and opens one tracking issue when it moves; it never updates
-anything itself (`.github/workflows/schema-drift.yml`).
+anything itself (`.github/workflows/watch.yaml`).
 
 ## The server
 

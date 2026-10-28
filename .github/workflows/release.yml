@@ -1,10 +1,13 @@
-name: Release
+name: Publish
+run-name: Publish ${{ github.event.release.tag_name }}
 
 # outside: creating a GitHub Release publishes to npm tokenlessly, through OIDC trusted publishing
 # (`--provenance` and `id-token: write`, configured once on npmjs.com for this repository and this
-# workflow). The single-package release-npm workflow cannot serve a monorepo: this one publishes
+# workflow). The single-package publish-npm workflow cannot serve a monorepo: this one publishes
 # @jterrazz/hoverfly-lsp alone and attaches the .vsix; the editor registries stay manual
 # (docs/guides/release.md).
+# outside: the file keeps the name `release.yml`: npm's trusted publishing is configured against that
+# filename on npmjs.com, so the rename to publish.yaml waits for the owner.
 
 on:
     release:
@@ -14,14 +17,15 @@ on:
 
 jobs:
     # invariant: a release whose commit fails the shared gate never publishes.
-    validate:
-        uses: jterrazz/studio-actions/.github/workflows/validate.yaml@main
+    check:
+        name: Check
+        uses: jterrazz/studio-actions/.github/workflows/check.yaml@main
         with:
-            node-version: '24'
+            mutation: false
 
     publish:
         name: Publish
-        needs: validate
+        needs: check
         runs-on: ubuntu-26.04-arm
         permissions:
             contents: write # upload the .vsix asset onto the release
@@ -38,7 +42,7 @@ jobs:
                   registry-url: https://registry.npmjs.org
 
             - name: Install
-              run: npm ci
+              run: npm ci --no-audit --no-fund
 
             - name: Build
               run: npm run build

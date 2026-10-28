@@ -23,7 +23,7 @@ is the one gate the toolchain does not carry: `make lint` runs it first, and
 the section below says what it refuses.
 
 Every pull request keeps `build`, `lint`, `test` and `mutation` green.
-`.github/workflows/validate.yaml` calls the house reusable
+`.github/workflows/check.yaml` calls the house reusable
 (`jterrazz/studio-actions`) on Node 24, which runs `make build`, `make lint`
 and `make test`, then `make mutation` over what changed since the base branch
 (`TYPESCRIPT_MUTATION_SINCE`). A change therefore leaves no surviving mutant in
