@@ -2,7 +2,7 @@
 
 What this repository is: one pure analysis library, one stdio language server
 wrapped around it, and four thin editor launchers that all speak to the same
-binary. This chapter draws the lines and says why they are where they are.
+binary. This page draws the lines and says why they are where they are.
 
 ## The three layers
 

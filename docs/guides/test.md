@@ -2,7 +2,7 @@
 
 What proves a change here: one vitest run over the whole workspace, standing on
 a fixture corpus that was verified against a real Hoverfly instance. This
-chapter says what each suite holds, how a golden is regenerated, and where the
+page says what each suite holds, how a golden is regenerated, and where the
 mechanical proof stops.
 
 ## The run
