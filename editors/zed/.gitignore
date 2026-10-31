@@ -1,13 +1,7 @@
-# Build, test and lint artefacts. Cargo's target-dir is redirected here by
-# .cargo/config.toml, so the extension's wasm build leaves nothing on the row.
 /.artifacts/
 
-# Zed-managed npm install dir created at runtime by the extension.
 /node_modules/
 
-# Tree-sitter grammars and the compiled wasm Zed drops in the extension root on
-# install: paths Zed fixes and cannot be told to move.
+# Zed writes these into the extension root on install, at paths it fixes.
 /grammars/
 /*.wasm
-
-# Cargo.lock IS committed, so extensions build reproducibly.
