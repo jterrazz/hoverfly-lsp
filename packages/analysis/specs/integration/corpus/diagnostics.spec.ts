@@ -1,6 +1,7 @@
 import { file } from '@jterrazz/test';
 import { glob } from 'glob';
 import { readFileSync } from 'node:fs';
+import { basename } from 'node:path';
 import { describe, expect, test } from 'vitest';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DiagnosticSeverity } from 'vscode-languageserver-types';
@@ -65,6 +66,41 @@ describe('diagnostics', () => {
             expect(result.value).toMatch(file(golden));
         },
     );
+
+    test('diagnostics-corpus — every code an invalid fixture is named for is in its golden', async () => {
+        // Given - the leading hfNNN codes of each invalid fixture's name, against the codes its golden holds
+        const result = await integration.call(() =>
+            invalid.toSorted().flatMap((fixture) => {
+                const named = (/^(?:hf\d{3}-)+/u.exec(basename(fixture))?.[0] ?? '')
+                    .split('-')
+                    .filter((code) => code !== '')
+                    .map((code) => code.toUpperCase());
+                const golden: unknown = JSON.parse(
+                    readFileSync(
+                        `${repoRoot}${fixture.replace(/\.hoverfly\.json$/u, '.diagnostics.json')}`,
+                        'utf8',
+                    ),
+                );
+                const answered = new Set(
+                    (Array.isArray(golden) ? golden : []).map((diagnostic: unknown) =>
+                        typeof diagnostic === 'object' &&
+                        diagnostic !== null &&
+                        'code' in diagnostic
+                            ? diagnostic.code
+                            : undefined,
+                    ),
+                );
+                return named
+                    .filter((code) => !answered.has(code))
+                    .map((code) => `${fixture} ${code}`);
+            }),
+        );
+
+        // Then - only the fixture proving HF602 stays silent without settings lacks the code it is named for
+        expect(result.value).toMatch([
+            'testdata/invalid/globalactions/hf602-postserveaction-silent-without-settings.hoverfly.json HF602',
+        ]);
+    });
 
     test.each(valid)('diagnostics-corpus — %s answers no diagnostic', async (fixture) => {
         // Given - a valid fixture, validated through the language service
