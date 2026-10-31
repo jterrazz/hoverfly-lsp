@@ -18,7 +18,7 @@ one stdio server, four thin editor launchers. This file **routes**; the manual i
 - **Codes are a published API.** Append-only: never reuse or repurpose an `HFxxx`.
 - **`testdata/` is the contract.** A `valid/` fixture must produce zero
   diagnostics; an `invalid/` fixture exactly the diagnostics of its sibling
-  golden, and its name leads with the code it is about.
+  golden. How a fixture is named is `testdata/README.md`'s.
 - **`docs/reference/` is generated.** It is projected from the built analysis library by
   `npm run docs:diagnostics`; editing it by hand is always wrong.
 

@@ -44,8 +44,7 @@ it enforces:
 - a `valid/` fixture produces **zero** diagnostics through the full pipeline
   (parse, then schema, then template, then `HFxxx`);
 - an `invalid/` fixture produces **exactly** the diagnostics frozen in its
-  sibling golden, `<case>.diagnostics.json`, and its name leads with the code
-  it is about.
+  sibling golden, `<case>.diagnostics.json`.
 
 A `valid/` fixture that produces a diagnostic is either a fixture bug or a
 validator false positive. Fix the fixture or report the bug; never delete the
