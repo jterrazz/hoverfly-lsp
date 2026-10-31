@@ -234,7 +234,7 @@ Handlebars-subset template engine on top. Dependency direction is strictly `edit
 packages/analysis  @hoverfly-lsp/analysis  pure analysis library (private; bundled into the server)
 packages/server    @jterrazz/hoverfly-lsp  stdio LSP server (the published package; bin: hoverfly-lsp)
 editors/           vscode, zed, intellij, claude-code   thin per-editor launchers
-docs/              the manual: numbered chapters + reference/ generated from the analysis library
+docs/              the manual: guides/, concepts/, reference/ (generated from the analysis library), decisions/
 testdata/          the reference corpus (valid/ + invalid/ goldens)
 research/          binding research + the architect decision log
 schemas/           bundled Hoverfly schema + upstream provenance
@@ -242,24 +242,14 @@ schemas/           bundled Hoverfly schema + upstream provenance
 
 The matcher, helper, and faker registries are generated from a pinned Hoverfly source (`master`
 commit `aeff9058`), and a weekly drift-CI job flags when upstream Hoverfly moves. Testing sits on a
-162-fixture golden corpus where every `valid/` fixture was imported into a real **Hoverfly v1.12.8**
+golden corpus where every `valid/` fixture was imported into a real **Hoverfly v1.12.8**
 to confirm the corpus is ground truth, not just self-consistent. The decision log is in
 [research/10-architect-decisions.md](./research/10-architect-decisions.md).
 
-## Contributing
+## Develop
 
-Node 24 to develop (the published server runs on Node 20 and later), npm-workspaces monorepo.
-
-```bash
-make install
-make build
-make test
-make check             # lint, test and mutation: the whole verdict
-```
-
-The manual for everyone who changes this repository is **[docs/](./docs/README.md)**: the
-architecture, the development loop, what proves a change, and how a release is cut. Adding a
-diagnostic is a five-step recipe in [docs/guides/develop.md](./docs/guides/develop.md).
+Everyone who changes this repository starts at the manual, **[docs/](./docs/README.md)**: the
+toolchain and the gates, the architecture, what proves a change, and how a release is cut.
 
 ## License
 
