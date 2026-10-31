@@ -103,12 +103,12 @@ esbuild `define`, so the shipped file never reads `package.json` at runtime.
 Each launcher is deliberately thin: all intelligence lives in the npm package,
 and an editor integration only has to find it and start it with `--stdio`.
 
-| Launcher              | Ships the server how                                                            |
-| --------------------- | ------------------------------------------------------------------------------- |
-| `editors/vscode`      | Bundles it: esbuild copies the server into the extension before `vsce package`  |
-| `editors/zed`         | Rust/WASM extension; resolves project-local, then `$PATH`, then Zed-managed npm |
-| `editors/intellij`    | LSP4IJ plugin; Gradle copies the server bundle into the plugin resources        |
-| `editors/claude-code` | A plugin whose `launch.mjs` starts the globally installed npm package           |
+| Launcher              | Ships the server how                                                                                                                                 |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `editors/vscode`      | Bundles it: esbuild copies the server into the extension before `vsce package`                                                                       |
+| `editors/zed`         | Rust/WASM extension; resolves project-local, then `$PATH`, then Zed-managed npm                                                                      |
+| `editors/intellij`    | LSP4IJ plugin; Gradle copies the server bundle into the plugin resources                                                                             |
+| `editors/claude-code` | A plugin whose `launch.mjs` starts `$HOVERFLY_LSP_PATH`, then a `node_modules` install reachable from the project or the plugin, then the dev bundle |
 
 The Zed extension is also mirrored into the Zed registry through a separate
 fork; `editors/zed/registry-submission/` holds what that submission carries.

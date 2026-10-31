@@ -71,15 +71,16 @@ claude
 manifest; this plugin directory qualifies. The first time you open a project, Claude Code starts
 LSP servers only after you trust the workspace.
 
-If you have a global server install (`npm i -g @jterrazz/hoverfly-lsp`, once published), step 3 is
-unnecessary; the launcher finds it via `node_modules`.
+If the project you open has `@jterrazz/hoverfly-lsp` as a dependency (once published), step 3 is
+unnecessary; the launcher resolves it from the project's `node_modules`. A global `npm i -g` install
+is not on that path: point `HOVERFLY_LSP_PATH` at its `dist/cli.cjs` instead.
 
 ## Install: published marketplace (future)
 
 Once the plugin is on a marketplace and `@jterrazz/hoverfly-lsp` is on npm:
 
 ```bash
-npm install -g @jterrazz/hoverfly-lsp   # or add as a project dependency
+npm install --save-dev @jterrazz/hoverfly-lsp   # in the project, or set HOVERFLY_LSP_PATH
 claude plugin marketplace add jterrazz/hoverfly-lsp
 claude plugin install hoverfly-lsp
 ```

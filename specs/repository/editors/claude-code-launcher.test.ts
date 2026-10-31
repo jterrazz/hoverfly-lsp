@@ -93,9 +93,8 @@ describe('claude-code-launcher', () => {
             stderr:
                 'hoverfly-lsp: could not locate the language server bundle.\n' +
                 'Tried $HOVERFLY_LSP_PATH, a node_modules `@jterrazz/hoverfly-lsp` install, and the\n' +
-                'repo-relative dev bundle (packages/server/dist/cli.cjs). Install `@jterrazz/hoverfly-lsp`\n' +
-                '(npm i -g @jterrazz/hoverfly-lsp or as a project dependency), or set HOVERFLY_LSP_PATH to\n' +
-                "the server's dist/cli.cjs.\n",
+                'repo-relative dev bundle (packages/server/dist/cli.cjs). Add `@jterrazz/hoverfly-lsp` as a\n' +
+                "project dependency, or set HOVERFLY_LSP_PATH to the server's dist/cli.cjs.\n",
             stdout: '',
         });
     });
