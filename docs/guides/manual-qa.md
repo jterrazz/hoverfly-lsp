@@ -2,10 +2,11 @@
 
 The manual half of a release: every check no suite can run, because each needs a
 human in a real editor. [Release](release.md) walks it before a version ships.
-What is proven without an editor (builds, type-checks, JSON/TOML syntax,
-`vsce package`, `cargo check`, the LSP `initialize` handshake over every
-launcher) is listed under "Verified automatically" at the end, and is not
-re-checked by hand.
+What a gate proves without an editor (the builds, the cross-track consistency
+of the launchers, the Claude Code launcher's resolution, the `initialize`
+handshake of the packed server) is listed under "Verified automatically" at the
+end, and is not re-checked by hand; what is checked by hand before a release
+without an editor is listed beside it.
 
 All `testdata/...` paths are relative to the repo root. The canonical simulation filenames are
 `*.hoverfly.json` and `hoverfly-simulation.json`. The server is `hoverfly-lsp --stdio`.
@@ -18,7 +19,7 @@ The end-to-end editor behaviour cannot run headlessly (no extension host in CI).
 
 **Setup:** from the repo root, `npm install && npm run build`, then
 `npm run package --workspace=hoverfly-lsp-vscode` and
-`code --install-extension editors/vscode/.artifacts/vsce/hoverfly-lsp-vscode-0.1.0.vsix`
+`code --install-extension editors/vscode/.artifacts/vsce/*.vsix`
 (or open `editors/vscode` and press **F5** for an Extension Development Host).
 
 - [ ] Bottom-right language indicator reads **Hoverfly** when a `*.hoverfly.json` is open.
@@ -55,8 +56,8 @@ The end-to-end editor behaviour cannot run headlessly (no extension host in CI).
 
 ## Zed (`editors/zed/`)
 
-`cargo check` passes with the available toolchain, but Zed builds the extension for the
-`wasm32-wasip2` target, which requires **rustup** (the build host had Homebrew Rust only, no
+`cargo check` compiles the crate on a native toolchain (checked by hand before a release), but
+Zed builds the extension for the `wasm32-wasip2` target, which requires **rustup** (the build host had Homebrew Rust only, no
 rustup, no wasm target). The wasm build and all in-editor behaviour are manual.
 
 **Setup:** install Rust via rustup and `rustup target add wasm32-wasip2`. Build the server
@@ -155,10 +156,11 @@ No editor dir: the client is configured by hand (`nvim-lspconfig` snippet in the
 
 ## Claude Code (`editors/claude-code/`)
 
-The launcher contract was verified headlessly: `node bin/launch.mjs --stdio` performs a correct
-LSP `initialize` handshake (returns `serverInfo.name = "hoverfly-lsp"`), via both the
-repo-relative dev bundle and the `HOVERFLY_LSP_PATH` override (file and directory). The two items
-below need a real Claude Code install / a second `.json` plugin and could not be exercised here.
+The launcher's resolution is proved by the repository suite
+(`specs/repository/editors/claude-code-launcher.test.ts`): the `HOVERFLY_LSP_PATH` override (file
+and directory) and the repo-relative dev bundle each reach the server, and with none reachable it
+exits 1 naming where it looked. The `initialize` handshake is the server's own session spec, run
+against the packed bin. The items below need a real Claude Code install / a second `.json` plugin.
 
 **Setup:** `npm run build` at repo root; register the local marketplace
 (`claude plugin marketplace add /ABS/PATH/.../editors/claude-code`),
@@ -193,17 +195,24 @@ below need a real Claude Code install / a second `.json` plugin and could not be
 
 ## Verified automatically (do not re-check)
 
-- Repo gates at root: `make check` (lint, test, mutation) green with the editor dirs in place.
-- VS Code: `npm run build --workspace=hoverfly-lsp-vscode` bundles `dist/extension.cjs` and copies
-  the server into `server/`; `vsce package` produces the `.vsix` (8 files, includes the bundled
-  server); the bundled `server/dist/cli.cjs` answers `initialize` with
-  `serverInfo.name = "hoverfly-lsp"`; `server-resolution.ts` unit tests pass.
-- Zed: `extension.toml`, `Cargo.toml`, `config.toml` parse; `cargo check` compiles `src/lib.rs`
-  against `zed_extension_api 0.7.0` (native target).
-- IntelliJ: `template.json` + `initializationOptions.json` are valid JSON and match the live
-  LSP4IJ template schema.
-- Claude Code: `.lsp.json`, `plugin.json` valid JSON; `launch.mjs` drives a full `initialize`
-  handshake over stdio (dev bundle + `HOVERFLY_LSP_PATH` override).
-- Cross-track consistency: canonical filenames (`*.hoverfly.json`, `hoverfly-simulation.json`),
-  bin name (`hoverfly-lsp`), transport flag (`--stdio`), and the `hoverfly.registeredActions`
-  setting / `registeredActions` init option are consistent across all four tracks.
+Each line is run by `make check`, on every commit.
+
+- The repo gates: lint, test and mutation green with the editor dirs in place; the build bundles
+  the VS Code extension and copies the server into it.
+- Cross-track consistency (`specs/repository/editors/launchers.test.ts`, read from the files
+  themselves): the canonical names (`*.hoverfly.json`, `hoverfly-simulation.json`, `*.hfy`) in
+  VS Code, IntelliJ and Zed; the `hoverfly-lsp` bin in IntelliJ and Zed, and `--stdio` in them
+  and in Claude Code's launcher; the `hoverfly-simulation` languageId in VS Code, IntelliJ and Zed; the
+  `registeredActions` option in VS Code and IntelliJ.
+- Claude Code: `launch.mjs` resolves the server through `HOVERFLY_LSP_PATH` (file and
+  directory) and the repo-relative dev bundle, and refuses with exit 1 when none is reachable
+  (`specs/repository/editors/claude-code-launcher.test.ts`).
+- The packed server answers `initialize` with `serverInfo.name = "hoverfly-lsp"`
+  (`packages/server/specs/integration/session/lifecycle.spec.ts`).
+- The SchemaStore submission carries the published schema unchanged
+  (`specs/repository/schemas/schemastore-artifact.test.ts`).
+- VS Code: how the extension resolves the server (`editors/vscode/src/__tests__/server-resolution.test.ts`).
+
+Checked by hand before a release: `vsce package` produces the `.vsix`
+(`editors/vscode/.artifacts/vsce/*.vsix`), and `cargo check` compiles `editors/zed/src/lib.rs`
+against `zed_extension_api` on the native target.

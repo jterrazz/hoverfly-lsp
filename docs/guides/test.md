@@ -85,11 +85,11 @@ and the cited Go source files against the pinned baseline, and opens a single
 tracking issue when they move; it never updates anything itself.
 
 **Nothing mechanical proves an editor integration.** No suite drives a real VS
-Code, Zed, IntelliJ or Claude Code session. What has been verified without one
-(that every manifest parses, that the extension bundles and `vsce package`
-succeeds, that the Zed crate compiles, and that each launcher completes an
-`initialize` handshake) is listed under "Verified automatically" in
-[Manual QA](manual-qa.md), and of it only the vitest suites run on every
-commit. The behaviour above that line is checked by a human against the rest of
-that same checklist, which is why it is walked before a release
+Code, Zed, IntelliJ or Claude Code session. What a gate proves without one (that
+the launchers agree with each other, that the Claude Code launcher resolves its
+server, that the packed server completes an `initialize` handshake) is listed
+under "Verified automatically" in [Manual QA](manual-qa.md), beside what is
+checked by hand before a release (`vsce package`, `cargo check`). The editor
+behaviour itself is checked by a human against the rest of that same checklist,
+which is why it is walked before a release
 ([Release](release.md)).
