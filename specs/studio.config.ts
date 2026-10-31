@@ -7,7 +7,7 @@ export default defineConfig({
     typescript: {
         roots: {
             repository:
-                'the repository suite: the schema files no member owns alone, read as files',
+                'the repository suite: the files no member owns alone, the schemas and the editor launchers, read as files',
         },
     },
 });

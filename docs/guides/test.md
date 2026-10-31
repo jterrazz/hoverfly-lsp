@@ -31,6 +31,7 @@ runner `integration.specification.ts` at that facet root constructs.
 | `packages/analysis/specs/integration/semantic/`      | The D3 document gate: which files the semantic layer judges at all                                                                                       |
 | `packages/server/specs/integration/session/`         | A real LSP session against the packed `hoverfly-lsp` bin over stdio                                                                                      |
 | `specs/repository/schemas/`                          | The bundled schema, the SchemaStore artifact, its submission copy and the upstream baseline stay in step                                                 |
+| `specs/repository/editors/`                          | The launchers name the same files, bin, transport, languageId and setting                                                                                |
 | `editors/vscode/src/__tests__/`                      | How the extension resolves the server binary                                                                                                             |
 
 ## The reference corpus
