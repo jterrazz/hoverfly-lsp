@@ -37,14 +37,15 @@ runner `integration.specification.ts` at that facet root constructs.
 ## The reference corpus
 
 `testdata/` is **the** behavioural contract for the semantic pipeline. Its rules
-are owned by [testdata/README.md](../../testdata/README.md): the layout, the
-per-domain counts and the coverage matrix live there, not here. What matters to
-a change is the two-sided invariant it enforces:
+are owned by [testdata/README.md](../../testdata/README.md): the layout and the
+naming live there, not here. What matters to a change is the two-sided invariant
+it enforces:
 
 - a `valid/` fixture produces **zero** diagnostics through the full pipeline
   (parse, then schema, then template, then `HFxxx`);
-- an `invalid/` fixture triggers **exactly** its one intended code, with the
-  expected diagnostics frozen in a sibling `<case>.diagnostics.json`.
+- an `invalid/` fixture produces **exactly** the diagnostics frozen in its
+  sibling golden, `<case>.diagnostics.json`, and its name leads with the code
+  it is about.
 
 A `valid/` fixture that produces a diagnostic is either a fixture bug or a
 validator false positive. Fix the fixture or report the bug; never delete the

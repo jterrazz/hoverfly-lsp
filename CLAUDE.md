@@ -17,7 +17,8 @@ one stdio server, four thin editor launchers. This file **routes**; the manual i
   that hardcodes one has forked the truth.
 - **Codes are a published API.** Append-only: never reuse or repurpose an `HFxxx`.
 - **`testdata/` is the contract.** A `valid/` fixture must produce zero
-  diagnostics; an `invalid/` fixture exactly its one code.
+  diagnostics; an `invalid/` fixture exactly the diagnostics of its sibling
+  golden, and its name leads with the code it is about.
 - **`docs/reference/` is generated.** It is projected from the built analysis library by
   `npm run docs:diagnostics`; editing it by hand is always wrong.
 
@@ -31,7 +32,7 @@ one stdio server, four thin editor launchers. This file **routes**; the manual i
 | Releasing to npm and the extension registries             | `docs/guides/release.md`                  |
 | The `HFxxx` catalog, helpers, faker types                 | `docs/reference/` (generated)             |
 | Why a behaviour is what it is                             | `research/10-architect-decisions.md`      |
-| Corpus conventions and per-domain counts                  | `testdata/README.md`                      |
+| Corpus conventions                                        | `testdata/README.md`                      |
 | Adding a rule family; hover content policy                | the READMEs beside the code they describe |
 
 ## Commands

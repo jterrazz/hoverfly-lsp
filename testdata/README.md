@@ -2,25 +2,30 @@
 
 This tree is **the** behavioural contract for the Hoverfly LSP's semantic pipeline
 (`packages/analysis/src/semantic/`). It is run by
-`packages/analysis/specs/integration/semantic/diagnostics-corpus.spec.ts`: every `invalid/` fixture
-must produce exactly the diagnostics its sibling `.diagnostics.json` holds, and every `valid/`
-fixture **zero** diagnostics end-to-end (parse, then schema, then template, then HFxxx).
+`packages/analysis/specs/integration/corpus/diagnostics.spec.ts`: every `invalid/` fixture must
+produce exactly the diagnostics its sibling `.diagnostics.json` holds, and every `valid/` fixture
+**zero** diagnostics end-to-end (parse, then schema, then template, then HFxxx).
 
 ## Layout & conventions
 
 ```
 testdata/
   valid/<domain>/<name>.hoverfly.json              # 0 diagnostics through the full pipeline
-  invalid/<domain>/<name>.hoverfly.json            # triggers exactly one HFxxx code (its point)
-  invalid/<domain>/<name>.diagnostics.json         # its diagnostics, whole
+  invalid/<domain>/<name>.hoverfly.json            # exactly the diagnostics of its golden
+  invalid/<domain>/<name>.diagnostics.json         # its golden: those diagnostics, whole
 ```
 
-- Fixture files are named `*.hoverfly.json`. The base name describes the fixture's single point
-  (e.g. `hf210-domatch-after-glob`, `jwt-on-authorization-header`).
-- `<domain>` groups by feature area (`matchers`, `templating`, `response`, `state`, `versions`,
-  `realworld`, `globalactions`, `meta`, `parse`) or by code family (`hf2xx`, `hf3xx` and so on).
+- Fixture files are named `*.hoverfly.json`. The base name describes the fixture's point (e.g.
+  `hf210-domatch-after-glob`, `jwt-on-authorization-header`). An `invalid/` fixture about an
+  `HFxxx` code leads its name with that code, and every leading `hfNNN` must be in its golden; the
+  one exception is `hf602-postserveaction-silent-without-settings`, which proves HF602 stays silent
+  without the setting.
+- `<domain>` groups by feature area (`matchers`, `matcher-syntax`, `templating`, `response`,
+  `state`, `structure`, `variables`, `versions`, `realworld`, `globalactions`, `meta`, `parse`) or
+  by code family (`hf1xx` to `hf6xx`).
 - Fixtures are realistic API-mocking scenarios: real-looking paths/payloads, small but complete.
-- An `invalid/` fixture must trigger **exactly** its intended code (no incidental extra diagnostics).
+- An `invalid/` fixture produces **exactly** the diagnostics of its golden: an incidental extra
+  diagnostic in a golden is a fixture with a second problem.
 - A `valid/` fixture producing any diagnostic is either a fixture bug or a validator false-positive:
   fix the fixture or report the bug; never delete the check.
 
@@ -39,39 +44,6 @@ TEST_UPDATE=1 npm test
 Always **review** each regenerated golden: it must contain only the codes the fixture is
 designed to trigger. An unexpected extra code means the fixture has a side problem (fix the
 fixture); a missing code means a validator gap (report it; do not paper over).
-
-## Counts (this revision)
-
-| | valid | invalid (= goldens) |
-|---|---|---|
-| **total** | **54** | **107** |
-
-Invalid per domain: globalactions 3, hf1xx 3, hf2xx 11, hf3xx 7, hf4xx 1, hf5xx 10, hf6xx 1,
-matchers 26, meta 5, parse 1, response 5, state 4, templating 30.
-
-Valid per domain: hf2xx 2, hf4xx 1, hf5xx 3, matchers 17, realworld 4, response 7, state 4,
-templating 11, versions 3, root 2.
-
-## Coverage matrix (computed, this revision)
-
-**HF codes: count of invalid fixtures triggering each** (target ≥2; HF1xx ≥1;
-HF602 and the HF101/HF102 families are settings-gated and exempt):
-
-```
-HF103=3  HF104=3  HF201=3  HF202=3  HF203=9  HF204=3  HF205=2  HF206=3  HF207=3
-HF208=2  HF209=2  HF210=3  HF211=3  HF301=2  HF302=2  HF303=2  HF304=2  HF305=2
-HF306=2  HF307=2  HF401=3  HF402=2  HF403=2  HF501=3  HF502=5  HF503=4  HF504=5
-HF505=3  HF506=3  HF507=3  HF508=8  HF509=3  HF510=3  HF601=3
-exempt: HF101 HF102 HF602
-```
-
-All non-exempt codes meet their target.
-
-- **Matchers**: all 14 registry matchers (`array exact form glob json jsonpartial jsonpath
-  jwt jwtjsonpath negate regex xml xmltemplated xpath`) appear in ≥1 valid fixture.
-- **Helpers**: all 52 Hoverfly helpers + 8 raymond built-ins are used validly in the valid corpus (60/60).
-- **Response fields**: all 11 (`status body bodyFile encodedBody headers templated fixedDelay
-  logNormalDelay postServeAction removesState transitionsState`) appear in valid fixtures.
 
 ## Ground-truth verification
 
