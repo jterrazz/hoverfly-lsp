@@ -93,7 +93,8 @@ paths (`src/schemas/json/`, `src/api/json/catalog.json`, `src/test/hoverfly-simu
 `src/negative_test/hoverfly-simulation/`).
 
 > The bundle's `schema/hoverfly-simulation.json` is a copy of this directory's
-> `hoverfly-simulation.json` and must be re-copied if the source schema changes.
+> `hoverfly-simulation.json`; `specs/repository/schemas/schemastore-artifact.test.ts` refuses a
+> copy that has drifted from it, so a schema change re-copies it in the same commit.
 >
 > Per architect decision D7, after SchemaStore lists the schema, document the `$schema`
 > self-declaration as the primary distribution path for non-LSP users.

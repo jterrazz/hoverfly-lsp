@@ -15,8 +15,9 @@ Fork SchemaStore, copy these files into the documented paths, run their checks, 
 | `negative_test/*.json` (3 files)           | `src/negative_test/hoverfly-simulation/`                            |
 
 > **The schema is generated from the repo.** `schema/hoverfly-simulation.json` is a verbatim copy
-> of `schemas/hoverfly-simulation.json`. If the source schema changes, re-copy it before
-> submitting (`cp schemas/hoverfly-simulation.json schemas/schemastore-submission/schema/`).
+> of `schemas/hoverfly-simulation.json`, and the repository suite refuses a copy that has drifted
+> from it, so a schema change re-copies it in the same commit
+> (`cp schemas/hoverfly-simulation.json schemas/schemastore-submission/schema/`).
 
 ## Confirmed SchemaStore layout (verified 2026-06)
 

@@ -69,4 +69,14 @@ describe('schemastore-artifact', () => {
             withDeltas(bundled),
         );
     });
+
+    test('ships unchanged in the SchemaStore submission bundle', () => {
+        // Given - the copy the submission bundle hands to SchemaStore
+        const submitted = read(
+            '../../../schemas/schemastore-submission/schema/hoverfly-simulation.json',
+        );
+
+        // Then - the published artefact, whole
+        expect(submitted).toStrictEqual(read('../../../schemas/hoverfly-simulation.json'));
+    });
 });

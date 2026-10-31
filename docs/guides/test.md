@@ -24,14 +24,14 @@ integration spec: it lives under a member's `specs/integration/<domain>/` as
 `<aspect>.spec.ts`, and runs its subject through the `integration.call()` of the
 runner `integration.specification.ts` at that facet root constructs.
 
-| Suite                                                | Proves                                                                                              |
-| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `packages/analysis/specs/integration/corpus/`        | The full pipeline against every `testdata/` fixture: diagnostics, completion and hover, as goldens  |
-| `packages/analysis/specs/integration/contributions/` | Hover and completion through the cursor-marker harness, including the per-context coverage matrices |
-| `packages/analysis/specs/integration/semantic/`      | The D3 document gate: which files the semantic layer judges at all                                  |
-| `packages/server/specs/integration/session/`         | A real LSP session against the packed `hoverfly-lsp` bin over stdio                                 |
-| `specs/repository/schemas/`                          | The bundled schema, the SchemaStore artifact and the upstream baseline stay in step                 |
-| `editors/vscode/src/__tests__/`                      | How the extension resolves the server binary                                                        |
+| Suite                                                | Proves                                                                                                   |
+| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `packages/analysis/specs/integration/corpus/`        | The full pipeline against every `testdata/` fixture: diagnostics, completion and hover, as goldens       |
+| `packages/analysis/specs/integration/contributions/` | Hover and completion through the cursor-marker harness, including the per-context coverage matrices      |
+| `packages/analysis/specs/integration/semantic/`      | The D3 document gate: which files the semantic layer judges at all                                       |
+| `packages/server/specs/integration/session/`         | A real LSP session against the packed `hoverfly-lsp` bin over stdio                                      |
+| `specs/repository/schemas/`                          | The bundled schema, the SchemaStore artifact, its submission copy and the upstream baseline stay in step |
+| `editors/vscode/src/__tests__/`                      | How the extension resolves the server binary                                                             |
 
 ## The reference corpus
 
