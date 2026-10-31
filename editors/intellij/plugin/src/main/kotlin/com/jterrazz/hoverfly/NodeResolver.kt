@@ -46,16 +46,25 @@ object NodeResolver {
         System.getenv("APPDATA")?.let { yield("$it\\npm\\node.exe") }
     }
 
-    /** Newest by descending name, which is lexicographic: `v9` sorts above `v20`. */
     private fun globNewest(versionsDir: File, relative: String): Sequence<String> = sequence {
         if (!versionsDir.isDirectory) return@sequence
         val children = versionsDir.listFiles { f -> f.isDirectory } ?: return@sequence
-        val sorted = children.sortedByDescending { it.name.removePrefix("v") }
+        val sorted = children.sortedWith { a, b -> compareVersions(b.name, a.name) }
         val suffix = relative.substringAfter("*/")
         for (versionDir in sorted) {
             val bin = File(versionDir, suffix)
             if (bin.isFile) yield(bin.absolutePath)
         }
+    }
+
+    private fun compareVersions(a: String, b: String): Int {
+        val left = a.removePrefix("v").split('.').map { it.toIntOrNull() ?: -1 }
+        val right = b.removePrefix("v").split('.').map { it.toIntOrNull() ?: -1 }
+        for (i in 0 until maxOf(left.size, right.size)) {
+            val diff = left.getOrElse(i) { 0 }.compareTo(right.getOrElse(i) { 0 })
+            if (diff != 0) return diff
+        }
+        return 0
     }
 
     private fun whichNode(): String? {
