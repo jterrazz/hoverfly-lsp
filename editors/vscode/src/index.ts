@@ -46,9 +46,6 @@ export async function activate(context: ExtensionContext): Promise<void> {
             // server's content fingerprint keeps it from claiming plain .json files.
             { language: 'json', pattern: '**/*.hoverfly.json' },
         ],
-        synchronize: {
-            fileEvents: workspace.createFileSystemWatcher('**/*.hoverfly.json'),
-        },
         initializationOptions: {
             registeredActions: config.get<string[]>('registeredActions') ?? [],
         },
