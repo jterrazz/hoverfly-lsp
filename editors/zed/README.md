@@ -221,8 +221,8 @@ A ready-to-submit bundle lives in [`registry-submission/`](registry-submission/)
 - [`registry-submission/extensions-toml-entry.toml`](registry-submission/extensions-toml-entry.toml)
   the exact block to add to `zed-industries/extensions`' `extensions.toml`.
 
-Submit the `v0.1.0` tag; Zed's CI builds the WASM from source (Rust 1.90,
-`wasm32-wasip2`).
+The submission pins commit `1eb23130` (extension version `0.1.0`); Zed's CI
+builds the WASM from source (Rust 1.90, `wasm32-wasip2`).
 
 ## Layout
 

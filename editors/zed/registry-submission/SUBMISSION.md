@@ -9,14 +9,15 @@ Zed's CI compiles the WebAssembly from source; you do **not** ship a binary.
 
 ## TL;DR: what gets submitted
 
-| Field                                 | Value                                                 |
-| ------------------------------------- | ----------------------------------------------------- |
-| Extension `id` / registry key         | `hoverfly`                                            |
-| Source repo                           | `https://github.com/jterrazz/hoverfly-lsp`            |
-| Submodule path in registry            | `extensions/hoverfly`                                 |
-| Subdir within submodule (`path`)      | `editors/zed`                                         |
-| Pinned commit / tag                   | `v0.1.0` (`054274f7f822bc4c31ab1fedf594a57b5d744e10`) |
-| `version` (must match extension.toml) | `0.1.0`                                               |
+| Field                                 | Value                                                                                    |
+| ------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Extension `id` / registry key         | `hoverfly`                                                                               |
+| Source repo                           | `https://github.com/jterrazz/hoverfly-lsp`                                               |
+| Submodule path in registry            | `extensions/hoverfly`                                                                    |
+| Subdir within submodule (`path`)      | `editors/zed`                                                                            |
+| Pinned commit                         | `1eb231305525aeddb85b7091a7813ffb0c68188e`                                               |
+| Registry pull request                 | [zed-industries/extensions#6477](https://github.com/zed-industries/extensions/pull/6477) |
+| `version` (must match extension.toml) | `0.1.0`                                                                                  |
 
 The `extensions.toml` block to add is in
 [`extensions-toml-entry.toml`](./extensions-toml-entry.toml).
@@ -44,7 +45,7 @@ The `extensions.toml` block to add is in
 
 - **`version` must match `extension.toml`** at the pinned submodule commit. Docs:
   "Make sure the `version` matches the one set in `extension.toml` at the
-  particular commit." Ours is `0.1.0` in `editors/zed/extension.toml` at `v0.1.0`.
+  particular commit." Ours is `0.1.0` in `editors/zed/extension.toml` at `1eb23130`.
 - **Zed CI builds the WASM from source.** The registry CI
   (`.github/workflows/ci.yml`) installs Rust **1.90** with target
   **`wasm32-wasip2`** and runs `pnpm package-extensions` (via the
@@ -85,13 +86,14 @@ git remote add upstream https://github.com/zed-industries/extensions.git
 
 ### 2. Add the Hoverfly repo as a submodule
 
-The submodule must be pinned to the `v0.1.0` commit (its `editors/zed` is
-current, nothing changed there after the tag).
+The submodule is pinned to `1eb23130`, a commit after the `v0.1.0` tag that
+adds the `LICENSE` Zed's registry requires at the extension path; the extension
+version there is still `0.1.0`.
 
 ```bash
 git submodule add https://github.com/jterrazz/hoverfly-lsp.git extensions/hoverfly
 cd extensions/hoverfly
-git checkout 054274f7f822bc4c31ab1fedf594a57b5d744e10   # tag v0.1.0
+git checkout 1eb231305525aeddb85b7091a7813ffb0c68188e   # v0.1.0 plus the extension LICENSE
 cd ../..
 git add extensions/hoverfly .gitmodules
 ```
