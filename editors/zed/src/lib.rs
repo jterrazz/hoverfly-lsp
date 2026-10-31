@@ -2,7 +2,8 @@
 //!
 //! Zed's wasm sandbox reaches only the extension work dir, never the installed
 //! dir, so the server cannot ship as an extension asset: it is npm-installed
-//! into the work dir instead.
+//! into the work dir instead. A project's own files are outside the sandbox
+//! too, so its local install is probed through the worktree API, not `std::fs`.
 
 use std::env;
 use std::fs;
@@ -12,7 +13,8 @@ use zed_extension_api::{self as zed, LanguageServerId, Result};
 
 const PACKAGE_NAME: &str = "@jterrazz/hoverfly-lsp";
 const BINARY_NAME: &str = "hoverfly-lsp";
-/// Must match the `bin` field of the package's package.json.
+/// Must match the `bin` field of the package's package.json. Relative to both
+/// the extension work dir and a project root.
 const SERVER_SCRIPT_PATH: &str = "node_modules/@jterrazz/hoverfly-lsp/bin/hoverfly-lsp.js";
 
 struct HoverflyExtension {
@@ -22,16 +24,14 @@ struct HoverflyExtension {
 impl HoverflyExtension {
     /// `worktree.which` consults only `$PATH`, so a project-local install is
     /// looked up here.
-    fn worktree_local_binary(worktree: &zed::Worktree) -> Option<String> {
-        let candidate = Path::new(&worktree.root_path())
-            .join("node_modules")
-            .join(".bin")
-            .join(BINARY_NAME);
-        if fs::metadata(&candidate).is_ok_and(|stat| stat.is_file()) {
-            Some(candidate.to_string_lossy().into_owned())
-        } else {
-            None
-        }
+    fn worktree_local_script(worktree: &zed::Worktree) -> Option<String> {
+        worktree.read_text_file(SERVER_SCRIPT_PATH).ok()?;
+        Some(
+            Path::new(&worktree.root_path())
+                .join(SERVER_SCRIPT_PATH)
+                .to_string_lossy()
+                .into_owned(),
+        )
     }
 
     fn ensure_managed_script(&mut self, language_server_id: &LanguageServerId) -> Result<String> {
@@ -102,10 +102,10 @@ impl zed::Extension for HoverflyExtension {
         language_server_id: &LanguageServerId,
         worktree: &zed::Worktree,
     ) -> Result<zed::Command> {
-        if let Some(local) = Self::worktree_local_binary(worktree) {
+        if let Some(script) = Self::worktree_local_script(worktree) {
             return Ok(zed::Command {
-                command: local,
-                args: vec!["--stdio".into()],
+                command: zed::node_binary_path()?,
+                args: vec![script, "--stdio".into()],
                 env: Default::default(),
             });
         }

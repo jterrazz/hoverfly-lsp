@@ -78,7 +78,11 @@ describe('launchers', () => {
             claudeCode: [`\${CLAUDE_PLUGIN_ROOT}/bin/launch.mjs`, '--stdio'],
             intellij: { default: 'hoverfly-lsp --stdio', windows: 'cmd /C hoverfly-lsp --stdio' },
             zed: {
-                args: [['"--stdio".into()'], ['"--stdio".into()'], ['script', '"--stdio".into()']],
+                args: [
+                    ['script', '"--stdio".into()'],
+                    ['"--stdio".into()'],
+                    ['script', '"--stdio".into()'],
+                ],
                 binary: ['hoverfly-lsp'],
             },
         });

@@ -13,8 +13,9 @@ this Rust/WASM extension is a thin launcher that locates and starts that binary.
 
 `language_server_command` tries, in order:
 
-1. **Project-local**: `<worktree>/node_modules/.bin/hoverfly-lsp` (if you ran
-   `npm install @jterrazz/hoverfly-lsp` in your project).
+1. **Project-local**: `<worktree>/node_modules/@jterrazz/hoverfly-lsp/bin/hoverfly-lsp.js`
+   (if you ran `npm install @jterrazz/hoverfly-lsp` in your project), probed through
+   the worktree API and launched with Zed's managed Node.
 2. **Global `$PATH`**: e.g. after `npm install -g @jterrazz/hoverfly-lsp`.
 3. **Zed-managed**: Zed runs `npm install @jterrazz/hoverfly-lsp` into the extension's
    storage and launches `node node_modules/@jterrazz/hoverfly-lsp/bin/hoverfly-lsp.js`.
@@ -207,7 +208,7 @@ is enabled, the **Hoverfly LSP** server is running, and check `~/.local/share/ze
       and confirm a diagnostic appears.
 - [ ] Open an unrelated JSON file (e.g. `package.json`) and confirm it is NOT
       detected as Hoverfly and shows no Hoverfly diagnostics.
-- [ ] With a project-local `node_modules/.bin/hoverfly-lsp`, confirm it is used in
+- [ ] With a project-local `npm install @jterrazz/hoverfly-lsp`, confirm it is used in
       preference to a global install.
 
 ## Publishing to the Zed registry

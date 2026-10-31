@@ -91,7 +91,7 @@ work until it is published.
 - [ ] The **Hoverfly LSP** server starts (visible in the language-server logs).
 - [ ] Introduce an error (e.g. bad `meta.schemaVersion`): a diagnostic appears.
 - [ ] Open an unrelated `.json` (e.g. `package.json`): NOT detected as Hoverfly, no diagnostics.
-- [ ] With a project-local `node_modules/.bin/hoverfly-lsp`, confirm it is preferred over a global
+- [ ] With a project-local `npm install @jterrazz/hoverfly-lsp`, confirm it is preferred over a global
       install (resolution step 1 over step 2).
 - [ ] **Published path (future):** once `hoverfly-lsp` is on npm, Zed's managed npm install
       (resolution step 3) installs and launches the server with no manual `$PATH` setup.
