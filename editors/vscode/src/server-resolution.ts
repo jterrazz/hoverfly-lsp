@@ -1,11 +1,10 @@
 import { join } from 'node:path';
 
-// invariant: the server is always launched as `node <module> --stdio`, so a bundled .cjs, an npm
-// bin shim and a launcher all run without an executable bit.
+// invariant: the server is always launched as `node <module> --stdio`, so a bundled .cjs and a
+// configured entry run without an executable bit.
 
 type ResolvedServer = {
     readonly module: string;
-    readonly source: 'bundled' | 'configuredPath' | 'workspaceBin';
 };
 
 type ResolveServerInput = {
@@ -28,17 +27,26 @@ function normalizeConfigured(value: string | undefined): string | undefined {
 function resolveServer(input: ResolveServerInput): ResolvedServer {
     const configured = normalizeConfigured(input.configuredPath);
     if (configured !== undefined) {
-        return { module: configured, source: 'configuredPath' };
+        return { module: configured };
     }
 
     if (input.workspaceRoot !== undefined) {
-        const workspaceBin = join(input.workspaceRoot, 'node_modules', '.bin', 'hoverfly-lsp');
-        if (input.exists(workspaceBin)) {
-            return { module: workspaceBin, source: 'workspaceBin' };
+        // hazard: the package's bundle, never node_modules/.bin/hoverfly-lsp, which is a symlink to
+        // the ESM launcher on POSIX and a .cmd shim on Windows, neither of which forks as a module.
+        const workspaceBundle = join(
+            input.workspaceRoot,
+            'node_modules',
+            '@jterrazz',
+            'hoverfly-lsp',
+            'dist',
+            'cli.cjs',
+        );
+        if (input.exists(workspaceBundle)) {
+            return { module: workspaceBundle };
         }
     }
 
-    return { module: input.bundledModule, source: 'bundled' };
+    return { module: input.bundledModule };
 }
 
 export { resolveServer };

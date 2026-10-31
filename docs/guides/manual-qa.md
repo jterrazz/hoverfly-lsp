@@ -36,10 +36,10 @@ The end-to-end editor behaviour cannot run headlessly (no extension host in CI).
       color the standard token types. A plain `.json` shows no template coloring.
 - [ ] Open an unrelated `.json` (e.g. `package.json`): **no** Hoverfly diagnostics, normal JSON mode.
 - [ ] Set `"hoverfly.trace.server": "verbose"`: the **Hoverfly LSP** output channel shows the handshake.
-- [ ] `hoverfly.server.path` override: point it at a built `packages/server/bin/hoverfly-lsp.js`
+- [ ] `hoverfly.server.path` override: point it at a built `packages/server/dist/cli.cjs`
       and confirm the server still starts (resolution priority 1).
 - [ ] Workspace install path: `npm install @jterrazz/hoverfly-lsp` in the workspace (once published)
-      and confirm `<workspace>/node_modules/.bin/hoverfly-lsp` is preferred over the bundled server.
+      and confirm `<workspace>/node_modules/@jterrazz/hoverfly-lsp/dist/cli.cjs` is preferred over the bundled server.
 - [ ] **Marketplace publish (future):** `code --install-extension Terrazzoni.hoverfly-lsp-vscode`
       installs the published extension.
 - [ ] **Open VSX publish (REQUIRED, not optional):** `ovsx publish` the `.vsix` to

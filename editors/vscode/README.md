@@ -59,9 +59,9 @@ The extension launches `hoverfly-lsp` over stdio. It picks the server in this or
 
 1. **`hoverfly.server.path`** setting: an explicit absolute path to a server entry (run with
    Node). Highest priority.
-2. **Workspace install**: `<workspaceRoot>/node_modules/.bin/hoverfly-lsp`, if present (lets a
-   project pin its own server version).
-3. **Bundled server**: the copy shipped inside the extension (`server/bin/hoverfly-lsp.js`). This
+2. **Workspace install**: `<workspaceRoot>/node_modules/@jterrazz/hoverfly-lsp/dist/cli.cjs`, if
+   present (lets a project pin its own server version).
+3. **Bundled server**: the copy shipped inside the extension (`server/dist/cli.cjs`). This
    is the zero-install default and always works.
 
 ## Settings
@@ -142,5 +142,5 @@ VS Code window:
    channel for the LSP handshake.
 
 To verify the `hoverfly.server.path` override or the workspace-`node_modules` path, point the
-setting at a built `packages/server/bin/hoverfly-lsp.js` (or `npm install @jterrazz/hoverfly-lsp`
+setting at a built `packages/server/dist/cli.cjs` (or `npm install @jterrazz/hoverfly-lsp`
 once it is published) and confirm the server still starts.
