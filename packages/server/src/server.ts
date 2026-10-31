@@ -28,6 +28,7 @@ import {
     clientSupportsPullDiagnostics,
     clientSupportsSemanticTokens,
 } from './capabilities.js';
+import { VERSION } from './version.js';
 
 const PUSH_DEBOUNCE_MS = 200;
 
@@ -124,7 +125,7 @@ class HoverflyServer {
         this.hasInitialized = true;
         return {
             capabilities: buildServerCapabilities(params.capabilities),
-            serverInfo: { name: 'hoverfly-lsp' },
+            serverInfo: { name: 'hoverfly-lsp', version: VERSION },
         };
     }
 

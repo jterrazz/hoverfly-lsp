@@ -88,12 +88,13 @@ describe('lifecycle', () => {
 
     test('advertises completion with its triggers, hover and single-file pull diagnostics', async () => {
         // Given - an initialize that advertises no client capability
+        const version = manifestVersion();
         const result = await integration.call(async () => {
             await using lsp = await initialized({});
             return lsp.answer;
         });
 
-        // Then - the capabilities, with no semantic-tokens provider for a client that cannot read one
+        // Then - the capabilities, with no semantic-tokens provider for a client that cannot read one, and the manifest's version
         expect(result.value).toMatch({
             capabilities: {
                 textDocumentSync: {
@@ -113,6 +114,7 @@ describe('lifecycle', () => {
             },
             serverInfo: {
                 name: 'hoverfly-lsp',
+                version,
             },
         });
     });
