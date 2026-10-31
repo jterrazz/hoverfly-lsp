@@ -1,12 +1,13 @@
-# Hoverfly JSON contributions: hover and completion
+# Hover and completion
 
-This directory layers Hoverfly-specific IntelliSense on top of `vscode-json-languageservice` via
-a single [`JSONWorkerContribution`](./hoverfly-contribution.ts). The schema engine handles
+`packages/analysis/src/contributions/` layers Hoverfly-specific IntelliSense on top of
+`vscode-json-languageservice` via a single `JSONWorkerContribution`
+(`packages/analysis/src/contributions/hoverfly-contribution.ts`). The schema engine handles
 structure; this contribution supplies the context-sensitive hover and completion the bundled
 schema cannot express (matcher names, cross-referenced state keys, settings-gated actions, and
-templated-string IntelliSense driven from [`../service.ts`](../service.ts)).
+templated-string IntelliSense driven from `packages/analysis/src/service.ts`).
 
-All matcher facts come from the registry. The markdown renderers live in [`docs.ts`](./docs.ts)
+All matcher facts come from the registry. The markdown renderers live in `contributions/docs.ts`
 and are SHARED between hover bodies and completion-item `documentation`, so the two never drift.
 
 ## Hover content policy
@@ -47,7 +48,7 @@ Cursor conditions mirror how real editors (VS Code / Zed) invoke completion:
 A fourth editor dimension, **with vs without a trigger character**, does **not** change behaviour.
 `doComplete` keys completions off the AST position, not off a `CompletionContext.triggerCharacter`;
 a trigger character only _invokes_ completion, after which the same position logic runs. The server
-advertises `"`, `{`, `.`, `#`, `@`, `'`, `(` as trigger characters (`capabilities.ts`), exactly the
+advertises `"`, `{`, `.`, `#`, `@`, `'`, `(` as trigger characters (`packages/server/src/capabilities.ts`), exactly the
 set that reaches these positions, so trigger-vs-manual is behaviourally identical.
 
 | Context                                                                                            | (a) empty `""` | (b) mid-word | (c) bare `{`/`[` | Source hook                  |
@@ -80,18 +81,15 @@ the cross-reference union, they are just not _offered_ inside the removesState a
 ⁴ Template completion is driven by the cursor offset in `service.ts` (the contribution API has no
 offset), so its conditions are the mid-mustache states, not JSON quote/brace positions.
 
-### State-key cross-reference (the originally-reported bug)
+### State-key cross-reference
 
 State keys are ONE namespace shared across the three places a pair touches state:
 `requiresState` (consumer), `transitionsState` (producer), and `removesState` (eraser). The
-cross-reference union now feeds from **all three** (see `collectStateKeys` in
-[`hoverfly-contribution.ts`](./hoverfly-contribution.ts)).
+cross-reference union feeds from **all three** (`collectStateKeys` in
+`packages/analysis/src/contributions/value-completions.ts`), so a key one pair's
+`transitionsState` sets (the common "log in here, require auth there" flow) is offered when the
+user types it into another pair's `requiresState`.
 
-The bug: the union previously scanned `requiresState` entries only. A key set by a producer's
-`transitionsState` (the overwhelmingly common "log in here, require auth there" flow) was invisible
-when the user started typing it into another pair's `requiresState`, so they got **no completion**.
-Including `transitionsState` and `removesState` keys in the union fixes it.
-
-Tests: [`../../specs/integration/contributions/coverage-matrix.spec.ts`](../../specs/integration/contributions/coverage-matrix.spec.ts)
+Tests: `packages/analysis/specs/integration/contributions/coverage-matrix.spec.ts`
 (per-context matrix), plus a real-server round-trip in
 `packages/server/specs/integration/session/features.spec.ts`.

@@ -24,16 +24,16 @@ one stdio server, four thin editor launchers. This file **routes**; the manual i
 
 ## Where knowledge lives (route here first)
 
-| Working on                                                | Read                                      |
-| --------------------------------------------------------- | ----------------------------------------- |
-| Layers, the analysis library's directories, the launchers | `docs/concepts/architecture.md`           |
-| The toolchain, and which file a change opens              | `docs/guides/develop.md`                  |
-| The suites, the corpus, regenerating goldens              | `docs/guides/test.md`                     |
-| Releasing to npm and the extension registries             | `docs/guides/release.md`                  |
-| The `HFxxx` catalog, helpers, faker types                 | `docs/reference/` (generated)             |
-| Why a behaviour is what it is                             | `research/10-architect-decisions.md`      |
-| Corpus conventions                                        | `testdata/README.md`                      |
-| Adding a rule family; hover content policy                | the READMEs beside the code they describe |
+| Working on                                                | Read                                    |
+| --------------------------------------------------------- | --------------------------------------- |
+| Layers, the analysis library's directories, the launchers | `docs/concepts/architecture.md`         |
+| The toolchain, which file a change opens, adding a rule   | `docs/guides/develop.md`                |
+| The suites, the corpus, regenerating goldens              | `docs/guides/test.md`                   |
+| Releasing to npm and the extension registries             | `docs/guides/release.md`                |
+| The `HFxxx` catalog, helpers, faker types                 | `docs/reference/` (generated)           |
+| Why a behaviour is what it is                             | `research/10-architect-decisions.md`    |
+| Corpus conventions                                        | `testdata/README.md`                    |
+| Hover and completion content policy, coverage matrix      | `docs/concepts/hover-and-completion.md` |
 
 ## Commands
 

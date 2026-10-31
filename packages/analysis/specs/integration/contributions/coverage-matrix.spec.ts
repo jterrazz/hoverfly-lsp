@@ -6,7 +6,7 @@ import { integration } from '../integration.specification.js';
 // invariant: every completion context is met under the three cursor conditions a real editor produces:
 // (a) empty quotes `"⟦⟧"`, (b) mid-word `"au⟦⟧"`, (c) a bare position after `{` or `[`. A trigger
 // character only invokes completion: the service keys the list off the AST position, so a run with
-// and without one is the same run. The truth table is packages/analysis/src/contributions/README.md's.
+// and without one is the same run. The truth table is docs/concepts/hover-and-completion.md's.
 
 function matcherDoc(field: string, inner: string): string {
     return `{"data":{"pairs":[{"request":{"${field}":[{"matcher":${inner}}]},"response":{"status":200}}]},"meta":{"schemaVersion":"v5.3"}}`;

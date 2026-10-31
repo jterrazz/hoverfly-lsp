@@ -33,16 +33,16 @@ main` in each member it touched gives the verdict CI will give.
 
 ## Which file a change opens
 
-| To change                          | Open                                                                               |
-| ---------------------------------- | ---------------------------------------------------------------------------------- |
-| A diagnostic's severity or message | `packages/analysis/src/semantic/catalog.data.ts`, the only place either is written |
-| The behaviour behind a code        | the matching rule family in `packages/analysis/src/semantic/rules/`                |
-| A matcher, helper or faker fact    | `packages/analysis/src/registry/`; never inline the fact in a rule                 |
-| Hover or completion content        | `packages/analysis/src/contributions/` (its README carries the content policy)     |
-| Template parsing or analysis       | `packages/analysis/src/template/`                                                  |
-| What the server advertises         | `packages/server/src/capabilities.ts`                                              |
-| How an editor finds the server     | the launcher under `editors/<editor>/`                                             |
-| The bundled schema                 | `packages/analysis/src/schema/` and `schemas/` together, at a re-pinned commit     |
+| To change                          | Open                                                                                                              |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| A diagnostic's severity or message | `packages/analysis/src/semantic/catalog.data.ts`, the only place either is written                                |
+| The behaviour behind a code        | the matching rule family in `packages/analysis/src/semantic/rules/`                                               |
+| A matcher, helper or faker fact    | `packages/analysis/src/registry/`; never inline the fact in a rule                                                |
+| Hover or completion content        | `packages/analysis/src/contributions/`; the policy is [Hover and completion](../concepts/hover-and-completion.md) |
+| Template parsing or analysis       | `packages/analysis/src/template/`                                                                                 |
+| What the server advertises         | `packages/server/src/capabilities.ts`                                                                             |
+| How an editor finds the server     | the launcher under `editors/<editor>/`                                                                            |
+| The bundled schema                 | `packages/analysis/src/schema/` and `schemas/` together, at a re-pinned commit                                    |
 
 ## Adding a diagnostic
 
@@ -51,8 +51,13 @@ The five steps, in order. The last two are not optional, and CI enforces both:
 1. Register the code in `packages/analysis/src/semantic/catalog.data.ts` with its
    severity and message template; its href is derived from the code.
 2. Emit it from a rule under `packages/analysis/src/semantic/rules/`, through
-   `makeDiagnostic()` only, ranged at the smallest node the user must change.
-   The full recipe is `packages/analysis/src/semantic/README.md`.
+   `makeDiagnostic(ctx.textDocument, code, node, args)` only, ranged at the
+   smallest node the user must change: pass the model's node directly. A rule
+   reads everything from `ctx.model`, the typed AST-anchored view of
+   `semantic/rule.ts`, and its facts from `registry/`; it never re-walks the raw
+   AST, and its `run` never throws. A new family is a file exporting
+   `HFNXX_RULES: readonly SemanticRule[]`, spread into `ALL_RULES` in
+   `rules/families.ts`.
 3. Add at least one `invalid/` fixture (and ideally a `valid/` counterpart) to
    `testdata/`, then regenerate its golden (see [Test](test.md)).
 4. Add the rule's rows to its family's table under
@@ -60,6 +65,10 @@ The five steps, in order. The last two are not optional, and CI enforces both:
 5. Add the code's trigger/range prose to `DIAGNOSTIC_PROSE` in
    `scripts/diagnostic-prose.mjs` and regenerate the reference; the
    generator aborts loudly on a code with no prose entry.
+
+A rule writes only `run`: the engine (`semantic/engine.ts`) runs every rule,
+re-tags schema diagnostics as HF102, drops the schema noise that overlaps an
+HF2xx node, and sorts the result by range.
 
 Diagnostic codes are **append-only**: never reuse or repurpose one. A code's
 meaning is a published contract ([Architecture](../concepts/architecture.md)).

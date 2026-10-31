@@ -46,10 +46,10 @@ into `createHoverflyLanguageService()`.
 | `contributions/`   | Hover and completion, layered onto `vscode-json-languageservice` as a `JSONWorkerContribution`     |
 | `semantic-tokens/` | The frozen token legend and the pure producer that emits template-aware tokens                     |
 
-Two of those directories carry their own close-up notes, kept beside the code
-they describe: `packages/analysis/src/semantic/README.md` (how to add a rule family)
-and `packages/analysis/src/contributions/README.md` (the hover content policy and
-the completion coverage matrix).
+Two of those directories have a close-up elsewhere in this manual: adding a rule
+family to `semantic/` is [Develop](../guides/develop.md#adding-a-diagnostic), and
+the content policy and completion coverage matrix of `contributions/` are
+[Hover and completion](hover-and-completion.md).
 
 ### The catalog is the single source of truth
 
