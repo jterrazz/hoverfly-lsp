@@ -36,15 +36,15 @@ The library is a pipeline over one text document. Each stage is a directory
 under `packages/analysis/src/`, and `service.ts` is the facade that composes them
 into `createHoverflyLanguageService()`.
 
-| Directory          | Owns                                                                                             |
-| ------------------ | ------------------------------------------------------------------------------------------------ |
-| `fingerprint.ts`   | Whether a `.json` file is a Hoverfly simulation at all, by filename set plus content fingerprint |
-| `schema/`          | The bundled enhanced JSON Schema, generated into a TS module, plus the upstream provenance pin   |
-| `registry/`        | The matcher table, the templating helpers, the faker types, HTTP and structure facts             |
-| `template/`        | A Handlebars-subset parser, analyzer, AST and string source map for `{{ ... }}` inside bodies    |
-| `semantic/`        | The frozen `HFxxx` catalog, the rule engine, and one rule file per code family                   |
-| `contributions/`   | Hover and completion, layered onto `vscode-json-languageservice` as a `JSONWorkerContribution`   |
-| `semantic-tokens/` | The frozen token legend and the pure producer that emits template-aware tokens                   |
+| Directory          | Owns                                                                                               |
+| ------------------ | -------------------------------------------------------------------------------------------------- |
+| `fingerprint.ts`   | Whether a `.json` file is a Hoverfly simulation at all, by filename set plus content fingerprint   |
+| `schema/`          | The bundled enhanced JSON Schema, a JSON file `bundled-schema.ts` imports, plus the provenance pin |
+| `registry/`        | The matcher table, the templating helpers, the faker types, HTTP and structure facts               |
+| `template/`        | A Handlebars-subset parser, analyzer, AST and string source map for `{{ ... }}` inside bodies      |
+| `semantic/`        | The frozen `HFxxx` catalog, the rule engine, and one rule file per code family                     |
+| `contributions/`   | Hover and completion, layered onto `vscode-json-languageservice` as a `JSONWorkerContribution`     |
+| `semantic-tokens/` | The frozen token legend and the pure producer that emits template-aware tokens                     |
 
 Two of those directories carry their own close-up notes, kept beside the code
 they describe: `packages/analysis/src/semantic/README.md` (how to add a rule family)
