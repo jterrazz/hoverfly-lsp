@@ -6,14 +6,6 @@ import com.intellij.notification.NotificationType
 import com.redhat.devtools.lsp4ij.server.OSProcessStreamConnectionProvider
 import java.io.File
 
-/**
- * Launches the bundled Hoverfly LSP server via `node <cli.cjs> --stdio`.
- *
- * The server bundle (`cli.cjs`) is packaged inside the plugin jar under `server/`.
- * We extract it from the plugin classpath to a stable temp location and launch it
- * from there, which works regardless of the plugin install path and uses only
- * public IntelliJ Platform APIs.
- */
 class HoverflyServerConnectionProvider : OSProcessStreamConnectionProvider() {
 
     init {
@@ -48,10 +40,9 @@ class HoverflyServerConnectionProvider : OSProcessStreamConnectionProvider() {
     }
 
     /**
-     * Extracts the bundled `server/cli.cjs` resource to a stable temp file and returns it.
-     * The bundle is always packaged inside the plugin jar, so a classpath read is the most
-     * reliable resolver and avoids any internal plugin-path APIs. The file is re-extracted
-     * on every launch so an updated plugin always runs its own server version.
+     * Node cannot run a script inside the plugin jar, so the bundle is copied out on every
+     * launch, which keeps an updated plugin on its own server. Every running IDE and plugin
+     * version shares this one temp path.
      */
     private fun resolveServerScript(): File? {
         val stream = javaClass.classLoader.getResourceAsStream("server/cli.cjs") ?: return null
