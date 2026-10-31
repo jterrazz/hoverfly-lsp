@@ -85,8 +85,8 @@ npm install
 npm run build --workspace=hoverfly-lsp
 npm run build --workspace=hoverfly-lsp-vscode
 
-# Expect: editors/vscode/dist/extension.cjs and editors/vscode/server/{bin,dist}/ exist.
-ls editors/vscode/dist/extension.cjs editors/vscode/server/bin/hoverfly-lsp.js editors/vscode/server/dist/cli.cjs
+# Expect: editors/vscode/dist/extension.cjs and editors/vscode/server/dist/cli.cjs exist.
+ls editors/vscode/dist/extension.cjs editors/vscode/server/dist/cli.cjs
 
 # 2. Unit-test the server-resolution logic.
 npm test --workspace editors/vscode

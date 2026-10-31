@@ -1,8 +1,9 @@
 # Sources and build inputs (the published .vsix ships only the bundled output).
 src/**
-test/**
 tsconfig.json
 esbuild.config.mjs
+studio.config.ts
+vitest.config.ts
 
 # Build, test and lint artefacts (the tsc buildinfo, and the .vsix itself).
 .artifacts/**

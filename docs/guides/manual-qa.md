@@ -195,8 +195,8 @@ below need a real Claude Code install / a second `.json` plugin and could not be
 
 - Repo gates at root: `make check` (lint, test, mutation) green with the editor dirs in place.
 - VS Code: `npm run build --workspace=hoverfly-lsp-vscode` bundles `dist/extension.cjs` and copies
-  the server into `server/`; `vsce package` produces the `.vsix` (9 files, includes the bundled
-  server); the bundled `server/bin/hoverfly-lsp.js` answers `initialize` with
+  the server into `server/`; `vsce package` produces the `.vsix` (8 files, includes the bundled
+  server); the bundled `server/dist/cli.cjs` answers `initialize` with
   `serverInfo.name = "hoverfly-lsp"`; `server-resolution.ts` unit tests pass.
 - Zed: `extension.toml`, `Cargo.toml`, `config.toml` parse; `cargo check` compiles `src/lib.rs`
   against `zed_extension_api 0.7.0` (native target).

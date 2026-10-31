@@ -1,5 +1,5 @@
-// outside: VS Code loads an extension as CommonJS and injects `vscode`; the published server's bin
-// and bundle are copied into server/, so the .vsix runs with nothing installed.
+// outside: VS Code loads an extension as CommonJS and injects `vscode`; the published server's
+// bundle is copied into server/, so the .vsix runs with nothing installed.
 import { build, context } from 'esbuild';
 import { cpSync, mkdirSync, rmSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -13,9 +13,7 @@ const serverDest = join(here, 'server');
 
 function copyBundledServer() {
     rmSync(serverDest, { recursive: true, force: true });
-    mkdirSync(join(serverDest, 'bin'), { recursive: true });
     mkdirSync(join(serverDest, 'dist'), { recursive: true });
-    cpSync(join(serverPkg, 'bin', 'hoverfly-lsp.js'), join(serverDest, 'bin', 'hoverfly-lsp.js'));
     cpSync(join(serverPkg, 'dist', 'cli.cjs'), join(serverDest, 'dist', 'cli.cjs'));
 }
 
