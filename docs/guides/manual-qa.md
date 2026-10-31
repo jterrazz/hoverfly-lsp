@@ -62,8 +62,8 @@ rustup, no wasm target). The wasm build and all in-editor behaviour are manual.
 
 **Setup:** install Rust via rustup and `rustup target add wasm32-wasip2`. Build the server
 (`npm run build` at repo root) and put it on `$PATH` (`npm link --workspace packages/server`)
-because `hoverfly-lsp` is not on npm yet; Zed's managed-install path (resolution step 3) cannot
-work until it is published.
+to test a local build; Zed's managed-install path (resolution step 3) installs the published
+`@jterrazz/hoverfly-lsp` instead.
 
 > **Toolchain gotchas (cost us time tonight).** Homebrew Rust has no `wasm32-wasip2` std
 > component and will fail the Zed build; `brew uninstall rust` or make `~/.cargo/bin` win on
@@ -73,8 +73,8 @@ work until it is published.
 > **No zero-setup bundling.** The server file cannot be shipped inside the extension: Zed's wasm
 > sandbox preopens only the extension _work_ dir as cwd (`crates/extension_host/.../wasm_host.rs`),
 > so committed files (in the _installed_ dir) are unreachable at runtime, and the published archive
-> only contains `extension.toml`/`extension.wasm`/`languages/`/`grammars/`. Zero-setup arrives only
-> when `hoverfly-lsp` is published to npm (resolution step 3 then auto-installs it).
+> only contains `extension.toml`/`extension.wasm`/`languages/`/`grammars/`. Zero-setup comes from the
+> published `@jterrazz/hoverfly-lsp` (resolution step 3 auto-installs it).
 
 - [ ] `cargo build --release --target wasm32-wasip2` succeeds (needs rustup + wasm target).
 - [ ] `zed: install dev extension` on `editors/zed` compiles without errors (check
@@ -93,7 +93,7 @@ work until it is published.
 - [ ] Open an unrelated `.json` (e.g. `package.json`): NOT detected as Hoverfly, no diagnostics.
 - [ ] With a project-local `npm install @jterrazz/hoverfly-lsp`, confirm it is preferred over a global
       install (resolution step 1 over step 2).
-- [ ] **Published path (future):** once `hoverfly-lsp` is on npm, Zed's managed npm install
+- [ ] **Published path:** with `@jterrazz/hoverfly-lsp` on npm, Zed's managed npm install
       (resolution step 3) installs and launches the server with no manual `$PATH` setup.
 
 ---

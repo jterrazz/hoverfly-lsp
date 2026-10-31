@@ -32,9 +32,8 @@ update, and launch via Zed's managed Node. Steps 1-2 are an extra project-local 
 `$PATH` override (vue and svelte do the project-local lookup too), useful for a
 locally-built server.
 
-> The `hoverfly-lsp` npm package is not yet published. Until it is, **step 3 will
-> fail** (npm can't find the package); use step 1 or 2 with a local build of the
-> server. See [Dev install](#dev-install-current-package-not-yet-published).
+> `@jterrazz/hoverfly-lsp` is on npm, so step 3 installs the server with no setup. To try a
+> local build instead, use step 1 or 2; see [Dev install](#dev-install-a-local-server-build).
 
 ### Why not ship the server inside the extension (zero-setup)?
 
@@ -47,8 +46,8 @@ published extension archive only contains `extension.toml`, `extension.wasm`,
 [packaging](https://zed.dev/blog/zed-decoded-extensions)): an arbitrary `server/`
 directory would never even be included. So a bundled `dist/cli.cjs` asset is
 unreachable at runtime for both dev _and_ registry installs. The only viable
-zero-setup path is publishing `hoverfly-lsp` to npm, after which resolution step 3
-installs it automatically with no manual setup.
+zero-setup path is the published `@jterrazz/hoverfly-lsp` npm package, which resolution step 3
+installs automatically.
 
 ## File targeting
 
@@ -101,9 +100,9 @@ To claim additional names without editing the extension, add to your Zed
 
 - **Node.js** on `$PATH` (used by resolution steps 1-3 above).
 
-### Dev install (current, package not yet published)
+### Dev install (a local server build)
 
-Because `hoverfly-lsp` is not on npm yet, make the server resolvable first.
+To run a local build of the server instead of the published package, make it resolvable first.
 
 1. Build the server from this repo and expose it on `$PATH`:
 
@@ -131,10 +130,10 @@ Because `hoverfly-lsp` is not on npm yet, make the server resolvable first.
 Logs: `~/.local/share/zed/logs/Zed.log`, or launch `zed --foreground` for verbose
 output. Compilation errors for the extension appear here.
 
-### Published install (future)
+### Published install
 
-Once published to the Zed extension registry: open the Extensions panel, search
-**Hoverfly**, click Install. Once `hoverfly-lsp` is on npm, no manual
+Once the extension is in the Zed extension registry: open the Extensions panel, search
+**Hoverfly**, click Install. No manual
 server setup is needed; resolution step 3 installs it automatically.
 
 ## Verification
