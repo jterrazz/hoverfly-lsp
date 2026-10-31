@@ -205,19 +205,3 @@ export const REGISTRY_MATCHER_NAMES: readonly string[] = MATCHER_SPECS.filter(
 export const TRANSFORMING_MATCHER_NAMES: readonly string[] = MATCHER_SPECS.filter(
     (spec) => spec.doMatchTransforms,
 ).map((spec) => spec.name);
-
-/** The runtime panic paths (decision D8, report 07 §2c, §2d, §3), each an error-level diagnostic. */
-export const MATCHER_PANIC_NOTES = {
-    /** An unknown/misspelled matcher name -> nil func type assertion -> PANIC. */
-    unknownMatcher:
-        'Unknown matcher name: Hoverfly does a nil func type assertion and CRASHES (panic) at request-matching time, not a silent no-match.',
-    /** A `config` key on any matcher other than `array` -> MatchersWithConfig miss -> PANIC. */
-    configOnNonArray:
-        'A `config` key on any matcher other than `array` makes Hoverfly PANIC (even `config: {}`, since a decoded empty object is still non-nil).',
-    /** A non-boolean `array` config value -> genericValue.(bool) with no ok-guard -> PANIC. */
-    nonBoolArrayConfigValue:
-        'An `array` config value that is not a JSON boolean (e.g. the string "true" or a number) makes Hoverfly PANIC (genericValue.(bool) has no ok-guard).',
-    /** `form` written as `Form`/`FORM`, or `form` outside `body` -> registry miss -> PANIC. */
-    formWrongCaseOrPlacement:
-        '`form` is case-SENSITIVE and body-only; `Form`/`FORM`, or `form` on headers/query/path or inside doMatch, falls through to the registry and PANICs.',
-} as const;

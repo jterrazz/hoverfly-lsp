@@ -91,4 +91,3 @@ function getSemanticTokens(
 }
 
 export { getSemanticTokens };
-export type { SemanticToken } from './token-emitter.js';

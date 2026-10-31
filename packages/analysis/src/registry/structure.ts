@@ -78,19 +78,5 @@ export const STRUCTURE_ALLOWED_KEYS: Readonly<Record<StructureObjectKind, readon
     meta: ['schemaVersion', 'hoverflyVersion', 'timeExported'],
 };
 
-/** The user-keyed maps the unknown-key rule never judges (report 13 §6 guard a): documentation, read by no rule. */
-export const USER_KEYED_MAP_PATHS: readonly string[] = [
-    'request.headers',
-    'request.query',
-    'response.headers',
-    'requiresState',
-    'transitionsState',
-];
-
-/** Keys legal though the official schema omits them: request.method (D5, report 13 §6 guard b). */
-export const SCHEMA_ABSENT_LEGAL_KEYS: Readonly<Record<string, readonly string[]>> = {
-    request: ['method'],
-};
-
 /** The HF603 suggestion distance (report 13 §6); a key that case-folds to an allowed one is HF604, never a candidate. */
 export const DID_YOU_MEAN_MAX_DISTANCE = 2;

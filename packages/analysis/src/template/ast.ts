@@ -101,6 +101,3 @@ export type Statement = BlockNode | ContentNode | MustacheNode;
 export type Program = Span & {
     readonly body: readonly Statement[];
 };
-
-/** Any AST node (root, statement, or expression). */
-export type TemplateNode = Expression | Program | Statement;
