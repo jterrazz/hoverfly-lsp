@@ -1,8 +1,9 @@
-# Operating
+# Releasing
 
-Nothing here is deployed: this repository releases artefacts to five registries,
-and every one of them starts from a GitHub Release. This chapter is the order of
-operations, what is automated, what stays manual, and why.
+Nothing here is deployed: this repository releases artefacts to five registries
+(npm, the VS Code Marketplace, Open VSX, the JetBrains Marketplace and Zed's
+extension index), and every one of them starts from a GitHub Release. This guide
+is the order of operations, what is automated, what stays manual, and why.
 
 ## What ships, and where
 

@@ -7,7 +7,7 @@ file a given change opens, and what it owes before it is committed.
 
 Node 24 (`.nvmrc` pins 24), npm workspaces, no other runtime. The published
 server still runs on Node 20 (esbuild targets it), but the toolchain does not:
-`@jterrazz/typescript` is the one devDependency and it asks for 24.
+`@jterrazz/typescript` asks for Node 24, and the root's `engines` says the same.
 
 ```bash
 make install           # npm ci, lockfile-pinned, behind an install sentinel
@@ -137,6 +137,6 @@ Four things land in the same commit as the change that makes them true:
 
 - the regenerated golden for every fixture whose diagnostics moved,
 - the regenerated `docs/reference/` projection,
-- the chapter here that the change falsified,
+- the page of this manual that the change falsified,
 - and, for a behavioural change, the citation of the decision or research report
   behind it.
