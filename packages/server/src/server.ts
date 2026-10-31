@@ -169,7 +169,7 @@ class HoverflyServer {
     }
 
     private configure(settings: HoverflyServiceSettings): void {
-        this.service = createHoverflyLanguageService([], settings);
+        this.service = createHoverflyLanguageService(settings);
     }
 
     private async refreshConfiguration(): Promise<void> {

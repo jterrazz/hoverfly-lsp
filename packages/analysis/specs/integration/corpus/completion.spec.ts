@@ -41,7 +41,7 @@ async function completionsOf(fixture: string): Promise<unknown> {
         return { markers };
     }
     const document = TextDocument.create(uri, 'json', 1, marked.text);
-    const diagnostics = await createHoverflyLanguageService([], settings).doValidation(document);
+    const diagnostics = await createHoverflyLanguageService(settings).doValidation(document);
     return { diagnostics, markers };
 }
 

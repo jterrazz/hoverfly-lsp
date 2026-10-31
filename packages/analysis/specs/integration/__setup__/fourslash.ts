@@ -73,7 +73,7 @@ function openedAt(
     return {
         document,
         position: document.positionAt(offset),
-        service: createHoverflyLanguageService([], options.settings ?? {}),
+        service: createHoverflyLanguageService(options.settings),
     };
 }
 

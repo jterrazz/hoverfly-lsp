@@ -64,9 +64,9 @@ export type HoverflyLanguageService = {
     ) => Promise<Hover | null>;
 };
 
-function jsonServiceWith(contributions: JSONWorkerContribution[]): LanguageService {
+function jsonServiceWith(contribution: JSONWorkerContribution): LanguageService {
     const service = getLanguageService({
-        contributions,
+        contributions: [contribution],
         schemaRequestService: async (uri: string): Promise<string> => {
             if (uri === SCHEMA_URI) {
                 return SCHEMA_TEXT;
@@ -104,16 +104,14 @@ async function validated(
 
 /** Creates the Hoverfly language service; the bundled schema is resolved offline, never from the network or the disk. */
 export function createHoverflyLanguageService(
-    contributions: JSONWorkerContribution[] = [],
     settings: HoverflyServiceSettings = {},
 ): HoverflyLanguageService {
     // outside: the contribution API hands a URI and a JSON path, never the text, so the documents
     // the last completion or hover saw are kept for the contribution to resolve.
     const seenDocuments = new Map<string, TextDocument>();
-    const service = jsonServiceWith([
+    const service = jsonServiceWith(
         createHoverflyContribution(settings, (uri) => seenDocuments.get(uri)),
-        ...contributions,
-    ]);
+    );
 
     function opened(
         document: TextDocument,
