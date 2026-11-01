@@ -6,8 +6,8 @@ run-name: Publish ${{ github.event.release.tag_name }}
 # workflow). The single-package publish-npm workflow cannot serve a monorepo: this one publishes
 # @jterrazz/hoverfly-lsp alone and attaches the .vsix; the editor registries stay manual
 # (docs/guides/release.md).
-# outside: the file keeps the name `release.yml`: npm's trusted publishing is configured against that
-# filename on npmjs.com, so the rename to publish.yaml waits for the owner.
+# outside: npm's trusted publishing names this file (publish.yaml) on npmjs.com: renaming it
+# stops publishing until the trusted publisher names the new file.
 
 on:
     release:

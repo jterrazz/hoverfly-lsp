@@ -8,8 +8,8 @@ operations, what is automated, what stays manual, and why.
 
 | Artefact                      | Registry                           | Published by                   |
 | ----------------------------- | ---------------------------------- | ------------------------------ |
-| `@jterrazz/hoverfly-lsp`      | npm                                | `release.yml`, tokenlessly     |
-| `hoverfly-lsp-vscode` `.vsix` | the GitHub Release                 | `release.yml`                  |
+| `@jterrazz/hoverfly-lsp`      | npm                                | `publish.yaml`, tokenlessly    |
+| `hoverfly-lsp-vscode` `.vsix` | the GitHub Release                 | `publish.yaml`                 |
 | the same `.vsix`              | VS Code Marketplace, Open VSX      | a human, from a local checkout |
 | the IntelliJ plugin           | JetBrains Marketplace              | `./gradlew publishPlugin`      |
 | the Zed extension             | the `zed-industries/extensions` PR | a human, from a fork           |
@@ -19,7 +19,7 @@ bundle by esbuild, so the npm tarball carries no dependency on it.
 
 The two npm-versioned manifests (`packages/analysis`, `packages/server`) must agree
 with the release tag; the workflow refuses to publish otherwise
-(the tag-verification step of `.github/workflows/release.yml`). The editor artefacts version
+(the tag-verification step of `.github/workflows/publish.yaml`). The editor artefacts version
 **independently**, because their registries treat a version as immutable and a
 Marketplace-only fix must be able to move without an npm release.
 
@@ -44,7 +44,7 @@ Marketplace-only fix must be able to move without an npm release.
 5. Push the `.vsix` to the two extension registries (below), and refresh the
    IntelliJ and Zed artefacts if they moved.
 
-`release.yml` fires on `release: published`, the trigger that fires whether the
+`publish.yaml` fires on `release: published`, the trigger that fires whether the
 release goes out directly or is saved as a draft first, unlike `created`. It
 runs the shared house gate on Node 24, verifies the tag, publishes, and uploads
 the `.vsix`. The publish step is idempotent: a version already on npm is
@@ -57,7 +57,7 @@ publishing (`npm publish --provenance` with `id-token: write` and no
 `NODE_AUTH_TOKEN`), exactly as the other `@jterrazz` packages do. It required
 one setup, done once per package on npmjs.com: a Trusted Publisher on
 `@jterrazz/hoverfly-lsp` pointing at repository `jterrazz/hoverfly-lsp`,
-workflow `release.yml`. There is no npm secret in this repository.
+workflow `publish.yaml`. There is no npm secret in this repository.
 
 The manual publishes each carry their own credential, held by the publisher and
 never by CI: a Marketplace PAT (Azure DevOps, scope **Marketplace: Manage**), an
